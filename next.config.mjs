@@ -1,11 +1,14 @@
 /** @type {import('next').NextConfig} */
 const backendUrl = process.env.BACKEND_URL || 'http://127.0.0.1:8000';
+const isExport = process.env.NEXT_EXPORT === 'true';
 
 const nextConfig = {
+  output: isExport ? 'export' : undefined,
   reactStrictMode: true,
   swcMinify: true,
   poweredByHeader: false,
-  headers: async () => [
+  images: isExport ? { unoptimized: true } : undefined,
+  headers: isExport ? undefined : async () => [
     {
       source: '/(.*)',
       headers: [
@@ -53,22 +56,20 @@ const nextConfig = {
       ],
     },
   ],
-  async rewrites() {
-    return [
-      {
-        source: '/api/py/:path*',
-        destination: `${backendUrl}/api/:path*`,
-      },
-      {
-        source: '/api/health',
-        destination: `${backendUrl}/health`,
-      },
-      {
-        source: '/api/voice',
-        destination: `${backendUrl}/api/voice`,
-      },
-    ];
-  },
+  rewrites: isExport ? undefined : async () => [
+    {
+      source: '/api/py/:path*',
+      destination: `${backendUrl}/api/:path*`,
+    },
+    {
+      source: '/api/health',
+      destination: `${backendUrl}/health`,
+    },
+    {
+      source: '/api/voice',
+      destination: `${backendUrl}/api/voice`,
+    },
+  ],
 };
 
 export default nextConfig;
