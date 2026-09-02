@@ -1,8 +1,68 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { AccessToken } from 'livekit-server-sdk';
 
 export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
+
+function base64UrlEncode(input: string | Uint8Array): string {
+  let base64: string;
+  if (typeof input === 'string') {
+    base64 = btoa(unescape(encodeURIComponent(input)));
+  } else {
+    let binary = '';
+    for (let i = 0; i < input.byteLength; i++) {
+      binary += String.fromCharCode(input[i]);
+    }
+    base64 = btoa(binary);
+  }
+  return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+async function createLiveKitJwt(
+  apiKey: string,
+  apiSecret: string,
+  identity: string,
+  room: string,
+  metadata: string
+): Promise<string> {
+  const nowSec = Math.floor(Date.now() / 1000);
+  const header = { alg: 'HS256', typ: 'JWT' };
+  const payload = {
+    exp: nowSec + 1800, // 30 minutes
+    iss: apiKey,
+    nbf: nowSec - 5,
+    sub: identity,
+    video: {
+      room,
+      roomJoin: true,
+      canPublish: true,
+      canSubscribe: true,
+      canPublishData: true,
+    },
+    metadata,
+  };
+
+  const encodedHeader = base64UrlEncode(JSON.stringify(header));
+  const encodedPayload = base64UrlEncode(JSON.stringify(payload));
+  const dataToSign = `${encodedHeader}.${encodedPayload}`;
+
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(apiSecret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+
+  const signature = await crypto.subtle.sign(
+    'HMAC',
+    key,
+    encoder.encode(dataToSign)
+  );
+
+  const encodedSignature = base64UrlEncode(new Uint8Array(signature));
+  return `${dataToSign}.${encodedSignature}`;
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -23,21 +83,13 @@ export async function POST(req: NextRequest) {
       timestamp: Date.now(),
     };
 
-    const at = new AccessToken(apiKeyLiveKit, apiSecretLiveKit, {
-      identity: participantName,
-      ttl: '30m',
-      metadata: JSON.stringify(metadataObj),
-    });
-
-    at.addGrant({
+    const token = await createLiveKitJwt(
+      apiKeyLiveKit,
+      apiSecretLiveKit,
+      participantName,
       room,
-      roomJoin: true,
-      canPublish: true,
-      canSubscribe: true,
-      canPublishData: true,
-    });
-
-    const token = await at.toJwt();
+      JSON.stringify(metadataObj)
+    );
 
     return NextResponse.json({
       token,
