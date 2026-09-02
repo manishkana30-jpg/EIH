@@ -1,8 +1,7 @@
-[tool.ruff]
 line-length = 120
 target-version = "py310"
 
-[tool.ruff.lint]
+[lint]
 select = ["E", "F", "W", "I", "UP", "B", "RUF"]
 ignore = [
     "E501",    # Line length (clinical prompts & regex patterns)
@@ -11,9 +10,5 @@ ignore = [
     "RUF012",  # Mutable class attributes
 ]
 
-[tool.ruff.lint.isort]
+[lint.isort]
 known-first-party = ["keyless_healer", "server"]
-
-[tool.pyright]
-extraPaths = [".", "keyless_healer", "server"]
-
