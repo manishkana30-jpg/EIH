@@ -15,5 +15,5 @@ ignore = [
 known-first-party = ["keyless_healer", "server"]
 
 [tool.pyright]
-extraPaths = [".", "keyless_healer", "keyless-healer-system", "server"]
+extraPaths = [".", "keyless_healer", "server"]
 
