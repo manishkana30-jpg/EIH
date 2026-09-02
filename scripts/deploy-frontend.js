@@ -9,12 +9,27 @@ const path = require('path');
 const fs = require('fs');
 
 const rootDir = path.join(__dirname, '..');
+const envLocalPath = path.join(rootDir, '.env.local');
+
+// Load .env.local variables if not present in process.env
+if (fs.existsSync(envLocalPath)) {
+  const lines = fs.readFileSync(envLocalPath, 'utf8').split('\n');
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed && !trimmed.startsWith('#') && trimmed.includes('=')) {
+      const [key, ...rest] = trimmed.split('=');
+      const val = rest.join('=').replace(/^["']|["']$/g, '');
+      if (key && val && !process.env[key.trim()]) {
+        process.env[key.trim()] = val.trim();
+      }
+    }
+  }
+}
 
 // Strictly validate Cloudflare Account ID (must be a 32-character hex hash)
 const isValidCloudflareAccountId = (id) => typeof id === 'string' && /^[0-9a-fA-F]{32}$/.test(id.trim());
 
 if (process.env.CLOUDFLARE_ACCOUNT_ID && !isValidCloudflareAccountId(process.env.CLOUDFLARE_ACCOUNT_ID)) {
-  console.log(`\x1b[33m⚠️ Note: CLOUDFLARE_ACCOUNT_ID "${process.env.CLOUDFLARE_ACCOUNT_ID}" is not a 32-character hex hash. Stripping it so Wrangler auto-discovers your Account ID from your API token.\x1b[0m`);
   delete process.env.CLOUDFLARE_ACCOUNT_ID;
 }
 
