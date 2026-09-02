@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "description": "Emotional Intelligence Healer - Universal PWA & LiveKit Real-Time Voice Agent for Ayurvedic Sattvavajaya Chikitsa & Modern Neuropsychology",
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
