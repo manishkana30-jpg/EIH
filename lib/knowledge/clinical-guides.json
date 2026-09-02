@@ -1,0 +1,106 @@
+[
+  {
+    "id": "anxiety_quickstart",
+    "title": "Quickstart Guide to Anxiety",
+    "category": "anxiety",
+    "summary": "Immediate physiological and cognitive steps to halt an escalating anxiety spike in under 3 minutes.",
+    "bodyMarkdown": "### Understanding the Anxiety Spike\n\nAnxiety is your nervous system's sympathetic alarm triggering preemptive metabolic arousal. When you perceive threat—real or imagined—epinephrine and cortisol constrict peripheral capillaries and accelerate heart rate.\n\n#### Immediate 3-Step Protocol:\n1. **Engage the Physiological Sigh:** Two consecutive nasal inhales followed by one prolonged oral sigh. Repeat 3 times to trigger the baroreceptor vagal brake.\n2. **Orient in Real Space (5-4-3-2-1):** Name 5 physical objects you see, 4 surfaces you can feel, 3 distinct sounds, 2 scents, and 1 taste.\n3. **De-catastrophize the Physical Sensations:** Remind yourself: *'My body is feeling adrenaline, but I am physically safe right now.'*",
+    "aiTriggerKeywords": ["anxiety", "panic", "heart racing", "shaking", "nervous", "anxious", "scared"]
+  },
+  {
+    "id": "anxiety_cycle",
+    "title": "The Anxiety Cycle & Avoidance Trap",
+    "category": "anxiety",
+    "summary": "How avoidance fuels long-term anxiety amplification and how exposure rewires the amygdala.",
+    "bodyMarkdown": "### The Behavioral Feedback Loop of Anxiety\n\n1. **Trigger:** An uncomfortable thought, sensation, or social situation emerges.\n2. **Perceived Threat:** The amygdala labels the discomfort as dangerous.\n3. **Avoidance / Safety Behavior:** You cancel plans, withdraw, or distract yourself.\n4. **Temporary Relief:** Adrenaline drops, giving immediate emotional gratification.\n5. **Long-Term Amplification:** The brain encodes the lesson: *'I only survived because I avoided.'* The next trigger is amplified.\n\n```\n  [ Trigger ] ───► [ Anxiety Spike ]\n       ▲                    │\n       │                    ▼\n  [ Future Trigger ] ◄── [ Avoidance ]\n     (Amplified)       (False Relief)\n```\n\n#### Breaking the Loop:\nLean into distress with willingness. The emotional wave peaks at 90 seconds and subsides when not fed by avoidance.",
+    "aiTriggerKeywords": ["avoidance", "cycle", "procrastination", "canceling plans", "running away", "trigger"]
+  },
+  {
+    "id": "short_vs_long_treatments",
+    "title": "Short vs. Long-Term Anxiety Interventions",
+    "category": "anxiety",
+    "summary": "Differentiating acute vagal down-regulation from cognitive schema restructuring and exposure.",
+    "bodyMarkdown": "### Two Layers of Clinical Support\n\n#### Acute Down-Regulation (0-5 Minutes):\n- **Physiological Sigh (Huberman/Spiegel):** Rapid alveolar reinflation and CO2 release.\n- **Cold Water Mammalian Dive Reflex:** Splash cold water on eyes and cheeks to activate trigeminal parasympathetic slowing.\n- **Bilateral Tapping / Grounding:** Alternating physical touch to synchronize hemispheric processing.\n\n#### Long-Term Neuroplastic Restructuring (Weeks to Months):\n- **Interoceptive Exposure (CBT):** Gradually tolerating bodily sensations (e.g. breathlessness, racing heart) without panic.\n- **Values-Based Action (ACT):** Moving toward meaningful goals even while feeling fear.\n- **Cognitive Restructuring:** Identifying and challenging automatic negative thoughts (ANTs).",
+    "aiTriggerKeywords": ["treatment", "long term", "cure", "techniques", "methods", "exercises"]
+  },
+  {
+    "id": "coping_skills_100",
+    "title": "Comprehensive Clinical Coping Library",
+    "category": "coping",
+    "summary": "Searchable reference library of sensory, somatic, cognitive, and social regulation practices.",
+    "bodyMarkdown": "### Evidence-Based Somatic & Sensory Coping Tools\n\n#### Sensory / Physical:\n- Holding ice cubes in your hands for 60 seconds.\n- Progressive Muscle Relaxation (PMR) from toes to scalp.\n- Acupressure on Yin Tang point (between eyebrows) and Pericardium 6 (inner wrist).\n- Drinking ice-cold water slowly through a narrow straw.\n- Wrapping in a weighted blanket (7-10% of body weight).\n- Stepping barefoot on grass or textured natural surfaces.\n- Rhythmic walking with 4-step inhale, 4-step exhale.\n\n#### Cognitive & Expressive:\n- Expressive pen-to-paper journaling for 10 unedited minutes.\n- Third-person self-talk (*'What does [Your Name] need right now?'*).\n- Box Breathing (4s Inhale, 4s Hold, 4s Exhale, 4s Hold).\n- Defusion: Sing your catastrophic thought to the tune of *Happy Birthday*.\n- Listing 3 things within your direct sphere of control today.",
+    "aiTriggerKeywords": ["coping", "coping skills", "what can i do", "list of tools", "help me calm down"]
+  },
+  {
+    "id": "depression_quickstart",
+    "title": "Quickstart Guide to Depression & Lethargy",
+    "category": "depression",
+    "summary": "Overcoming hypoarousal, dopamine depletion, and depressive inertia with micro-momentum.",
+    "bodyMarkdown": "### The Neurochemistry of Depressive Freeze\n\nDepression frequently represents a dorsal vagal shutdown state where the nervous system conserves energy in response to prolonged overwhelm.\n\n#### The Rule of Micro-Momentum:\n*Motivation follows action, never precedes it.*\n\n1. **Shrink the Step to 2 Minutes:** Do not aim to clean your room or work for hours. Aim to stand up and drink half a glass of water.\n2. **Engage Sunlight & Photons:** 10 minutes of morning daylight into your eyes triggers retinal ganglion cells to stimulate ventral tegmental dopamine release.\n3. **Opposite Action to Isolation:** Send a short neutral emoji or text message to one trusted person without needing to explain your mood.",
+    "aiTriggerKeywords": ["depression", "sad", "hopeless", "tired", "no motivation", "empty", "exhausted"]
+  },
+  {
+    "id": "decision_paralysis",
+    "title": "Overcoming Decision Paralysis",
+    "category": "adhd",
+    "summary": "How to escape executive function bottlenecks and analysis loops with somatic satisficing.",
+    "bodyMarkdown": "### Breaking Analysis Paralysis\n\nWhen choices feel high-stakes, the prefrontal cortex experiences cognitive load overload, triggering avoidance.\n\n#### Clinical Hacks:\n- **Satisficing vs. Maximizing:** Aim for the *good enough* decision (80% criterion) rather than the elusive *perfect* choice.\n- **The 10/10/10 Rule:** Will this choice matter in 10 minutes? 10 months? 10 years?\n- **The Coin Toss Test:** Assign Option A to Heads and Option B to Tails. Flip the coin. While it is in the air, notice which outcome you secretly hope for—your emotional brain has already chosen.",
+    "aiTriggerKeywords": ["decision", "paralysis", "cant decide", "overthinking", "crossroads", "what to choose"]
+  },
+  {
+    "id": "black_and_white_thinking",
+    "title": "Reframing Black-and-White Thinking",
+    "category": "coping",
+    "summary": "Transforming polarized all-or-nothing cognitive traps into dialectical both/and perspectives.",
+    "bodyMarkdown": "### Recognizing Polarized Distortions\n\nBlack-and-white thinking categorizes reality into absolutes: *success vs. failure, good vs. bad, loved vs. hated*.\n\n#### The Dialectical Bridge:\nReplace **'Either / Or'** with **'Both / And'**:\n- *'I made a mistake AND I am still capable and worthy.'*\n- *'I feel afraid AND I am taking step forward.'*\n- *'Things did not go as planned AND I learned valuable information.'*",
+    "aiTriggerKeywords": ["black and white", "all or nothing", "perfectionism", "failure", "ruined everything"]
+  },
+  {
+    "id": "anxious_child_support",
+    "title": "How to Support an Anxious Child",
+    "category": "parenting",
+    "summary": "Co-regulation strategies to de-escalate childhood fears without reinforcing avoidance.",
+    "bodyMarkdown": "### The Power of Parental Co-Regulation\n\nA child's nervous system mirrors their caregiver's autonomic tone. Before talking, soften your own voice, drop your shoulders, and slow your respiration.\n\n#### 3 Key Principles:\n1. **Validate Before Problem-Solving:** Say *'I see how scary that feels for you right now'* instead of *'You don't need to worry.'*\n2. **Avoid Absolute Guarantees:** Do not say *'Nothing bad will ever happen.'* Say *'Whatever happens, we will handle it together.'*\n3. **Praise Brave Behavior:** Reinforce small steps of exposure rather than avoidance.",
+    "aiTriggerKeywords": ["child", "kid", "parenting", "my son", "my daughter", "anxious child"]
+  },
+  {
+    "id": "intrusive_thoughts_phrases",
+    "title": "6 Grounding Phrases for Intrusive Thoughts",
+    "category": "anxiety",
+    "summary": "Cognitive defusion anchors to neutralize obsessive, alarming, or intrusive mental loops.",
+    "bodyMarkdown": "### Intrusive Thoughts Are Not Intentions\n\nIntrusive thoughts are random cortical static generated by an overactive threat-detection network.\n\n#### 6 Defusion Mantras:\n1. *'I am noticing the thought that [X], and thoughts are not facts.'*\n2. *'My brain is trying to protect me by imagining worst-case scenarios, but I am safe right here.'*\n3. *'I do not have to agree, argue, or debate with this mental pop-up.'*\n4. *'Having a scary thought does not mean I want it or that it will happen.'*\n5. *'Thank you mind for that story, but I choose to focus on my breath.'*\n6. *'This is a sensation passing through my awareness like a cloud across the sky.'*",
+    "aiTriggerKeywords": ["intrusive thoughts", "bad thoughts", "obsessing", "cant stop thinking", "scary thought"]
+  },
+  {
+    "id": "adhd_anxiety_overlap",
+    "title": "ADHD & Anxiety: Integrated Coping",
+    "category": "adhd",
+    "summary": "Addressing executive dysfunction, dopamine foraging, and working memory fatigue.",
+    "bodyMarkdown": "### The Interplay of ADHD and Anxiety\n\nADHD brains often generate anxiety as an artificial adrenaline trigger to compensate for low tonic dopamine levels.\n\n#### Integrated Strategies:\n- **Externalize Working Memory:** Never keep task lists in your head. Write them on a physical whiteboard or paper.\n- **Body Doubling:** Work or study alongside someone (in person or on video) to anchor executive focus.\n- **Dopamine Menu:** Create an established list of healthy low-barrier micro-rewards (stretch, tea, short song).",
+    "aiTriggerKeywords": ["adhd", "focus", "distracted", "executive function", "cant concentrate"]
+  },
+  {
+    "id": "trauma_modalities",
+    "title": "Clinical Modalities for Trauma Processing",
+    "category": "trauma",
+    "summary": "Overview of EMDR, Somatic Experiencing, and Internal Family Systems (IFS).",
+    "bodyMarkdown": "### Understanding Trauma in the Body (Bessel van der Kolk)\n\nTrauma is stored in subcortical somatic memory networks that do not respond to purely logical talk therapy.\n\n#### Evidence-Based Clinical Modalities:\n- **EMDR (Eye Movement Desensitization and Reprocessing):** Utilizes bilateral stimulation to reprocess traumatic memory fragments into adaptive autobiographical memory.\n- **Somatic Experiencing (Peter Levine):** Gently discharges trapped sympathetic survival energy through physical sensation tracking.\n- **IFS (Internal Family Systems):** Befriending protective parts (managers, firefighters) and healing vulnerable exiles.",
+    "aiTriggerKeywords": ["trauma", "ptsd", "emdr", "flashback", "past pain", "abuse"]
+  },
+  {
+    "id": "when_overwhelmed",
+    "title": "When Life Feels Completely Overwhelming",
+    "category": "coping",
+    "summary": "Emergency triage when demands drastically exceed emotional and metabolic capacity.",
+    "bodyMarkdown": "### The Capacity Triage Protocol\n\nWhen your system is overloaded, stop trying to fix everything at once.\n\n1. **Drop to Sensory Floor:** Lie down on the floor on your back with legs elevated on a chair or wall for 5 minutes.\n2. **Triage to 1 Essential Task:** Ask: *'What is the single thing that genuinely must happen in the next 60 minutes?'* Everything else can wait.\n3. **Relinquish the Non-Essential:** Give yourself permission to cancel non-critical commitments without guilt.",
+    "aiTriggerKeywords": ["overwhelmed", "too much", "drowning", "cant take it", "breaking down"]
+  },
+  {
+    "id": "let_go_regret",
+    "title": "Let Go of Regret in 3 Psychological Steps",
+    "category": "depression",
+    "summary": "Shifting from rumination and self-blame to self-compassion and adaptive learning.",
+    "bodyMarkdown": "### The Retrospective Fallacy of Regret\n\nRegret falsely assumes that your past self possessed the insight, emotional capacity, and awareness that you only acquired *because* of what happened.\n\n#### 3-Step Release:\n1. **Acknowledge Information Asymmetry:** Your past self made the best choice available given the stress, resources, and consciousness you had at that exact moment.\n2. **Grieve the Unlived Path:** Allow yourself 5 minutes of honest sadness for what was lost without turning it into self-condemnation.\n3. **Extract the Core Value:** Regret reveals what you cherish most. Use it as an active compass for today's choices.",
+    "aiTriggerKeywords": ["regret", "past mistake", "guilt", "should have", "wish i did", "if only"]
+  }
+]

@@ -1,0 +1,441 @@
+{
+  "manifest": {
+    "version": "2.4.0",
+    "name": "Comprehensive Evidence-Based CBT & Schema Knowledge Base",
+    "last_updated": "2026-09-01T23:45:00Z",
+    "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "auto_upgrade_enabled": true,
+    "source_registries": [
+      "NCBI PubMed / PMC E-Utilities",
+      "Cochrane Systematic Reviews",
+      "Beck Institute Cognitive Therapy Guidelines",
+      "International Society of Schema Therapy (ISST)"
+    ]
+  },
+  "cognitive_distortions": [
+    {
+      "id": "all_or_nothing",
+      "name": "All-or-Nothing / Polarized Thinking",
+      "aka": ["Black-and-White Thinking", "Dichotomous Thinking"],
+      "category": "Cognitive Framing",
+      "description": "Viewing situations in absolute, binary terms (e.g., success vs. failure, pure good vs. total disaster) with no recognition of grey areas or middle ground.",
+      "clinical_mechanism": "Prefrontal cognitive inflexibility amplifying amygdalar threat response when an outcome deviates even slightly from an idealized standard.",
+      "example_thought": "If this presentation isn't 100% flawless, my entire career is ruined.",
+      "reframing_prompt": "What exists on the continuum between 0% and 100%? Can something be imperfect AND still deeply worthwhile?",
+      "socratic_questions": [
+        "Are you evaluating this on a 0-to-100 scale, or treating anything under 100 as 0?",
+        "How would you view this outcome if a respected mentor achieved the same result?"
+      ],
+      "somatic_anchor": "Notice if your body is holding rigid tension or held breath as if braced for catastrophe.",
+      "recommended_protocol": "dialectical_both_and",
+      "trigger_regex": "\\b(always|never|ruined|disaster|total failure|completely useless|worthless|flawless|perfect or nothing)\\b"
+    },
+    {
+      "id": "overgeneralization",
+      "name": "Overgeneralization",
+      "aka": ["Global Extrapolation"],
+      "category": "Inductive Distortion",
+      "description": "Taking a single negative incident and concluding that it defines a permanent, inescapable universal rule for the future.",
+      "clinical_mechanism": "Faulty predictive coding where one negative data point triggers an overweighted global prior probability.",
+      "example_thought": "I stumbled during my interview; I will never find a good job anywhere.",
+      "reframing_prompt": "Is one isolated event mathematically sufficient to predict all future attempts across time?",
+      "socratic_questions": [
+        "What evidence exists that this specific outcome will inevitably repeat every single time?",
+        "Have you ever experienced a setback that later led to an unexpected positive resolution?"
+      ],
+      "somatic_anchor": "Release the constriction in your chest; separate this one moment from your future timeline.",
+      "recommended_protocol": "evidence_testing",
+      "trigger_regex": "\\b(never again|every single time|always happens to me|everyone rejects me|i will always fail)\\b"
+    },
+    {
+      "id": "mental_filter",
+      "name": "Mental Filter (Selective Abstraction)",
+      "aka": ["Negative Filtering", "Tunnel Vision"],
+      "category": "Attentional Bias",
+      "description": "Dwelling exclusively on a single negative detail while filtering out and blinding oneself to numerous positive or neutral elements.",
+      "clinical_mechanism": "Hyperactive salience network prioritizing negative threat cues while habituating to safety signals.",
+      "example_thought": "Out of twenty positive reviews, one client left 3 stars—I am incompetent.",
+      "reframing_prompt": "If you zoom out to look at the entire landscape rather than this one pixel, what is the full picture?",
+      "socratic_questions": [
+        "What positive or neutral facts are being obscured by focusing entirely on this one point?",
+        "If you created a pie chart of the total feedback, what percentage does this negative detail actually occupy?"
+      ],
+      "somatic_anchor": "Widen your peripheral field of view physically to help your cognitive lens widen as well.",
+      "recommended_protocol": "responsibility_pie_chart",
+      "trigger_regex": "\\b(only focus on|all that matters is the bad|ignored the good|forgot all the compliments)\\b"
+    },
+    {
+      "id": "disqualifying_the_positive",
+      "name": "Disqualifying the Positive",
+      "aka": ["Discounting Success", "Impostor Rejection"],
+      "category": "Attentional Bias",
+      "description": "Actively rejecting positive experiences, compliments, or accomplishments by insisting they 'don't count' or were purely accidental.",
+      "clinical_mechanism": "Schema preservation bias: cognitive dissonance reduction defending a core belief of defectiveness against contradictory evidence.",
+      "example_thought": "They only praised my work because they felt sorry for me or were being polite.",
+      "reframing_prompt": "What would happen if you accepted this genuine data point as real evidence of your competence?",
+      "socratic_questions": [
+        "Why is negative feedback treated as absolute truth, but positive feedback dismissed as luck or pity?",
+        "What specific effort, skill, or preparation did you invest that contributed to this success?"
+      ],
+      "somatic_anchor": "Place a hand over your heart and allow yourself to absorb the warmth of your real effort.",
+      "recommended_protocol": "mastery_pleasure_log",
+      "trigger_regex": "\\b(just luck|they were just being nice|doesn't count|anyone could have done that|fluke)\\b"
+    },
+    {
+      "id": "mind_reading",
+      "name": "Jumping to Conclusions: Mind Reading",
+      "aka": ["Projective Mind Reading"],
+      "category": "Interpersonal Prediction",
+      "description": "Assuming you know with absolute certainty what others are thinking, feeling, or intending, almost always assuming a negative judgment.",
+      "clinical_mechanism": "Dysfunctional social-cognition heuristics projecting internal shame or anxiety onto ambiguous social cues.",
+      "example_thought": "She looked at her watch while I was talking; she clearly thinks I'm boring and stupid.",
+      "reframing_prompt": "What are three alternative explanations for their behavior that have nothing to do with judging you?",
+      "socratic_questions": [
+        "Did they explicitly tell you that, or is your mind filling in an unverified script?",
+        "Could they be tired, preoccupied, hungry, or managing their own internal stressors?"
+      ],
+      "somatic_anchor": "Unclench your jaw and gently remind yourself: 'I do not have to carry other people's internal worlds.'",
+      "recommended_protocol": "behavioral_experiment",
+      "trigger_regex": "\\b(they think i'm|she hates me|he thinks i'm stupid|everyone in the room was judging me|i know what they're thinking)\\b"
+    },
+    {
+      "id": "fortune_telling",
+      "name": "Jumping to Conclusions: Fortune Telling",
+      "aka": ["Catastrophic Prediction"],
+      "category": "Predictive Distortion",
+      "description": "Anticipating that future events will turn out disastrously and treating this prediction as an established, inevitable fact.",
+      "clinical_mechanism": "Hyper-anticipatory anxiety stimulating adrenaline surges for imagined futures that have not yet occurred.",
+      "example_thought": "I know I'm going to have a panic attack and embarrass myself during tomorrow's meeting.",
+      "reframing_prompt": "Has your crystal ball ever been wrong in the past? What is the most realistic outcome?",
+      "socratic_questions": [
+        "What are the odds of the worst-case scenario happening vs. a moderate, manageable outcome?",
+        "If the worst case did happen, what concrete coping tools and strengths would you deploy?"
+      ],
+      "somatic_anchor": "Take a slow 4-second exhale. Bring your awareness into this exact present second—where you are safe.",
+      "recommended_protocol": "decatastrophizing_matrix",
+      "trigger_regex": "\\b(i know it will fail|i'm going to mess up|it's bound to go wrong|nothing will ever work out)\\b"
+    },
+    {
+      "id": "catastrophizing",
+      "name": "Magnification (Catastrophizing)",
+      "aka": ["Catastrophic Escalation", "Blowing Things Out of Proportion"],
+      "category": "Evaluation Distortion",
+      "description": "Exaggerating the importance, likelihood, or unbearable severity of an unwanted event, framing it as an insurmountable nightmare.",
+      "clinical_mechanism": "Underestimation of coping capacity coupled with overestimation of threat probability.",
+      "example_thought": "If I fail this exam, my life is completely over and I will end up homeless.",
+      "reframing_prompt": "Is this a true life-threatening emergency, or is it an intensely uncomfortable and frustrating problem?",
+      "socratic_questions": [
+        "On a scale from 1 (minor annoyance) to 100 (plane crash), where does this event realistically sit?",
+        "How will this matter 1 year from now? What is your resilient plan to navigate it?"
+      ],
+      "somatic_anchor": "Double nasal inhale, long open-mouth sigh (Physiological Sigh) to break the adrenaline spike.",
+      "recommended_protocol": "decatastrophizing_matrix",
+      "trigger_regex": "\\b(worst thing ever|life is over|end of the world|can't survive this|unbearable disaster)\\b"
+    },
+    {
+      "id": "minimization",
+      "name": "Minimization",
+      "aka": ["Shrinking Strengths"],
+      "category": "Evaluation Distortion",
+      "description": "Inappropriately shrinking one's own positive qualities, resources, or coping abilities until they seem insignificant.",
+      "clinical_mechanism": "Deficit-focused cognitive filtering suppressing self-efficacy signals.",
+      "example_thought": "Yes, I managed that crisis, but that was just basic common sense—anyone could have done it.",
+      "reframing_prompt": "If you gave yourself honest credit for your resilience, what would you acknowledge?",
+      "socratic_questions": [
+        "What specific strengths and endurance did you exhibit during this challenge?",
+        "Why is it difficult to let yourself feel genuine self-respect for what you overcame?"
+      ],
+      "somatic_anchor": "Lengthen your spine and feel the solid ground beneath your feet supporting your strength.",
+      "recommended_protocol": "mastery_pleasure_log",
+      "trigger_regex": "\\b(no big deal|not impressive|bare minimum|i just got lucky|not really an achievement)\\b"
+    },
+    {
+      "id": "emotional_reasoning",
+      "name": "Emotional Reasoning",
+      "aka": ["Affect as Truth"],
+      "category": "Epistemological Distortion",
+      "description": "Assuming that because you feel a certain intense emotion, that emotion must reflect the objective, factual state of reality.",
+      "clinical_mechanism": "Interoceptive confusion treating limbic emotional arousal as external sensory evidence.",
+      "example_thought": "I feel terrified and anxious right now, so something terrible must be about to happen.",
+      "reframing_prompt": "Feelings are real neurochemical events, but are they always factual reflections of the outside world?",
+      "socratic_questions": [
+        "Can you feel intense guilt without having actually committed a wrongdoing?",
+        "Can you feel deep fear while being physically completely safe in your current environment?"
+      ],
+      "somatic_anchor": "Place both feet flat on the floor. Name 3 physical objects around you to re-anchor in sensory reality.",
+      "recommended_protocol": "act_defusion_leaves_stream",
+      "trigger_regex": "\\b(i feel like a failure so i must be|i feel guilty so i'm bad|i feel scared so it's dangerous)\\b"
+    },
+    {
+      "id": "should_statements",
+      "name": "'Should' and 'Must' Statements",
+      "aka": ["Imperative Tyranny", "Musturbation"],
+      "category": "Normative Distortion",
+      "description": "Operating from rigid, moralistic rules about how oneself, others, or the universe 'should', 'must', or 'ought' to behave.",
+      "clinical_mechanism": "Internalized hyper-demanding parent schemas producing perpetual chronic guilt, shame, or frustration.",
+      "example_thought": "I should always be productive. I shouldn't be feeling tired on a Saturday afternoon.",
+      "reframing_prompt": "What happens if you replace 'I should' with 'I would prefer to' or 'It would be nice if'?",
+      "socratic_questions": [
+        "Where did this unwritten absolute rule come from? Is it serving your health or depleting you?",
+        "Are you holding human biological limitations to an impossible superhuman standard?"
+      ],
+      "somatic_anchor": "Drop your shoulders away from your ears. Grant your body permission to be human today.",
+      "recommended_protocol": "downward_arrow_technique",
+      "trigger_regex": "\\b(i should have|i shouldn't feel|i must always|they ought to|i have to be perfect)\\b"
+    },
+    {
+      "id": "labeling",
+      "name": "Labeling and Global Mislabeling",
+      "aka": ["Identity Reductionism"],
+      "category": "Identity Distortion",
+      "description": "Assigning a harsh, definitive global label to oneself or others based on a single behavior or mistake rather than describing the action accurately.",
+      "clinical_mechanism": "Essentialist cognitive attribution collapsing behavioral complexity into a fixed negative trait.",
+      "example_thought": "I made an error on the budget sheet; I am an absolute idiot and a fraud.",
+      "reframing_prompt": "You made a specific human error. Does making a mistake make your entire being an error?",
+      "socratic_questions": [
+        "Is there a distinction between 'I made a mistake' and 'I am a failure'?",
+        "How would you describe your action with objective, compassionate behavioral language?"
+      ],
+      "somatic_anchor": "Place your hands on your lap palm-up in an open, receptive posture of self-forgiveness.",
+      "recommended_protocol": "act_defusion_naming_story",
+      "trigger_regex": "\\b(i am a loser|i am an idiot|i'm such a failure|i'm broken|i'm toxic|i'm useless)\\b"
+    },
+    {
+      "id": "personalization",
+      "name": "Personalization & Excessive Responsibility",
+      "aka": ["Self-Referential Attribution"],
+      "category": "Causal Distortion",
+      "description": "Holding oneself directly and solely responsible for negative events that are largely or entirely beyond one's personal control.",
+      "clinical_mechanism": "Egocentric causal attribution error driven by excessive hyper-responsibility schemas.",
+      "example_thought": "My parents are arguing again—if only I were a better child, they would be happy.",
+      "reframing_prompt": "What other external factors, choices, and life pressures contributed to this outcome?",
+      "socratic_questions": [
+        "Are you taking 100% of the blame for a situation involving multiple autonomous adults?",
+        "If you drew a pie chart of all factors involved, how much belongs to others and circumstances?"
+      ],
+      "somatic_anchor": "Exhale deeply and visualize putting down a heavy backpack that does not belong to you.",
+      "recommended_protocol": "responsibility_pie_chart",
+      "trigger_regex": "\\b(it's all my fault|i ruined everything for them|if only i had done better they wouldn't suffer)\\b"
+    },
+    {
+      "id": "blaming",
+      "name": "Blaming (Externalization)",
+      "aka": ["Disowned Agency"],
+      "category": "Causal Distortion",
+      "description": "Holding other people or external circumstances entirely responsible for one's own emotional state, disowning personal agency.",
+      "clinical_mechanism": "Victimhood schema shielding the self from vulnerability by projecting all locus of control outward.",
+      "example_thought": "My partner makes me feel miserable every single day; I can't be happy until they change.",
+      "reframing_prompt": "While others' actions hurt, what is one boundary or response you have 100% power to choose today?",
+      "socratic_questions": [
+        "Where does their responsibility end and your personal sovereignty begin?",
+        "What small boundary would protect your peace regardless of how they behave?"
+      ],
+      "somatic_anchor": "Feel your core engage. Ground into your own personal boundaries and emotional sovereignty.",
+      "recommended_protocol": "locus_of_control_sorting",
+      "trigger_regex": "\\b(they ruined my life|he made me do it|i can't be happy because of them|they are destroying my peace)\\b"
+    },
+    {
+      "id": "fallacy_of_control",
+      "name": "Fallacy of Control (External vs. Internal)",
+      "aka": ["Omnipotence vs Helplessness"],
+      "category": "Agency Distortion",
+      "description": "Either believing you have total control over everything and everyone (omnipotence), or believing you have zero control over your own choices (helplessness).",
+      "clinical_mechanism": "Split locus of control oscillating between overwhelming hyper-responsibility and catastrophic surrender.",
+      "example_thought": "I have to fix everyone's problems or disaster will strike / There's nothing I can do, I'm completely helpless.",
+      "reframing_prompt": "What lies strictly within your direct circle of control vs. outside of it?",
+      "socratic_questions": [
+        "Can you control another person's feelings, or only your own words and boundaries?",
+        "What is one concrete, actionable choice you DO have in this exact moment?"
+      ],
+      "somatic_anchor": "Place one hand on your chest and one on your belly. Direct your attention to your own breath.",
+      "recommended_protocol": "locus_of_control_sorting",
+      "trigger_regex": "\\b(i have to fix everything|i have no choice at all|i am completely powerless|i'm responsible for their feelings)\\b"
+    },
+    {
+      "id": "fallacy_of_fairness",
+      "name": "Fallacy of Fairness",
+      "aka": ["Just-World Resentment"],
+      "category": "Existential Distortion",
+      "description": "Believing that life, systems, or relationships must always conform to an absolute standard of fairness, producing chronic resentment.",
+      "clinical_mechanism": "Inability to tolerate life's inherent existential randomness and interpersonal imbalances.",
+      "example_thought": "It isn't fair that they got promoted after I worked harder—life is fundamentally rigged against me.",
+      "reframing_prompt": "Life is often asymmetrical, but does dwelling in bitterness help you move toward what you value?",
+      "socratic_questions": [
+        "Is fairness a natural law of the physical universe, or a human ethical construct?",
+        "How can you channel this frustration into values-aligned action rather than toxic resentment?"
+      ],
+      "somatic_anchor": "Acknowledge the stinging pain of unfairness with compassion, then release the clenched fist.",
+      "recommended_protocol": "act_defusion_leaves_stream",
+      "trigger_regex": "\\b(it's not fair|why do bad things only happen to me|they don't deserve it|life is unfair)\\b"
+    },
+    {
+      "id": "fallacy_of_change",
+      "name": "Fallacy of Change",
+      "aka": ["Demanding Partner Transformation"],
+      "category": "Interpersonal Distortion",
+      "description": "Expecting that other people will and must change to suit our needs if we just pressure, plead, or accommodate them enough.",
+      "clinical_mechanism": "Subjugation or enmeshment schema attaching one's own emotional well-being to another person's transformation.",
+      "example_thought": "If I just explain it to him one more time with enough passion, he will finally understand and change.",
+      "reframing_prompt": "If this person never changes a single habit, what decision honors your long-term health?",
+      "socratic_questions": [
+        "How many times have you had this exact conversation without lasting change?",
+        "Are you accepting who they actually are today, or relating to a fantasy version of who they could be?"
+      ],
+      "somatic_anchor": "Breathe into your spine. Stand firmly in your own reality rather than trying to sculpt another's.",
+      "recommended_protocol": "boundary_clarification",
+      "trigger_regex": "\\b(if only they would change|i can fix them|they will change for me|if i explain one more time)\\b"
+    },
+    {
+      "id": "always_being_right",
+      "name": "Always Being Right",
+      "aka": ["Defensive Intellectualization"],
+      "category": "Defensive Distortion",
+      "description": "Continually putting others on trial to prove that one's own opinions, actions, and perspectives are the only correct ones.",
+      "clinical_mechanism": "Vulnerability avoidance shielding an underlying core schema of defectiveness or fear of shame.",
+      "example_thought": "I don't care if it causes a huge fight—I have to prove that my method was the correct one.",
+      "reframing_prompt": "Would you rather be rigidly 'right', or connected, peaceful, and emotionally safe?",
+      "socratic_questions": [
+        "What underlying fear or vulnerability arises if you acknowledge another valid perspective?",
+        "What is the relational cost of needing to win every disagreement?"
+      ],
+      "somatic_anchor": "Softly soften your belly and throat. Notice the safety in not needing to defend yourself right now.",
+      "recommended_protocol": "socratic_dialogue_matrix",
+      "trigger_regex": "\\b(i have to prove i was right|i know i'm right|they are completely wrong|i can't let them win the argument)\\b"
+    },
+    {
+      "id": "heavens_reward_fallacy",
+      "name": "Heaven's Reward Fallacy",
+      "aka": ["Martyrdom Expectation"],
+      "category": "Existential Distortion",
+      "description": "Sacrificing oneself and denying personal needs with the implicit expectation of a magical, cosmic reward or unconditional appreciation.",
+      "clinical_mechanism": "Self-sacrifice schema masking suppressed needs under a veneer of altruism, generating hidden rage.",
+      "example_thought": "I sacrificed my entire weekend helping everyone else, and nobody even thanked me or noticed.",
+      "reframing_prompt": "Did you choose this sacrifice from genuine freely-given joy, or from a covert contract expecting reward?",
+      "socratic_questions": [
+        "Was the contract explicitly agreed upon by both parties, or assumed silently in your mind?",
+        "How can you express your real needs and boundaries directly instead of through self-sacrifice?"
+      ],
+      "somatic_anchor": "Inhale deeply into your belly. Reclaim your right to take care of your own needs first.",
+      "recommended_protocol": "boundary_clarification",
+      "trigger_regex": "\\b(after all i did for them|nobody appreciates my sacrifice|i gave up everything for this|i suffer in silence)\\b"
+    },
+    {
+      "id": "double_standard_thinking",
+      "name": "Double Standard Thinking",
+      "aka": ["Harsh Internal Critic"],
+      "category": "Compassion Distortion",
+      "description": "Applying brutal, unforgiving standards to oneself while extending gentle, unconditional compassion and understanding to others.",
+      "clinical_mechanism": "Hyperactive punitive parent internal voice contrasting with well-developed external empathy.",
+      "example_thought": "If my friend made this mistake I would comfort them, but because it's me, I am disgusting.",
+      "reframing_prompt": "What would it feel like to treat yourself with the exact same kindness you offer your best friend?",
+      "socratic_questions": [
+        "Why do you hold yourself to a cruel code of punishment that you would never inflict on someone you love?",
+        "What would happen if you spoke to yourself with the warmth of a loving guardian right now?"
+      ],
+      "somatic_anchor": "Cross your arms gently over your chest in a self-compassion hug (Butterfly Touch).",
+      "recommended_protocol": "self_compassion_reframe",
+      "trigger_regex": "\\b(if it were anyone else it's fine but for me|i'm harder on myself|i don't deserve the same kindness)\\b"
+    }
+  ],
+  "maladaptive_schemas": [
+    {
+      "id": "abandonment",
+      "name": "Abandonment / Instability",
+      "domain": "Disconnection & Rejection",
+      "core_belief": "Anyone close to me will inevitably leave, die, or find someone better, leaving me forever alone.",
+      "behavioral_pattern": "Hypervigilance to partner withdrawal, clinginess, or preemptively pushing people away.",
+      "somatic_marker": "Hollow vacuum in the upper chest, throat tightness, visceral drop in stomach."
+    },
+    {
+      "id": "mistrust_abuse",
+      "name": "Mistrust / Abuse",
+      "domain": "Disconnection & Rejection",
+      "core_belief": "People will hurt, deceive, exploit, or take advantage of me if I let my guard down.",
+      "behavioral_pattern": "Guardedness, testing relationships, paranoia in close intimacy.",
+      "somatic_marker": "Chronic hyper-tension in jaw, back of neck, and shoulder blades."
+    },
+    {
+      "id": "emotional_deprivation",
+      "name": "Emotional Deprivation",
+      "domain": "Disconnection & Rejection",
+      "core_belief": "My primary emotional needs for nurturance, empathy, and protection will never be met by others.",
+      "behavioral_pattern": "Not asking for help, acting emotionally self-contained while feeling profoundly lonely.",
+      "somatic_marker": "Deep emotional chill, heavy chest pressure, flat breathing."
+    },
+    {
+      "id": "defectiveness_shame",
+      "name": "Defectiveness / Shame",
+      "domain": "Disconnection & Rejection",
+      "core_belief": "I am inwardly flawed, bad, unlovable, or inferior; if anyone sees the real me, they will be repulsed.",
+      "behavioral_pattern": "Hiding mistakes, excessive shame, hypersensitivity to criticism, perfectionist masking.",
+      "somatic_marker": "Flushing in the face and neck, curling posture, sinking feeling in the solar plexus."
+    },
+    {
+      "id": "failure",
+      "name": "Failure",
+      "domain": "Impaired Autonomy & Performance",
+      "core_belief": "I am inherently inadequate and will inevitably fail in comparison to my peers in work and life.",
+      "behavioral_pattern": "Procrastination, self-sabotage, avoiding challenges, underachieving.",
+      "somatic_marker": "Lethargy in limbs, chronic slump, avoidance of eye contact."
+    },
+    {
+      "id": "unrelenting_standards",
+      "name": "Unrelenting Standards / Hypercriticalness",
+      "domain": "Overvigilance & Inhibition",
+      "core_belief": "I must constantly strive to meet exceptionally high internalized standards to avoid severe shame or failure.",
+      "behavioral_pattern": "Workaholism, perfectionism, inability to rest without guilt, rigid rule enforcement.",
+      "somatic_marker": "Constricted shallow breathing, chronic muscle tension, elevated resting heart rate."
+    }
+  ],
+  "clinical_protocols": [
+    {
+      "id": "7_column_thought_record",
+      "name": "7-Column Dysfunctional Thought Record (DTR)",
+      "evidence_base": "Beck Cognitive Therapy Rating Scale (CTRS) Gold Standard",
+      "steps": [
+        "1. Situation (Who, What, Where, When)",
+        "2. Emotion / Mood (Name emotion and rate intensity 0-100%)",
+        "3. Automatic Thought (Identify the exact hot cognitions)",
+        "4. Evidence Supporting the Thought (Factual, objective data only)",
+        "5. Evidence Against the Thought (Objective contrary data)",
+        "6. Balanced Alternative Thought (Reframed realistic perspective)",
+        "7. Re-rate Outcome Emotion (Re-measure emotional intensity 0-100%)"
+      ]
+    },
+    {
+      "id": "downward_arrow_technique",
+      "name": "Downward Arrow Technique",
+      "evidence_base": "Core Schema & Intermediate Belief Elicitation Protocol",
+      "steps": [
+        "1. Start with the surface automatic thought (e.g., 'I made a mistake at work')",
+        "2. Ask: 'If that were true, what would that mean to you?'",
+        "3. Unpack the next layer (e.g., 'My manager will think I am incompetent')",
+        "4. Ask: 'And if your manager thought that, what does that mean about you?'",
+        "5. Reach the core schema (e.g., 'It means I am inherently defective and unlovable')",
+        "6. Apply cognitive restructuring directly at the root schema level"
+      ]
+    },
+    {
+      "id": "decatastrophizing_matrix",
+      "name": "Decatastrophizing Matrix (What If? Protocol)",
+      "evidence_base": "Empirically Validated Exposure & Threat Evaluation (Burns/Beck)",
+      "steps": [
+        "1. Worst-Case Scenario: What is the absolute worst that could realistically happen?",
+        "2. Best-Case Scenario: What is the most optimistic, ideal outcome possible?",
+        "3. Most-Likely Scenario: What is the statistically probable, realistic outcome?",
+        "4. Concrete Coping Action Plan: If the worst case occurred, what exact step 1, 2, and 3 would you take?"
+      ]
+    },
+    {
+      "id": "act_defusion_toolkit",
+      "name": "3rd-Wave ACT Cognitive Defusion Toolkit",
+      "evidence_base": "Acceptance and Commitment Therapy (Hayes/Strosahl/Wilson)",
+      "steps": [
+        "1. Prefix Framing: Replace 'I am a failure' with 'I am noticing the thought that I am a failure'",
+        "2. Naming the Story: 'Ah, here is my familiar Impostor Story playing again'",
+        "3. Leaves on a Stream: Visualize each thought written on a leaf floating smoothly downstream",
+        "4. Physicalizing Metaphor: If this thought had a shape, color, and weight, what would it look like?"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "name": "emotional-intelligence-healer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Emotional Intelligence Healer - Universal PWA & LiveKit Real-Time Voice Agent for Ayurvedic Sattvavajaya Chikitsa & Modern Neuropsychology",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "node --no-warnings tests/run-all-tests.js",
+    "pages:build": "npx @cloudflare/next-on-pages",
+    "pages:deploy": "npx wrangler pages deploy .vercel/output/static",
+    "deploy:frontend": "node scripts/deploy-frontend.js",
+    "deploy:hybrid": "node scripts/deploy-hybrid.js",
+    "tunnel:start": "node scripts/start-tunnel.js",
+    "tunnel:launch": "node scripts/launch-tunnel.js"
+  },
+  "dependencies": {
+    "@livekit/components-react": "^2.6.11",
+    "clsx": "^2.1.1",
+    "framer-motion": "^11.18.2",
+    "livekit-client": "^2.7.1",
+    "livekit-server-sdk": "^2.18.0",
+    "lucide-react": "^0.475.0",
+    "next": "^14.2.24",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tailwind-merge": "^2.6.0"
+  },
+  "devDependencies": {
+    "@cloudflare/next-on-pages": "^1.13.16",
+    "@types/node": "^20.17.19",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.5.2",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.3",
+    "wrangler": "^4.128.0"
+  }
+}

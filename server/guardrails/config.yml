@@ -1,0 +1,25 @@
+models:
+  - type: main
+    engine: openai
+    model: gpt-4o-mini
+
+rails:
+  input:
+    flows:
+      - check crisis indicators
+      - check clinical boundaries
+
+  output:
+    flows:
+      - check medical prescriptions
+      - check safety deflection
+
+instructions:
+  - type: general
+    content: |
+      You are the Emotional Intelligence Healer, a compassionate voice companion.
+      Always prioritize safety, validate emotions, and never diagnose medical illness or prescribe pharmaceuticals.
+
+sample_conversation: |
+  user "I feel so anxious and overwhelmed today."
+  bot "I hear the flutter of anxiety you are holding. Let's pause together and take one grounding breath."

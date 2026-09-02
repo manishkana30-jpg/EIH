@@ -1,0 +1,336 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-inter: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-outfit: 'Outfit', system-ui, -apple-system, sans-serif;
+
+    /* Nature Calm Token Aliases (Spec 2.0) */
+    --bg-base: #0c1410;          /* Deep forest floor — primary page background */
+    --bg-surface: #14201a;       /* Lifted surface — panels, sidebars */
+    --bg-card: #1b2a23;          /* Card elevation — tool drawers, modals */
+
+    --border-subtle: #283c32;    /* Low-contrast dividers */
+    --border-focus: #588e73;     /* High-contrast keyboard focus rings */
+
+    --text-primary: #ecf3ee;     /* Body copy, headings */
+    --text-secondary: #9cb5a6;   /* Captions, metadata, placeholder text */
+    --text-disabled: #4a6357;    /* Inactive states */
+
+    --accent-sage: #81a890;            /* Primary interactive */
+    --accent-eucalyptus: #588e73;      /* Hover / pressed states */
+    --accent-dawn: #c8b89a;            /* Warm highlight for emotional acknowledgment */
+
+    --status-crisis: #e05c5c;    /* Crisis modal trigger */
+    --status-calm: #588e73;      /* Positive state indicator */
+    --status-alert: #d4a94a;     /* Gentle prompt */
+
+    /* Legacy compatibility mappings */
+    --bg-nature-base: var(--bg-base);
+    --bg-nature-surface: var(--bg-surface);
+    --bg-nature-card: var(--bg-card);
+    --border-nature-subtle: var(--border-subtle);
+    --border-nature-highlight: #3d584a;
+    --text-nature-primary: var(--text-primary);
+    --text-nature-secondary: var(--text-secondary);
+    --text-nature-muted: #647d70;
+    --accent-clay: #c48b71;
+    --accent-amber: #d4a373;
+    --bubble-user: #22382c;
+    --bubble-ai: #17241d;
+    --color-bg: var(--bg-base);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html,
+  body {
+    background-color: var(--bg-nature-base);
+    color: var(--text-nature-primary);
+    font-family: var(--font-inter);
+    overflow-x: hidden;
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Support for iOS safe area insets */
+  body {
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+}
+
+/* ─── Linen Glassmorphism (Nature Calm) ─── */
+.glass-panel {
+  background: rgba(20, 32, 26, 0.78);
+  backdrop-filter: blur(24px) saturate(1.25);
+  -webkit-backdrop-filter: blur(24px) saturate(1.25);
+  border: 1px solid var(--border-nature-subtle);
+  box-shadow:
+    0 8px 32px rgba(12, 20, 16, 0.5),
+    inset 0 1px 0 rgba(129, 168, 144, 0.08);
+}
+
+.glass-panel-subtle {
+  background: rgba(20, 32, 26, 0.70);
+  backdrop-filter: blur(18px) saturate(1.15);
+  -webkit-backdrop-filter: blur(18px) saturate(1.15);
+  border: 1px solid var(--border-nature-subtle);
+}
+
+.glass-panel-nature {
+  background: rgba(27, 42, 35, 0.85);
+  backdrop-filter: blur(24px) saturate(1.3);
+  -webkit-backdrop-filter: blur(24px) saturate(1.3);
+  border: 1px solid var(--border-nature-highlight);
+  box-shadow: 0 8px 32px rgba(12, 20, 16, 0.55);
+}
+
+.glass-panel-emerald {
+  background: rgba(88, 142, 115, 0.12);
+  backdrop-filter: blur(20px) saturate(1.3);
+  -webkit-backdrop-filter: blur(20px) saturate(1.3);
+  border: 1px solid var(--border-nature-highlight);
+  box-shadow: 0 0 35px -8px rgba(88, 142, 115, 0.25);
+}
+
+.glass-panel-crisis {
+  background: rgba(48, 20, 20, 0.9);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 2px solid rgba(220, 80, 80, 0.5);
+  box-shadow: 0 0 40px -5px rgba(220, 80, 80, 0.35);
+}
+
+/* ─── Luxury Biomorphic Dark Theme & Dock Gradient ─── */
+.dock-gradient-luxury {
+  background: linear-gradient(
+    98deg,
+    rgba(22, 16, 36, 0.96) 0%,
+    rgba(18, 28, 38, 0.94) 38%,
+    rgba(14, 52, 42, 0.92) 65%,
+    rgba(0, 245, 155, 0.92) 100%
+  );
+  backdrop-filter: blur(32px) saturate(1.4);
+  -webkit-backdrop-filter: blur(32px) saturate(1.4);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 24px 64px -12px rgba(0, 0, 0, 0.85),
+    0 0 45px -10px rgba(0, 245, 155, 0.25),
+    inset 0 1px 1px rgba(255, 255, 255, 0.2);
+}
+
+.dock-gradient-subtle {
+  background: linear-gradient(
+    98deg,
+    rgba(18, 14, 30, 0.92) 0%,
+    rgba(16, 24, 32, 0.90) 50%,
+    rgba(0, 220, 140, 0.35) 100%
+  );
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.disc-metallic-shimmer {
+  background: conic-gradient(
+    from 180deg at 50% 50%,
+    #a8b3cf 0deg,
+    #4a5568 70deg,
+    #e2e8f0 140deg,
+    #2d3748 220deg,
+    #cbd5e1 300deg,
+    #a8b3cf 360deg
+  );
+  box-shadow:
+    inset 0 1px 2px rgba(255, 255, 255, 0.6),
+    0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.biomorphic-shadow {
+  filter: drop-shadow(0 20px 40px rgba(0, 245, 155, 0.25))
+         drop-shadow(0 0 80px rgba(0, 212, 255, 0.2))
+         drop-shadow(0 30px 60px rgba(255, 158, 66, 0.15));
+}
+
+/* ─── Companion & User Message Bubbles ─── */
+.msg-user {
+  background: rgba(28, 38, 32, 0.85);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 245, 155, 0.25);
+  color: #f1f7f3;
+  border-radius: 22px 22px 6px 22px;
+}
+
+.msg-companion {
+  background: rgba(18, 22, 28, 0.85);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #f1f7f3;
+  border-radius: 22px 22px 22px 6px;
+}
+
+.msg-crisis {
+  background: linear-gradient(135deg, rgba(140, 40, 40, 0.3) 0%, rgba(56, 24, 24, 0.85) 100%);
+  border: 1px solid rgba(220, 80, 80, 0.4);
+  border-radius: 20px;
+}
+
+/* ─── Therapy Listening Stage Indicators ─── */
+.stage-listening {
+  background: rgba(129, 168, 144, 0.1);
+  border: 1px solid var(--border-nature-highlight);
+  animation: organicPulse 3s ease-in-out infinite;
+}
+
+.stage-analyzing {
+  background: rgba(88, 142, 115, 0.12);
+  border: 1px solid var(--border-nature-highlight);
+  animation: organicPulse 2.5s ease-in-out infinite;
+}
+
+.stage-researching {
+  background: rgba(212, 163, 115, 0.1);
+  border: 1px solid rgba(212, 163, 115, 0.3);
+  animation: organicPulse 2s ease-in-out infinite;
+}
+
+@keyframes organicPulse {
+  0%, 100% { opacity: 0.75; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.015); }
+}
+
+/* ─── Ambient Floating Organic Aura Animations ─── */
+@keyframes ambientDrift1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(25px, -15px) scale(1.04); }
+  66% { transform: translate(-18px, 20px) scale(0.98); }
+}
+
+@keyframes ambientDrift2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(-30px, 15px) scale(1.03); }
+  66% { transform: translate(20px, -15px) scale(0.96); }
+}
+
+@keyframes ambientBreathe {
+  0%, 100% { opacity: 0.15; filter: blur(130px); }
+  50% { opacity: 0.28; filter: blur(150px); }
+}
+
+.animate-ambient-1 {
+  animation: ambientDrift1 24s ease-in-out infinite, ambientBreathe 12s ease-in-out infinite;
+}
+
+.animate-ambient-2 {
+  animation: ambientDrift2 28s ease-in-out infinite, ambientBreathe 14s ease-in-out infinite;
+}
+
+/* ─── Gentle Fade-In Animation ─── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeInUp 0.35s ease-out forwards;
+}
+
+/* ─── Organic 4-Second Breathing Orb ─── */
+@keyframes organicBreatheOrb {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(129, 168, 144, 0.15); }
+  50% { transform: scale(1.06); box-shadow: 0 0 35px rgba(129, 168, 144, 0.3); }
+}
+
+.animate-therapy-breathe {
+  animation: organicBreatheOrb 4s ease-in-out infinite;
+}
+
+/* ─── Nature Botanical Scrollbar ─── */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(12, 20, 16, 0.5);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(88, 142, 115, 0.3);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(129, 168, 144, 0.5);
+}
+
+/* Custom helper class */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(12, 20, 16, 0.3);
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(88, 142, 115, 0.35);
+  border-radius: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(129, 168, 144, 0.55);
+}
+
+/* ─── Therapy Nature Gradient Text ─── */
+.text-gradient-sattva {
+  background: linear-gradient(135deg, #ecf3ee 0%, #81a890 50%, #588e73 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-ojas {
+  background: linear-gradient(135deg, #ecf3ee 0%, #d4a373 50%, #c48b71 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-therapy {
+  background: linear-gradient(135deg, #ecf3ee 0%, #81a890 50%, #9cb5a6 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ─── Sanctuary Welcome Section ─── */
+.sanctuary-welcome {
+  background: radial-gradient(ellipse at center, rgba(129, 168, 144, 0.08) 0%, transparent 70%);
+}
+
+/* ─── Shadow Glows (Nature Calm) ─── */
+.shadow-glow {
+  box-shadow: 0 0 20px -4px rgba(129, 168, 144, 0.35);
+}
+
+.shadow-glow-warm {
+  box-shadow: 0 0 20px -4px rgba(212, 163, 115, 0.3);
+}
+

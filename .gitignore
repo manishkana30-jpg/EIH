@@ -1,0 +1,76 @@
+# =========================================================================
+# Emotional Intelligence Healer — .gitignore
+# =========================================================================
+
+# Environment & Secrets
+.env
+.env.local
+.env.production
+.env.staging
+.env.*.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.venv/
+venv/
+env/
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+
+# Node.js
+node_modules/
+.next/
+out/
+
+# Build artifacts
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# Ruff / Linting
+.ruff_cache/
+
+# IDE & Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# CBT Library auto-upgrade backups
+*.backup
+*.backup.json
+*.tmp
+
+# Google Drive sync temp dirs
+.tmp.drivedownload/
+.tmp.driveupload/
+
+# OS Files
+desktop.ini
+ehthumbs.db
+
+# Coverage & Testing
+.coverage
+htmlcov/
+.pytest_cache/
+.nyc_output/
+
+# Faster-Whisper / ML model cache & Vector Databases
+whisper_models/
+clinical_memory_db/
+*.bin
+*.pt
+
+# Local standalone binaries and deployment caches
+bin/
+.vercel/
+*.log

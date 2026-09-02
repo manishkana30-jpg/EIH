@@ -1,0 +1,10 @@
+{
+  "venvPath": ".",
+  "venv": ".venv",
+  "extraPaths": [
+    ".",
+    "server",
+    "keyless_healer"
+  ],
+  "reportMissingImports": "warning"
+}

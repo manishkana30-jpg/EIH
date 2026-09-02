@@ -1,0 +1,19 @@
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "RUF"]
+ignore = [
+    "E501",    # Line length (clinical prompts & regex patterns)
+    "E402",    # Module level import not at top of file (sys.path inserts)
+    "B008",    # FastAPI depends/file default calls
+    "RUF012",  # Mutable class attributes
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["keyless_healer", "server"]
+
+[tool.pyright]
+extraPaths = [".", "keyless_healer", "keyless-healer-system", "server"]
+
