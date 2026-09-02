@@ -61,14 +61,6 @@ const nextConfig = {
       source: '/api/py/:path*',
       destination: `${backendUrl}/api/:path*`,
     },
-    {
-      source: '/api/health',
-      destination: `${backendUrl}/health`,
-    },
-    {
-      source: '/api/voice',
-      destination: `${backendUrl}/api/voice`,
-    },
   ],
 };
 
