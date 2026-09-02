@@ -19,7 +19,11 @@
     "deploy:frontend": "node scripts/deploy-frontend.js",
     "deploy:hybrid": "node scripts/deploy-hybrid.js",
     "tunnel:start": "node scripts/start-tunnel.js",
-    "tunnel:launch": "node scripts/launch-tunnel.js"
+    "tunnel:launch": "node scripts/launch-tunnel.js",
+    "0": "node scripts/zero.js"
+  },
+  "bin": {
+    "0": "./scripts/zero.js"
   },
   "dependencies": {
     "@livekit/components-react": "^2.6.11",
