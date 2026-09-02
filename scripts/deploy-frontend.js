@@ -83,10 +83,10 @@ async function deploy() {
   // Step 2: Deploy using Wrangler
   console.log('\x1b[33m=== 2. Deploying to Cloudflare Pages ===\x1b[0m');
   try {
-    runCommand(`npx wrangler pages deploy ${deployDir} --project-name=EIH`);
+    runCommand(`npx wrangler pages deploy ${deployDir} --project-name=eih`);
     console.log('\n\x1b[32m================================================================\x1b[0m');
     console.log('\x1b[1;32m🎉 Frontend successfully deployed to Cloudflare Pages!\x1b[0m');
-    console.log('\x1b[36mVisit your project at: https://EIH.pages.dev\x1b[0m');
+    console.log('\x1b[36mVisit your project at: https://eih.pages.dev\x1b[0m');
     console.log('\x1b[32m================================================================\x1b[0m');
   } catch (deployErr) {
     console.log('\n\x1b[33m💡 Notice: If you are not logged in to Cloudflare on this terminal, run:\x1b[0m');

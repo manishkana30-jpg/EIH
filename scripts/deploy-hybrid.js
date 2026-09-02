@@ -129,7 +129,7 @@ async function run() {
     }
 
     console.log(`Deploying to Cloudflare Pages from ${deployDir}...`);
-    execSync(`npx wrangler pages deploy ${deployDir} --project-name=EIH`, { stdio: 'inherit', cwd: rootDir, env: process.env });
+    execSync(`npx wrangler pages deploy ${deployDir} --project-name=eih`, { stdio: 'inherit', cwd: rootDir, env: process.env });
 
     console.log('\n\x1b[32m================================================================\x1b[0m');
     console.log('\x1b[1;32m🎉 Hybrid Deployment Complete! Keep this process running to maintain the backend tunnel.\x1b[0m');
