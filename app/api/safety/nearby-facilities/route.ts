@@ -5,6 +5,9 @@ import {
   CountryCrisisProfile,
 } from '@/lib/safety/geo-crisis-directory';
 
+export const runtime = 'edge';
+export const dynamic = 'force-dynamic';
+
 export interface NearbyFacility {
   id: string;
   name: string;

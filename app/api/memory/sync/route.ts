@@ -9,6 +9,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { UserCognitiveProfile, CBTThoughtRecord } from '@/lib/memory/cbt-memory-types';
 
+export const runtime = 'edge';
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();

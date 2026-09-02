@@ -5,6 +5,9 @@ import { getResearchedAdviceForEmotion } from '@/lib/knowledge/authenticated-res
 import { runHiddenCognitiveDiagnostics } from '@/lib/nlp/cognitive-orchestrator';
 import type { UserCognitiveProfile } from '@/lib/memory/cbt-memory-types';
 
+export const runtime = 'edge';
+export const dynamic = 'force-dynamic';
+
 interface DiagnosticInput {
   dimensionId?: string;
   dimensionName?: string;

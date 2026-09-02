@@ -2,6 +2,9 @@
 import { NextResponse } from "next/server";
 import { generateTherapeuticResponse } from "@/lib/services/therapist-engine";
 
+export const runtime = 'edge';
+export const dynamic = 'force-dynamic';
+
 const ipRequestMap = new Map<string, number[]>();
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const MAX_REQUESTS_PER_WINDOW = 60;
