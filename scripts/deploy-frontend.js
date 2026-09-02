@@ -33,6 +33,10 @@ if (process.env.CLOUDFLARE_ACCOUNT_ID && !isValidCloudflareAccountId(process.env
   delete process.env.CLOUDFLARE_ACCOUNT_ID;
 }
 
+// Disable Wrangler CLI Telemetry
+process.env.WRANGLER_SEND_METRICS = 'false';
+process.env.DO_NOT_TRACK = '1';
+
 console.log('\x1b[36m================================================================\x1b[0m');
 console.log('\x1b[32m🚀 Cloudflare Pages Frontend Deployment Suite\x1b[0m');
 console.log('\x1b[36m================================================================\x1b[0m\n');

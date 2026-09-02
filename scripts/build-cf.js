@@ -5,6 +5,9 @@
 
 const { execSync } = require('child_process');
 
+process.env.WRANGLER_SEND_METRICS = 'false';
+process.env.DO_NOT_TRACK = '1';
+
 const isCloudflarePages = process.env.CF_PAGES === '1' || process.env.CF_PAGES_BRANCH;
 
 if (isCloudflarePages) {
