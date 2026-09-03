@@ -6,6 +6,7 @@ import { detectCrisis } from '../safety/crisis-detector';
 
 export interface ClinicalSource {
   title: string;
+  summary?: string;
   url?: string;
   source: string;
 }
@@ -48,8 +49,7 @@ class HealerBackendClient {
       }
       return null;
     }
-    const envUrl = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL;
-    return envUrl ? envUrl.replace(/\/$/, '') : null;
+    return process.env.BACKEND_URL || 'http://127.0.0.1:8000';
   }
 
   /**
@@ -73,10 +73,10 @@ class HealerBackendClient {
   }
 
   /**
-   * Unbreakable 3-Tier Multi-Cascade Reasoning Engine:
-   * 1. Dedicated Python Daemon / Cloudflare Tunnel (if configured & alive)
+   * Universal chat inference engine prioritizing:
+   * 1. Dedicated Hardware Python Daemon (via Tunnel or Localhost)
    * 2. Next.js Serverless Edge AI (/api/chat & /api/chat/fallback)
-   * 3. In-Browser Dynamic Cognitive Companion (100% offline, zero-latency, zero-failure)
+   * 3. In-Browser Dynamic Cognitive Companion (Offline Resilience)
    */
   async sendMessage(
     message: string,
@@ -168,6 +168,7 @@ class HealerBackendClient {
             engine: data.providerUsed || 'Edge Cognitive Reasoning Engine',
             sources: (data.sources || []).map((s: any) => ({
               title: s.title || 'Clinical Study',
+              summary: s.summary,
               url: s.url,
               source: s.source || 'PubMed',
             })),
@@ -204,15 +205,25 @@ class HealerBackendClient {
       diagnostic: diagResult,
     });
 
+    const sources: ClinicalSource[] = [
+      {
+        title: companionResult.psychologicalAssessment?.scientificStudy || 'Clinical Neuropsychology & Polyvagal Grounding',
+        source: 'PubMed NCBI Evidence Bank',
+      },
+    ];
+
+    if (companionResult.libraryCondition) {
+      sources.unshift({
+        title: `${companionResult.libraryCondition.name} (${companionResult.libraryCondition.triguna_balance})`,
+        summary: `CBT: ${companionResult.libraryCondition.solutions.cbt_reframing} | Somatic: ${companionResult.libraryCondition.solutions.somatic_anchor} | Pranayama: ${companionResult.libraryCondition.solutions.pranayama}`,
+        source: 'psychology_library',
+      });
+    }
+
     return {
       reply: companionResult.reply,
       engine: 'Cognitive Companion Engine (Ayurvedic & Neuro Grounded)',
-      sources: [
-        {
-          title: companionResult.psychologicalAssessment?.scientificStudy || 'Clinical Neuropsychology & Polyvagal Grounding',
-          source: 'PubMed NCBI Evidence Bank',
-        },
-      ],
+      sources,
       is_crisis: false,
       telemetry: {
         dominant_emotion: companionResult.psychologicalAssessment?.dimension || diagResult.dimensionName || 'Calmness',

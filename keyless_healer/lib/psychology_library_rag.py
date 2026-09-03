@@ -68,9 +68,9 @@ class PsychologyLibraryRAG:
                 metadata={"description": "Clinical & Psychoeducational Library Conditions"},
             )
 
-            # Check if collection already has entries
+            # Upsert all loaded conditions into ChromaDB collection
             existing_count = self.collection.count()
-            if existing_count < len(self.library_data):
+            if existing_count != len(self.library_data):
                 documents: list[str] = []
                 metadatas: list[dict[str, Any]] = []
                 ids: list[str] = []
@@ -134,24 +134,45 @@ class PsychologyLibraryRAG:
             except Exception as e:
                 logger.debug(f"ChromaDB query fallback triggered: {e}")
 
-        # 2. Lexical & Symptom Overlap Fallback Matcher
+        # 2. Lexical, Symptom & Domain Pattern Fallback Matcher
+        domain_patterns = {
+            "gad": r"\b(worry|worrying|worried|what if|anxious|anxiety|nervous|tense|restless|dread)\b",
+            "burnout_fatigue": r"\b(burnout|burned out|exhausted|exhaustion|brain fog|lethargy|overworked|depleted|no energy|drained)\b",
+            "panic_dysregulation": r"\b(panic|heart racing|palpitations|cannot breathe|suffocating|trembling|doom|shaking|chest pounding)\b",
+            "major_depressive_inertia": r"\b(depressed|depression|low mood|feeling down|empty|emptiness|hopeless|despair|anhedonia|unmotivated|worthless|useless)\b",
+            "imposter_perfectionism": r"\b(imposter|impostor|fraud|failure|failed|failing|perfectionist|perfectionism|not good enough|incompetent|will be exposed)\b",
+            "relationship_heartbreak": r"\b(breakup|broke up|ex|partner|husband|wife|fight|argument|heartbreak|broken heart|rejection|unloved|abandoned)\b",
+            "existential_loneliness": r"\b(lonely|loneliness|all alone|isolated|isolation|nobody cares|no friends|alienated|empty world|disconnected)\b",
+            "anger_frustration_dysregulation": r"\b(angry|anger|furious|rage|mad|irritated|annoyed|unfair|hate them|screaming|boss yelled|injustice)\b",
+            "grief_bereavement": r"\b(grief|grieving|bereavement|died|passed away|mourning|sorrow|funeral|lost my|crying|wept)\b",
+            "social_evaluative_threat": r"\b(social anxiety|shy|embarrassed|judging me|public speaking|awkward|crowds|humiliated|presentation)\b",
+            "adhd_executive_overwhelm": r"\b(adhd|procrastinate|procrastinating|procrastination|task paralysis|cannot start|overwhelmed with tasks|distracted|frozen)\b",
+            "insomnia_hyperarousal": r"\b(insomnia|cannot sleep|cant sleep|waking up|sleep trouble|staying awake|lying in bed|midnight|toss and turn)\b",
+            "health_somatic_anxiety": r"\b(health anxiety|hypochondria|illness|disease|cancer|heart attack|checking pulse|medical symptoms|sick)\b",
+            "trauma_hypervigilance": r"\b(trauma|traumatic|ptsd|flashback|triggered|hypervigilant|abuse|startled|nightmares)\b",
+        }
+
+        import re
+        for cond_id, pattern in domain_patterns.items():
+            if re.search(pattern, clean_query, re.IGNORECASE):
+                condition = self.get_condition_by_id(cond_id)
+                if condition:
+                    return self._format_retrieval_result(condition)
+
         best_match = None
         best_score = 0
 
         for item in self.library_data:
             score = 0
-            # Name & category matching
             if item.get("id") in clean_query:
                 score += 10
             for word in item.get("name", "").lower().split():
                 if len(word) > 3 and word in clean_query:
                     score += 3
-            # Symptom matching
             for sym in item.get("core_symptoms", []):
                 for sword in sym.lower().split():
                     if len(sword) > 3 and sword in clean_query:
                         score += 2
-            # Distortion matching
             for dist in item.get("cognitive_distortions", []):
                 if dist.lower() in clean_query:
                     score += 4

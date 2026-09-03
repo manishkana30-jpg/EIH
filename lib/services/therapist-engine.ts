@@ -33,7 +33,13 @@ Internally evaluate:
   3. Grounding Inquiry or Somatic Action: Offer one concrete somatic breath anchor or open-ended reflection question.
 
 ---
-### 4. SAFETY & BOUNDARIES
+### 4. CLINICAL LIBRARY PROTOCOL INTEGRATION (CRITICAL)
+- Whenever a matched condition appears under [PSYCHOEDUCATIONAL LIBRARY EVIDENCE], you MUST weave its specific Clinical CBT Reframing into your psychological insight.
+- In your grounding action, explicitly guide the user through either the Somatic Grounding Anchor or the Ayurvedic Pranayama breathwork from the matched library protocol.
+- Do not state "according to my database"; speak as a compassionate master clinician offering these techniques directly with warmth.
+
+---
+### 5. SAFETY & BOUNDARIES
 - Never diagnose medical pathology or prescribe medications.
 - If acute self-harm, suicidal ideation, or severe crisis is detected, validate pain immediately and direct with calm urgency to emergency services (988 or Tele-MANAS 14416).
 `;
@@ -163,7 +169,7 @@ async function callLocalKeylessHealer(
     const mappedSources: ClinicalSearchResult[] = (data.sources || []).map((s: any) => ({
       title: s.title || "Clinical Study",
       summary: s.summary || s.title || "Evidence-based finding",
-      source: "pubmed"
+      source: s.source || "pubmed"
     }));
 
     return { reply: data.reply, sources: mappedSources };
@@ -223,21 +229,28 @@ export async function generateTherapeuticResponse(
   // 3. Cascade across LLM inference providers with repetition penalties
   try {
     const reply = await callGroq(userMessage, contextString, history);
-    return { reply, sources: clinicalEvidence, providerUsed: "Groq (Llama 3.3 70B)", isCrisis: false };
+    return { reply, sources: allSources, providerUsed: "Groq (Llama 3.3 70B)", isCrisis: false };
   } catch {
     // Fallback to Gemini
   }
 
   try {
     const reply = await callGemini(userMessage, contextString, history);
-    return { reply, sources: clinicalEvidence, providerUsed: "Google Gemini 2.0 Flash", isCrisis: false };
+    return { reply, sources: allSources, providerUsed: "Google Gemini 2.0 Flash", isCrisis: false };
   } catch {
     // Fallback to Local Keyless FastAPI
   }
 
   try {
     const localResult = await callLocalKeylessHealer(userMessage, history);
-    const finalSources = localResult.sources.length > 0 ? localResult.sources : clinicalEvidence;
+    const finalSources = [...localResult.sources];
+    if (libraryRag && !finalSources.some((s) => s.source === "psychology_library")) {
+      finalSources.unshift({
+        title: `${libraryRag.condition.name} (${libraryRag.condition.triguna_balance})`,
+        summary: `CBT: ${libraryRag.condition.solutions.cbt_reframing} | Somatic: ${libraryRag.condition.solutions.somatic_anchor} | Pranayama: ${libraryRag.condition.solutions.pranayama}`,
+        source: "psychology_library",
+      });
+    }
     return {
       reply: localResult.reply,
       sources: finalSources,
@@ -254,7 +267,7 @@ export async function generateTherapeuticResponse(
     if (companionReply && companionReply.reply) {
       return {
         reply: companionReply.reply,
-        sources: clinicalEvidence,
+        sources: allSources,
         providerUsed: "Cognitive Companion Engine (Ayurvedic & Neuro Grounded)",
         isCrisis: false
       };
@@ -267,7 +280,7 @@ export async function generateTherapeuticResponse(
   return {
     reply:
       "I hear how much is on your mind right now. Let's pause together, take one slow breath in through your nose, and let your body settle before we unpack this.",
-    sources: clinicalEvidence,
+    sources: allSources,
     providerUsed: "Offline Safety Fallback",
     isCrisis: false
   };

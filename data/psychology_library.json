@@ -15,10 +15,10 @@
       "Probability Overestimation"
     ],
     "solutions": {
-      "cbt_reframing": "Identify the 'worst-case scenario' and calculate the realistic probability. Shift from 'What if?' to 'What is right now?'",
-      "somatic_anchor": "5-4-3-2-1 Sensory Grounding: Name 5 things you see, 4 you feel, 3 you hear, 2 you smell, and 1 you taste.",
-      "pranayama": "Nadi Shodhana (Alternate Nostril Breathing) for 5 minutes to reduce autonomic sympathetic tone.",
-      "micro_habit": "Schedule a dedicated 15-minute 'Worry Window' in the afternoon; postpone rumination until then."
+      "cbt_reframing": "Identify the worst-case scenario and calculate its realistic statistical probability. Shift from 'What if?' to 'What is true right now?'",
+      "somatic_anchor": "5-4-3-2-1 Sensory Grounding: Name 5 things you see, 4 you feel, 3 you hear, 2 you smell, and 1 you taste to disengage amygdala hijack.",
+      "pranayama": "Nadi Shodhana (Alternate Nostril Breathing) for 5 minutes to restore autonomic parasympathetic tone and lower sympathetic surge.",
+      "micro_habit": "Schedule a dedicated 15-minute 'Worry Window' at 4:30 PM. When worry strikes outside this window, mentally file it away until then."
     },
     "severity_level": "Mild to Moderate",
     "requires_immediate_crisis": false
@@ -29,20 +29,20 @@
     "category": "Stress & Depletion",
     "triguna_balance": "Depleted Rajas, Dominant Tamas",
     "core_symptoms": [
-      "Emotional exhaustion",
-      "Depersonalization toward work",
-      "Sense of inefficacy and brain fog",
-      "Physical lethargy despite sleep"
+      "Emotional exhaustion and cynicism",
+      "Depersonalization toward work or caregiving",
+      "Sense of inefficacy and severe brain fog",
+      "Physical lethargy unrefreshed by sleep"
     ],
     "cognitive_distortions": [
       "Overextension / All-or-Nothing Responsibility",
-      "Guilt around rest"
+      "Guilt around resting"
     ],
     "solutions": {
-      "cbt_reframing": "Reframe rest as non-negotiable physiological maintenance rather than an earned reward.",
-      "somatic_anchor": "Somatic body scan: Lie flat, release the jaw and tongue from the roof of the mouth, unclench pelvic floor.",
-      "pranayama": "Bharmari (Humming Bee Breath) to stimulate the vagus nerve and promote parasympathetic tone.",
-      "micro_habit": "Implement hard boundaries: Disconnect communication channels at a fixed hour every evening."
+      "cbt_reframing": "Reframe rest as non-negotiable physiological maintenance rather than an earned reward. You cannot pour from an empty cup.",
+      "somatic_anchor": "Somatic Release: Lie flat, unglue your tongue from the roof of your mouth, drop your shoulders away from your ears, and soften your pelvic floor.",
+      "pranayama": "Bhramari (Humming Bee Breath) for 4 minutes to create cranial micro-vibrations that stimulate nitric oxide and vagus nerve tone.",
+      "micro_habit": "Implement an absolute 'Digital Sunset' 60 minutes before bed with no professional notifications or blue light exposure."
     },
     "severity_level": "Moderate",
     "requires_immediate_crisis": false
@@ -54,20 +54,283 @@
     "triguna_balance": "Acute Rajas Spikes",
     "core_symptoms": [
       "Sudden heart palpitations and racing pulse",
-      "Hyperventilation or suffocation",
-      "Trembling, sweating, chills",
-      "Derealization or fear of doom"
+      "Hyperventilation or sensation of suffocation",
+      "Trembling, cold chills, or hot flashes",
+      "Derealization or acute fear of losing control"
     ],
     "cognitive_distortions": [
-      "Interoceptive Catastrophizing ('My heart is racing, so I must be dying')"
+      "Interoceptive Catastrophizing ('My heart is beating fast, therefore I am having a medical emergency')"
     ],
     "solutions": {
-      "cbt_reframing": "Recognize the panic surge as a harmless false-alarm adrenaline dump that naturally subsides within 10–12 minutes.",
-      "somatic_anchor": "Mammalian Dive Reflex: Splash ice-cold water onto the face or hold an ice cube in the palm to drop heart rate rapidly.",
-      "pranayama": "Extended Exhale Breathing (Inhale for 4 seconds, hold for 2, exhale slowly through pursed lips for 7 seconds).",
-      "micro_habit": "Repeat aloud: 'This is uncomfortable, but it is not dangerous. My nervous system is discharging energy.'"
+      "cbt_reframing": "Recognize this surge as a harmless adrenaline burst that naturally metabolizes and subsides within 8 to 12 minutes. Sensations are intense but safe.",
+      "somatic_anchor": "Mammalian Dive Reflex: Press an ice pack or cold damp towel against your upper cheeks and eyes for 20 seconds to instantly slow down tachycardia.",
+      "pranayama": "Extended Exhale Protocol: Inhale gently through nose for 4 seconds, then exhale smoothly through pursed lips for 7 seconds. Long exhales lower cardiac rate.",
+      "micro_habit": "Repeat aloud: 'This is uncomfortable, but it is not dangerous. My nervous system is discharging energy and I am safe.'"
     },
     "severity_level": "Acute",
+    "requires_immediate_crisis": false
+  },
+  {
+    "id": "major_depressive_inertia",
+    "name": "Depressive Episode, Low Mood & Emotional Inertia",
+    "category": "Mood & Depressive Disorders",
+    "triguna_balance": "Dominant Tamas, Depleted Sattva",
+    "core_symptoms": [
+      "Pervasive low mood and persistent sadness",
+      "Anhedonia (loss of interest or pleasure in all activities)",
+      "Severe avolition and physical heaviness",
+      "Feelings of worthlessness or excessive inappropriate guilt"
+    ],
+    "cognitive_distortions": [
+      "All-or-Nothing Thinking",
+      "Emotional Reasoning ('I feel hopeless, so everything must be futile')"
+    ],
+    "solutions": {
+      "cbt_reframing": "Behavioral Activation Principle: Action precedes motivation, not the reverse. Do not wait to feel like doing something before initiating.",
+      "somatic_anchor": "Somatic Activation: Stand barefoot on a firm surface, press down firmly through your heels, and gently tap your sternum with your fingertips for 60 seconds.",
+      "pranayama": "Surya Bhedana (Right Nostril Breathing) or gentle Kapalabhati (Skull Shining Breath) for 3 minutes to energize the solar nadi and clear tamasic fog.",
+      "micro_habit": "Micro-Task Stacking: Choose a task so laughably small that failure is impossible (e.g., washing a single cup or opening the window curtains)."
+    },
+    "severity_level": "Moderate to High",
+    "requires_immediate_crisis": false
+  },
+  {
+    "id": "imposter_perfectionism",
+    "name": "Imposter Syndrome, Perfectionism & Fear of Failure",
+    "category": "Self-Esteem & Evaluative Stress",
+    "triguna_balance": "High Rajas, Elevated Pitta",
+    "core_symptoms": [
+      "Persistent fear of being exposed as an intellectual fraud",
+      "Compulsive over-preparation or chronic procrastination due to perfectionism",
+      "Inability to internalize and celebrate genuine achievements",
+      "Harsh inner critic and relentless self-flagellation"
+    ],
+    "cognitive_distortions": [
+      "Discounting the Positive",
+      "Mind-Reading ('Everyone thinks I don't belong here')"
+    ],
+    "solutions": {
+      "cbt_reframing": "Cognitive Defusion: Reframe imposter feelings as evidence of operating at the edge of growth, rather than evidence of incompetence.",
+      "somatic_anchor": "Self-Compassion Touch: Place your right hand warmly over your heart and left hand over your abdomen. Feel the steady warmth and say: 'I am learning and I belong.'",
+      "pranayama": "Sitali Pranayama (Cooling Breath via curled tongue) for 3 minutes to cool cognitive overheating, perfectionist inflammation, and mental pitta.",
+      "micro_habit": "Keep a 'Concrete Evidence Log': Write down 1 factual, objective piece of data confirming a contribution you made today."
+    },
+    "severity_level": "Mild to Moderate",
+    "requires_immediate_crisis": false
+  },
+  {
+    "id": "relationship_heartbreak",
+    "name": "Relational Conflict, Heartbreak & Attachment Distress",
+    "category": "Interpersonal & Attachment Distress",
+    "triguna_balance": "Agitated Rajas, Perturbed Vata-Pitta",
+    "core_symptoms": [
+      "Acute heartache or visceral heaviness in the chest",
+      "Obsessive mental rumination on relational interactions or breakups",
+      "Intense fear of abandonment or relational rejection",
+      "Emotional dysregulation following interpersonal conflict"
+    ],
+    "cognitive_distortions": [
+      "Personalization ('Their withdrawal means I am inherently unlovable')",
+      "Overgeneralization ('I will always end up alone')"
+    ],
+    "solutions": {
+      "cbt_reframing": "Differentiate between your core self-worth and another person's emotional capacity. Rejection is often relational misalignment, not personal deficit.",
+      "somatic_anchor": "Heart-Holding & Postural Recenter: Interlace your fingers behind your head, gently lean back into your hands, and allow your chest and collarbones to expand.",
+      "pranayama": "Hridaya Heart-Centering Breath: Inhale deeply into the center of the chest for 5 seconds, hold for 2, and exhale with a soft audible sigh for 6 seconds.",
+      "micro_habit": "Implement a 2-Hour Communication Pause: When triggered in a relationship, wait at least 120 minutes before sending any emotional reaction or text."
+    },
+    "severity_level": "Moderate",
+    "requires_immediate_crisis": false
+  },
+  {
+    "id": "existential_loneliness",
+    "name": "Chronic Loneliness, Alienation & Social Isolation",
+    "category": "Social & Existential Well-being",
+    "triguna_balance": "Elevated Tamas, Low Sattva",
+    "core_symptoms": [
+      "Deep visceral ache of feeling unseen or disconnected from the world",
+      "Social withdrawal coupled with an intense craving for genuine intimacy",
+      "Existential questioning of meaning, belonging, and connection",
+      "Hyper-vigilance to perceived social rejection or disinterest"
+    ],
+    "cognitive_distortions": [
+      "Polarized Thinking ('Everyone else has community, I am uniquely isolated')",
+      "Mental Filter (filtering out small friendly social overtures)"
+    ],
+    "solutions": {
+      "cbt_reframing": "Normalize loneliness as an evolutionary biological signal (like hunger or thirst) indicating a basic human need, not an immutable personality flaw.",
+      "somatic_anchor": "Warmth Regulation: Hold a warm mug of tea with both hands, feel the radiating thermal sensation, and notice your contact with the ground.",
+      "pranayama": "Metta (Loving-Kindness) Coherent Breathing: Inhale for 5 seconds offering goodwill to self; exhale for 5 seconds expanding goodwill outward.",
+      "micro_habit": "Social Micro-Connection: Exchange a warm, genuine 10-second greeting or smile with one person today (a barista, neighbor, or peer)."
+    },
+    "severity_level": "Moderate",
+    "requires_immediate_crisis": false
+  },
+  {
+    "id": "anger_frustration_dysregulation",
+    "name": "Acute Anger, Irritability & Injustice Distress",
+    "category": "Emotional Dysregulation & Reactivity",
+    "triguna_balance": "Excessive Rajas, Extreme Pitta",
+    "core_symptoms": [
+      "Flushing, clenched fists, jaw tension, and surging adrenaline",
+      "Violent or aggressive mental scripts and urgent desire to lash out",
+      "Intense irritability and low tolerance for minor frustrations",
+      "Obsessive fixation on unfairness, boundary violations, or betrayal"
+    ],
+    "cognitive_distortions": [
+      "Should Statements ('They should know better; this must not happen')",
+      "Blaming / Injustice Magnification"
+    ],
+    "solutions": {
+      "cbt_reframing": "Distinguish between anger as a valid emotional boundary alarm and reactive behavior. The anger is informational; the explosive reaction is optional.",
+      "somatic_anchor": "TIPP Progressive Muscle Clench-and-Release: Clench your fists and forearms with maximum force for 7 seconds, then suddenly drop and release completely on a heavy exhale.",
+      "pranayama": "Sitkari Cooling Breath: Inhale through gently clenched teeth with parted lips, feeling the icy air cool your palate; exhale smoothly through the nose.",
+      "micro_habit": "The 10-Count Sensory Interrupter: When boiling with rage, walk away immediately, drink a glass of cold water, and count backward from 10 before speaking."
+    },
+    "severity_level": "Moderate",
+    "requires_immediate_crisis": false
+  },
+  {
+    "id": "grief_bereavement",
+    "name": "Grief, Bereavement & Profound Emotional Loss",
+    "category": "Loss & Bereavement",
+    "triguna_balance": "Heavy Tamas, Fluctuation of Vata",
+    "core_symptoms": [
+      "Waves of acute sorrow and sudden spontaneous weeping",
+      "Profound physical exhaustion and feeling emotionally hollowed out",
+      "Disorientation, numbness, or disbelief following loss",
+      "Intense yearning and difficulty engaging with routine daily tasks"
+    ],
+    "cognitive_distortions": [
+      "Magical Thinking / Bargaining ('If only I had done something different')",
+      "Future Desolation ('I will never feel happiness again')"
+    ],
+    "solutions": {
+      "cbt_reframing": "Grief is not a problem to be solved or cured; it is the natural, honorable expression of deep love with nowhere left to go. Give it holy space.",
+      "somatic_anchor": "Gentle Butterfly Hug: Cross your arms over your chest with fingertips resting below your collarbones. Alternate gentle, slow tapping left and right like butterfly wings.",
+      "pranayama": "Natural Diaphragmatic Breath: Place both hands over your navel. Breathe gently without forcing depth, allowing the abdomen to rise and fall naturally.",
+      "micro_habit": "5-Minute Grief Sanctuary: Dedicate 5 undisturbed minutes to look at a photo, light a candle, or cry freely without attempting to 'fix' the feeling."
+    },
+    "severity_level": "Moderate to High",
+    "requires_immediate_crisis": false
+  },
+  {
+    "id": "social_evaluative_threat",
+    "name": "Social Anxiety, Mind-Reading & Fear of Scrutiny",
+    "category": "Social Anxiety & Interpersonal Inhibition",
+    "triguna_balance": "High Rajas & Vata Irregularity",
+    "core_symptoms": [
+      "Fear of humiliation, blushing, stammering, or shaking in front of others",
+      "Intense post-event cognitive autopsies analyzing every conversational turn",
+      "Avoidance of public speaking, meetings, or social gatherings",
+      "Excessive self-consciousness and inward focus during interactions"
+    ],
+    "cognitive_distortions": [
+      "Spotlight Effect ('Everyone is noticing my flaws and judging me')",
+      "Mind Reading ('They think I am awkward and boring')"
+    ],
+    "solutions": {
+      "cbt_reframing": "Decentering & Spotlight Dimming: People are overwhelmingly preoccupied with their own insecurities. They are not scrutinizing you; you are safe to be ordinary.",
+      "somatic_anchor": "Panoramic Vision Shift: Soften your gaze and expand your visual field to take in the peripheral edges of the room. This neurobiologically disarms social threat appraisal.",
+      "pranayama": "4-4-4-4 Box Breathing (Sama Vritti): Inhale 4s, hold 4s, exhale 4s, hold 4s to stabilize blood pressure and eliminate speech tremors.",
+      "micro_habit": "Curiosity Pivot: In your next conversation, consciously redirect 80% of your attention toward genuine curiosity about the other person rather than monitoring yourself."
+    },
+    "severity_level": "Moderate",
+    "requires_immediate_crisis": false
+  },
+  {
+    "id": "adhd_executive_overwhelm",
+    "name": "Executive Dysfunction, Procrastination Paralysis & ADHD Overload",
+    "category": "Neurodivergence & Executive Functioning",
+    "triguna_balance": "Scattered Rajas, Trapped Tamas",
+    "core_symptoms": [
+      "Task paralysis: Wanting desperately to begin a task but physically unable to start",
+      "Working memory overload and feeling overwhelmed by multi-step projects",
+      "Time blindness and sudden intense shame around missed deadlines",
+      "Dopamine depletion leading to compulsive phone checking or avoidance"
+    ],
+    "cognitive_distortions": [
+      "Catastrophic Mountain-Building ('This task is impossible and will take forever')",
+      "Moralization of Executive Function ('I am just lazy and undisciplined')"
+    ],
+    "solutions": {
+      "cbt_reframing": "Demoralize the struggle: Executive dysfunction is a neurological dopamine routing deficit, not a character flaw or moral weakness.",
+      "somatic_anchor": "Vestibular Shake: Stand up, shake your hands, bounce on your heels, and roll your shoulders briskly for 30 seconds to initiate dopamine-norepinephrine motor arousal.",
+      "pranayama": "Bastrika (Bellows Breath) Light: Take 10 rapid, rhythmic diaphragmatic breaths followed by a long, slow exhale to break cognitive freezing.",
+      "micro_habit": "The 5-Minute Micro-Commitment: Commit to working on the task for exactly 5 minutes with permission to stop immediately when the timer dings."
+    },
+    "severity_level": "Mild to Moderate",
+    "requires_immediate_crisis": false
+  },
+  {
+    "id": "insomnia_hyperarousal",
+    "name": "Sleep-Onset Insomnia & Nocturnal Cognitive Rumination",
+    "category": "Sleep & Circadian Dysregulation",
+    "triguna_balance": "Nocturnal Rajas Perturbation",
+    "core_symptoms": [
+      "Inability to fall asleep despite intense physical fatigue",
+      "Racing thoughts, problem-solving, or replaying past events in bed",
+      "Clock-watching accompanied by escalating dread about tomorrow's exhaustion",
+      "Muscular tension and hyper-attunement to ambient sounds"
+    ],
+    "cognitive_distortions": [
+      "Sleep Catastrophizing ('If I don't sleep right now, my entire day tomorrow is ruined')"
+    ],
+    "solutions": {
+      "cbt_reframing": "De-escalate the performance pressure: Quiet physical rest lying still in bed restores 70% of autonomic energy even without rapid eye movement sleep. Resting is succeeding.",
+      "somatic_anchor": "Autogenic Heaviness and Warmth: Mentally repeat: 'My arms are heavy and warm. My legs are heavy and warm. My breathing is calm and regular.'",
+      "pranayama": "Dr. Weil's 4-7-8 Breathing: Inhale through nose for 4 seconds, hold breath comfortably for 7 seconds, exhale completely through mouth with whoosh sound for 8 seconds. Repeat 4 cycles.",
+      "micro_habit": "The 20-Minute Bed Rule: If awake after 20 minutes, get out of bed in dim light and read a boring physical book until drowsy. Keep bed strictly conditioned for sleep."
+    },
+    "severity_level": "Moderate",
+    "requires_immediate_crisis": false
+  },
+  {
+    "id": "health_somatic_anxiety",
+    "name": "Health Anxiety & Somatosensory Amplification",
+    "category": "Anxiety & Somatization",
+    "triguna_balance": "Vata-Rajas Somatic Hyper-focus",
+    "core_symptoms": [
+      "Obsessive checking of pulse, breathing, lymph nodes, or bodily sensations",
+      "Compulsive online searching (cyberchondria) for rare medical diagnoses",
+      "Misinterpreting normal benign physiological fluctuations as catastrophic disease",
+      "Persistent reassurance seeking from loved ones or doctors"
+    ],
+    "cognitive_distortions": [
+      "Somatosensory Catastrophizing ('This ache in my side is definitely fatal')",
+      "Zero-Risk Fallacy ('I cannot rest until I have 100% certainty that I am well')"
+    ],
+    "solutions": {
+      "cbt_reframing": "Attention acts as a somatic amplifier: When you hyper-focus on any bodily organ, sensations multiply by 300%. The sensation is real, but the catastrophic interpretation is false.",
+      "somatic_anchor": "Exteroceptive Anchoring: Shift attention 100% outward. Touch 3 different textured external objects, listen to the furthest distant sound, and describe room colors aloud.",
+      "pranayama": "Extended Belly Breathing with One Hand on Abdomen: Count to 4 inhaling, 6 exhaling, letting the body's natural autonomic wisdom manage your organs.",
+      "micro_habit": "Google Quarantine: Implement a strict 48-hour ban on researching medical symptoms online. If a symptom persists for 2 weeks, consult a physician calmly."
+    },
+    "severity_level": "Moderate",
+    "requires_immediate_crisis": false
+  },
+  {
+    "id": "trauma_hypervigilance",
+    "name": "Trauma Triggers, Hypervigilance & Nervous System Sensitization",
+    "category": "Trauma & Stressor-Related Distress",
+    "triguna_balance": "Vata-Pitta Turmoil, Dorsal/Sympathetic Shock",
+    "core_symptoms": [
+      "Sudden emotional flashbacks triggered by sensory cues (tone of voice, scents, postures)",
+      "Hypervigilance, exaggerated startle response, and scan for danger",
+      "Dissociative numbness or feeling detached from one's physical body",
+      "Tight visceral constriction in the throat, chest, or solar plexus"
+    ],
+    "cognitive_distortions": [
+      "Time Collapse ('What happened in the past is happening right now in this room')",
+      "Overgeneralized Danger ('Nowhere and nobody is safe')"
+    ],
+    "solutions": {
+      "cbt_reframing": "Time Orientation Grounding: 'That was then, this is now. My body is sounding an old alarm, but right here in this physical moment, I am safe and the threat has passed.'",
+      "somatic_anchor": "Somatic Orienting: Slowly turn your neck to scan the room. Find a solid wall or door, notice the colors, feel your feet firmly planted on the floor, and name 3 things that are stable.",
+      "pranayama": "Vocal Vagal Toning: Take a deep inhalation, and on the exhale make a low, steady 'Voooo' sound from your belly. The low frequency vibration signals safety to the dorsal vagal complex.",
+      "micro_habit": "Safety Anchor Object: Carry a small, smooth grounding stone or textured item in your pocket. Touch it whenever triggered to re-anchor into the present physical year and room."
+    },
+    "severity_level": "Moderate to High",
     "requires_immediate_crisis": false
   }
 ]

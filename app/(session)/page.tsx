@@ -308,7 +308,15 @@ export default function SanctuarySessionPage() {
         userText: messageText,
       });
       const fallbackReply = companion.reply || "I am here with you. Take a steady breath and let's explore this step by step.";
-      
+      const fallbackSources: ClinicalSource[] = [];
+      if (companion.libraryCondition) {
+        fallbackSources.push({
+          title: `${companion.libraryCondition.name} (${companion.libraryCondition.triguna_balance})`,
+          summary: `CBT: ${companion.libraryCondition.solutions.cbt_reframing} | Somatic: ${companion.libraryCondition.solutions.somatic_anchor} | Pranayama: ${companion.libraryCondition.solutions.pranayama}`,
+          source: 'psychology_library',
+        });
+      }
+
       setMessages((prev) => [
         ...prev,
         {
@@ -317,6 +325,7 @@ export default function SanctuarySessionPage() {
           text: fallbackReply,
           timestamp: getFormattedTime(),
           engine: "Cognitive Companion Engine (Ayurvedic & Neuro Grounded)",
+          sources: fallbackSources,
         },
       ]);
 
@@ -484,7 +493,68 @@ export default function SanctuarySessionPage() {
                   : "bg-[#17241d] border border-[#283c32] text-[#ecf3ee] rounded-bl-none shadow-lg"
               }`}
             >
-              {m.text}
+              <div>{m.text}</div>
+
+              {/* Render Clinical & Psychoeducational Solution Card */}
+              {m.sender === "ai" && m.sources && m.sources.length > 0 && (
+                <div className="mt-3 pt-3 border-t border-[#283c32]/80 space-y-2">
+                  {m.sources.map((src, sIdx) => {
+                    const isLibraryProtocol = src.source === "psychology_library";
+                    if (isLibraryProtocol) {
+                      return (
+                        <div
+                          key={sIdx}
+                          className="bg-[#0f1a14]/90 rounded-xl p-3 border border-teal-800/60 shadow-sm space-y-2 text-xs"
+                        >
+                          <div className="flex items-center justify-between gap-1 text-teal-300 font-semibold">
+                            <span className="flex items-center gap-1.5">
+                              <span className="text-sm">📚</span>
+                              <span>{src.title}</span>
+                            </span>
+                            <span className="px-1.5 py-0.5 rounded bg-teal-950/80 border border-teal-700/50 text-[10px] text-teal-300 uppercase tracking-wider font-mono">
+                              Verified Protocol
+                            </span>
+                          </div>
+
+                          {src.summary && (
+                            <div className="grid grid-cols-1 gap-1.5 pt-1 text-[11px] text-[#9cb5a6]">
+                              {src.summary.split(" | ").map((part, pIdx) => {
+                                const [label, ...valParts] = part.split(": ");
+                                const val = valParts.join(": ");
+                                const icon =
+                                  label.includes("CBT") ? "🧠" :
+                                  label.includes("Somatic") ? "🧘" :
+                                  label.includes("Pranayama") ? "🌬️" : "⏱️";
+                                return (
+                                  <div
+                                    key={pIdx}
+                                    className="p-1.5 rounded-lg bg-[#14221a] border border-[#23352b] flex flex-col gap-0.5"
+                                  >
+                                    <span className="font-semibold text-emerald-400 flex items-center gap-1 text-[10px] uppercase">
+                                      <span>{icon}</span> {label}
+                                    </span>
+                                    <span className="text-gray-200 leading-normal pl-4">{val}</span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div
+                        key={sIdx}
+                        className="text-[10px] text-[#647d70] flex items-center gap-1"
+                      >
+                        <span>🔬 Evidence:</span>
+                        <span className="text-[#9cb5a6] truncate">{src.title}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
             <div className="flex items-center gap-2 mt-1 px-1">
               {m.timestamp && (

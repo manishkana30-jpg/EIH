@@ -16,12 +16,12 @@ from typing import Any
 import httpx
 
 try:
-    from keyless_healer.lib.clinical_search import KeylessClinicalSearch
+    from keyless_healer.lib.clinical_search import ClinicalEvidence, KeylessClinicalSearch
 except ImportError:
     try:
-        from lib.clinical_search import KeylessClinicalSearch
+        from lib.clinical_search import ClinicalEvidence, KeylessClinicalSearch
     except ImportError:
-        from clinical_search import KeylessClinicalSearch
+        from clinical_search import ClinicalEvidence, KeylessClinicalSearch
 
 try:
     from keyless_healer.lib.psychology_library_rag import psychology_rag
@@ -332,7 +332,8 @@ class KeylessPsychologistPartner:
         user_text: str,
         telemetry: PsychologicalTelemetry,
         evidence: list[Any],
-        history: list[dict[str, str]] | None = None
+        history: list[dict[str, str]] | None = None,
+        rag_guidance: dict[str, Any] | None = None
     ) -> str:
         """Dynamic, multi-turn clinical synthesizer with zero loop repetitions and longitudinal variation."""
         self._turn_counter += 1
@@ -375,52 +376,67 @@ class KeylessPsychologistPartner:
             ]
             return variants[turn % len(variants)]
 
-        # 6. Domain-Specific Multi-Turn Variant Pool (Zero Duplication Guardrail)
-        candidate_pool: list[tuple[str, str]] = []
+        # 6. Clinical Psychoeducational Library Solution Weaving
+        if rag_guidance:
+            sols = rag_guidance.get("solutions", {})
+            cbt = sols.get("cbt_reframing", "")
+            somatic = sols.get("somatic_anchor", "")
+            pranayama = sols.get("pranayama", "")
+            micro = sols.get("micro_habit", "")
+            cond_name = rag_guidance.get("name", "Emotional Grounding")
+            cid = rag_guidance.get("condition_id", "cond")
 
-        if intent == "work_burnout":
             candidate_pool = [
-                ("wb_1", f"Experiencing chronic tension with {anchor} drains cognitive focus and energy. When workplace pressure mounts, setting micro-boundaries around your recovery is essential. What boundary would feel most protective for you right now?"),
-                ("wb_2", f"Surviving the relentless pace with {anchor} asks more than anyone can sustain indefinitely. Give yourself credit for holding on through heavy demands. What is one small demand you can safely postpone today?"),
-                ("wb_3", f"Holding the weight of {anchor} asks a lot of your reserves. When interpersonal friction flares up at work, separating what you can control from what you cannot brings instant relief. What part is truly in your hands?"),
-                ("wb_4", f"Facing the continuous pressure with {anchor} naturally creates cognitive and physical fatigue. Autonomic regulation research shows that taking brief 90-second sensory resets prevents executive overload. Notice your shoulders dropping."),
-                ("wb_5", f"Managing what happened with {anchor} requires immense emotional energy. Remember that professional demands do not define your core self-worth. What would feel like a true reset tonight?"),
-            ]
-        elif intent == "setback_failure":
-            candidate_pool = [
-                ("sf_1", f"Going through difficulties around {anchor} naturally brings up acute disappointment. Experiencing a setback hurts, yet an isolated outcome does not define your total capabilities. How can you speak to yourself with kindness here?"),
-                ("sf_2", f"Failing or struggling with {anchor} is deeply frustrating, but it is also a temporary moment in time. When feeling overwhelmed, binary thinking tries to convince us that everything is lost. What is a more balanced perspective?"),
-                ("sf_3", f"Experiencing a setback with {anchor} hurts, but please remember that learning curves are rarely linear. If a friend went through this exact same thing, what compassionate words would you share with them?"),
-                ("sf_4", f"It is completely natural to feel disappointed when things don't go as planned with {anchor}. Give yourself permission to feel the sting without turning it into harsh self-judgment."),
-            ]
-        elif intent == "relationship_conflict":
-            candidate_pool = [
-                ("rc_1", f"Navigating the complexity of {anchor} is exhausting, and giving yourself space to process your emotions is vital. When interpersonal friction happens, taking a pause prevents reactive spirals. How is your body feeling right now?"),
-                ("rc_2", f"Dealing with {anchor} puts a significant emotional demand on your heart and mind. Relational tension triggers our deepest attachment fears. What is the core need you want understood?"),
-                ("rc_3", f"Facing the continuous friction with {anchor} brings real physical and emotional exhaustion. Let's take a slow breath together before figuring out the next conversation."),
-            ]
-        elif intent == "grief_loss":
-            candidate_pool = [
-                ("gl_1", "Watching a pet you cherish struggle with their health triggers deep vulnerability. Your love and care for them are evident in every word you shared. Be exceedingly gentle with yourself right now."),
-                ("gl_2", "Seeing someone you love face medical difficulty is heartbreaking, and carrying that helplessness is so painful. Make sure to breathe and allow support around you."),
-            ]
-        elif intent == "financial_stress":
-            candidate_pool = [
-                ("fs_1", f"Experiencing a loss in {anchor} is deeply unsettling and directly impacts your sense of safety. While the numbers are stressful, catastrophic projection makes things feel even darker. Let's take it one step at a time."),
-                ("fs_2", "Navigating a heavy financial hit triggers immediate fight-or-flight alarms. Ground yourself in the present moment before taking any financial decisions."),
-            ]
-        elif intent == "fatigue_insomnia":
-            candidate_pool = [
-                ("fi_1", f"Holding the weight of {anchor} asks a lot of your reserves, especially when your nervous system remains on high alert. Rather than forcing sleep, let your body simply experience restful stillness."),
-                ("fi_2", f"Dealing with {anchor} puts a significant emotional demand on your daily energy. Give your mind permission to put down today's worries until morning."),
-            ]
-        elif intent == "existential_comparison":
-            candidate_pool = [
-                ("ec_1", f"Carrying the weight of {anchor} can make everything feel painfully heavy and isolated. When our mind compares our internal struggles with others' external highlights, loneliness magnifies. I am right here with you."),
-                ("ec_2", f"When feeling overwhelmed by {anchor}, binary thinking paints everything as permanent. You matter, and your presence in this space is deeply valued."),
+                (f"rag_cbt_{cid}", f"Navigating {anchor} asks a lot of your reserves. In clinical cognitive therapy for {cond_name}, we look at it this way: {cbt} To settle your nervous system right now: {somatic}"),
+                (f"rag_som_{cid}", f"Experiencing acute tension around {anchor} is deeply exhausting. A grounding reframe: {cbt} Let's take a slow breath together and try this: {pranayama}"),
+                (f"rag_pra_{cid}", f"Holding space for what happened with {anchor} is so important. Remember: {cbt} For your daily recovery: {micro} Notice where your shoulders can drop."),
             ]
 
-        # 7. Fallback Dynamic Multi-Frame Synthesizer
+        # 7. Domain-Specific Multi-Turn Variant Pool (Zero Duplication Guardrail)
+        if not candidate_pool:
+            if intent == "work_burnout":
+                candidate_pool = [
+                    ("wb_1", f"Experiencing chronic tension with {anchor} drains cognitive focus and energy. When workplace pressure mounts, setting micro-boundaries around your recovery is essential. What boundary would feel most protective for you right now?"),
+                    ("wb_2", f"Surviving the relentless pace with {anchor} asks more than anyone can sustain indefinitely. Give yourself credit for holding on through heavy demands. What is one small demand you can safely postpone today?"),
+                    ("wb_3", f"Holding the weight of {anchor} asks a lot of your reserves. When interpersonal friction flares up at work, separating what you can control from what you cannot brings instant relief. What part is truly in your hands?"),
+                    ("wb_4", f"Facing the continuous pressure with {anchor} naturally creates cognitive and physical fatigue. Autonomic regulation research shows that taking brief 90-second sensory resets prevents executive overload. Notice your shoulders dropping."),
+                    ("wb_5", f"Managing what happened with {anchor} requires immense emotional energy. Remember that professional demands do not define your core self-worth. What would feel like a true reset tonight?"),
+                ]
+            elif intent == "setback_failure":
+                candidate_pool = [
+                    ("sf_1", f"Going through difficulties around {anchor} naturally brings up acute disappointment. Experiencing a setback hurts, yet an isolated outcome does not define your total capabilities. How can you speak to yourself with kindness here?"),
+                    ("sf_2", f"Failing or struggling with {anchor} is deeply frustrating, but it is also a temporary moment in time. When feeling overwhelmed, binary thinking tries to convince us that everything is lost. What is a more balanced perspective?"),
+                    ("sf_3", f"Experiencing a setback with {anchor} hurts, but please remember that learning curves are rarely linear. If a friend went through this exact same thing, what compassionate words would you share with them?"),
+                    ("sf_4", f"It is completely natural to feel disappointed when things don't go as planned with {anchor}. Give yourself permission to feel the sting without turning it into harsh self-judgment."),
+                ]
+            elif intent == "relationship_conflict":
+                candidate_pool = [
+                    ("rc_1", f"Navigating the complexity of {anchor} is exhausting, and giving yourself space to process your emotions is vital. When interpersonal friction happens, taking a pause prevents reactive spirals. How is your body feeling right now?"),
+                    ("rc_2", f"Dealing with {anchor} puts a significant emotional demand on your heart and mind. Relational tension triggers our deepest attachment fears. What is the core need you want understood?"),
+                    ("rc_3", f"Facing the continuous friction with {anchor} brings real physical and emotional exhaustion. Let's take a slow breath together before figuring out the next conversation."),
+                ]
+            elif intent == "grief_loss":
+                candidate_pool = [
+                    ("gl_1", "Watching someone or a pet you cherish struggle triggers deep vulnerability. Your love and care are evident in every word you shared. Be exceedingly gentle with yourself right now."),
+                    ("gl_2", "Seeing someone you love face medical difficulty is heartbreaking, and carrying that helplessness is so painful. Make sure to breathe and allow support around you."),
+                ]
+            elif intent == "financial_stress":
+                candidate_pool = [
+                    ("fs_1", f"Experiencing a loss in {anchor} is deeply unsettling and directly impacts your sense of safety. While the numbers are stressful, catastrophic projection makes things feel even darker. Let's take it one step at a time."),
+                    ("fs_2", "Navigating a heavy financial hit triggers immediate fight-or-flight alarms. Ground yourself in the present moment before taking any financial decisions."),
+                ]
+            elif intent == "fatigue_insomnia":
+                candidate_pool = [
+                    ("fi_1", f"Holding the weight of {anchor} asks a lot of your reserves, especially when your nervous system remains on high alert. Rather than forcing sleep, let your body simply experience restful stillness."),
+                    ("fi_2", f"Dealing with {anchor} puts a significant emotional demand on your daily energy. Give your mind permission to put down today's worries until morning."),
+                ]
+            elif intent == "existential_comparison":
+                candidate_pool = [
+                    ("ec_1", f"Carrying the weight of {anchor} can make everything feel painfully heavy and isolated. When our mind compares our internal struggles with others' external highlights, loneliness magnifies. I am right here with you."),
+                    ("ec_2", f"When feeling overwhelmed by {anchor}, binary thinking paints everything as permanent. You matter, and your presence in this space is deeply valued."),
+                ]
+
+        # 8. Fallback Dynamic Multi-Frame Synthesizer
         if not candidate_pool:
             candidate_pool = [
                 ("gen_1", f"Experiencing chronic tension with {anchor} drains cognitive focus and reserves. Before we dissect the thoughts, let's ease the physiological surge. Take a slow, grounded breath with me."),
@@ -485,21 +501,34 @@ class KeylessPsychologistPartner:
 
         anchor = self._normalize_anchor(user_message)
 
+        # Prepare unified sources with Psychology Library grounding
+        final_sources = list(evidence_list)
+        if rag_guidance:
+            sols = rag_guidance.get("solutions", {})
+            lib_source = ClinicalEvidence(
+                title=f"Clinical Protocol: {rag_guidance.get('name')} ({rag_guidance.get('triguna_balance', 'Equilibrium')})",
+                summary=f"CBT: {sols.get('cbt_reframing')} | Somatic: {sols.get('somatic_anchor')} | Pranayama: {sols.get('pranayama')}",
+                source="psychology_library"
+            )
+            final_sources.insert(0, lib_source)
+
         if ollama_reply:
             return HealerResponse(
                 reply=ollama_reply,
                 telemetry=telemetry,
-                sources=evidence_list,
+                sources=final_sources,
                 engine_used=f"Local Ollama ({self.ollama_model})",
                 somatic_anchor=anchor,
                 latency_ms=latency
             )
 
-        fallback_reply = self._heuristic_synthesizer(user_message, telemetry, evidence_list, history=history)
+        fallback_reply = self._heuristic_synthesizer(
+            user_message, telemetry, evidence_list, history=history, rag_guidance=rag_guidance
+        )
         return HealerResponse(
             reply=fallback_reply,
             telemetry=telemetry,
-            sources=evidence_list,
+            sources=final_sources,
             engine_used="Local Cognitive Synthesizer (Key-Free)",
             somatic_anchor=anchor,
             latency_ms=latency

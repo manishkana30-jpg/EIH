@@ -18,13 +18,12 @@ assert.ok(fs.existsSync(dataFilePath), 'data/psychology_library.json must exist'
 
 const libraryData = JSON.parse(fs.readFileSync(dataFilePath, 'utf8'));
 assert.ok(Array.isArray(libraryData), 'Psychology library data must be an array');
-assert.strictEqual(libraryData.length, 3, 'Must contain exactly 3 core clinical conditions');
+assert.ok(libraryData.length >= 14, `Must contain at least 14 clinical conditions (got ${libraryData.length})`);
 
-const expectedIds = ['gad', 'burnout_fatigue', 'panic_dysregulation'];
+const requiredCoreIds = ['gad', 'burnout_fatigue', 'panic_dysregulation', 'major_depressive_inertia', 'imposter_perfectionism', 'relationship_heartbreak', 'existential_loneliness'];
 const conditionMap = {};
 
 for (const condition of libraryData) {
-  assert.ok(expectedIds.includes(condition.id), `Unexpected condition ID: ${condition.id}`);
   conditionMap[condition.id] = condition;
 
   // Verify all mandatory schema fields
@@ -45,6 +44,10 @@ for (const condition of libraryData) {
   assert.ok(typeof solutions.micro_habit === 'string' && solutions.micro_habit.length > 10, `${condition.id} invalid micro_habit`);
 
   console.log(`  ✓ [PASSED]: Validated Condition "${condition.name}" (${condition.id}) | Triguna: ${condition.triguna_balance}`);
+}
+
+for (const reqId of requiredCoreIds) {
+  assert.ok(conditionMap[reqId], `Required core condition missing: ${reqId}`);
 }
 
 // 2. Validate Specific Clinical Protocols
@@ -95,9 +98,14 @@ function mockQueryPsychologyLibrary(userText) {
     for (const dist of condition.cognitive_distortions) {
       if (rawLower.includes(dist.toLowerCase())) score += 7;
     }
-    if (condition.id === 'gad' && /worry|worrying|what if|anxious|anxiety|nervous|tense|restless/i.test(rawLower)) score += 6;
-    if (condition.id === 'burnout_fatigue' && /burnout|burned out|exhausted|exhaustion|brain fog|tired|lethargy/i.test(rawLower)) score += 6;
+    if (condition.id === 'gad' && /worry|worrying|what if|anxious|anxiety|nervous|tense|restless/i.test(rawLower)) score += 8;
+    if (condition.id === 'burnout_fatigue' && /burnout|burned out|exhausted|exhaustion|brain fog|tired|lethargy/i.test(rawLower)) score += 8;
     if (condition.id === 'panic_dysregulation' && /panic|heart racing|palpitations|cannot breathe|suffocating|shaking/i.test(rawLower)) score += 8;
+    if (condition.id === 'major_depressive_inertia' && /depressed|depression|low mood|hopeless|empty/i.test(rawLower)) score += 8;
+    if (condition.id === 'imposter_perfectionism' && /imposter|fraud|failure|failed|perfectionist/i.test(rawLower)) score += 8;
+    if (condition.id === 'existential_loneliness' && /lonely|loneliness|isolated|nobody cares/i.test(rawLower)) score += 8;
+    if (condition.id === 'relationship_heartbreak' && /breakup|partner|fight|heartbreak/i.test(rawLower)) score += 8;
+    if (condition.id === 'adhd_executive_overwhelm' && /adhd|procrastinate|procrastinating|task paralysis/i.test(rawLower)) score += 8;
 
     if (score > highestScore) {
       highestScore = score;
@@ -123,6 +131,31 @@ const testQueries = [
     query: 'My heart is racing so fast and I feel like I cannot breathe or suffocating',
     expectedId: 'panic_dysregulation',
     label: 'Acute Panic Surge & Palpitations',
+  },
+  {
+    query: 'I feel completely lonely and isolated, like nobody cares about me',
+    expectedId: 'existential_loneliness',
+    label: 'Existential Loneliness & Isolation',
+  },
+  {
+    query: 'I feel like an absolute imposter and failure at my job',
+    expectedId: 'imposter_perfectionism',
+    label: 'Imposter Syndrome & Fear of Failure',
+  },
+  {
+    query: 'I am so depressed and hopeless that I cannot get out of bed',
+    expectedId: 'major_depressive_inertia',
+    label: 'Major Depressive Inertia & Low Mood',
+  },
+  {
+    query: 'I had a terrible fight with my partner and my heartbreak hurts',
+    expectedId: 'relationship_heartbreak',
+    label: 'Relational Heartbreak & Attachment Distress',
+  },
+  {
+    query: 'I keep procrastinating with severe task paralysis and cannot start',
+    expectedId: 'adhd_executive_overwhelm',
+    label: 'ADHD Executive Overwhelm & Procrastination',
   },
 ];
 

@@ -1,9 +1,10 @@
 /**
  * lib/knowledge/psychology-library-rag.ts
  * TypeScript Edge & Client-Side RAG Retrieval Engine for the Clinical & Psychoeducational Library.
+ * Grounded in Evidence-Based CBT, Polyvagal Theory & Ayurvedic Sattvavajaya Chikitsa.
  */
 
-import psychologyLibraryData from '@/data/psychology_library.json';
+import psychologyLibraryData from '../../data/psychology_library.json' with { type: 'json' };
 
 export interface ClinicalSolutions {
   cbt_reframing: string;
@@ -29,9 +30,38 @@ export interface LibraryRAGResult {
   matchScore: number;
   matchedKeywords: string[];
   promptSnippet: string;
+  structuredCard: {
+    title: string;
+    category: string;
+    triguna: string;
+    cbtReframing: string;
+    somaticAnchor: string;
+    pranayama: string;
+    microHabit: string;
+  };
 }
 
 export const PSYCHOLOGY_LIBRARY: PsychologyCondition[] = psychologyLibraryData as PsychologyCondition[];
+
+/**
+ * Domain-specific regex triggers mapped to condition IDs for rapid, high-accuracy clinical matching.
+ */
+const CLINICAL_TRIGGER_PATTERNS: Record<string, RegExp> = {
+  gad: /\b(worry|worrying|worried|what if|anxious|anxiety|nervous|nervousness|tense|restless|racing mind|cannot relax|dread|on edge)\b/i,
+  burnout_fatigue: /\b(burnout|burned out|burnt out|exhausted|exhaustion|brain fog|lethargy|overworked|depleted|no energy|drained|tired of working|work fatigue)\b/i,
+  panic_dysregulation: /\b(panic|panic attack|heart racing|palpitations|cannot breathe|suffocating|trembling|cold chills|hot flashes|doom|shaking|chest pounding|loss of control)\b/i,
+  major_depressive_inertia: /\b(depressed|depression|low mood|feeling down|empty|emptiness|hopeless|hopelessness|despair|anhedonia|unmotivated|no point|cannot get out of bed|worthless|useless|numb)\b/i,
+  imposter_perfectionism: /\b(imposter|impostor|fraud|failure|failed|failing|perfectionist|perfectionism|not good enough|incompetent|will be exposed|cheat|mess up|messing up|fear of failing)\b/i,
+  relationship_heartbreak: /\b(breakup|broke up|ex-|ex boyfriend|ex girlfriend|partner|husband|wife|fight|argument|heartbreak|broken heart|rejection|unloved|abandoned|abandonment|cheated)\b/i,
+  existential_loneliness: /\b(lonely|loneliness|all alone|isolated|isolation|nobody cares|no friends|alienated|alienation|empty world|disconnected|no one to talk to)\b/i,
+  anger_frustration_dysregulation: /\b(angry|anger|furious|fury|rage|raging|mad|irritated|irritation|annoyed|unfair|unfairness|hate them|screaming|boss yelled|yelled at me|injustice|betrayed)\b/i,
+  grief_bereavement: /\b(grief|grieving|bereavement|loss of|died|passed away|mourning|sorrow|funeral|lost my dog|lost my cat|lost my parent|lost my loved one|weeping)\b/i,
+  social_evaluative_threat: /\b(social anxiety|shy|shyness|embarrassed|embarrassment|judging me|public speaking|awkward|crowds|humiliated|presentation|speech anxiety|people staring)\b/i,
+  adhd_executive_overwhelm: /\b(adhd|procrastinate|procrastinating|procrastination|task paralysis|cannot start|overwhelmed with tasks|distract|distracted|executive dysfunction|frozen|stuck on tasks)\b/i,
+  insomnia_hyperarousal: /\b(insomnia|cannot sleep|cant sleep|waking up|sleep trouble|staying awake|lying in bed|midnight|toss and turn|tossing and turning|bedtime racing|sleep anxiety)\b/i,
+  health_somatic_anxiety: /\b(health anxiety|hypochondria|illness|disease|cancer|heart attack|checking pulse|medical symptoms|sick|tumor|body sensation|googling symptoms)\b/i,
+  trauma_hypervigilance: /\b(trauma|traumatic|ptsd|flashback|flashbacks|triggered|hypervigilant|hypervigilance|abuse|assault|startled|safe space|nightmares|visceral reaction)\b/i,
+};
 
 /**
  * Semantic & Keyword-Weighted Matcher for Clinical Conditions
@@ -50,36 +80,43 @@ export function queryPsychologyLibrary(userText: string): LibraryRAGResult | nul
     let score = 0;
     const currentMatched: string[] = [];
 
-    // 1. Direct ID matching (highest weight)
-    if (rawLower.includes(condition.id)) {
-      score += 15;
+    // 1. Direct Trigger Pattern Matching (Massive weight +8 to +12)
+    const triggerRegex = CLINICAL_TRIGGER_PATTERNS[condition.id];
+    if (triggerRegex && triggerRegex.test(rawLower)) {
+      score += 12;
+      currentMatched.push(`pattern:${condition.id}`);
+    }
+
+    // 2. Direct ID matching
+    if (rawLower.includes(condition.id.replace(/_/g, ' '))) {
+      score += 10;
       currentMatched.push(condition.id);
     }
 
-    // 2. Condition Name matching
-    const nameWords = condition.name.toLowerCase().split(/\s+/);
+    // 3. Condition Name matching
+    const nameWords = condition.name.toLowerCase().split(/[\s,&]+/);
     for (const nw of nameWords) {
-      if (nw.length > 3 && rawLower.includes(nw)) {
-        score += 6;
+      if (nw.length >= 4 && rawLower.includes(nw)) {
+        score += 4;
         currentMatched.push(nw);
       }
     }
 
-    // 3. Category matching
-    const catWords = condition.category.toLowerCase().split(/\s+/);
+    // 4. Category matching
+    const catWords = condition.category.toLowerCase().split(/[\s,&]+/);
     for (const cw of catWords) {
-      if (cw.length > 3 && rawLower.includes(cw)) {
+      if (cw.length >= 4 && rawLower.includes(cw)) {
         score += 3;
         currentMatched.push(cw);
       }
     }
 
-    // 4. Core Symptoms matching
+    // 5. Core Symptoms matching
     for (const symptom of condition.core_symptoms) {
       const symWords = symptom.toLowerCase().split(/\s+/);
       let symOverlap = 0;
       for (const sw of symWords) {
-        if (sw.length > 3 && words.includes(sw)) {
+        if (sw.length >= 4 && words.includes(sw)) {
           symOverlap += 1;
         }
       }
@@ -91,26 +128,11 @@ export function queryPsychologyLibrary(userText: string): LibraryRAGResult | nul
       }
     }
 
-    // 5. Cognitive Distortions matching
+    // 6. Cognitive Distortions matching
     for (const distortion of condition.cognitive_distortions) {
       if (rawLower.includes(distortion.toLowerCase())) {
         score += 7;
         currentMatched.push(distortion);
-      }
-    }
-
-    // 6. Domain specific trigger phrases
-    if (condition.id === 'gad') {
-      if (/worry|worrying|what if|anxious|anxiety|nervous|tense|restless|cannot sleep|insomnia/i.test(rawLower)) {
-        score += 6;
-      }
-    } else if (condition.id === 'burnout_fatigue') {
-      if (/burnout|burned out|exhausted|exhaustion|brain fog|tired|lethargy|overworked|depleted|no energy/i.test(rawLower)) {
-        score += 6;
-      }
-    } else if (condition.id === 'panic_dysregulation') {
-      if (/panic|heart racing|palpitations|cannot breathe|suffocating|trembling|sweating|doom|shaking/i.test(rawLower)) {
-        score += 8;
       }
     }
 
@@ -121,18 +143,29 @@ export function queryPsychologyLibrary(userText: string): LibraryRAGResult | nul
     }
   }
 
-  if (bestMatch && highestScore >= 5) {
+  // Threshold >= 4 enables high precision matching
+  if (bestMatch && highestScore >= 4) {
     const promptSnippet = `[PSYCHOEDUCATIONAL LIBRARY EVIDENCE: ${bestMatch.name} (${bestMatch.triguna_balance})]
-• CBT Reframing: ${bestMatch.solutions.cbt_reframing}
-• Somatic Anchor: ${bestMatch.solutions.somatic_anchor}
-• Pranayama: ${bestMatch.solutions.pranayama}
-• Micro-Habit: ${bestMatch.solutions.micro_habit}`;
+• Clinical CBT Reframing: ${bestMatch.solutions.cbt_reframing}
+• Somatic Grounding Anchor: ${bestMatch.solutions.somatic_anchor}
+• Ayurvedic Pranayama Protocol: ${bestMatch.solutions.pranayama}
+• Daily Micro-Habit: ${bestMatch.solutions.micro_habit}
+• Required Clinician Delivery: Acknowledge the user's emotional state, gently weave this exact CBT reframe into your response, and guide them through the somatic anchor or pranayama breathwork.`;
 
     return {
       condition: bestMatch,
       matchScore: highestScore,
       matchedKeywords: matchedTerms,
       promptSnippet,
+      structuredCard: {
+        title: bestMatch.name,
+        category: bestMatch.category,
+        triguna: bestMatch.triguna_balance,
+        cbtReframing: bestMatch.solutions.cbt_reframing,
+        somaticAnchor: bestMatch.solutions.somatic_anchor,
+        pranayama: bestMatch.solutions.pranayama,
+        microHabit: bestMatch.solutions.micro_habit,
+      },
     };
   }
 

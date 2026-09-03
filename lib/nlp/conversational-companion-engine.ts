@@ -17,6 +17,7 @@ import { getResearchedAdviceForEmotion, AUTHENTICATED_RESEARCH_BANK, type Authen
 import { emotionClassifier, type NeuroscienceDiagnosticResult } from '../knowledge/emotion-classifier.ts';
 import { runHiddenCognitiveDiagnostics, normalizeEntityAnchor, type CognitiveDiagnosticResult } from './cognitive-orchestrator.ts';
 import type { UserCognitiveProfile } from '../memory/cbt-memory-types.ts';
+import { queryPsychologyLibrary, type PsychologyCondition } from '../knowledge/psychology-library-rag.ts';
 
 export interface ConversationalContext {
   userText: string;
@@ -43,6 +44,7 @@ export interface CompanionResponse {
     somaticArea: string;
     scientificStudy: string;
   };
+  libraryCondition?: PsychologyCondition;
 }
 
 // Session-level memory tracking recent responses to guarantee zero loop repetitions
@@ -320,6 +322,8 @@ function generateEnglishCognitiveReply(
   // Generate deep, context-aware psychological response
   const reply = constructGenerativePsychologicalReply(parsed, rawText, lower, diagnostic, study, priorTopics, usedKeys, history, profile);
 
+  const libraryMatch = queryPsychologyLibrary(rawText);
+
   return {
     reply,
     detectedTopic: parsed.topicKey,
@@ -327,6 +331,7 @@ function generateEnglishCognitiveReply(
     detectedLanguage: 'en',
     speechLocale,
     psychologicalAssessment: createAssessmentObject(diagnostic, study),
+    libraryCondition: libraryMatch?.condition,
   };
 }
 
@@ -615,6 +620,18 @@ function constructGenerativePsychologicalReply(
     sentence2 = selectUniqueItem(inqPool, usedKeys, 's3_inq_gen', history);
     return `${sentence1} ${sentence2}`.trim();
   } else {
+    const libraryMatch = queryPsychologyLibrary(rawText);
+    if (libraryMatch) {
+      const cond = libraryMatch.condition;
+      const sols = cond.solutions;
+      const libPool = [
+        `Navigating ${primaryAnchor} asks an immense amount of your nervous system reserves. In clinical cognitive therapy for ${cond.name}, we look at it this way: ${sols.cbt_reframing} To anchor your body right now: ${sols.somatic_anchor}`,
+        `Experiencing acute tension around ${primaryAnchor} brings real emotional exhaustion. A grounding perspective: ${sols.cbt_reframing} Let's take a slow, steady breath together and try this pranayama: ${sols.pranayama}`,
+        `Holding space for what happened with ${primaryAnchor} is vital. Remember: ${sols.cbt_reframing} For your daily recovery: ${sols.micro_habit}`,
+      ];
+      return selectUniqueItem(libPool, usedKeys, `rag_${cond.id}`, history);
+    }
+
     const genPool = [
       `Navigating ${primaryAnchor} brings real physical and emotional tension to the surface.`,
       `Carrying ${primaryAnchor} asks a lot of your nervous system in this moment.`,
