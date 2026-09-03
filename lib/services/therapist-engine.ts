@@ -2,6 +2,7 @@
 import { searchMentalHealthEvidence, ClinicalSearchResult } from "./search-fallback";
 import { detectCrisis } from "../safety/crisis-detector";
 import { generateDynamicCompanionReply } from "../nlp/conversational-companion-engine";
+import { queryPsychologyLibrary } from "../knowledge/psychology-library-rag";
 
 const THERAPIST_SYSTEM_PROMPT = `
 You are an expert Clinical Neuropsychologist, Master Psychotherapist, and Ayurvedic Sattvavajaya Practitioner serving as an attentive, real-time voice healer.
@@ -198,9 +199,26 @@ export async function generateTherapeuticResponse(
     };
   }
 
-  // 2. Search for verified clinical context
-  const clinicalEvidence = await searchMentalHealthEvidence(userMessage);
-  const contextString = clinicalEvidence.map((e) => `• ${e.title}: ${e.summary}`).join("\n");
+  // 2. Search for verified clinical context + Psychoeducational Library RAG
+  const [clinicalEvidence, libraryRag] = await Promise.all([
+    searchMentalHealthEvidence(userMessage),
+    Promise.resolve(queryPsychologyLibrary(userMessage)),
+  ]);
+
+  const allSources: ClinicalSearchResult[] = [...clinicalEvidence];
+  if (libraryRag) {
+    allSources.unshift({
+      title: `${libraryRag.condition.name} (${libraryRag.condition.triguna_balance})`,
+      summary: `CBT: ${libraryRag.condition.solutions.cbt_reframing} | Somatic: ${libraryRag.condition.solutions.somatic_anchor} | Pranayama: ${libraryRag.condition.solutions.pranayama}`,
+      source: "psychology_library",
+    });
+  }
+
+  const contextBlocks = clinicalEvidence.map((e) => `• ${e.title}: ${e.summary}`);
+  if (libraryRag) {
+    contextBlocks.unshift(libraryRag.promptSnippet);
+  }
+  const contextString = contextBlocks.join("\n\n");
 
   // 3. Cascade across LLM inference providers with repetition penalties
   try {

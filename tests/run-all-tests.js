@@ -13,6 +13,8 @@ require('./search-fallback.test.js');
 require('./therapist-engine.test.js');
 require('./audit_fix_verification.test.js');
 require('./cbt-library.test.js');
+require('./test-psychology-library-rag.js');
+
 
 console.log('================================================================');
 console.log('EMOTIONAL INTELLIGENCE HEALER (EIH) - MASTER TEST VERIFICATION');

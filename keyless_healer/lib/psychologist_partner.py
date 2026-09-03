@@ -23,6 +23,14 @@ except ImportError:
     except ImportError:
         from clinical_search import KeylessClinicalSearch
 
+try:
+    from keyless_healer.lib.psychology_library_rag import psychology_rag
+except ImportError:
+    try:
+        from lib.psychology_library_rag import psychology_rag
+    except ImportError:
+        from psychology_library_rag import psychology_rag
+
 logger = logging.getLogger("PsychologistPartner")
 
 CRISIS_PATTERNS = [
@@ -458,7 +466,18 @@ class KeylessPsychologistPartner:
         telemetry = self._heuristic_analysis(user_message)
         evidence_list = await search_task
 
-        context_str = "\n".join([f"• {e.title}: {e.summary}" for e in evidence_list])
+        # Retrieve matched condition from Clinical & Psychoeducational Library RAG
+        rag_guidance = psychology_rag.retrieve_guidance(user_message)
+        rag_prompt_block = rag_guidance.get("prompt_context", "") if rag_guidance else ""
+
+        if rag_guidance:
+            telemetry.suggested_strategy = f"{rag_guidance.get('name')} | {rag_guidance.get('solutions', {}).get('cbt_reframing', telemetry.suggested_strategy)}"
+
+        context_blocks = [f"• {e.title}: {e.summary}" for e in evidence_list]
+        if rag_prompt_block:
+            context_blocks.insert(0, rag_prompt_block)
+
+        context_str = "\n".join(context_blocks)
 
         ollama_reply = await self._call_local_ollama(user_message, context_str, history=history)
         latency = int((time.perf_counter() - start_time) * 1000)

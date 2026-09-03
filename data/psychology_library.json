@@ -1,0 +1,73 @@
+[
+  {
+    "id": "gad",
+    "name": "Generalized Anxiety & Chronic Worry",
+    "category": "Anxiety & Hyperarousal",
+    "triguna_balance": "High Rajas, Low Sattva",
+    "core_symptoms": [
+      "Persistent uncontrollable worry",
+      "Restlessness and muscle tension",
+      "Fatigue and irritability",
+      "Sleep onset disturbance"
+    ],
+    "cognitive_distortions": [
+      "Catastrophizing",
+      "Probability Overestimation"
+    ],
+    "solutions": {
+      "cbt_reframing": "Identify the 'worst-case scenario' and calculate the realistic probability. Shift from 'What if?' to 'What is right now?'",
+      "somatic_anchor": "5-4-3-2-1 Sensory Grounding: Name 5 things you see, 4 you feel, 3 you hear, 2 you smell, and 1 you taste.",
+      "pranayama": "Nadi Shodhana (Alternate Nostril Breathing) for 5 minutes to reduce autonomic sympathetic tone.",
+      "micro_habit": "Schedule a dedicated 15-minute 'Worry Window' in the afternoon; postpone rumination until then."
+    },
+    "severity_level": "Mild to Moderate",
+    "requires_immediate_crisis": false
+  },
+  {
+    "id": "burnout_fatigue",
+    "name": "Nervous Exhaustion & Clinical Burnout",
+    "category": "Stress & Depletion",
+    "triguna_balance": "Depleted Rajas, Dominant Tamas",
+    "core_symptoms": [
+      "Emotional exhaustion",
+      "Depersonalization toward work",
+      "Sense of inefficacy and brain fog",
+      "Physical lethargy despite sleep"
+    ],
+    "cognitive_distortions": [
+      "Overextension / All-or-Nothing Responsibility",
+      "Guilt around rest"
+    ],
+    "solutions": {
+      "cbt_reframing": "Reframe rest as non-negotiable physiological maintenance rather than an earned reward.",
+      "somatic_anchor": "Somatic body scan: Lie flat, release the jaw and tongue from the roof of the mouth, unclench pelvic floor.",
+      "pranayama": "Bharmari (Humming Bee Breath) to stimulate the vagus nerve and promote parasympathetic tone.",
+      "micro_habit": "Implement hard boundaries: Disconnect communication channels at a fixed hour every evening."
+    },
+    "severity_level": "Moderate",
+    "requires_immediate_crisis": false
+  },
+  {
+    "id": "panic_dysregulation",
+    "name": "Acute Panic & Autonomic Dysregulation",
+    "category": "Acute Somatic Distress",
+    "triguna_balance": "Acute Rajas Spikes",
+    "core_symptoms": [
+      "Sudden heart palpitations and racing pulse",
+      "Hyperventilation or suffocation",
+      "Trembling, sweating, chills",
+      "Derealization or fear of doom"
+    ],
+    "cognitive_distortions": [
+      "Interoceptive Catastrophizing ('My heart is racing, so I must be dying')"
+    ],
+    "solutions": {
+      "cbt_reframing": "Recognize the panic surge as a harmless false-alarm adrenaline dump that naturally subsides within 10–12 minutes.",
+      "somatic_anchor": "Mammalian Dive Reflex: Splash ice-cold water onto the face or hold an ice cube in the palm to drop heart rate rapidly.",
+      "pranayama": "Extended Exhale Breathing (Inhale for 4 seconds, hold for 2, exhale slowly through pursed lips for 7 seconds).",
+      "micro_habit": "Repeat aloud: 'This is uncomfortable, but it is not dangerous. My nervous system is discharging energy.'"
+    },
+    "severity_level": "Acute",
+    "requires_immediate_crisis": false
+  }
+]

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import Link from "next/link";
 import { healerClient, PsychologicalTelemetry, ClinicalSource, ChatHistoryItem } from "@/lib/api/healer-client";
 import { AudioWaveform } from "./components/AudioWaveform";
 import { CBTKnowledgeModal } from "./components/CBTKnowledgeModal";
@@ -16,6 +17,8 @@ import {
 } from "@/lib/i18n/language-catalog";
 import { saveLivePsychologyTelemetry } from "@/lib/telemetry/psychology-store";
 import { generateDynamicCompanionReply } from "@/lib/nlp/conversational-companion-engine";
+import { getConditionById } from "@/lib/knowledge/psychology-library-rag";
+
 
 interface Message {
   id: string;
@@ -100,10 +103,30 @@ export default function SanctuarySessionPage() {
       setCurrentLanguage(matchedLang);
       browserSpeechController.setLanguageLocale(matchedLang.speechLocale);
 
+      // Check if URL specifies a condition focus (e.g., ?focus=gad)
+      let customGreeting = matchedLang.companionGreeting;
+      if (typeof window !== "undefined") {
+        const params = new URLSearchParams(window.location.search);
+        const focusId = params.get("focus") || params.get("condition");
+        if (focusId) {
+          const matchedCond = getConditionById(focusId);
+          if (matchedCond) {
+            customGreeting = `I see we are focusing on ${matchedCond.name}. Take a slow breath with me. ${matchedCond.solutions.cbt_reframing}`;
+            setTelemetry({
+              dominant_emotion: matchedCond.name,
+              polyvagal_state: matchedCond.triguna_balance,
+              cbt_distortion: matchedCond.cognitive_distortions[0] || "None",
+              percentages: { [matchedCond.name]: 80, Relief: 45, Grounding: 70 },
+              strategy: matchedCond.solutions.somatic_anchor,
+            });
+          }
+        }
+      }
+
       setMessages((prev) =>
         prev.map((msg) =>
           msg.id === "init"
-            ? { ...msg, text: matchedLang.companionGreeting, timestamp: getFormattedTime() }
+            ? { ...msg, text: customGreeting, timestamp: getFormattedTime() }
             : msg
         )
       );
@@ -414,12 +437,20 @@ export default function SanctuarySessionPage() {
             <span>FastAPI Key-Free</span>
           </div>
 
+          <Link
+            href="/library"
+            className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-950/70 hover:bg-teal-900/90 border border-teal-700/60 text-xs text-teal-300 font-medium transition-all shadow-sm"
+          >
+            <span>📚</span>
+            <span className="hidden sm:inline">Clinical Library</span>
+          </Link>
+
           <button
             onClick={() => setIsCBTModalOpen(true)}
             className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/70 hover:bg-emerald-900/90 border border-emerald-700/60 text-xs text-emerald-300 font-medium transition-all shadow-sm"
           >
             <span>🧠</span>
-            <span className="hidden sm:inline">CBT Library (20+)</span>
+            <span className="hidden sm:inline">CBT Tools (20+)</span>
           </button>
         </div>
 

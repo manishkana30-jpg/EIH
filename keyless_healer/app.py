@@ -45,11 +45,16 @@ try:
         PsychologistPartner,
         TherapeuticResponse,
     )
+    from keyless_healer.lib.psychology_library_rag import psychology_rag
     from keyless_healer.lib.self_learning_therapist import (
         self_learning_therapist,
     )
     from server.rag.cbt_library_loader import cbt_loader
 except ImportError:
+    try:
+        from lib.psychology_library_rag import psychology_rag  # type: ignore[import-untyped, import-not-found]
+    except ImportError:
+        psychology_rag = None  # type: ignore[assignment]
     from lib.audio_engine import (  # type: ignore[import-untyped, import-not-found]
         AudioEngine,
         get_voice_for_locale,
@@ -852,6 +857,28 @@ async def search_endpoint(payload: SearchRequest, request: Request):
     except Exception as e:
         logger.error(f"Search error: {e}")
         raise HTTPException(status_code=500, detail=f"Search error: {e!s}") from e
+
+
+@app.get("/api/library")
+@app.get("/api/therapy/library")
+async def get_library_conditions(request: Request):
+    """Returns all structured entries from the Clinical & Psychoeducational Library."""
+    enforce_rate_limit(request)
+    if psychology_rag:
+        return {"conditions": psychology_rag.get_all_conditions()}
+    return {"conditions": []}
+
+
+@app.post("/api/library/query")
+@app.post("/api/therapy/library/query")
+async def query_library_condition(payload: SearchRequest, request: Request):
+    """Semantic vector RAG search against ChromaDB Psychology Library."""
+    enforce_rate_limit(request)
+    if psychology_rag:
+        guidance = psychology_rag.retrieve_guidance(payload.query)
+        return {"query": payload.query, "guidance": guidance}
+    return {"query": payload.query, "guidance": None}
+
 
 
 @app.post("/api/tts")
