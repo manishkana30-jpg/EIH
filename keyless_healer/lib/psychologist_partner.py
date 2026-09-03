@@ -467,7 +467,8 @@ class KeylessPsychologistPartner:
         evidence_list = await search_task
 
         # Retrieve matched condition from Clinical & Psychoeducational Library RAG
-        rag_guidance = psychology_rag.retrieve_guidance(user_message)
+        # Wrapped in to_thread() to avoid blocking the event loop during ChromaDB I/O
+        rag_guidance = await asyncio.to_thread(psychology_rag.retrieve_guidance, user_message)
         rag_prompt_block = rag_guidance.get("prompt_context", "") if rag_guidance else ""
 
         if rag_guidance:

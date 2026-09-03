@@ -69,9 +69,16 @@ export async function POST(req: NextRequest) {
     const body = await req.json().catch(() => ({}));
     const { roomName, identity, tier, apiKey, userDosha } = body;
 
-    const apiKeyLiveKit = process.env.LIVEKIT_API_KEY || 'devkey';
-    const apiSecretLiveKit = process.env.LIVEKIT_API_SECRET || 'secret';
+    const apiKeyLiveKit = process.env.LIVEKIT_API_KEY;
+    const apiSecretLiveKit = process.env.LIVEKIT_API_SECRET;
     const livekitHost = process.env.NEXT_PUBLIC_LIVEKIT_URL || 'wss://demo.livekit.cloud';
+
+    if (!apiKeyLiveKit || !apiSecretLiveKit) {
+      return NextResponse.json(
+        { error: 'LiveKit credentials not configured. Set LIVEKIT_API_KEY and LIVEKIT_API_SECRET environment variables.' },
+        { status: 503 }
+      );
+    }
 
     const room = roomName || `eih-room-${Date.now()}`;
     const participantName = identity || `user-${Math.floor(Math.random() * 10000)}`;

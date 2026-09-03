@@ -138,6 +138,12 @@ def enforce_rate_limit(request: Request) -> None:
         )
     _client_request_history[client_ip].append(now)
 
+    # Evict stale entries to prevent unbounded memory growth
+    if len(_client_request_history) > 10000:
+        stale_ips = [ip for ip, ts in _client_request_history.items() if not ts or ts[-1] < now - RATE_LIMIT_WINDOW * 10]
+        for ip in stale_ips:
+            del _client_request_history[ip]
+
 
 class ChatRequest(BaseModel):
     message: str | None = Field(default=None, max_length=4000, description="User's input text or emotional query")

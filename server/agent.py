@@ -22,11 +22,11 @@ from typing import Any
 
 from dotenv import load_dotenv
 
-# Ensure server module path is resolvable
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+# Ensure workspace root is resolvable
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from cognitive_orchestrator import run_cognitive_analysis
-from guardrails.actions import check_crisis_risk
+from server.cognitive_orchestrator import run_cognitive_analysis
+from server.guardrails.actions import check_crisis_risk
 from livekit.agents import (
     AutoSubscribe,
     JobContext,
@@ -36,8 +36,8 @@ from livekit.agents import (
     voice,
 )
 from livekit.agents.llm.tool_context import StopResponse
-from livekit.plugins import cartesia, deepgram, openai, silero
-from prompts.therapeutic_persona import THERAPEUTIC_PERSONA_PROMPT
+from livekit.plugins import openai, silero
+from server.prompts.therapeutic_persona import THERAPEUTIC_PERSONA_PROMPT
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
