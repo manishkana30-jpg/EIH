@@ -15,6 +15,7 @@ import {
   saveLanguagePreference,
 } from "@/lib/i18n/language-catalog";
 import { saveLivePsychologyTelemetry } from "@/lib/telemetry/psychology-store";
+import { generateDynamicCompanionReply } from "@/lib/nlp/conversational-companion-engine";
 
 interface Message {
   id: string;
@@ -279,16 +280,38 @@ export default function SanctuarySessionPage() {
         );
       }
     } catch (error) {
-      console.error("Chat communication failure:", error);
+      console.error("Chat communication notice:", error);
+      const companion = generateDynamicCompanionReply({
+        userText: messageText,
+      });
+      const fallbackReply = companion.reply || "I am here with you. Take a steady breath and let's explore this step by step.";
+      
       setMessages((prev) => [
         ...prev,
         {
-          id: `${Date.now()}-err`,
+          id: `${Date.now()}-ai-fallback`,
           sender: "ai",
-          text: "Take a slow breath. I am having a moment connecting to my reasoning engine, but I am still here with you.",
+          text: fallbackReply,
           timestamp: getFormattedTime(),
+          engine: "Cognitive Companion Engine (Ayurvedic & Neuro Grounded)",
         },
       ]);
+
+      setIsPlayingAudio(true);
+      isPlayingAudioRef.current = true;
+      isEchoLockedRef.current = true;
+      setIsEchoLocked(true);
+      browserSpeechController.speak(fallbackReply, undefined, () => {
+        setIsPlayingAudio(false);
+        isPlayingAudioRef.current = false;
+        setTimeout(() => {
+          setIsEchoLocked(false);
+          isEchoLockedRef.current = false;
+          if (isVoiceModeActiveRef.current) {
+            startContinuousVoiceListening();
+          }
+        }, 200);
+      });
     } finally {
       setIsLoading(false);
       isSendingRef.current = false;
