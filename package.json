@@ -13,9 +13,7 @@
     "lint": "next lint",
     "test": "node --no-warnings tests/run-all-tests.js",
     "deploy:vercel": "vercel --prod",
-    "deploy": "next build",
-    "tunnel:start": "node scripts/start-tunnel.js",
-    "tunnel:launch": "node scripts/launch-tunnel.js"
+    "tunnel": "node scripts/launch-tunnel.js"
   },
   "dependencies": {
     "@livekit/components-react": "^2.6.11",
