@@ -44,7 +44,7 @@ const nextConfig = {
         },
         {
           key: 'Content-Security-Policy',
-          value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; media-src 'self' blob: data:; connect-src 'self' https://*.trycloudflare.com https://*.pages.dev https://eutils.ncbi.nlm.nih.gov https://nominatim.openstreetmap.org https://overpass-api.de https://api.tavily.com https://api.groq.com https://generativelanguage.googleapis.com wss: ws:; worker-src 'self' blob:; frame-ancestors 'none';",
+          value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; media-src 'self' blob: data:; connect-src 'self' https://*.vercel.app https://*.trycloudflare.com https://*.pages.dev https://eutils.ncbi.nlm.nih.gov https://nominatim.openstreetmap.org https://overpass-api.de https://api.tavily.com https://api.groq.com https://generativelanguage.googleapis.com wss: ws:; worker-src 'self' blob:; frame-ancestors 'none';",
         },
       ],
     },
