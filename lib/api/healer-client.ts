@@ -154,6 +154,8 @@ class HealerBackendClient {
         body: JSON.stringify({
           message: cleanMessage,
           history: history?.map((h) => ({ role: h.sender === 'ai' ? 'assistant' : 'user', content: h.text })),
+          language: language || undefined,
+          locale: locale || undefined,
         }),
         signal: controller.signal,
       });
@@ -199,6 +201,8 @@ class HealerBackendClient {
       const cogDiag = runHiddenCognitiveDiagnostics(cleanMessage);
       const companion = generateDynamicCompanionReply({
         userText: cleanMessage,
+        targetLanguageCode: language,
+        speechLocale: locale,
         history: (history || []).map((h) => ({
           role: h.sender === 'ai' ? 'assistant' : 'user',
           text: h.text,

@@ -111,4 +111,28 @@ assert.strictEqual(englishRes.detectedLanguage, 'en');
 assert.strictEqual(englishRes.speechLocale, 'en-US');
 console.log(`  ✓ [English]: "${englishUtterance}" ➔ Companion (en-US): "${englishRes.reply.slice(0, 50)}..."`);
 
-console.log('\nReal-Time Multilingual Mirroring: 100% Passed (Language Switched Seamlessly on Every Turn)!\n');
+// 5. Verify Target Language Selection Override (e.g. English query with Hindi target selected)
+console.log('\n--- Verifying Target Language Selection Override ---');
+const overrideHindi = generateDynamicCompanionReply({
+  userText: "I am feeling overwhelmed by all my tasks today",
+  targetLanguageCode: 'hi',
+  speechLocale: 'hi-IN',
+});
+assert.strictEqual(overrideHindi.detectedLanguage, 'hi');
+assert(/[\u0900-\u097F]/.test(overrideHindi.reply), 'Should generate pure Devanagari Hindi response when Hindi target is selected');
+// Verify NO raw English clinical strings leaked
+assert(!overrideHindi.reply.includes('Identify the worst-case scenario'), 'Should not contain raw English CBT text');
+assert(!overrideHindi.reply.includes('5-4-3-2-1 Sensory Grounding: Name 5 things you see'), 'Should not contain raw English grounding text');
+console.log(`  ✓ [Target Language Override -> Hindi (Devanagari)]: Query: "I am feeling overwhelmed..." ➔ Reply: "${overrideHindi.reply}"`);
+
+const overrideSpanish = generateDynamicCompanionReply({
+  userText: "I am feeling burnt out from working too much",
+  targetLanguageCode: 'es',
+  speechLocale: 'es-ES',
+});
+assert.strictEqual(overrideSpanish.detectedLanguage, 'es');
+assert(!overrideSpanish.reply.includes('Reframe rest as non-negotiable'), 'Should not contain raw English burnout text');
+assert(overrideSpanish.reply.toLowerCase().includes('comprensible') || overrideSpanish.reply.toLowerCase().includes('descanso') || overrideSpanish.reply.toLowerCase().includes('laboral'));
+console.log(`  ✓ [Target Language Override -> Spanish]: Query: "I am feeling burnt out..." ➔ Reply: "${overrideSpanish.reply}"`);
+
+console.log('\nReal-Time Multilingual Mirroring & Zero Code-Switching: 100% Passed!\n');

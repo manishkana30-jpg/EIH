@@ -3,6 +3,7 @@ import { searchMentalHealthEvidence, ClinicalSearchResult } from "./search-fallb
 import { detectCrisis } from "../safety/crisis-detector";
 import { queryPsychologyLibrary } from "../knowledge/psychology-library-rag";
 import { generateDynamicCompanionReply } from "../nlp/conversational-companion-engine";
+import { GLOBAL_LANGUAGE_CATALOG, getLanguageByCode } from "../i18n/language-catalog";
 
 const THERAPIST_SYSTEM_PROMPT = `
 You are an Expert Clinical Psychologist and Emotional Resilience Trainer integrating Modern Neuropsychology with Ayurvedic Sattvavajaya Chikitsa.
@@ -39,14 +40,14 @@ export interface ConversationTurn {
  */
 async function callGroq(
   prompt: string,
-  context: string,
+  systemPrompt: string,
   history?: ConversationTurn[]
 ): Promise<string> {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) throw new Error("Missing GROQ_API_KEY");
 
   const messages: Array<{ role: string; content: string }> = [
-    { role: "system", content: `${THERAPIST_SYSTEM_PROMPT}\n\n[CLINICAL RESEARCH]:\n${context}` }
+    { role: "system", content: systemPrompt }
   ];
 
   if (history && history.length > 0) {
@@ -87,7 +88,7 @@ async function callGroq(
  */
 async function callGemini(
   prompt: string,
-  context: string,
+  systemPrompt: string,
   history?: ConversationTurn[]
 ): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY;
@@ -113,7 +114,7 @@ async function callGemini(
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        systemInstruction: { parts: [{ text: `${THERAPIST_SYSTEM_PROMPT}\n\n[CLINICAL RESEARCH]:\n${context}` }] },
+        systemInstruction: { parts: [{ text: systemPrompt }] },
         contents,
         generationConfig: { maxOutputTokens: 300, temperature: 0.7, topP: 0.95 }
       })
@@ -130,7 +131,9 @@ async function callGemini(
  */
 async function callLocalKeylessHealer(
   prompt: string,
-  history?: ConversationTurn[]
+  history?: ConversationTurn[],
+  language?: string,
+  locale?: string
 ): Promise<{ reply: string; sources: ClinicalSearchResult[] }> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 4000);
@@ -140,7 +143,7 @@ async function callLocalKeylessHealer(
     const res = await fetch(`${backendUrl}/api/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: prompt, history }),
+      body: JSON.stringify({ message: prompt, history, language, locale }),
       signal: controller.signal
     });
     clearTimeout(timeoutId);
@@ -167,7 +170,9 @@ async function callLocalKeylessHealer(
  */
 export async function generateTherapeuticResponse(
   userMessage: string,
-  history?: ConversationTurn[]
+  history?: ConversationTurn[],
+  language?: string,
+  locale?: string
 ): Promise<{
   reply: string;
   sources: ClinicalSearchResult[];
@@ -209,23 +214,38 @@ export async function generateTherapeuticResponse(
   }
   const contextString = contextBlocks.join("\n\n");
 
+  // Determine Language Instruction for LLMs
+  const langItem = language
+    ? getLanguageByCode(language) || GLOBAL_LANGUAGE_CATALOG.find((l) => l.code === language)
+    : null;
+
+  const langDirective =
+    langItem && langItem.code !== "en"
+      ? `\n\n### MANDATORY MULTILINGUAL CLINICAL DIRECTIVE:
+You MUST formulate your ENTIRE therapeutic response in ${langItem.name} (${langItem.nativeName}).
+Strictly DO NOT mix English sentences, phrases, or raw English jargon into your response.
+Translate and explain all validation, CBT cognitive reframes, somatic grounding exercises, and pranayama breathwork protocols naturally, with profound clinical empathy, purely in ${langItem.name}.`
+      : "";
+
+  const systemPrompt = `${THERAPIST_SYSTEM_PROMPT}${langDirective}\n\n[CLINICAL RESEARCH]:\n${contextString}`;
+
   // 3. Cascade across LLM inference providers with repetition penalties
   try {
-    const reply = await callGroq(userMessage, contextString, history);
+    const reply = await callGroq(userMessage, systemPrompt, history);
     return { reply, sources: allSources, providerUsed: "Groq (Llama 3.3 70B)", isCrisis: false };
   } catch {
     // Fallback to Gemini
   }
 
   try {
-    const reply = await callGemini(userMessage, contextString, history);
+    const reply = await callGemini(userMessage, systemPrompt, history);
     return { reply, sources: allSources, providerUsed: "Google Gemini 2.0 Flash", isCrisis: false };
   } catch {
     // Fallback to Local Keyless FastAPI
   }
 
   try {
-    const localResult = await callLocalKeylessHealer(userMessage, history);
+    const localResult = await callLocalKeylessHealer(userMessage, history, language, locale);
     const finalSources = [...localResult.sources];
     if (libraryRag && !finalSources.some((s) => s.source === "psychology_library")) {
       finalSources.unshift({
@@ -247,7 +267,7 @@ export async function generateTherapeuticResponse(
   // 4. Free Open Inference
   try {
     const messagesPayload = [
-      { role: "system", content: `${THERAPIST_SYSTEM_PROMPT}\n\n[CLINICAL RESEARCH]:\n${contextString}` },
+      { role: "system", content: systemPrompt },
       ...(history || []).slice(-6).map((h) => ({
         role: h.role === "assistant" || h.sender === "ai" ? "assistant" : "user",
         content: h.content || h.text || ""
@@ -272,6 +292,8 @@ export async function generateTherapeuticResponse(
   // 5. Infallible Tier 5: Pure Deterministic Cognitive Companion (Zero External Dependency, 100% Offline)
   const companion = generateDynamicCompanionReply({
     userText: userMessage,
+    targetLanguageCode: language,
+    speechLocale: locale,
     history: (history || []).map((h) => ({
       role: h.role === "assistant" || h.sender === "ai" ? "assistant" : "user",
       text: h.content || h.text || "",

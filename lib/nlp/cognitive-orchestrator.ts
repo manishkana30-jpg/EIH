@@ -55,6 +55,11 @@ export function normalizeEntityAnchor(entity: string): string {
   if (e === 'job' || e === 'work' || e === 'office') return 'your work situation';
   if (e === 'sleep' || e === 'insomnia') return 'restless sleep';
   if (e === 'chest' || e === 'throat' || e === 'heart' || e === 'stomach') return `physical tension in your ${e}`;
+  // Pronoun conversions
+  if (e.startsWith('my ')) return `your ${e.slice(3)}`;
+  if (e.startsWith('i ') || e.startsWith("i'm ") || e.startsWith('im ') || e.startsWith('we ') || e.startsWith('should ') || e.startsWith('what ') || e.startsWith('how ') || e.startsWith('can ') || e.startsWith('why ')) {
+    return 'this situation';
+  }
 
   // If e is an adjective, adverb, or verb, return natural contextual noun phrase
   const nonNounWords = new Set([
@@ -77,6 +82,7 @@ export function normalizeEntityAnchor(entity: string): string {
   }
 
   if (e.startsWith('your ') || e.startsWith('the ') || e.startsWith('this ') || e.startsWith('a ') || e.startsWith('an ')) return e;
+  if (e.length > 25) return 'this situation';
   return `your ${e}`;
 }
 

@@ -328,7 +328,7 @@ export function deduceCountryFromTimezoneAndLocale(): { countryCode: string; cou
 }
 
 /**
- * Detect user's Location & Language non-intrusively via Timezone and Browser Language
+ * Detect user's Location & Language via real GPS coordinates (if permitted) or Timezone and Browser Language
  */
 export async function detectLocationAndLanguage(): Promise<DetectedLocationInfo> {
   if (typeof window === 'undefined') {
@@ -341,6 +341,36 @@ export async function detectLocationAndLanguage(): Promise<DetectedLocationInfo>
     };
   }
 
+  // 1. Attempt Real Browser GPS Geolocation (High Accuracy with rapid timeout)
+  if (typeof navigator !== 'undefined' && navigator.geolocation) {
+    try {
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          timeout: 2500,
+          maximumAge: 600000,
+          enableHighAccuracy: false,
+        });
+      });
+
+      if (position && position.coords) {
+        const { latitude, longitude } = position.coords;
+        const gpsCountry = deduceCountryFromCoordinates(latitude, longitude);
+        return {
+          countryCode: gpsCountry.countryCode,
+          countryName: gpsCountry.countryName,
+          regionName: `${gpsCountry.countryName} (GPS Satellite)`,
+          defaultLanguageCode: gpsCountry.defaultLanguageCode,
+          isGps: true,
+          latitude,
+          longitude,
+        };
+      }
+    } catch (_) {
+      // User declined or timed out; seamlessly proceed to timezone/locale detection
+    }
+  }
+
+  // 2. Deterministic Browser Timezone and Locale fallback
   const tzResult = deduceCountryFromTimezoneAndLocale();
   return {
     countryCode: tzResult.countryCode,

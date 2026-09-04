@@ -32,7 +32,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json().catch(() => ({}));
-    const { message, history } = body;
+    const { message, history, language, locale } = body;
     if (!message || typeof message !== "string") {
       return NextResponse.json({ error: "Invalid message" }, { status: 400 });
     }
@@ -44,7 +44,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const response = await generateTherapeuticResponse(message, history);
+    const response = await generateTherapeuticResponse(message, history, language, locale);
     return NextResponse.json(response);
   } catch (error) {
     console.error("Chat route error:", error);
