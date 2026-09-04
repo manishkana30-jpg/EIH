@@ -36,7 +36,7 @@ from livekit.agents import (
     voice,
 )
 from livekit.agents.llm.tool_context import StopResponse
-from livekit.plugins import cartesia, deepgram, openai, silero
+from livekit.plugins import openai, silero
 from server.prompts.therapeutic_persona import THERAPEUTIC_PERSONA_PROMPT
 
 load_dotenv()
@@ -164,11 +164,10 @@ async def entrypoint(ctx: JobContext) -> None:
         sample_rate=16000,
     )
 
-    # Speech-to-Text: Deepgram Nova-3 / Whisper
-    stt_plugin = deepgram.STT(
-        model="nova-3",
-        language=user_metadata.get("languageLocale", "en-US"),
-        sample_rate=24000,
+    # Speech-to-Text: OpenAI Whisper
+    stt_plugin = openai.STT(
+        model="whisper-1",
+        language=user_metadata.get("languageLocale", "en"),
     )
 
     # LLM Engine: BYOK OpenAI GPT-4o / Server Groq Llama 3.3
@@ -186,11 +185,10 @@ async def entrypoint(ctx: JobContext) -> None:
             temperature=0.7,
         )
 
-    # Text-to-Speech: Cartesia Sonic Natural Therapeutic Voice
-    tts_plugin = cartesia.TTS(
-        model="sonic-english",
-        voice="f114a946-0e16-4e55-934c-6232d66579f1",  # Calming Warm Empathic Companion
-        sample_rate=24000,
+    # Text-to-Speech: OpenAI Neural TTS (Alloy Empathic Companion)
+    tts_plugin = openai.TTS(
+        model="tts-1",
+        voice="alloy",
     )
 
     # Initialize and start Healer Agent
