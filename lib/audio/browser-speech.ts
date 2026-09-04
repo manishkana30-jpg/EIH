@@ -544,15 +544,41 @@ export class BrowserSpeechController {
     return this.startRecognition();
   }
 
-  private cleanTextForSpeech(text: string): string {
+  public cleanTextForSpeech(text: string): string {
+    if (!text) return '';
     return text
-      .replace(/\*\*(.*?)\*\*/g, '$1') // remove bold asterisks
-      .replace(/\*(.*?)\*/g, '$1')     // remove italics asterisks
-      .replace(/\[(.*?)\]\(.*?\)/g, '$1') // remove markdown links
-      .replace(/^#+\s+/gm, '')        // remove markdown headers
-      .replace(/[•\-\*]\s+/g, '')     // remove bullet prefixes
-      .replace(/[`~_]/g, '')          // remove stray formatting symbols
+      // 1. Remove code blocks and inline code
+      .replace(/```[\s\S]*?```/g, '')
+      .replace(/`.*?`/g, '')
+      // 2. Remove Markdown links [text](url) -> text
+      .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
+      // 3. Remove bracketed RAG/metadata blocks e.g. [CLINICAL & PSYCHOEDUCATIONAL LIBRARY RAG CONTEXT] or [gad]
+      .replace(/\[[a-zA-Z0-9_\s\-&:]+\]:?/g, '')
+      // 4. Remove Markdown headers and stray hashes
+      .replace(/#+/g, '')
+      // 5. Remove bold, italics, strikethrough, underline
+      .replace(/\*\*([^*]+)\*\*/g, '$1')
+      .replace(/\*([^*]+)\*/g, '$1')
+      .replace(/__([^_]+)__/g, '$1')
+      .replace(/_([^_]+)_/g, '$1')
+      .replace(/~~([^~]+)~~/g, '$1')
+      // 6. Remove bullet prefixes, numbers, and blockquotes
+      .replace(/^[\s\t]*[•\-\*+]\s+/gm, '')
+      .replace(/(?:^|(?<=[.:;?!]))\s*\d+\.\s+/gm, ' ')
+      .replace(/^>\s*/gm, '')
+      // 7. Convert XML/HTML entities and brackets
+      .replace(/&amp;/g, ' and ')
+      .replace(/&/g, ' and ')
+      .replace(/[<>{}]/g, ' ')
+      .replace(/[\[\]]/g, ' ')
+      .replace(/\|/g, ', ')
+      // 8. Strip emojis and non-alphanumeric pictographs
+      .replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F018}-\u{1F270}\u{238C}-\u{2454}\u{20D0}-\u{20FF}]/gu, '')
+      // 9. Normalize whitespace and clean punctuation
+      .replace(/\n+/g, '. ')
       .replace(/\s+/g, ' ')
+      .replace(/\.{2,}/g, '.')
+      .replace(/\s+([.,!?;:])/g, '$1')
       .trim();
   }
 
@@ -592,8 +618,6 @@ export class BrowserSpeechController {
         ? process.env.NEXT_PUBLIC_BACKEND_URL.replace(/\/$/, '') 
         : '';
       const voiceBase = backendUrl ? `${backendUrl}/api/voice` : '/api/voice';
-      const voiceParam = encodeURIComponent('en-US-AriaNeural');
-      const voiceUrl = `${voiceBase}?text=${encodeURIComponent(cleanText)}&voice=${voiceParam}&rate=-4%`;
 
       let isFinished = false;
       const finishSpeech = () => {
@@ -645,15 +669,31 @@ export class BrowserSpeechController {
       };
 
       const wordCount = cleanText.split(/\s+/).length;
-      const maxEstimatedDurationMs = Math.max(3500, (wordCount / 2.0) * 1000 + 4000);
+      const maxEstimatedDurationMs = Math.max(4000, (wordCount / 2.0) * 1000 + 5000);
       this.ttsWatchdogTimer = setTimeout(() => {
         if (!isFinished && this.isSpeaking) {
           finishSpeech();
         }
       }, maxEstimatedDurationMs);
 
-      // Fetch neural audio stream
-      const res = await fetch(voiceUrl);
+      // Fetch neural audio stream (Prefer POST for longer payloads to prevent URI overflow)
+      let res: Response;
+      if (cleanText.length > 200) {
+        res = await fetch(voiceBase, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text: cleanText,
+            voice: 'en-US-AriaNeural',
+            rate: '-4%',
+          }),
+        });
+      } else {
+        const voiceParam = encodeURIComponent('en-US-AriaNeural');
+        const voiceUrl = `${voiceBase}?text=${encodeURIComponent(cleanText)}&voice=${voiceParam}&rate=-4%`;
+        res = await fetch(voiceUrl);
+      }
+
       if (!res.ok) {
         throw new Error(`Neural voice stream response ${res.status}`);
       }
@@ -665,6 +705,9 @@ export class BrowserSpeechController {
 
       // Method A: HTMLAudioElement with local blob: URL
       try {
+        if (this.currentBlobUrl) {
+          URL.revokeObjectURL(this.currentBlobUrl);
+        }
         const blobUrl = URL.createObjectURL(audioBlob);
         this.currentBlobUrl = blobUrl;
         const audio = new Audio(blobUrl);

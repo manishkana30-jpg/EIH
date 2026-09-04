@@ -72,7 +72,7 @@ class PsychologyLibraryRAG:
             existing_count = self.collection.count()
             if existing_count != len(self.library_data):
                 documents: list[str] = []
-                metadatas: list[dict[str, Any]] = []
+                metadatas: list[Any] = []
                 ids: list[str] = []
 
                 for item in self.library_data:
@@ -89,11 +89,11 @@ class PsychologyLibraryRAG:
                     )
                     documents.append(doc_text)
                     metadatas.append({
-                        "id": item.get("id", ""),
-                        "name": item.get("name", ""),
-                        "category": item.get("category", ""),
-                        "triguna": item.get("triguna_balance", ""),
-                        "severity": item.get("severity_level", ""),
+                        "id": str(item.get("id", "")),
+                        "name": str(item.get("name", "")),
+                        "category": str(item.get("category", "")),
+                        "triguna": str(item.get("triguna_balance", "")),
+                        "severity": str(item.get("severity_level", "")),
                     })
                     ids.append(f"cond_{item.get('id')}")
 
@@ -164,18 +164,26 @@ class PsychologyLibraryRAG:
 
         for item in self.library_data:
             score = 0
-            if item.get("id") in clean_query:
+            item_id = item.get("id")
+            if isinstance(item_id, str) and item_id and item_id.lower() in clean_query:
                 score += 10
-            for word in item.get("name", "").lower().split():
-                if len(word) > 3 and word in clean_query:
-                    score += 3
-            for sym in item.get("core_symptoms", []):
-                for sword in sym.lower().split():
-                    if len(sword) > 3 and sword in clean_query:
-                        score += 2
-            for dist in item.get("cognitive_distortions", []):
-                if dist.lower() in clean_query:
-                    score += 4
+            name = item.get("name")
+            if isinstance(name, str):
+                for word in name.lower().split():
+                    if len(word) > 3 and word in clean_query:
+                        score += 3
+            core_symptoms = item.get("core_symptoms")
+            if isinstance(core_symptoms, list):
+                for sym in core_symptoms:
+                    if isinstance(sym, str):
+                        for sword in sym.lower().split():
+                            if len(sword) > 3 and sword in clean_query:
+                                score += 2
+            distortions = item.get("cognitive_distortions")
+            if isinstance(distortions, list):
+                for dist in distortions:
+                    if isinstance(dist, str) and dist.lower() in clean_query:
+                        score += 4
 
             if score > best_score:
                 best_score = score

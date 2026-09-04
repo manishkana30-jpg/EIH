@@ -2,6 +2,7 @@ const { runSafetyTests } = require('./safety-crisis.test.js');
 const { runCryptoAndAudioTests } = require('./audio-crypto.test.js');
 const { runHybridRagTests } = require('./hybrid-rag.test.js');
 const { runConversationalDiversityTests } = require('./conversational-diversity.test.js');
+const { runTtsSanitizerTests } = require('./test_tts_sanitizer.js');
 require('./language-catalog.test.js');
 require('./remedies-matrix.test.js');
 require('./google-research-grounding.test.js');
@@ -25,6 +26,7 @@ try {
   runCryptoAndAudioTests();
   runHybridRagTests();
   runConversationalDiversityTests();
+  runTtsSanitizerTests();
   console.log('================================================================');
   console.log('🎉 ALL SYSTEM TESTS PASSED WITH 100% SUCCESS RATE');
   console.log('================================================================');

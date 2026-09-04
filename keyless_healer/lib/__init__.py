@@ -4,6 +4,7 @@ Keyless Healer Library - Zero API Key Clinical Intelligence, Audio & Search Grou
 
 from .audio_engine import VOICE_CATALOG, AudioEngine
 from .cbt_upgrader import CBTLibraryUpgrader, UpgradeStatus, cbt_upgrader
+from .clinical_expansion import ClinicalExpansionEngine, ClinicalSolution, clinical_expansion_engine
 from .clinical_search import (
     OFFLINE_PROTOCOLS,
     ClinicalEvidence,
@@ -19,11 +20,13 @@ __all__ = [
     "AudioEngine",
     "CBTLibraryUpgrader",
     "ClinicalEvidence",
-    "ClinicalSearchEngine",
+    "ClinicalExpansionEngine",
     "ClinicalSearchResult",
+    "ClinicalSolution",
     "KeylessClinicalSearch",
     "PsychologistPartner",
     "TherapeuticResponse",
     "UpgradeStatus",
     "cbt_upgrader",
+    "clinical_expansion_engine",
 ]

@@ -9,6 +9,7 @@ import asyncio
 import io
 import logging
 import os
+import re
 import tempfile
 from typing import TYPE_CHECKING, Any
 
@@ -91,6 +92,60 @@ def get_voice_for_locale(locale_or_code: str | None = None) -> str:
     return "en-US-AriaNeural"
 
 
+def sanitize_text_for_speech(text: str) -> str:
+    """
+    Cleans raw LLM/RAG text for speech engines (Edge-TTS / pyttsx3).
+    Removes Markdown, HTML, emojis, brackets, citations, and symbols that cause SSML errors.
+    """
+    if not text:
+        return ""
+
+    # 1. Strip code blocks and inline code
+    cleaned = re.sub(r"```[\s\S]*?```", "", text)
+    cleaned = re.sub(r"`.*?`", "", cleaned)
+
+    # 2. Strip Markdown links [label](url) -> label
+    cleaned = re.sub(r"\[([^\]]+)\]\([^\)]+\)", r"\1", cleaned)
+
+    # 3. Strip bracketed RAG/Metadata tags like [CLINICAL & PSYCHOEDUCATIONAL LIBRARY RAG CONTEXT] or [gad]
+    cleaned = re.sub(r"\[[a-zA-Z0-9_\s\-&:]+\]:?", "", cleaned)
+
+    # 4. Strip Markdown headers and stray hashes
+    cleaned = re.sub(r"#+", "", cleaned)
+
+    # 5. Strip Markdown bold, italics, strikethrough, underline
+    cleaned = re.sub(r"\*\*([^*]+)\*\*", r"\1", cleaned)
+    cleaned = re.sub(r"\*([^*]+)\*", r"\1", cleaned)
+    cleaned = re.sub(r"__([^_]+)__", r"\1", cleaned)
+    cleaned = re.sub(r"_([^_]+)_", r"\1", cleaned)
+    cleaned = re.sub(r"~~([^~]+)~~", r"\1", cleaned)
+
+    # 6. Strip bullet point symbols, numbering lists, and blockquotes
+    cleaned = re.sub(r"^[\s\t]*[•\-\*+]\s+", "", cleaned, flags=re.MULTILINE)
+    cleaned = re.sub(r"(?:^|(?<=[.:;?!]))\s*\d+\.\s+", " ", cleaned, flags=re.MULTILINE)
+    cleaned = re.sub(r"^>\s*", "", cleaned, flags=re.MULTILINE)
+
+    # 7. Convert XML/HTML entities and clean brackets that break SSML
+    cleaned = cleaned.replace("&amp;", " and ").replace("&", " and ")
+    cleaned = cleaned.replace("<", " ").replace(">", " ")
+    cleaned = cleaned.replace("{", " ").replace("}", " ")
+    cleaned = cleaned.replace("[", " ").replace("]", " ")
+    cleaned = cleaned.replace("|", ", ")
+
+    # 8. Strip emojis and non-alphanumeric pictographs (preserve multi-language unicode characters)
+    cleaned = re.sub(r"[\U00010000-\U0010ffff]", "", cleaned)
+    cleaned = re.sub(r"[\u2600-\u27bf]", "", cleaned)
+    cleaned = re.sub(r"[\u2022\u2023\u25E6\u2043\u2219]", "", cleaned)
+
+    # 9. Normalize whitespace, ellipsis, and sentence breaks
+    cleaned = re.sub(r"\n+", ". ", cleaned)
+    cleaned = re.sub(r"\s+", " ", cleaned)
+    cleaned = re.sub(r"\.{2,}", ".", cleaned)
+    cleaned = re.sub(r"\s+([.,!?;:])", r"\1", cleaned)
+
+    return cleaned.strip()
+
+
 class FreeAudioEngine:
     """Provides local STT and high-quality neural TTS without API keys."""
 
@@ -168,12 +223,24 @@ class FreeAudioEngine:
         if not text or not text.strip():
             return b""
 
+        clean_text = sanitize_text_for_speech(text)
+        if not clean_text:
+            return b""
+
+        # Cap text length to prevent Edge-TTS timeout on huge payloads
+        if len(clean_text) > 1800:
+            last_period = clean_text[:1800].rfind(".")
+            if last_period > 1000:
+                clean_text = clean_text[:last_period + 1]
+            else:
+                clean_text = clean_text[:1800]
+
         selected_voice = voice or self.default_voice
 
         # 1. Primary TTS: edge-tts (High quality neural voice)
         if edge_tts is not None:
             try:
-                communicate = edge_tts.Communicate(text, selected_voice, rate="-5%", pitch="-2Hz")
+                communicate = edge_tts.Communicate(clean_text, selected_voice, rate="-5%", pitch="-2Hz")
                 mp3_buffer = io.BytesIO()
                 async for chunk in communicate.stream():
                     if chunk.get("type") == "audio" and "data" in chunk and isinstance(chunk["data"], (bytes, bytearray)):
@@ -194,7 +261,7 @@ class FreeAudioEngine:
                 engine.setProperty("rate", 160)
                 with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
                     tmp_path = tmp.name
-                engine.save_to_file(text, tmp_path)
+                engine.save_to_file(clean_text, tmp_path)
                 engine.runAndWait()
                 with open(tmp_path, "rb") as f:
                     data = f.read()

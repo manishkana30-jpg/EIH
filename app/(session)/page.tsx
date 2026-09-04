@@ -150,69 +150,76 @@ export default function SanctuarySessionPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading]);
 
-  // 2. VAD & ECHO AVOIDANCE: Automatic mic detachment & 200ms grace period on playback completion
-  const playBase64Audio = useCallback((audioBase64: string, fallbackText?: string) => {
-    try {
-      // Pause active listening during speech synthesis to prevent echo feedback
-      browserSpeechController.stopRecognition();
-      setIsRecording(false);
+  // 2. VAD & ECHO AVOIDANCE: Unified, bulletproof audio playback with echo cancellation & autoplay recovery
+  const playVoice = useCallback((text: string, audioBase64?: string) => {
+    const cleanText = browserSpeechController.cleanTextForSpeech(text);
+    if (!cleanText && !audioBase64) return;
 
-      if (activeAudioRef.current) {
+    // Pause active recognition during speech synthesis to prevent echo feedback
+    browserSpeechController.stopRecognition();
+    setIsRecording(false);
+
+    // Stop and clean up any previously active audio track
+    if (activeAudioRef.current) {
+      try {
         activeAudioRef.current.pause();
-        activeAudioRef.current = null;
-      }
+        activeAudioRef.current.src = "";
+      } catch (_) {}
+      activeAudioRef.current = null;
+    }
+    browserSpeechController.cancelSpeech();
 
-      const audio = new Audio(`data:audio/mp3;base64,${audioBase64}`);
-      activeAudioRef.current = audio;
-      isPlayingAudioRef.current = true;
-      isEchoLockedRef.current = true;
-      setIsPlayingAudio(true);
-      setIsEchoLocked(true);
+    isPlayingAudioRef.current = true;
+    isEchoLockedRef.current = true;
+    setIsPlayingAudio(true);
+    setIsEchoLocked(true);
 
-      const handleAudioEnd = () => {
-        isPlayingAudioRef.current = false;
-        setIsPlayingAudio(false);
-        activeAudioRef.current = null;
-
-        // Re-engage continuous listening with 200ms grace period if in voice mode
-        setTimeout(() => {
-          isEchoLockedRef.current = false;
-          setIsEchoLocked(false);
-          if (isVoiceModeActiveRef.current) {
-            startContinuousVoiceListening();
-          }
-        }, 200);
-      };
-
-      audio.onended = handleAudioEnd;
-      audio.onerror = () => {
-        console.warn("Direct HTML5 base64 audio failed, using browser speech fallback...");
-        if (fallbackText) {
-          browserSpeechController.speak(fallbackText, undefined, handleAudioEnd);
-        } else {
-          handleAudioEnd();
-        }
-      };
-
-      audio.play().catch((err) => {
-        console.warn("Audio autoplay blocked, using browser speech fallback:", err);
-        if (fallbackText) {
-          browserSpeechController.speak(fallbackText, undefined, handleAudioEnd);
-        } else {
-          handleAudioEnd();
-        }
-      });
-    } catch (err) {
-      console.error("Audio playback error:", err);
+    const handleAudioEnd = () => {
       isPlayingAudioRef.current = false;
-      isEchoLockedRef.current = false;
       setIsPlayingAudio(false);
-      setIsEchoLocked(false);
-      if (fallbackText) {
-        browserSpeechController.speak(fallbackText);
+      activeAudioRef.current = null;
+
+      // Re-engage continuous listening with 200ms grace period if in voice mode
+      setTimeout(() => {
+        isEchoLockedRef.current = false;
+        setIsEchoLocked(false);
+        if (isVoiceModeActiveRef.current) {
+          startContinuousVoiceListening();
+        }
+      }, 200);
+    };
+
+    if (audioBase64) {
+      try {
+        const audio = new Audio(`data:audio/mp3;base64,${audioBase64}`);
+        activeAudioRef.current = audio;
+
+        audio.onended = handleAudioEnd;
+        audio.onerror = (e) => {
+          console.warn("Direct base64 audio failed, using browser speech fallback:", e);
+          browserSpeechController.speak(cleanText || text, undefined, handleAudioEnd);
+        };
+
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          playPromise.catch((err) => {
+            console.warn("Audio autoplay blocked or interrupted, using browser speech fallback:", err);
+            browserSpeechController.speak(cleanText || text, undefined, handleAudioEnd);
+          });
+        }
+        return;
+      } catch (err) {
+        console.error("Base64 audio initialization error:", err);
       }
     }
+
+    // Direct streaming fallback via browserSpeechController
+    browserSpeechController.speak(cleanText || text, undefined, handleAudioEnd);
   }, []);
+
+  const playBase64Audio = useCallback((audioBase64: string, fallbackText?: string) => {
+    playVoice(fallbackText || "", audioBase64);
+  }, [playVoice]);
 
   // Dispatch message with State Mutex & History Packaging
   const handleSendMessage = async (textToSend?: string) => {
@@ -221,7 +228,10 @@ export default function SanctuarySessionPage() {
 
     // Stop active audio if user speaks/sends
     if (activeAudioRef.current) {
-      activeAudioRef.current.pause();
+      try {
+        activeAudioRef.current.pause();
+        activeAudioRef.current.src = "";
+      } catch (_) {}
       activeAudioRef.current = null;
       isPlayingAudioRef.current = false;
       setIsPlayingAudio(false);
@@ -278,30 +288,7 @@ export default function SanctuarySessionPage() {
       }
 
       // VOICE RESPONSE PLAYBACK: High-Fidelity Edge Neural Voice
-      if (response.audio_base64) {
-        playBase64Audio(response.audio_base64, response.reply);
-      } else {
-        // Direct neural streaming fallback via /api/voice
-        setIsPlayingAudio(true);
-        isPlayingAudioRef.current = true;
-        isEchoLockedRef.current = true;
-        setIsEchoLocked(true);
-        browserSpeechController.speak(
-          response.reply,
-          undefined,
-          () => {
-            setIsPlayingAudio(false);
-            isPlayingAudioRef.current = false;
-            setTimeout(() => {
-              setIsEchoLocked(false);
-              isEchoLockedRef.current = false;
-              if (isVoiceModeActiveRef.current) {
-                startContinuousVoiceListening();
-              }
-            }, 200);
-          }
-        );
-      }
+      playVoice(response.reply, response.audio_base64);
     } catch (error) {
       console.error("Chat communication notice:", error);
       const companion = generateDynamicCompanionReply({
@@ -329,21 +316,7 @@ export default function SanctuarySessionPage() {
         },
       ]);
 
-      setIsPlayingAudio(true);
-      isPlayingAudioRef.current = true;
-      isEchoLockedRef.current = true;
-      setIsEchoLocked(true);
-      browserSpeechController.speak(fallbackReply, undefined, () => {
-        setIsPlayingAudio(false);
-        isPlayingAudioRef.current = false;
-        setTimeout(() => {
-          setIsEchoLocked(false);
-          isEchoLockedRef.current = false;
-          if (isVoiceModeActiveRef.current) {
-            startContinuousVoiceListening();
-          }
-        }, 200);
-      });
+      playVoice(fallbackReply);
     } finally {
       setIsLoading(false);
       isSendingRef.current = false;

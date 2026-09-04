@@ -36,7 +36,7 @@ from livekit.agents import (
     voice,
 )
 from livekit.agents.llm.tool_context import StopResponse
-from livekit.plugins import openai, silero
+from livekit.plugins import cartesia, deepgram, openai, silero
 from server.prompts.therapeutic_persona import THERAPEUTIC_PERSONA_PROMPT
 
 load_dotenv()

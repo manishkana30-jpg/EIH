@@ -36,8 +36,13 @@ if str(keyless_dir) not in sys.path:
     sys.path.insert(0, str(keyless_dir))
 
 try:
-    from keyless_healer.lib.audio_engine import AudioEngine, get_voice_for_locale
+    from keyless_healer.lib.audio_engine import (
+        AudioEngine,
+        get_voice_for_locale,
+        sanitize_text_for_speech,
+    )
     from keyless_healer.lib.cbt_upgrader import cbt_upgrader
+    from keyless_healer.lib.clinical_expansion import clinical_expansion_engine
     from keyless_healer.lib.clinical_search import (
         ClinicalSearchEngine,
     )
@@ -55,9 +60,14 @@ except ImportError:
         from lib.psychology_library_rag import psychology_rag  # type: ignore[import-untyped, import-not-found]
     except ImportError:
         psychology_rag = None  # type: ignore[assignment]
+    try:
+        from lib.clinical_expansion import clinical_expansion_engine  # type: ignore[import-untyped, import-not-found]
+    except ImportError:
+        clinical_expansion_engine = None  # type: ignore[assignment]
     from lib.audio_engine import (  # type: ignore[import-untyped, import-not-found]
         AudioEngine,
         get_voice_for_locale,
+        sanitize_text_for_speech,
     )
     from lib.cbt_upgrader import (  # type: ignore[import-untyped, import-not-found]
         cbt_upgrader,
@@ -174,6 +184,17 @@ class CBTAnalyzeRequest(BaseModel):
 class CBTUpgradeRequest(BaseModel):
     payload: dict[str, Any] | None = Field(default=None, description="Optional custom library payload to validate and install")
     force: bool | None = Field(default=False, description="Force upgrade bypassing version check")
+
+
+class ClinicalSolutionRequest(BaseModel):
+    query: str = Field(..., min_length=1, max_length=4000, description="User symptom, emotional struggle, or query")
+    condition_id: str | None = Field(default=None, description="Optional condition ID")
+    voice_mode: bool | None = Field(default=False, description="Whether to include synthesized TTS audio base64")
+
+
+class ClinicalExpansionRequest(BaseModel):
+    topic: str | None = Field(default=None, description="Topic or condition to expand with AI")
+    custom_prompt: str | None = Field(default=None, description="Optional custom guidance")
 
 
 if hasattr(sys.stdout, "reconfigure"):
@@ -903,19 +924,33 @@ async def tts_endpoint(
     if not target_text and request.headers.get("content-type", "").startswith("application/json"):
         try:
             body = await request.json()
-            target_text = body.get("text")
-            target_voice = body.get("voice", target_voice)
+            if isinstance(body, dict):
+                target_text = body.get("text")
+                target_voice = body.get("voice", target_voice)
         except Exception:
             pass
 
     if not target_text:
         raise HTTPException(status_code=400, detail="Missing text parameter for speech synthesis")
 
+    clean_text = sanitize_text_for_speech(target_text)
+    if not clean_text:
+        raise HTTPException(status_code=400, detail="Text contains no speakable content")
+
     try:
-        audio_bytes = await audio_engine.synthesize(target_text, voice=target_voice)
+        audio_bytes = await audio_engine.synthesize(clean_text, voice=target_voice)
         if not audio_bytes:
             raise HTTPException(status_code=500, detail="Voice synthesis failed")
-        return Response(content=audio_bytes, media_type="audio/mpeg")
+        return Response(
+            content=audio_bytes,
+            media_type="audio/mpeg",
+            headers={
+                "Content-Type": "audio/mpeg",
+                "Content-Length": str(len(audio_bytes)),
+                "Accept-Ranges": "bytes",
+                "Cache-Control": "public, max-age=3600",
+            },
+        )
     except HTTPException:
         raise
     except Exception as e:
@@ -1045,6 +1080,104 @@ async def rollback_cbt_endpoint(request: Request):
 
 
 # =========================================================================
+# AI-POWERED CLINICAL KNOWLEDGE EXPANSION & SOLUTION ENDPOINTS
+# =========================================================================
+
+@app.post("/api/clinical/solution")
+async def generate_clinical_solution_endpoint(payload: ClinicalSolutionRequest, request: Request):
+    """
+    Generates a personalized, 5-pillar clinical solution using EIH's own AI engine:
+    1. Evidence-Based CBT & Socratic Reframing
+    2. Polyvagal & Somatic Anchoring
+    3. Ayurvedic Sattvavajaya Pranayama Protocol
+    4. Daily Micro-Habit & Behavioral Activation
+    5. Neuroscience Mechanism & Spoken Voice Synthesis
+    """
+    enforce_rate_limit(request)
+    if not clinical_expansion_engine:
+        raise HTTPException(status_code=503, detail="Clinical expansion engine not initialized")
+
+    solution = clinical_expansion_engine.generate_clinical_solution(
+        query=payload.query,
+        condition_id=payload.condition_id,
+    )
+
+    result_dict: dict[str, Any] = {
+        "title": solution.title,
+        "condition_id": solution.condition_id,
+        "category": solution.category,
+        "triguna_balance": solution.triguna_balance,
+        "polyvagal_state": solution.polyvagal_state,
+        "detected_distortion": solution.detected_distortion,
+        "cbt_reframing": solution.cbt_reframing,
+        "socratic_questions": solution.socratic_questions,
+        "somatic_anchor": solution.somatic_anchor,
+        "pranayama_protocol": solution.pranayama_protocol,
+        "pranayama_ratio": solution.pranayama_ratio,
+        "micro_habit": solution.micro_habit,
+        "neuroscience_mechanism": solution.neuroscience_mechanism,
+        "audio_text_script": solution.audio_text_script,
+        "confidence_score": solution.confidence_score,
+        "source_evidence": solution.source_evidence,
+    }
+
+    if payload.voice_mode and audio_engine:
+        try:
+            audio_bytes = await audio_engine.synthesize(solution.audio_text_script, voice="en-US-AriaNeural")
+            if audio_bytes:
+                result_dict["audio_base64"] = base64.b64encode(audio_bytes).decode("utf-8")
+        except Exception as e:
+            logger.warning(f"Voice synthesis notice: {e}")
+
+    return result_dict
+
+
+@app.post("/api/clinical/expand")
+async def expand_clinical_knowledge_endpoint(payload: ClinicalExpansionRequest, request: Request):
+    """
+    Synthesizes and dynamically expands the clinical knowledge base using EIH's own AI.
+    Validates schema, persists updates atomically to JSON, computes SHA-256 checksums,
+    and updates vector indexing.
+    """
+    enforce_rate_limit(request)
+    if not clinical_expansion_engine:
+        raise HTTPException(status_code=503, detail="Clinical expansion engine not initialized")
+
+    res = await clinical_expansion_engine.expand_knowledge_base(
+        topic=payload.topic,
+        custom_prompt=payload.custom_prompt,
+    )
+
+    if cbt_loader:
+        cbt_loader.reload()
+    if psychology_rag:
+        psychology_rag._load_data()
+        psychology_rag._init_vector_store()
+
+    return {
+        "success": res.success,
+        "status": res.status,
+        "topic": res.topic,
+        "added_conditions": res.added_conditions,
+        "added_distortions": res.added_distortions,
+        "new_version": res.new_version,
+        "checksum_sha256": res.checksum_sha256,
+        "details": res.details,
+        "timestamp": res.timestamp,
+    }
+
+
+@app.get("/api/clinical/conditions")
+async def get_all_clinical_conditions_endpoint():
+    """Returns all verified clinical conditions from the knowledge base."""
+    if clinical_expansion_engine:
+        return clinical_expansion_engine.load_psychology_library()
+    if psychology_rag:
+        return psychology_rag.get_all_conditions()
+    return []
+
+
+# =========================================================================
 # SELF-LEARNING THERAPY & VECTOR CLINICAL MEMORY ENDPOINTS
 # =========================================================================
 
@@ -1091,19 +1224,65 @@ async def process_therapy(request_data: SelfLearningTherapyRequest, request: Req
 
 
 @app.get("/api/voice")
-async def stream_voice(text: str, voice: str = "en-US-AriaNeural", rate: str = "-5%"):
+@app.post("/api/voice")
+async def stream_voice(
+    request: Request,
+    text: str | None = None,
+    voice: str | None = None,
+    rate: str = "-5%",
+):
     """
     Zero-Cost Natural Voice Synthesis streaming via Microsoft Edge Neural TTS.
+    Accepts GET query params or POST JSON/FormData payload with robust text sanitization.
     """
-    import edge_tts
+    target_text = text
+    target_voice = voice or "en-US-AriaNeural"
 
-    async def audio_stream():
-        communicate = edge_tts.Communicate(text, voice=voice, rate=rate)
-        async for chunk in communicate.stream():
-            if isinstance(chunk, dict) and chunk.get("type") == "audio" and "data" in chunk:
-                yield bytes(chunk["data"])  # type: ignore[arg-type]
+    if request.method == "POST":
+        content_type = request.headers.get("content-type", "")
+        if content_type.startswith("application/json"):
+            try:
+                body = await request.json()
+                if isinstance(body, dict):
+                    target_text = body.get("text") or target_text
+                    target_voice = body.get("voice") or target_voice
+            except Exception:
+                pass
+        elif "form" in content_type:
+            try:
+                form_data = await request.form()
+                target_text = form_data.get("text", target_text)
+                target_voice = form_data.get("voice", target_voice)
+            except Exception:
+                pass
 
-    return StreamingResponse(audio_stream(), media_type="audio/mpeg")
+    if not target_text or not str(target_text).strip():
+        raise HTTPException(status_code=400, detail="Missing text parameter for speech synthesis")
+
+    clean_text = sanitize_text_for_speech(str(target_text))
+    if not clean_text:
+        raise HTTPException(status_code=400, detail="Text contained no speakable characters after sanitization")
+
+    try:
+        audio_bytes = await audio_engine.synthesize_speech_bytes(clean_text, voice=target_voice)
+        if not audio_bytes:
+            raise HTTPException(status_code=500, detail="Voice synthesis returned empty audio")
+
+        return Response(
+            content=audio_bytes,
+            media_type="audio/mpeg",
+            headers={
+                "Content-Type": "audio/mpeg",
+                "Content-Length": str(len(audio_bytes)),
+                "Accept-Ranges": "bytes",
+                "Cache-Control": "public, max-age=3600",
+            },
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Voice stream error: {e}")
+        raise HTTPException(status_code=500, detail=f"Voice synthesis error: {e!s}") from e
 
 
 # =========================================================================
