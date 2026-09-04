@@ -437,11 +437,11 @@ function constructGenerativePsychologicalReply(
 
   if (parsed.topicKey === 'dialogue_opening' || isGreeting(lower) || cognitiveDiag.conversationalIntent === 'greeting') {
     const openPool = [
-      `I am listening with full presence and zero judgment—tell me what thoughts, feelings, or dilemmas are on your mind today.`,
-      `I am right here with you with focused attention. What feels most important or pressing for us to unpack together right now?`,
-      `I'm tuned in and ready—how is your mind and nervous system feeling in this moment?`,
-      `Good to connect with you. Take a comfortable breath and let me know what is on your mind.`,
-      `I'm right here with you. What is occupying your thoughts or energy today?`,
+      `I am listening with full clinical presence—tell me what thoughts, feelings, or dilemmas are on your mind today.`,
+      `I am attentive with focused clinical presence. What feels most important for us to unpack together right now?`,
+      `I am tuned in and ready—what specific emotion or situation would you like to explore in this moment?`,
+      `I am ready to listen. Please share the core thoughts or challenges weighing on you today.`,
+      `What is occupying your thoughts or emotional energy today?`,
     ];
     return selectUniqueItem(openPool, usedKeys, 's1_open_dialogue', history);
   } else if (parsed.topicKey === 'advice_request' || lower.includes('what should i do') || lower.includes('research') || lower.includes('advice') || lower.includes('remedy')) {

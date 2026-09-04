@@ -192,12 +192,16 @@ Keep it conversational for text-to-speech. Do not use markdown or lists."""
         try:
             loop = asyncio.get_event_loop()
             if loop.is_running():
-                return "I hear the weight of what you are carrying. Let us take a steady breath together and unpack this gently."
+                import concurrent.futures
+                with concurrent.futures.ThreadPoolExecutor() as pool:
+                    resp = pool.submit(asyncio.run, partner.respond(user_message)).result()
+                    return resp.reply
             else:
                 resp = asyncio.run(partner.respond(user_message))
                 return resp.reply
-        except Exception:
-            return "I am right here with you. Take a steady breath, and let's explore this step by step."
+        except Exception as e:
+            logger.error(f"Fallback psychologist partner failed: {e}")
+            raise RuntimeError(f"Therapeutic reasoning engine failed: {e!s}") from e
 
 
 # Singleton instance

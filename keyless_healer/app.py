@@ -697,7 +697,7 @@ HTML_UI = r"""<!DOCTYPE html>
         updateSources(data.sources);
         playTTS(encodeURIComponent(data.reply));
       } catch (err) {
-        appendMessage('ai', 'Connection interruption. Take a slow breath, I am still with you.');
+        appendMessage('ai', '[Connection Notice: Unable to communicate with clinical engine. Please verify backend status.]');
       }
     }
 

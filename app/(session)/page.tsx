@@ -42,14 +42,8 @@ const getFormattedTime = () => {
 export default function SanctuarySessionPage() {
   const [currentLanguage, setCurrentLanguage] = useState<LanguageItem>(GLOBAL_LANGUAGE_CATALOG[0]);
   const [userLocale, setUserLocale] = useState<string>("en-US");
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "init",
-      sender: "ai",
-      text: "I am here with you. Take a slow breath and share whatever has been weighing on you.",
-      timestamp: "",
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [inputVal, setInputVal] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isBackendHealthy, setIsBackendHealthy] = useState<boolean | null>(null);
@@ -116,14 +110,12 @@ export default function SanctuarySessionPage() {
       browserSpeechController.setLanguageLocale(matchedLang.speechLocale);
 
       // Check if URL specifies a condition focus (e.g., ?focus=gad)
-      let customGreeting = matchedLang.companionGreeting;
       if (typeof window !== "undefined") {
         const params = new URLSearchParams(window.location.search);
         const focusId = params.get("focus") || params.get("condition");
         if (focusId) {
           const matchedCond = getConditionById(focusId);
           if (matchedCond) {
-            customGreeting = `I see we are focusing on ${matchedCond.name}. Take a slow breath with me. ${matchedCond.solutions.cbt_reframing}`;
             setTelemetry({
               dominant_emotion: matchedCond.name,
               polyvagal_state: matchedCond.triguna_balance,
@@ -134,14 +126,6 @@ export default function SanctuarySessionPage() {
           }
         }
       }
-
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === "init"
-            ? { ...msg, text: customGreeting, timestamp: getFormattedTime() }
-            : msg
-        )
-      );
     });
 
     return () => {
@@ -250,6 +234,7 @@ export default function SanctuarySessionPage() {
     }
     browserSpeechController.cancelSpeech();
 
+    setErrorMessage(null);
     isSendingRef.current = true;
     setIsLoading(true);
     setInputVal("");
@@ -264,7 +249,7 @@ export default function SanctuarySessionPage() {
     setMessages((prev) => [...prev, userMsg]);
 
     const historyPayload: ChatHistoryItem[] = messagesRef.current
-      .filter((m) => m.id !== "init" && m.text.trim())
+      .filter((m) => m.text.trim())
       .slice(-8)
       .map((m) => ({
         sender: m.sender,
@@ -304,32 +289,7 @@ export default function SanctuarySessionPage() {
       playVoice(response.reply, response.audio_base64);
     } catch (error) {
       console.error("Chat communication notice:", error);
-      const companion = generateDynamicCompanionReply({
-        userText: messageText,
-      });
-      const fallbackReply = companion.reply || "I am here with you. Take a steady breath and let's explore this step by step.";
-      const fallbackSources: ClinicalSource[] = [];
-      if (companion.libraryCondition) {
-        fallbackSources.push({
-          title: `${companion.libraryCondition.name} (${companion.libraryCondition.triguna_balance})`,
-          summary: `CBT: ${companion.libraryCondition.solutions.cbt_reframing} | Somatic: ${companion.libraryCondition.solutions.somatic_anchor} | Pranayama: ${companion.libraryCondition.solutions.pranayama}`,
-          source: 'psychology_library',
-        });
-      }
-
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `${Date.now()}-ai-fallback`,
-          sender: "ai",
-          text: fallbackReply,
-          timestamp: getFormattedTime(),
-          engine: "Cognitive Companion Engine (Ayurvedic & Neuro Grounded)",
-          sources: fallbackSources,
-        },
-      ]);
-
-      playVoice(fallbackReply);
+      setErrorMessage("Unable to reach the clinical reasoning engine. Please check your connection and retry.");
     } finally {
       setIsLoading(false);
       isSendingRef.current = false;
@@ -372,15 +332,6 @@ export default function SanctuarySessionPage() {
     setUserLocale(lang.speechLocale);
     saveLanguagePreference(lang.code, isAuto);
     browserSpeechController.setLanguageLocale(lang.speechLocale);
-
-    // If pristine session, localize the initial greeting
-    setMessages((prev) =>
-      prev.map((msg) =>
-        msg.id === "init" && prev.length === 1
-          ? { ...msg, text: lang.companionGreeting }
-          : msg
-      )
-    );
   };
 
   // Start/Stop Voice Recognition with Hands-Free Turn Taking
@@ -468,6 +419,35 @@ export default function SanctuarySessionPage() {
 
       {/* 2. CONVERSATION STREAM */}
       <main className="flex-1 overflow-y-auto px-4 py-6 max-w-3xl w-full mx-auto space-y-4">
+        {messages.length === 0 && (
+          <div className="flex flex-col items-center justify-center text-center p-8 border border-[#283c32] rounded-2xl bg-[#14201a]/60 backdrop-blur-sm my-8 space-y-3">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-950/80 border border-emerald-700/60 flex items-center justify-center text-2xl shadow-inner">
+              🌿
+            </div>
+            <h2 className="text-base font-semibold text-[#ecf3ee]">
+              Clinical Session Active
+            </h2>
+            <p className="text-xs text-[#9cb5a6] max-w-sm leading-relaxed">
+              Speak freely using the microphone or type below. Your input will be analyzed with neuropsychological and Ayurvedic grounding.
+            </p>
+          </div>
+        )}
+
+        {errorMessage && (
+          <div className="flex items-center justify-between p-3.5 rounded-xl bg-rose-950/70 border border-rose-800/80 text-rose-200 text-xs shadow-md">
+            <div className="flex items-center gap-2">
+              <span className="text-sm">⚠️</span>
+              <span>{errorMessage}</span>
+            </div>
+            <button
+              onClick={() => setErrorMessage(null)}
+              className="text-rose-400 hover:text-rose-200 font-bold px-1.5 py-0.5 rounded hover:bg-rose-900/50"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
         {messages.map((m) => (
           <div
             key={m.id}

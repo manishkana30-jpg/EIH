@@ -61,17 +61,15 @@ class LocalVoiceDaemon:
         except Exception as e:
             logger.warning(f"Ollama local generation notice: {e}")
 
-        # Local deterministic heuristic fallback
-        lower = user_text.lower()
-        if any(w in lower for w in ["anxious", "panic", "fear", "racing", "stress"]):
-            return "I can feel how overwhelmed you're feeling right now, my friend. I'm right here with you—take a slow breath. You don't have to carry this alone."
-        elif any(w in lower for w in ["angry", "frustrated", "burnout", "mad"]):
-            return "I completely hear how frustrated and upset you are, and you have every right to feel that way! Let it all out, I'm here to listen."
-        elif any(w in lower for w in ["normal", "fine", "okay", "good", "alright"]):
-            return "It makes me so happy to hear that you are feeling good today. How is the rest of your day going, or is there anything fun on your mind?"
-        elif any(w in lower for w in ["sad", "depressed", "heavy", "exhausted", "lonely", "down"]):
-            return "I can feel how heavy and hurting your heart is right now. It is completely okay to let your guard down with me. I'm right beside you."
-        return "I am right here with you, listening with all my heart. Tell me what's on your mind today, my friend."
+        # Dynamic fallback through keyless psychologist partner
+        try:
+            from keyless_healer.lib.psychologist_partner import PsychologistPartner
+            partner = PsychologistPartner()
+            resp = await partner.respond(user_text)
+            return resp.reply
+        except Exception as partner_err:
+            logger.error(f"Partner fallback failed: {partner_err}")
+            raise RuntimeError("Clinical reasoning engine unavailable") from partner_err
 
     async def handle_client(self, websocket, path=None):
         logger.info(f"Client connected from {websocket.remote_address}")

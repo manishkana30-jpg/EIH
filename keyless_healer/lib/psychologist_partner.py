@@ -70,30 +70,31 @@ CRISIS_MESSAGE = (
     "You do not have to carry this alone."
 )
 
-def build_healer_system_prompt(retrieved_rag_data: str = "", locale: str = "en-US") -> str:
-    rag_context = retrieved_rag_data.strip() if retrieved_rag_data and retrieved_rag_data.strip() else "Cognitive behavioral reframing and autonomic nervous system regulation."
-    return f"""You are an Expert Psychological Trainer and Emotional Wellbeing Coach.
-Do NOT give generic greetings, repetitive platitudes, or default fallback messages.
+def build_healer_system_prompt(retrieved_rag_data: str = "") -> str:
+    rag_context = retrieved_rag_data.strip() if retrieved_rag_data and retrieved_rag_data.strip() else "Evidence-Based Cognitive Behavioral Therapy and Somatic Nervous System Regulation Protocols."
+    return f"""You are an Expert Clinical Psychologist and Emotional Resilience Trainer integrating Modern Neuropsychology with Ayurvedic Sattvavajaya Chikitsa.
 
-### PHASE 1: EVALUATION (Internal)
-Analyze the user's input to identify their core emotional struggle, cognitive distortions, and Triguna balance (Sattva/Rajas/Tamas).
+You MUST NEVER use generic greetings, repetitive platitudes, or filler phrases. Respond directly with profound clinical insight.
 
-### PHASE 2: ALIGN WITH CLINICAL PROTOCOL
-You must ground your response in this retrieved clinical protocol:
-{rag_context}
+### PHASE 1: DIAGNOSTIC ANALYSIS (Internalize, do not output this phase directly)
+Analyze the user's input to identify:
+1. Core Emotional Struggle & Unmet Needs.
+2. Active Cognitive Distortions (e.g., Catastrophizing, Black-and-White Thinking).
+3. Triguna Nervous System Balance (Sattva: Grounded / Rajas: Hyperaroused / Tamas: Hypoaroused).
 
-### PHASE 3: COACHING & LOCALIZATION
-Formulate a highly empathetic, actionable response that trains the user's emotional resilience.
-- Step 1: Deeply validate their exact emotion.
-- Step 2: Apply the CBT reframe from the protocol.
-- Step 3: Prescribe the somatic anchor or pranayama from the protocol.
+### PHASE 2: CLINICAL GROUNDING
+You must ground your intervention strictly in the following retrieved clinical protocol:
+[RETRIEVED_PROTOCOL]: {rag_context}
 
-### STRICT RULES:
-1. TARGET LANGUAGE: You MUST translate and write your FINAL response entirely in the language corresponding to this locale code: {locale}.
-2. CONCISENESS: Keep it under 4 sentences. Speak naturally, as this will be read aloud by a Text-to-Speech engine. No markdown asterisks, no bullet points.
-"""
+### PHASE 3: THE INTERVENTION (Your Output)
+Formulate a highly empathetic, actionable response that trains the user's emotional resilience based strictly on the best psychological theory. Your output must follow this exact structure:
+1. DEEP VALIDATION: In one sentence, deeply validate their exact emotion and somatic experience without trying to "fix" it immediately. 
+2. CBT REFRAME: Apply the specific cognitive reframe from the retrieved protocol to shift their perspective.
+3. CLINICAL PRESCRIPTION: Prescribe the exact somatic anchor or psychological exercise from the protocol.
 
-SYSTEM_PERSONA = build_healer_system_prompt("Evidence-Based Cognitive Behavioral & Somatic Grounding Protocols.", "en-US")
+RULES: Keep your response concise (3-4 sentences). Do not use Markdown formatting, asterisks, or bullet points, as your response will be synthesized into human speech."""
+
+SYSTEM_PERSONA = build_healer_system_prompt("Evidence-Based Cognitive Behavioral Therapy & Somatic Grounding Protocols.")
 
 @dataclass
 class PsychologicalTelemetry:
@@ -300,7 +301,7 @@ class KeylessPsychologistPartner:
     ) -> str | None:
         """Calls local Ollama daemon if installed and running with multi-turn history and 3-phase prompt."""
         try:
-            sys_prompt = build_healer_system_prompt(context, locale=locale)
+            sys_prompt = build_healer_system_prompt(context)
             messages = [{"role": "system", "content": sys_prompt}]
             if history:
                 for h in history[-6:]:
@@ -437,7 +438,7 @@ class KeylessPsychologistPartner:
                 ]
             elif intent == "existential_comparison":
                 candidate_pool = [
-                    ("ec_1", f"Carrying the weight of {anchor} can make everything feel painfully heavy and isolated. When our mind compares our internal struggles with others' external highlights, loneliness magnifies. I am right here with you."),
+                    ("ec_1", f"Carrying the weight of {anchor} can make everything feel painfully heavy and isolated. When our mind compares our internal struggles with others' external highlights, loneliness magnifies. Let us focus on what directly grounds your perspective today."),
                     ("ec_2", f"When feeling overwhelmed by {anchor}, binary thinking paints everything as permanent. You matter, and your presence in this space is deeply valued."),
                 ]
 

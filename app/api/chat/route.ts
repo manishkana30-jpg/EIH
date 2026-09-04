@@ -49,7 +49,7 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error("Chat route error:", error);
     return NextResponse.json(
-      { error: "Internal processing error", fallback: "Take a deep breath. I am still here with you." },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
