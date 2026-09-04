@@ -134,62 +134,88 @@ class PsychologyLibraryRAG:
             except Exception as e:
                 logger.debug(f"ChromaDB query fallback triggered: {e}")
 
-        # 2. Lexical, Symptom & Domain Pattern Fallback Matcher
+        # 2. Lexical, Symptom & Multi-lingual Domain Pattern Fallback Matcher
         domain_patterns = {
-            "gad": r"\b(worry|worrying|worried|what if|anxious|anxiety|nervous|tense|restless|dread)\b",
-            "burnout_fatigue": r"\b(burnout|burned out|exhausted|exhaustion|brain fog|lethargy|overworked|depleted|no energy|drained)\b",
-            "panic_dysregulation": r"\b(panic|heart racing|palpitations|cannot breathe|suffocating|trembling|doom|shaking|chest pounding)\b",
-            "major_depressive_inertia": r"\b(depressed|depression|low mood|feeling down|empty|emptiness|hopeless|despair|anhedonia|unmotivated|worthless|useless)\b",
-            "imposter_perfectionism": r"\b(imposter|impostor|fraud|failure|failed|failing|perfectionist|perfectionism|not good enough|incompetent|will be exposed)\b",
-            "relationship_heartbreak": r"\b(breakup|broke up|ex|partner|husband|wife|fight|argument|heartbreak|broken heart|rejection|unloved|abandoned)\b",
-            "existential_loneliness": r"\b(lonely|loneliness|all alone|isolated|isolation|nobody cares|no friends|alienated|empty world|disconnected)\b",
-            "anger_frustration_dysregulation": r"\b(angry|anger|furious|rage|mad|irritated|annoyed|unfair|hate them|screaming|boss yelled|injustice)\b",
-            "grief_bereavement": r"\b(grief|grieving|bereavement|died|passed away|mourning|sorrow|funeral|lost my|crying|wept)\b",
-            "social_evaluative_threat": r"\b(social anxiety|shy|embarrassed|judging me|public speaking|awkward|crowds|humiliated|presentation)\b",
+            "gad": r"\b(worry|worrying|worried|what if|anxious|anxiety|nervous|tense|restless|dread|ghabrahat|chinta|bechaini|tanaav|ansiedad|angst)\b",
+            "burnout_fatigue": r"\b(burnout|burned out|exhausted|exhaustion|brain fog|lethargy|overworked|depleted|no energy|drained|thak gaya|thakan|agotamiento|epuisement)\b",
+            "panic_dysregulation": r"\b(panic|panic attack|heart racing|palpitations|cannot breathe|suffocating|trembling|doom|shaking|chest pounding|saas nahi|ghutan|ataque de panico)\b",
+            "major_depressive_inertia": r"\b(depressed|depression|low mood|feeling down|empty|emptiness|hopeless|despair|anhedonia|unmotivated|worthless|useless|udaas|udaasi|depresion)\b",
+            "imposter_perfectionism": r"\b(imposter|impostor|fraud|failure|failed|failing|perfectionist|perfectionism|not good enough|incompetent|will be exposed|kabil nahi)\b",
+            "relationship_heartbreak": r"\b(breakup|broke up|ex|partner|husband|wife|fight|argument|heartbreak|broken heart|rejection|unloved|abandoned|dil toot|rupture)\b",
+            "existential_loneliness": r"\b(lonely|loneliness|all alone|isolated|isolation|nobody cares|no friends|alienated|empty world|disconnected|akela|akelepan|soledad|solitude)\b",
+            "anger_frustration_dysregulation": r"\b(angry|anger|furious|rage|mad|irritated|annoyed|unfair|hate them|screaming|boss yelled|injustice|gussa|krodh|colere)\b",
+            "grief_bereavement": r"\b(grief|grieving|bereavement|died|passed away|mourning|sorrow|funeral|lost my|crying|wept|shok|duelo|deuil)\b",
+            "social_evaluative_threat": r"\b(social anxiety|shy|embarrassed|judging me|public speaking|awkward|crowds|humiliated|presentation|sharm|timide)\b",
             "adhd_executive_overwhelm": r"\b(adhd|procrastinate|procrastinating|procrastination|task paralysis|cannot start|overwhelmed with tasks|distracted|frozen)\b",
-            "insomnia_hyperarousal": r"\b(insomnia|cannot sleep|cant sleep|waking up|sleep trouble|staying awake|lying in bed|midnight|toss and turn)\b",
-            "health_somatic_anxiety": r"\b(health anxiety|hypochondria|illness|disease|cancer|heart attack|checking pulse|medical symptoms|sick)\b",
+            "insomnia_hyperarousal": r"\b(insomnia|cannot sleep|cant sleep|waking up|sleep trouble|staying awake|lying in bed|midnight|toss and turn|neend nahi|insomnio)\b",
+            "health_somatic_anxiety": r"\b(health anxiety|hypochondria|illness|disease|cancer|heart attack|checking pulse|medical symptoms|tumor|googling symptoms|bimaari)\b",
             "trauma_hypervigilance": r"\b(trauma|traumatic|ptsd|flashback|triggered|hypervigilant|abuse|startled|nightmares)\b",
+            "ocd_intrusive_rumination": r"\b(ocd|intrusive thought|pure o|bad thoughts|disturbing thought|unwanted thought|mental check|reassurance seeking|bure vichar)\b",
+            "compassion_fatigue_caregiver": r"\b(caregiver|caregiving|taking care of|caring for sick|caring for elderly|caregiver burnout|caregiver fatigue|secondary trauma|caretaker)\b",
+            "decision_paralysis_ambivalence": r"\b(decision paralysis|cannot decide|cant decide|hard to choose|choice overload|too many options|analysis paralysis|indecision)\b",
+            "shame_core_defectiveness": r"\b(shame|ashamed|toxic shame|deeply flawed|defective|fundamentally broken|unworthy|hate myself|want to disappear|sharmindagi|scham)\b",
+            "workplace_mobbing_toxic_culture": r"\b(toxic workplace|toxic boss|toxic manager|gaslighting boss|workplace mobbing|workplace harassment|hostile workplace|sunday dread)\b",
+            "somatic_chronic_pain_amplification": r"\b(chronic pain|neuroplastic pain|back pain|fibromyalgia|pain reprocessing|tension headache|pain flare|somatic tracking|dard)\b",
         }
 
+        # 2. Lexical, Symptom & Multi-lingual Weighted Scoring Matcher
         import re
-        for cond_id, pattern in domain_patterns.items():
-            if re.search(pattern, clean_query, re.IGNORECASE):
-                condition = self.get_condition_by_id(cond_id)
-                if condition:
-                    return self._format_retrieval_result(condition)
+        words = [w for w in re.split(r"[\s,.;:!?()]+", clean_query) if len(w) >= 3]
 
         best_match = None
-        best_score = 0
+        highest_score = 0
 
         for item in self.library_data:
             score = 0
-            item_id = item.get("id")
-            if isinstance(item_id, str) and item_id and item_id.lower() in clean_query:
+            cond_id = str(item.get("id", ""))
+
+            # 1. Direct Pattern Match (+12)
+            pattern = domain_patterns.get(cond_id)
+            if pattern and re.search(pattern, clean_query, re.IGNORECASE):
+                score += 12
+
+            # 2. Direct ID match (+10)
+            if cond_id and cond_id.replace("_", " ") in clean_query:
                 score += 10
-            name = item.get("name")
+
+            # 3. Name word matching (+4)
+            name = item.get("name", "")
             if isinstance(name, str):
-                for word in name.lower().split():
-                    if len(word) > 3 and word in clean_query:
+                for nw in re.split(r"[\s,&]+", name.lower()):
+                    if len(nw) >= 4 and nw in clean_query:
+                        score += 4
+
+            # 4. Category matching (+3)
+            category = item.get("category", "")
+            if isinstance(category, str):
+                for cw in re.split(r"[\s,&]+", category.lower()):
+                    if len(cw) >= 4 and cw in clean_query:
                         score += 3
-            core_symptoms = item.get("core_symptoms")
+
+            # 5. Core symptoms matching (+3 to +8)
+            core_symptoms = item.get("core_symptoms", [])
             if isinstance(core_symptoms, list):
                 for sym in core_symptoms:
                     if isinstance(sym, str):
-                        for sword in sym.lower().split():
-                            if len(sword) > 3 and sword in clean_query:
-                                score += 2
-            distortions = item.get("cognitive_distortions")
+                        sym_words = sym.lower().split()
+                        sym_overlap = sum(1 for sw in sym_words if len(sw) >= 4 and sw in words)
+                        if sym_overlap >= 2:
+                            score += 8
+                        elif sym_overlap == 1:
+                            score += 3
+
+            # 6. Cognitive distortions matching (+7)
+            distortions = item.get("cognitive_distortions", [])
             if isinstance(distortions, list):
                 for dist in distortions:
                     if isinstance(dist, str) and dist.lower() in clean_query:
-                        score += 4
+                        score += 7
 
-            if score > best_score:
-                best_score = score
+            if score > highest_score:
+                highest_score = score
                 best_match = item
 
-        if best_match and best_score >= 2:
+        if best_match and highest_score >= 4:
             return self._format_retrieval_result(best_match)
 
         return None

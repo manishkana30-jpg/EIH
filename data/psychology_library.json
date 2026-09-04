@@ -332,5 +332,149 @@
     },
     "severity_level": "Moderate to High",
     "requires_immediate_crisis": false
+  },
+  {
+    "id": "ocd_intrusive_rumination",
+    "name": "Intrusive Thoughts, Pure O & Obsessive-Compulsive Rumination",
+    "category": "Obsessive-Compulsive & Intrusive Spirals",
+    "triguna_balance": "Rapid Rajasic Loops, Agitated Manas",
+    "core_symptoms": [
+      "Distressing, taboo, or repetitive intrusive mental images or doubts",
+      "Compulsive mental checking, neutralizing, or endless internal reassurance seeking",
+      "Severe anxiety triggered by the fear that having a thought equates to wanting to act on it",
+      "Hyper-fixation on uncertainty and inability to tolerate not knowing with 100% certainty"
+    ],
+    "cognitive_distortions": [
+      "Thought-Action Fusion ('Having this disturbing thought means I am dangerous or secretly desire it')",
+      "Need for Absolute Certainty"
+    ],
+    "solutions": {
+      "cbt_reframing": "Exposure & Response Prevention (ERP) / Pratipaksha Bhavana: Thoughts are neurochemical noise, not reflections of character. Agree with uncertainty: 'Maybe that thought is true, maybe it isn't. I am willing to live with uncertainty without performing a mental ritual.'",
+      "somatic_anchor": "Passive Observing Posture: Sit upright, open your palms facing upward on your knees, and silently watch the thought drift through the mind like a pop-up ad without clicking or debating it.",
+      "pranayama": "Viloma Pranayama (Interrupted Breathing): Inhale with two short pauses, exhale smoothly and continuously for 6 seconds to interrupt obsessive motor loops.",
+      "micro_habit": "The 10-Minute Compulsion Delay: When gripped by an urge to mentally check, google, or ask for reassurance, set a timer for 10 minutes and engage your hands in physical work."
+    },
+    "severity_level": "Moderate to High",
+    "requires_immediate_crisis": false
+  },
+  {
+    "id": "compassion_fatigue_caregiver",
+    "name": "Caregiver Burnout, Secondary Traumatization & Empathic Strain",
+    "category": "Caregiver & Empathic Exhaustion",
+    "triguna_balance": "Depleted Ojas, Overextended Rajas into Tamas",
+    "core_symptoms": [
+      "Profound emotional and physical exhaustion from caring for dependents, patients, or struggling loved ones",
+      "Emotional numbness or sudden uncharacteristic resentment toward the person being cared for",
+      "Persistent guilt when taking personal time or attending to basic self-care",
+      "Feeling trapped in an endless cycle of self-sacrifice and chronic responsibility"
+    ],
+    "cognitive_distortions": [
+      "Omnipotence Fallacy ('If I do not hold everything together, catastrophic harm will occur')",
+      "Self-Sacrifice Martyrdom ('My needs do not matter as long as they are suffering')"
+    ],
+    "solutions": {
+      "cbt_reframing": "Equanimity & Differentiated Empathy: You can hold compassion for another without absorbing their emotional suffering as your personal responsibility. Self-preservation is a moral prerequisite for caregiving.",
+      "somatic_anchor": "Somatic Shielding Boundary: Place both hands flat against your lower ribs, take a slow breath into your side-body, and feel the physical boundary between your skin and the external room.",
+      "pranayama": "Anuloma Viloma with Sattvic Heart Focus: Inhale through left nostril for 4 seconds visualizing replenishing ojas, exhale through right for 6 seconds releasing absorbed fatigue.",
+      "micro_habit": "The Non-Negotiable 20-Minute Island: Carve out 20 continuous minutes daily where you are completely off-duty from all caregiving and care-managing tasks."
+    },
+    "severity_level": "Moderate",
+    "requires_immediate_crisis": false
+  },
+  {
+    "id": "decision_paralysis_ambivalence",
+    "name": "Severe Decisional Conflict, Choice Overload & Ambivalence",
+    "category": "Executive Function & Decision Stress",
+    "triguna_balance": "Fluctuating Vata-Rajas, Impaired Buddhi",
+    "core_symptoms": [
+      "Agonizing inability to choose between options (career, lifestyle, relationship, purchases)",
+      "Obsessive pro/con list making and repeated re-evaluation without resolution",
+      "Preemptive regret and mourning of the unchosen alternative before even deciding",
+      "Paralyzing fear of making an imperfect or suboptimal choice"
+    ],
+    "cognitive_distortions": [
+      "Maximizing Fallacy ('There is one mathematically perfect choice and any flaw proves I failed')",
+      "Catastrophic Regret Overestimation"
+    ],
+    "solutions": {
+      "cbt_reframing": "Satisficing & Two-Way Door Principle: Most decisions are reversible experiments rather than irreversible life sentences. Good-enough action produces more empirical data than endless rumination.",
+      "somatic_anchor": "Gut-Body Resonance Test: Hold option A in mind for 60 seconds and observe chest/gut contraction or expansion; then shake out your body and test option B for 60 seconds.",
+      "pranayama": "Ujjayi Victorious Breath: Constrict the back of the throat slightly to create an ocean sound on inhale and exhale for 4 minutes to anchor the prefrontal cortex.",
+      "micro_habit": "Coin-Flip Intuition Trigger: Flip a coin on a stalled decision; while the coin is in mid-air, notice which outcome your subconscious is hoping lands."
+    },
+    "severity_level": "Mild to Moderate",
+    "requires_immediate_crisis": false
+  },
+  {
+    "id": "shame_core_defectiveness",
+    "name": "Toxic Core Shame, Internalized Defectiveness & Self-Scrutiny",
+    "category": "Identity & Core Shame",
+    "triguna_balance": "Heavy Tamas, Self-Attacking Rajas",
+    "core_symptoms": [
+      "Visceral sensation of wanting to disappear, shrink, or hide from the gaze of others",
+      "Deep-seated belief that one is fundamentally flawed, unlovable, or 'wrong' at the core",
+      "Chronic defensive perfectionism or anticipatory social withdrawal to prevent exposure",
+      "Intense somatic sinking feeling in the stomach or solar plexus during perceived mistakes"
+    ],
+    "cognitive_distortions": [
+      "Core Defectiveness ('I am not just someone who made a mistake; I AM the mistake')",
+      "Global Negative Self-Labeling"
+    ],
+    "solutions": {
+      "cbt_reframing": "Guilt vs Shame Distinction: Guilt says 'I did something that misaligned with my values.' Shame says 'I am defective.' Separate your fundamental human worth from past actions.",
+      "somatic_anchor": "Compassionate Palm-to-Cheek Anchor: Gently cup your own cheek with your warm palm, drop your shoulders, and speak to yourself as you would to a frightened 5-year-old child.",
+      "pranayama": "Chandra Bhedana (Left Nostril Lunar Breath): Inhale exclusively through left nostril for 4 seconds, exhale through right for 6 seconds to activate the soothing parasympathetic self-compassion network.",
+      "micro_habit": "Daily Unconditional Acceptance Affirmation: Look in the mirror for 10 seconds and say: 'I accept my full humanity, flaws and all, without needing to earn worth today.'"
+    },
+    "severity_level": "Moderate to High",
+    "requires_immediate_crisis": false
+  },
+  {
+    "id": "workplace_mobbing_toxic_culture",
+    "name": "Workplace Gaslighting, Mobbing & Institutional Moral Injury",
+    "category": "Workplace & Relational Trauma",
+    "triguna_balance": "Severe Rajas-Pitta Inflammation, Exhausted Sattva",
+    "core_symptoms": [
+      "Severe anticipatory dread on Sunday nights or before work communications",
+      "Experiencing gaslighting, credit stealing, subtle exclusion, or hostile management",
+      "Self-doubt regarding one's own professional competence and sanity following manipulation",
+      "Hyper-arousal, insomnia, and obsessive documentation of work interactions"
+    ],
+    "cognitive_distortions": [
+      "Internalized Victim-Blaming ('If I were just smarter or tougher, they wouldn't treat me this way')",
+      "Stockholm Professional Attachment"
+    ],
+    "solutions": {
+      "cbt_reframing": "Systemic Realignment & Decoupling: Toxic corporate behavior reflects institutional pathology and management dysfunction, not personal inadequacy. Work is a financial transaction, not an identity test.",
+      "somatic_anchor": "Boundary Stance Grounding: Stand tall, widen your stance to shoulder width, plant your feet firmly into the floor, and imagine an impenetrable glass barrier between you and toxic demands.",
+      "pranayama": "Shitali Cooling Breath with Strong Exhale: Inhale through curled tongue or parted lips, hold for 2 seconds, and exhale forcefully through nose to discharge workplace rage.",
+      "micro_habit": "Objective Fact Dossier: Maintain a strictly objective, emotion-free log of deliverables, emails, and dates stored exclusively on personal non-work hardware."
+    },
+    "severity_level": "Moderate to High",
+    "requires_immediate_crisis": false
+  },
+  {
+    "id": "somatic_chronic_pain_amplification",
+    "name": "Neuroplastic Chronic Pain & Central Somatosensory Sensitization",
+    "category": "Somatic & Pain Sensitization",
+    "triguna_balance": "Entrenched Vata-Rajas in Dhatus",
+    "core_symptoms": [
+      "Persistent non-structural physical tension, back pain, fibromyalgia, or tension headaches",
+      "Hyper-focus on monitoring pain levels and fear of movement or flare-ups",
+      "Pain escalates dramatically during periods of emotional stress, anger, or anxiety",
+      "Feelings of despair that the physical body is permanently broken or fragile"
+    ],
+    "cognitive_distortions": [
+      "Structural Catastrophizing ('My spine is ruined and any ache means further tissue damage')",
+      "Fear-Avoidance Cycle"
+    ],
+    "solutions": {
+      "cbt_reframing": "Pain Reprocessing Therapy (PRT) / Neuroplastic Understanding: Chronic centralized pain is a miscalibrated brain alarm system signaling perceived danger, not structural tissue damage. The brain learned pain; it can unlearn it.",
+      "somatic_anchor": "Somatic Tracking with Lightness: Focus gently on the physical sensation for 30 seconds with pure curious neutrality, like observing clouds in the sky, without trying to fight or eliminate it.",
+      "pranayama": "So-Hum Breath of Safety: Inhale silently thinking 'So' (I am), exhale thinking 'Hum' (Whole and safe). Breathe safety directly into the sensitized body part.",
+      "micro_habit": "Somatic Joy Movement: Engage in 3 minutes of gentle, unmonitored physical movement (stretching, swaying to music) while deliberately paying attention to parts of your body that feel neutral or comfortable."
+    },
+    "severity_level": "Moderate",
+    "requires_immediate_crisis": false
   }
 ]

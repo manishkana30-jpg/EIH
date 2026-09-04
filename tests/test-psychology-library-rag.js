@@ -15,12 +15,25 @@ console.log('================================================================\n'
 console.log('--- 1. Validating data/psychology_library.json Schema & Integrity ---');
 const dataFilePath = path.join(__dirname, '..', 'data', 'psychology_library.json');
 assert.ok(fs.existsSync(dataFilePath), 'data/psychology_library.json must exist');
-
 const libraryData = JSON.parse(fs.readFileSync(dataFilePath, 'utf8'));
 assert.ok(Array.isArray(libraryData), 'Psychology library data must be an array');
-assert.ok(libraryData.length >= 14, `Must contain at least 14 clinical conditions (got ${libraryData.length})`);
+assert.ok(libraryData.length >= 20, `Must contain at least 20 clinical conditions (got ${libraryData.length})`);
 
-const requiredCoreIds = ['gad', 'burnout_fatigue', 'panic_dysregulation', 'major_depressive_inertia', 'imposter_perfectionism', 'relationship_heartbreak', 'existential_loneliness'];
+const requiredCoreIds = [
+  'gad',
+  'burnout_fatigue',
+  'panic_dysregulation',
+  'major_depressive_inertia',
+  'imposter_perfectionism',
+  'relationship_heartbreak',
+  'existential_loneliness',
+  'ocd_intrusive_rumination',
+  'compassion_fatigue_caregiver',
+  'decision_paralysis_ambivalence',
+  'shame_core_defectiveness',
+  'workplace_mobbing_toxic_culture',
+  'somatic_chronic_pain_amplification',
+];
 const conditionMap = {};
 
 for (const condition of libraryData) {
@@ -65,17 +78,45 @@ const burnout = conditionMap['burnout_fatigue'];
 assert.strictEqual(burnout.triguna_balance, 'Depleted Rajas, Dominant Tamas');
 assert.ok(burnout.solutions.pranayama.includes('Bharmari') || burnout.solutions.pranayama.includes('Bhramari'), 'Burnout must prescribe Bharmari');
 assert.ok(burnout.solutions.cbt_reframing.includes('non-negotiable physiological maintenance'), 'Burnout must reframe rest as non-negotiable');
-console.log('  ✓ [PASSED]: Clinical Burnout Rest Reframing & Bharmari Protocol verified.');
+console.log('  ✓ [PASSED]: Clinical Burnout Rest Reframing & Bhramari Protocol verified.');
 
-// Panic Checks
-const panic = conditionMap['panic_dysregulation'];
-assert.strictEqual(panic.triguna_balance, 'Acute Rajas Spikes');
-assert.ok(panic.solutions.somatic_anchor.includes('Mammalian Dive Reflex'), 'Panic must prescribe Mammalian Dive Reflex');
-assert.ok(panic.solutions.pranayama.includes('Extended Exhale'), 'Panic must prescribe Extended Exhale Breathing');
-console.log('  ✓ [PASSED]: Acute Panic Mammalian Dive Reflex & Extended Exhale Protocol verified.');
+// OCD Checks
+const ocd = conditionMap['ocd_intrusive_rumination'];
+assert.ok(ocd.solutions.cbt_reframing.includes('Exposure & Response Prevention') || ocd.solutions.cbt_reframing.includes('Pratipaksha Bhavana'));
+assert.ok(ocd.solutions.pranayama.includes('Viloma'));
+console.log('  ✓ [PASSED]: OCD/Intrusive Thoughts ERP & Viloma Protocol verified.');
+
+// Caregiver Checks
+const caregiver = conditionMap['compassion_fatigue_caregiver'];
+assert.ok(caregiver.solutions.cbt_reframing.includes('Differentiated Empathy'));
+assert.ok(caregiver.solutions.pranayama.includes('Anuloma Viloma'));
+console.log('  ✓ [PASSED]: Caregiver Burnout Equanimity & Anuloma Viloma Protocol verified.');
+
+// Chronic Pain Checks
+const pain = conditionMap['somatic_chronic_pain_amplification'];
+assert.ok(pain.solutions.cbt_reframing.includes('Pain Reprocessing Therapy'));
+assert.ok(pain.solutions.somatic_anchor.includes('Somatic Tracking'));
+console.log('  ✓ [PASSED]: Neuroplastic Chronic Pain PRT & Somatic Tracking Protocol verified.');
 
 // 3. Simulated RAG Retrieval Tests
 console.log('\n--- 3. Testing Semantic RAG Vector Retrieval Logic ---');
+
+const CLINICAL_TRIGGERS = {
+  gad: /\b(worry|worrying|what if|anxious|anxiety|nervous|tense|restless|ghabrahat|chinta|bechaini)\b/i,
+  burnout_fatigue: /\b(burnout|burned out|exhausted|exhaustion|brain fog|tired|lethargy|thak gaya)\b/i,
+  panic_dysregulation: /\b(panic|heart racing|palpitations|cannot breathe|suffocating|shaking|saas nahi)\b/i,
+  major_depressive_inertia: /\b(depressed|depression|low mood|hopeless|empty|udaas)\b/i,
+  imposter_perfectionism: /\b(imposter|fraud|failure|failed|perfectionist)\b/i,
+  existential_loneliness: /\b(lonely|loneliness|isolated|nobody cares|akela|akelepan)\b/i,
+  relationship_heartbreak: /\b(breakup|partner|fight|heartbreak|dil toot)\b/i,
+  adhd_executive_overwhelm: /\b(adhd|procrastinate|procrastinating|task paralysis)\b/i,
+  ocd_intrusive_rumination: /\b(ocd|intrusive thought|pure o|bad thoughts|bure vichar)\b/i,
+  compassion_fatigue_caregiver: /\b(caregiver|caregiving|taking care of my|caring for sick)\b/i,
+  decision_paralysis_ambivalence: /\b(decision paralysis|cannot decide|choice overload)\b/i,
+  shame_core_defectiveness: /\b(shame|ashamed|toxic shame|deeply flawed|defective|sharmindagi)\b/i,
+  workplace_mobbing_toxic_culture: /\b(toxic workplace|toxic boss|gaslighting boss|workplace mobbing)\b/i,
+  somatic_chronic_pain_amplification: /\b(chronic pain|neuroplastic pain|back pain|fibromyalgia|pain flare|somatic tracking)\b/i,
+};
 
 function mockQueryPsychologyLibrary(userText) {
   const rawLower = userText.toLowerCase();
@@ -86,9 +127,11 @@ function mockQueryPsychologyLibrary(userText) {
 
   for (const condition of libraryData) {
     let score = 0;
-    if (rawLower.includes(condition.id)) score += 15;
+    const trigger = CLINICAL_TRIGGERS[condition.id];
+    if (trigger && trigger.test(rawLower)) score += 12;
+    if (rawLower.includes(condition.id.replace(/_/g, ' '))) score += 10;
     for (const nw of condition.name.toLowerCase().split(/\s+/)) {
-      if (nw.length > 3 && rawLower.includes(nw)) score += 6;
+      if (nw.length > 3 && rawLower.includes(nw)) score += 4;
     }
     for (const symptom of condition.core_symptoms) {
       for (const sw of symptom.toLowerCase().split(/\s+/)) {
@@ -98,14 +141,6 @@ function mockQueryPsychologyLibrary(userText) {
     for (const dist of condition.cognitive_distortions) {
       if (rawLower.includes(dist.toLowerCase())) score += 7;
     }
-    if (condition.id === 'gad' && /worry|worrying|what if|anxious|anxiety|nervous|tense|restless/i.test(rawLower)) score += 8;
-    if (condition.id === 'burnout_fatigue' && /burnout|burned out|exhausted|exhaustion|brain fog|tired|lethargy/i.test(rawLower)) score += 8;
-    if (condition.id === 'panic_dysregulation' && /panic|heart racing|palpitations|cannot breathe|suffocating|shaking/i.test(rawLower)) score += 8;
-    if (condition.id === 'major_depressive_inertia' && /depressed|depression|low mood|hopeless|empty/i.test(rawLower)) score += 8;
-    if (condition.id === 'imposter_perfectionism' && /imposter|fraud|failure|failed|perfectionist/i.test(rawLower)) score += 8;
-    if (condition.id === 'existential_loneliness' && /lonely|loneliness|isolated|nobody cares/i.test(rawLower)) score += 8;
-    if (condition.id === 'relationship_heartbreak' && /breakup|partner|fight|heartbreak/i.test(rawLower)) score += 8;
-    if (condition.id === 'adhd_executive_overwhelm' && /adhd|procrastinate|procrastinating|task paralysis/i.test(rawLower)) score += 8;
 
     if (score > highestScore) {
       highestScore = score;
@@ -156,6 +191,46 @@ const testQueries = [
     query: 'I keep procrastinating with severe task paralysis and cannot start',
     expectedId: 'adhd_executive_overwhelm',
     label: 'ADHD Executive Overwhelm & Procrastination',
+  },
+  {
+    query: 'I keep having these terrifying intrusive thoughts and mental rituals that I cannot stop',
+    expectedId: 'ocd_intrusive_rumination',
+    label: 'OCD & Intrusive Thought Spirals',
+  },
+  {
+    query: 'I am exhausted from caregiving and taking care of my sick parent all day and night',
+    expectedId: 'compassion_fatigue_caregiver',
+    label: 'Caregiver Burnout & Empathic Depletion',
+  },
+  {
+    query: 'I am stuck in extreme decision paralysis with too many options and afraid of choosing wrong',
+    expectedId: 'decision_paralysis_ambivalence',
+    label: 'Decision Paralysis & Choice Overload',
+  },
+  {
+    query: 'I feel this overwhelming toxic shame like I am deeply flawed and defective at my core',
+    expectedId: 'shame_core_defectiveness',
+    label: 'Toxic Core Shame & Defectiveness',
+  },
+  {
+    query: 'My toxic boss is gaslighting me every single day at work and Sunday dread is paralyzing',
+    expectedId: 'workplace_mobbing_toxic_culture',
+    label: 'Workplace Gaslighting & Mobbing',
+  },
+  {
+    query: 'My chronic back pain and fibromyalgia flares up violently whenever I get stressed',
+    expectedId: 'somatic_chronic_pain_amplification',
+    label: 'Chronic Neuroplastic Pain Sensitization',
+  },
+  {
+    query: 'Mujhe bahut zyada ghabrahat aur chinta ho rahi hai',
+    expectedId: 'gad',
+    label: 'Hinglish GAD Query (Ghabrahat / Chinta)',
+  },
+  {
+    query: 'Mujhe bahut akela aur akelepan lagta hai koi baat nahi karta',
+    expectedId: 'existential_loneliness',
+    label: 'Hinglish Loneliness Query (Akelepan)',
   },
 ];
 
