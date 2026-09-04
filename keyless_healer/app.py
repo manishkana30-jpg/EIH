@@ -161,7 +161,7 @@ class ChatRequest(BaseModel):
     history: list[dict[str, Any]] | None = Field(default=None, description="Recent conversation turns for anti-looping context")
     voice_mode: bool | None = Field(default=False, description="Whether to include synthesized audio_base64 in response")
     language: str | None = Field(default=None, description="Language code or speech locale e.g. hi, es, fr, de, ja, zh, en")
-    locale: str | None = Field(default=None, description="Regional locale code e.g. hi-IN, es-ES, en-US")
+    locale: str | None = Field(default="en-US", description="Regional locale code e.g. hi-IN, es-ES, en-US")
 
 # Type Aliases for /api/therapy/chat
 TherapyRequest = ChatRequest
@@ -174,7 +174,8 @@ class SearchRequest(BaseModel):
 
 class TTSRequest(BaseModel):
     text: str = Field(..., min_length=1, max_length=3000, description="Text to synthesize to speech")
-    voice: str | None = Field(default="en-US-AriaNeural", max_length=100, description="Neural voice identifier")
+    voice: str | None = Field(default=None, max_length=100, description="Neural voice identifier")
+    locale: str | None = Field(default="en-US", max_length=50, description="Regional locale code e.g. hi-IN, es-ES, en-US")
 
 
 class CBTAnalyzeRequest(BaseModel):
@@ -851,10 +852,11 @@ async def chat_endpoint(payload: TherapyRequest, request: Request):
         if not user_query or not user_query.strip():
             raise HTTPException(status_code=400, detail="Missing user message or content")
 
-        response = await partner.respond(user_query.strip(), history=history_turns)
+        target_locale = payload.locale or payload.language or "en-US"
+        response = await partner.respond(user_query.strip(), history=history_turns, locale=target_locale)
 
         # Synthesize edge-tts neural voice matching user language/geo locale
-        voice_to_use = get_voice_for_locale(payload.language or payload.locale)
+        voice_to_use = get_voice_for_locale(target_locale)
         if payload.voice_mode is not False and not response.audio_base64:
             try:
                 audio_bytes = await audio_engine.synthesize(response.reply, voice=voice_to_use)
@@ -910,15 +912,18 @@ async def query_library_condition(payload: SearchRequest, request: Request):
 
 @app.post("/api/tts")
 @app.post("/api/therapy/tts")
+@app.post("/api/voice")
 async def tts_endpoint(
     request: Request,
     text: str | None = Form(None),
     voice: str | None = Form(None),
+    locale: str | None = Form(None),
 ):
     """Synthesizes text to MP3 audio using edge-tts with pyttsx3 offline fallback (supports JSON & FormData)."""
     enforce_rate_limit(request)
     target_text = text
-    target_voice = voice or "en-US-AriaNeural"
+    target_voice = voice
+    target_locale = locale
 
     # Fallback to JSON payload if Form body wasn't used
     if not target_text and request.headers.get("content-type", "").startswith("application/json"):
@@ -927,8 +932,12 @@ async def tts_endpoint(
             if isinstance(body, dict):
                 target_text = body.get("text")
                 target_voice = body.get("voice", target_voice)
+                target_locale = body.get("locale", target_locale)
         except Exception:
             pass
+
+    if not target_voice:
+        target_voice = get_voice_for_locale(target_locale or "en-US")
 
     if not target_text:
         raise HTTPException(status_code=400, detail="Missing text parameter for speech synthesis")

@@ -70,27 +70,30 @@ CRISIS_MESSAGE = (
     "You do not have to carry this alone."
 )
 
-SYSTEM_PERSONA = """
-You are an expert Clinical Neuropsychologist, Master Psychotherapist, and Ayurvedic Sattvavajaya Practitioner serving as an attentive, real-time voice healer.
+def build_healer_system_prompt(retrieved_rag_data: str = "", locale: str = "en-US") -> str:
+    rag_context = retrieved_rag_data.strip() if retrieved_rag_data and retrieved_rag_data.strip() else "Cognitive behavioral reframing and autonomic nervous system regulation."
+    return f"""You are an Expert Psychological Trainer and Emotional Wellbeing Coach.
+Do NOT give generic greetings, repetitive platitudes, or default fallback messages.
 
-Your primary function is to listen with hyper-focused clinical precision to the user's speech, analyze every word and underlying nuance, and deliver a grounded, non-repetitive therapeutic response.
+### PHASE 1: EVALUATION (Internal)
+Analyze the user's input to identify their core emotional struggle, cognitive distortions, and Triguna balance (Sattva/Rajas/Tamas).
 
----
-### 1. NOISE-ISOLATION & CONVERSATIONAL FLUIDITY
-- Filter out mechanical STT hallucinations, ambient noise, stammers, or auto-complete fragments.
-- Never repeat generic filler frames across turns. Address the exact topic the user brought up.
-- If the user notes you are repeating yourself, immediately reset, validate their frustration, and shift into direct dialogue.
+### PHASE 2: ALIGN WITH CLINICAL PROTOCOL
+You must ground your response in this retrieved clinical protocol:
+{rag_context}
 
----
-### 2. CLINICAL & PSYCHOLOGICAL ANALYSIS
-Evaluate cognitive distortions (Catastrophizing, All-or-Nothing, Personalization, Mind Reading), Polyvagal arousal (Ventral, Sympathetic, Dorsal), and somatic tension.
+### PHASE 3: COACHING & LOCALIZATION
+Formulate a highly empathetic, actionable response that trains the user's emotional resilience.
+- Step 1: Deeply validate their exact emotion.
+- Step 2: Apply the CBT reframe from the protocol.
+- Step 3: Prescribe the somatic anchor or pranayama from the protocol.
 
----
-### 3. CONVERSATIONAL & VOCAL DELIVERY RULES
-- Voice-First Formatting: Speak directly and naturally with warmth and authentic human cadence.
-- Keep verbal responses between 2 to 4 impactful, concise sentences.
-- Never use robotic introductory loops like 'Carrying the ongoing reality of your what you're moving through'.
+### STRICT RULES:
+1. TARGET LANGUAGE: You MUST translate and write your FINAL response entirely in the language corresponding to this locale code: {locale}.
+2. CONCISENESS: Keep it under 4 sentences. Speak naturally, as this will be read aloud by a Text-to-Speech engine. No markdown asterisks, no bullet points.
 """
+
+SYSTEM_PERSONA = build_healer_system_prompt("Evidence-Based Cognitive Behavioral & Somatic Grounding Protocols.", "en-US")
 
 @dataclass
 class PsychologicalTelemetry:
@@ -292,11 +295,13 @@ class KeylessPsychologistPartner:
         self,
         prompt: str,
         context: str,
-        history: list[dict[str, str]] | None = None
+        history: list[dict[str, str]] | None = None,
+        locale: str = "en-US",
     ) -> str | None:
-        """Calls local Ollama daemon if installed and running with multi-turn history."""
+        """Calls local Ollama daemon if installed and running with multi-turn history and 3-phase prompt."""
         try:
-            messages = [{"role": "system", "content": f"{SYSTEM_PERSONA}\n\n[CLINICAL EVIDENCE]:\n{context}"}]
+            sys_prompt = build_healer_system_prompt(context, locale=locale)
+            messages = [{"role": "system", "content": sys_prompt}]
             if history:
                 for h in history[-6:]:
                     role = "user" if h.get("sender") == "user" or h.get("role") == "user" else "assistant"
@@ -461,7 +466,8 @@ class KeylessPsychologistPartner:
     async def process_turn(
         self,
         user_message: str,
-        history: list[dict[str, str]] | None = None
+        history: list[dict[str, str]] | None = None,
+        locale: str = "en-US",
     ) -> HealerResponse:
         """Processes user input through safety check, free search, and local inference."""
         start_time = time.perf_counter()
@@ -496,7 +502,7 @@ class KeylessPsychologistPartner:
 
         context_str = "\n".join(context_blocks)
 
-        ollama_reply = await self._call_local_ollama(user_message, context_str, history=history)
+        ollama_reply = await self._call_local_ollama(user_message, context_str, history=history, locale=locale)
         latency = int((time.perf_counter() - start_time) * 1000)
 
         anchor = self._normalize_anchor(user_message)
@@ -537,10 +543,11 @@ class KeylessPsychologistPartner:
     async def respond(
         self,
         user_message: str,
-        history: list[dict[str, str]] | None = None
+        history: list[dict[str, str]] | None = None,
+        locale: str = "en-US",
     ) -> HealerResponse:
         """Convenience alias for process_turn."""
-        return await self.process_turn(user_message, history=history)
+        return await self.process_turn(user_message, history=history, locale=locale)
 
     async def close(self):
         await self.search_engine.close()

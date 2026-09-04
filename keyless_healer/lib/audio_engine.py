@@ -42,23 +42,29 @@ VOICE_CATALOG = {
     "en-us": "en-US-AriaNeural",
     "en-gb": "en-GB-SoniaNeural",
     "en-in": "en-IN-NeerjaNeural",
+    "en-au": "en-AU-NatashaNeural",
+    "en-ca": "en-CA-ClaraNeural",
     "hi": "hi-IN-SwaraNeural",
     "hi-in": "hi-IN-SwaraNeural",
     "es": "es-ES-ElviraNeural",
     "es-es": "es-ES-ElviraNeural",
     "es-mx": "es-MX-DaliaNeural",
+    "es-us": "es-US-PalomaNeural",
     "fr": "fr-FR-DeniseNeural",
     "fr-fr": "fr-FR-DeniseNeural",
+    "fr-ca": "fr-CA-SylvieNeural",
     "de": "de-DE-KatjaNeural",
     "de-de": "de-DE-KatjaNeural",
     "zh": "zh-CN-XiaoxiaoNeural",
     "zh-cn": "zh-CN-XiaoxiaoNeural",
+    "zh-tw": "zh-TW-HsiaoChenNeural",
     "ja": "ja-JP-NanamiNeural",
     "ja-jp": "ja-JP-NanamiNeural",
     "ar": "ar-SA-ZariyahNeural",
     "ar-sa": "ar-SA-ZariyahNeural",
     "pt": "pt-BR-FranciscaNeural",
     "pt-br": "pt-BR-FranciscaNeural",
+    "pt-pt": "pt-PT-RaquelNeural",
     "it": "it-IT-ElsaNeural",
     "it-it": "it-IT-ElsaNeural",
     "ru": "ru-RU-SvetlanaNeural",
@@ -73,19 +79,28 @@ VOICE_CATALOG = {
     "th": "th-TH-PremwadeeNeural",
     "id": "id-ID-GadisNeural",
     "ta": "ta-IN-PallaviNeural",
+    "ta-in": "ta-IN-PallaviNeural",
     "te": "te-IN-ShrutiNeural",
+    "te-in": "te-IN-ShrutiNeural",
     "bn": "bn-IN-TanishaaNeural",
+    "bn-in": "bn-IN-TanishaaNeural",
     "gu": "gu-IN-DhwaniNeural",
+    "gu-in": "gu-IN-DhwaniNeural",
     "mr": "mr-IN-AarohiNeural",
+    "mr-in": "mr-IN-AarohiNeural",
 }
 
 def get_voice_for_locale(locale_or_code: str | None = None) -> str:
     """Resolves highest-fidelity regional neural voice for detected geo locale or language code."""
     if not locale_or_code:
         return "en-US-AriaNeural"
-    clean = locale_or_code.strip().lower()
+    clean = locale_or_code.strip().lower().replace("_", "-")
     if clean in VOICE_CATALOG:
         return VOICE_CATALOG[clean]
+    # Check language prefix before hyphen e.g. "hi-IN" -> "hi"
+    lang_prefix = clean.split("-")[0]
+    if lang_prefix in VOICE_CATALOG:
+        return VOICE_CATALOG[lang_prefix]
     for key, voice in VOICE_CATALOG.items():
         if clean.startswith(key):
             return voice

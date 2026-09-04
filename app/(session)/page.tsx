@@ -12,6 +12,7 @@ import {
   GLOBAL_LANGUAGE_CATALOG,
   LanguageItem,
   detectLocationAndLanguage,
+  detectUserLocale,
   getStoredLanguage,
   saveLanguagePreference,
 } from "@/lib/i18n/language-catalog";
@@ -40,6 +41,7 @@ const getFormattedTime = () => {
 
 export default function SanctuarySessionPage() {
   const [currentLanguage, setCurrentLanguage] = useState<LanguageItem>(GLOBAL_LANGUAGE_CATALOG[0]);
+  const [userLocale, setUserLocale] = useState<string>("en-US");
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "init",
@@ -78,6 +80,7 @@ export default function SanctuarySessionPage() {
   const hasInitializedRef = useRef(false);
   const messagesRef = useRef<Message[]>(messages);
   const currentLanguageRef = useRef<LanguageItem>(currentLanguage);
+  const userLocaleRef = useRef<string>("en-US");
 
   // Keep refs in sync for safe access inside callbacks
   useEffect(() => {
@@ -88,10 +91,18 @@ export default function SanctuarySessionPage() {
     currentLanguageRef.current = currentLanguage;
   }, [currentLanguage]);
 
+  useEffect(() => {
+    userLocaleRef.current = userLocale;
+  }, [userLocale]);
+
   // Automatic Geo-Location & Language Pack Detection on Launch
   useEffect(() => {
     if (hasInitializedRef.current) return;
     hasInitializedRef.current = true;
+
+    // Detect browser locale immediately
+    const initialLocale = detectUserLocale();
+    setUserLocale(initialLocale);
 
     healerClient.checkHealth().then((healthy) => setIsBackendHealthy(healthy));
 
@@ -101,6 +112,7 @@ export default function SanctuarySessionPage() {
       const matchedLang = GLOBAL_LANGUAGE_CATALOG.find((l) => l.code === targetCode) || GLOBAL_LANGUAGE_CATALOG[0];
       
       setCurrentLanguage(matchedLang);
+      setUserLocale(matchedLang.speechLocale);
       browserSpeechController.setLanguageLocale(matchedLang.speechLocale);
 
       // Check if URL specifies a condition focus (e.g., ?focus=gad)
@@ -264,7 +276,8 @@ export default function SanctuarySessionPage() {
         messageText,
         historyPayload,
         true,
-        currentLanguageRef.current.code
+        currentLanguageRef.current.code,
+        userLocaleRef.current
       );
 
       const aiMsg: Message = {
@@ -353,9 +366,10 @@ export default function SanctuarySessionPage() {
     }
   };
 
-  // Handle language switch (manual or auto GPS)
+  // Handle language switch (manual or auto detection)
   const handleLanguageChange = (lang: LanguageItem, isAuto: boolean) => {
     setCurrentLanguage(lang);
+    setUserLocale(lang.speechLocale);
     saveLanguagePreference(lang.code, isAuto);
     browserSpeechController.setLanguageLocale(lang.speechLocale);
 

@@ -550,7 +550,7 @@ export function deduceCountryFromTimezoneAndLocale(): { countryCode: string; cou
 }
 
 /**
- * Detect user's GPS Location & Language with graceful fallback
+ * Detect user's Location & Language non-intrusively via Timezone and Browser Language (Zero intrusive GPS popups)
  */
 export async function detectLocationAndLanguage(): Promise<DetectedLocationInfo> {
   if (typeof window === 'undefined') {
@@ -563,42 +563,42 @@ export async function detectLocationAndLanguage(): Promise<DetectedLocationInfo>
     };
   }
 
-  // 1. Try Browser GPS Geolocation API
-  if (navigator?.geolocation) {
-    try {
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          timeout: 4000,
-          maximumAge: 600000,
-        });
-      });
-
-      const { latitude, longitude } = position.coords;
-      const geoResult = deduceCountryFromCoordinates(latitude, longitude);
-
-      return {
-        countryCode: geoResult.countryCode,
-        countryName: geoResult.countryName,
-        regionName: `${geoResult.countryName} (GPS Accurate)`,
-        defaultLanguageCode: geoResult.defaultLanguageCode,
-        isGps: true,
-        latitude,
-        longitude,
-      };
-    } catch (_) {
-      // GPS permission denied or timed out; seamlessly fallback to Timezone/Locale
-    }
-  }
-
-  // 2. Fallback to Timezone & Locale Deductions
+  // Pure non-intrusive Timezone & Locale Deductions (No GPS permission popups)
   const tzResult = deduceCountryFromTimezoneAndLocale();
   return {
     countryCode: tzResult.countryCode,
     countryName: tzResult.countryName,
-    regionName: `${tzResult.countryName} (Local Region)`,
+    regionName: `${tzResult.countryName} (Detected Region)`,
     defaultLanguageCode: tzResult.defaultLanguageCode,
     isGps: false,
   };
+}
+
+/**
+ * Detect user's BCP-47 speech locale code (e.g. 'en-US', 'hi-IN', 'es-ES')
+ */
+export function detectUserLocale(): string {
+  if (typeof window === 'undefined') {
+    return 'en-US';
+  }
+
+  // 1. Direct browser language tag if available
+  if (navigator?.language) {
+    const nav = navigator.language;
+    // Match against known speech locales in catalog
+    const matched = GLOBAL_LANGUAGE_CATALOG.find(
+      (l) => l.speechLocale.toLowerCase() === nav.toLowerCase() || l.code.toLowerCase() === nav.split('-')[0].toLowerCase()
+    );
+    if (matched) {
+      return matched.speechLocale;
+    }
+    return nav;
+  }
+
+  // 2. Timezone-based deduction
+  const tzResult = deduceCountryFromTimezoneAndLocale();
+  const langItem = GLOBAL_LANGUAGE_CATALOG.find((l) => l.code === tzResult.defaultLanguageCode);
+  return langItem?.speechLocale || 'en-US';
 }
 
 /**

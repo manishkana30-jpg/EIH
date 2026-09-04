@@ -82,7 +82,8 @@ class HealerBackendClient {
     message: string,
     history?: ChatHistoryItem[],
     voiceMode: boolean = true,
-    language?: string
+    language?: string,
+    locale?: string
   ): Promise<ChatResponse> {
     const cleanMessage = message.trim();
 
@@ -122,6 +123,7 @@ class HealerBackendClient {
             history,
             voice_mode: voiceMode,
             language: language || undefined,
+            locale: locale || undefined,
           }),
           signal: controller.signal,
         });
