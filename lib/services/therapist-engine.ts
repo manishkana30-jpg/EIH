@@ -2,6 +2,7 @@
 import { searchMentalHealthEvidence, ClinicalSearchResult } from "./search-fallback";
 import { detectCrisis } from "../safety/crisis-detector";
 import { queryPsychologyLibrary } from "../knowledge/psychology-library-rag";
+import { generateDynamicCompanionReply } from "../nlp/conversational-companion-engine";
 
 const THERAPIST_SYSTEM_PROMPT = `
 You are an Expert Clinical Psychologist and Emotional Resilience Trainer integrating Modern Neuropsychology with Ayurvedic Sattvavajaya Chikitsa.
@@ -256,7 +257,8 @@ export async function generateTherapeuticResponse(
     const pollRes = await fetch("https://text.pollinations.ai/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messages: messagesPayload, model: "openai", seed: 42 })
+      body: JSON.stringify({ messages: messagesPayload, model: "openai", seed: 42 }),
+      signal: AbortSignal.timeout(3500)
     });
     if (pollRes.ok) {
       const text = await pollRes.text();
@@ -267,5 +269,19 @@ export async function generateTherapeuticResponse(
     }
   } catch {}
 
-  throw new Error("All clinical reasoning engines unavailable. Please check your backend connection or API key.");
+  // 5. Infallible Tier 5: Pure Deterministic Cognitive Companion (Zero External Dependency, 100% Offline)
+  const companion = generateDynamicCompanionReply({
+    userText: userMessage,
+    history: (history || []).map((h) => ({
+      role: h.role === "assistant" || h.sender === "ai" ? "assistant" : "user",
+      text: h.content || h.text || "",
+    })),
+  });
+
+  return {
+    reply: companion.reply,
+    sources: allSources,
+    providerUsed: "Cognitive Companion Engine (Edge Fallback)",
+    isCrisis: false,
+  };
 }
