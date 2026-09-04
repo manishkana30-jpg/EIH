@@ -17,7 +17,6 @@ import {
   saveLanguagePreference,
 } from "@/lib/i18n/language-catalog";
 import { saveLivePsychologyTelemetry } from "@/lib/telemetry/psychology-store";
-import { generateDynamicCompanionReply } from "@/lib/nlp/conversational-companion-engine";
 import { getConditionById } from "@/lib/knowledge/psychology-library-rag";
 
 

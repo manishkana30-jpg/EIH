@@ -202,16 +202,8 @@ async def entrypoint(ctx: JobContext) -> None:
     )
 
     start_fn = getattr(agent, "start", None)
-    session: Any = start_fn(ctx.room, participant) if callable(start_fn) else None
-
-    # Await user clinical input on room join
-    if session and hasattr(session, "say"):
-        say_task = session.say(
-            "Session initialized. I am ready whenever you are.",
-            allow_interruptions=True,
-        )
-        if asyncio.iscoroutine(say_task) or hasattr(say_task, "__await__"):
-            await say_task  # type: ignore
+    if callable(start_fn):
+        start_fn(ctx.room, participant)
 
 
 if __name__ == "__main__":

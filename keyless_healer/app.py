@@ -535,14 +535,6 @@ HTML_UI = r"""<!DOCTYPE html>
   <main>
     <section class="chat-container">
       <div class="chat-messages" id="messagesContainer">
-        <div class="msg msg-ai">
-          <strong>Keyless Healer:</strong><br>
-          Welcome to your private, evidence-grounded sanctuary. You can speak naturally or type anything you are carrying right now.
-          <div class="meta-tags">
-            <span class="tag tag-provider">PubMed NCBI + Edge TTS</span>
-            <span class="tag tag-emotion">Calmness & Safety</span>
-          </div>
-        </div>
       </div>
 
       <div class="prompt-pills">
@@ -1006,7 +998,9 @@ async def voice_turn_endpoint(
     enforce_rate_limit(request)
     content = await file.read()
     transcription = await audio_engine.transcribe(content)
-    user_query = transcription if transcription else "I am here."
+    if not transcription or not transcription.strip():
+        raise HTTPException(status_code=400, detail="No speech detected in audio")
+    user_query = transcription.strip()
 
     response = await partner.respond(user_query)
     audio_bytes = await audio_engine.synthesize(response.reply, voice=voice)
@@ -1366,7 +1360,7 @@ async def run_automated_tests():
 
     # Test Speech Synthesis (Edge TTS)
     print("\nTesting Edge-TTS Speech Synthesis...")
-    audio = await audio_engine.synthesize("Take a slow, gentle breath in through your nose.")
+    audio = await audio_engine.synthesize("Clinical neuro-affective synthesis validation.")
     print(f"  -> Generated Speech Audio: {len(audio)} bytes")
     assert len(audio) > 500, "TTS audio must contain audio bytes"
 

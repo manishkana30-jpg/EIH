@@ -125,10 +125,10 @@ class CBTLibraryEngine {
       return {
         detected_distortions: [],
         primary_distortion: null,
-        socratic_prompts: ["What thought is most prominent in your awareness right now?"],
-        reframing_insight: "Take a slow breath. Let us observe the pattern with curiosity rather than judgment.",
-        recommended_protocol: this.getProtocolById('act_defusion_toolkit') || null,
-        somatic_cue: "Ground through your feet and feel the floor beneath you.",
+        socratic_prompts: [],
+        reframing_insight: "",
+        recommended_protocol: null,
+        somatic_cue: "",
         confidence_score: 0.0,
       };
     }

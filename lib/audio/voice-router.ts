@@ -24,7 +24,6 @@ import {
   classifyNeuroscienceDimensions,
   NeuroscienceDiagnosticResult,
 } from '../knowledge/emotion-classifier';
-import { generateDynamicCompanionReply } from '../nlp/conversational-companion-engine';
 
 export type VoiceTier = 1 | 2 | 3 | 4;
 
@@ -512,13 +511,8 @@ class VoiceRouter {
         console.warn('[VoiceRouter] /api/chat fetch notice (using clinical companion fallback):', chatErr);
       }
 
-      // Offline / Local knowledge fallback if API unavailable
       if (!replyText) {
-        const generated = generateDynamicCompanionReply({
-          userText: cleanText,
-          sessionUsedKeys: this.sessionUsedKeys,
-        });
-        replyText = generated.reply;
+        throw new Error('Clinical inference engine unavailable.');
       }
 
       const latency = Math.round(performance.now() - startTime);

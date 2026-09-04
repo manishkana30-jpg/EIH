@@ -1,5 +1,4 @@
 // lib/api/healer-client.ts
-import { generateDynamicCompanionReply } from '../nlp/conversational-companion-engine';
 import { emotionClassifier } from '../knowledge/emotion-classifier';
 import { runHiddenCognitiveDiagnostics } from '../nlp/cognitive-orchestrator';
 import { detectCrisis } from '../safety/crisis-detector';
@@ -189,56 +188,12 @@ class HealerBackendClient {
           };
         }
       }
-    } catch (edgeErr) {
-      console.warn('Edge reasoning notice, using in-browser Cognitive Companion engine...');
+    } catch (err) {
+      console.warn('Edge reasoning notice:', err);
     }
 
-    // TIER 3: In-Browser Dynamic Cognitive Companion (100% Offline & Resilient)
-    const formattedHistory = (history || []).map((h) => ({
-      role: h.sender === 'ai' ? 'assistant' : 'user',
-      text: h.text,
-    }));
-
-    const diagResult = emotionClassifier.classifyText(cleanMessage);
-    const cogResult = runHiddenCognitiveDiagnostics(cleanMessage);
-    const companionResult = generateDynamicCompanionReply({
-      userText: cleanMessage,
-      history: formattedHistory,
-      diagnostic: diagResult,
-    });
-
-    const sources: ClinicalSource[] = [
-      {
-        title: companionResult.psychologicalAssessment?.scientificStudy || 'Clinical Neuropsychology & Polyvagal Grounding',
-        source: 'PubMed NCBI Evidence Bank',
-      },
-    ];
-
-    if (companionResult.libraryCondition) {
-      sources.unshift({
-        title: `${companionResult.libraryCondition.name} (${companionResult.libraryCondition.triguna_balance})`,
-        summary: `CBT: ${companionResult.libraryCondition.solutions.cbt_reframing} | Somatic: ${companionResult.libraryCondition.solutions.somatic_anchor} | Pranayama: ${companionResult.libraryCondition.solutions.pranayama}`,
-        source: 'psychology_library',
-      });
-    }
-
-    return {
-      reply: companionResult.reply,
-      engine: 'Cognitive Companion Engine (Ayurvedic & Neuro Grounded)',
-      sources,
-      is_crisis: false,
-      telemetry: {
-        dominant_emotion: companionResult.psychologicalAssessment?.dimension || diagResult.dimensionName || 'Calmness',
-        polyvagal_state: companionResult.psychologicalAssessment?.polyvagalState || cogResult.polyvagalState,
-        cbt_distortion: cogResult.cbtDistortion,
-        percentages: {
-          [diagResult.dimensionName || 'Calmness']: Math.round((diagResult.coreAffect?.arousal || 0.6) * 100),
-          Grounding: 80,
-          ReflectiveState: 70,
-        },
-        strategy: cogResult.therapeuticStrategy,
-      },
-    };
+    // If all tiers fail, throw explicit error for UI alert banner
+    throw new Error('Unable to reach clinical reasoning engine. Please ensure the backend daemon is running or check your network connection.');
   }
 
   /**

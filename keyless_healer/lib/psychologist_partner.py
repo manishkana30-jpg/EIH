@@ -292,23 +292,26 @@ class KeylessPsychologistPartner:
             suggested_strategy=strategy
         )
 
-    async def _call_local_ollama(
+    async def _call_inference(
         self,
         prompt: str,
         context: str,
         history: list[dict[str, str]] | None = None,
         locale: str = "en-US",
-    ) -> str | None:
-        """Calls local Ollama daemon if installed and running with multi-turn history and 3-phase prompt."""
-        try:
-            sys_prompt = build_healer_system_prompt(context)
-            messages = [{"role": "system", "content": sys_prompt}]
-            if history:
-                for h in history[-6:]:
-                    role = "user" if h.get("sender") == "user" or h.get("role") == "user" else "assistant"
-                    messages.append({"role": role, "content": h.get("text") or h.get("content", "")})
-            messages.append({"role": "user", "content": prompt})
+    ) -> tuple[str | None, str]:
+        """Calls local Ollama daemon or cascaded LLM inference with multi-turn history and 3-phase prompt."""
+        sys_prompt = build_healer_system_prompt(context)
+        messages = [{"role": "system", "content": sys_prompt}]
+        if history:
+            for h in history[-6:]:
+                role = "user" if h.get("sender") == "user" or h.get("role") == "user" else "assistant"
+                content = h.get("text") or h.get("content", "")
+                if content:
+                    messages.append({"role": role, "content": content})
+        messages.append({"role": "user", "content": prompt})
 
+        # Tier 1: Local Ollama Daemon (Zero API Key)
+        try:
             res = await self.client.post(
                 f"{self.ollama_url}/api/chat",
                 json={
@@ -320,149 +323,93 @@ class KeylessPsychologistPartner:
                         "repeat_penalty": 1.25,
                         "presence_penalty": 0.6,
                         "frequency_penalty": 0.6,
-                    }
+                    },
                 },
-                timeout=8.0
+                timeout=8.0,
             )
             if res.status_code == 200:
                 data = res.json()
                 content = data.get("message", {}).get("content", "").strip()
                 if content:
-                    return content
+                    return content, f"Local Ollama ({self.ollama_model})"
         except Exception:
             pass
-        return None
 
-    def _heuristic_synthesizer(
-        self,
-        user_text: str,
-        telemetry: PsychologicalTelemetry,
-        evidence: list[Any],
-        history: list[dict[str, str]] | None = None,
-        rag_guidance: dict[str, Any] | None = None
-    ) -> str:
-        """Dynamic, multi-turn clinical synthesizer with zero loop repetitions and longitudinal variation."""
-        self._turn_counter += 1
-        turn = self._turn_counter
-        anchor = self._normalize_anchor(user_text)
-        intent = self._detect_intent(user_text)
+        # Tier 2: Groq Cloud API
+        groq_key = os.environ.get("GROQ_API_KEY", "").strip()
+        if groq_key:
+            try:
+                res = await self.client.post(
+                    "https://api.groq.com/openai/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {groq_key}", "Content-Type": "application/json"},
+                    json={
+                        "model": "llama-3.3-70b-versatile",
+                        "messages": messages,
+                        "temperature": 0.7,
+                        "max_tokens": 300,
+                    },
+                    timeout=8.0,
+                )
+                if res.status_code == 200:
+                    data = res.json()
+                    content = data.get("choices", [{}])[0].get("message", {}).get("content", "").strip()
+                    if content:
+                        return content, "Groq (Llama 3.3 70B)"
+            except Exception:
+                pass
 
-        # 1. Immediate Loop Reset Interceptor
-        if intent == "loop_complaint":
-            return "Thank you for the candid reset. I am present, attentive, and completely hearing you. Let's step away from generic reframings. Tell me directly: what is the most important thing on your mind right now?"
+        # Tier 3: Google Gemini API
+        gemini_key = os.environ.get("GEMINI_API_KEY", "").strip()
+        if gemini_key:
+            try:
+                gemini_contents = []
+                if history:
+                    for h in history[-6:]:
+                        role = "model" if h.get("sender") == "assistant" or h.get("role") == "assistant" else "user"
+                        text = h.get("text") or h.get("content", "")
+                        if text:
+                            gemini_contents.append({"role": role, "parts": [{"text": text}]})
+                gemini_contents.append({"role": "user", "parts": [{"text": prompt}]})
 
-        # 2. Identity Inquiry
-        if intent == "identity_inquiry":
-            return "Think of me as a deep listening space combining evidence-based psychology, cognitive diagnostics, and calming somatic breathwork. I am here to help you unpack thoughts, regulate your autonomic nervous system, and find grounded clarity."
+                res = await self.client.post(
+                    f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={gemini_key}",
+                    headers={"Content-Type": "application/json"},
+                    json={
+                        "systemInstruction": {"parts": [{"text": sys_prompt}]},
+                        "contents": gemini_contents,
+                        "generationConfig": {"temperature": 0.7, "maxOutputTokens": 300},
+                    },
+                    timeout=8.0,
+                )
+                if res.status_code == 200:
+                    data = res.json()
+                    candidate = data.get("candidates", [{}])[0]
+                    content = candidate.get("content", {}).get("parts", [{}])[0].get("text", "").strip()
+                    if content:
+                        return content, "Google Gemini 2.0 Flash"
+            except Exception:
+                pass
 
-        # 3. Gratitude
-        if intent == "gratitude":
-            variants = [
-                "It is truly my pleasure. Give yourself credit for showing up and taking time for your well-being today.",
-                "You are so very welcome. Whenever you need a steady, non-judgmental space to process what you're feeling, I am here.",
-                "Anytime, my friend. Taking time to reflect and care for your mental space is a profound act of resilience.",
-            ]
-            return variants[turn % len(variants)]
+        # Tier 4: Free Open Inference
+        try:
+            res = await self.client.post(
+                "https://text.pollinations.ai/",
+                headers={"Content-Type": "application/json"},
+                json={
+                    "messages": messages,
+                    "model": "openai",
+                    "seed": 42,
+                },
+                timeout=6.0,
+            )
+            if res.status_code == 200:
+                text = res.text.strip()
+                if text and len(text) > 25 and not text.lower().startswith("error"):
+                    return text, "Free Edge AI"
+        except Exception:
+            pass
 
-        # 4. Farewell
-        if intent == "farewell":
-            variants = [
-                "Take gentle care of yourself as you step away. I will be right here whenever you wish to return and reflect.",
-                "Until next time—carry that steady, grounded breath with you wherever you go. Rest well.",
-                "Wishing you restful calm. Honor how much you navigated today and give yourself permission to completely recharge.",
-            ]
-            return variants[turn % len(variants)]
-
-        # 5. Advice / Somatic Breathing Guidance
-        if intent == "advice_request":
-            variants = [
-                "Evidence-based autonomic therapy demonstrates that activating the vagal brake quickly down-regulates cortisol. Let's do a 4-second inhale followed by an extended 6-second exhale together. Notice how that long exhale softens your heart rate.",
-                "Peer-reviewed studies in cognitive neuroscience show that regulating the body first creates space for clear thinking. Place one hand gently over your chest, feel the physical support beneath you, and let your jaw release.",
-                "Clinical research and evidence-based practice show that targeted sensory re-grounding interrupts acute panic loops. Name three physical textures around you right now, then take a deep belly breath.",
-            ]
-            return variants[turn % len(variants)]
-
-        # 6. Clinical Psychoeducational Library Solution Weaving
-        if rag_guidance:
-            sols = rag_guidance.get("solutions", {})
-            cbt = sols.get("cbt_reframing", "")
-            somatic = sols.get("somatic_anchor", "")
-            pranayama = sols.get("pranayama", "")
-            micro = sols.get("micro_habit", "")
-            cond_name = rag_guidance.get("name", "Emotional Grounding")
-            cid = rag_guidance.get("condition_id", "cond")
-
-            candidate_pool = [
-                (f"rag_cbt_{cid}", f"Navigating {anchor} asks a lot of your reserves. In clinical cognitive therapy for {cond_name}, we look at it this way: {cbt} To settle your nervous system right now: {somatic}"),
-                (f"rag_som_{cid}", f"Experiencing acute tension around {anchor} is deeply exhausting. A grounding reframe: {cbt} Let's take a slow breath together and try this: {pranayama}"),
-                (f"rag_pra_{cid}", f"Holding space for what happened with {anchor} is so important. Remember: {cbt} For your daily recovery: {micro} Notice where your shoulders can drop."),
-            ]
-
-        # 7. Domain-Specific Multi-Turn Variant Pool (Zero Duplication Guardrail)
-        if not candidate_pool:
-            if intent == "work_burnout":
-                candidate_pool = [
-                    ("wb_1", f"Experiencing chronic tension with {anchor} drains cognitive focus and energy. When workplace pressure mounts, setting micro-boundaries around your recovery is essential. What boundary would feel most protective for you right now?"),
-                    ("wb_2", f"Surviving the relentless pace with {anchor} asks more than anyone can sustain indefinitely. Give yourself credit for holding on through heavy demands. What is one small demand you can safely postpone today?"),
-                    ("wb_3", f"Holding the weight of {anchor} asks a lot of your reserves. When interpersonal friction flares up at work, separating what you can control from what you cannot brings instant relief. What part is truly in your hands?"),
-                    ("wb_4", f"Facing the continuous pressure with {anchor} naturally creates cognitive and physical fatigue. Autonomic regulation research shows that taking brief 90-second sensory resets prevents executive overload. Notice your shoulders dropping."),
-                    ("wb_5", f"Managing what happened with {anchor} requires immense emotional energy. Remember that professional demands do not define your core self-worth. What would feel like a true reset tonight?"),
-                ]
-            elif intent == "setback_failure":
-                candidate_pool = [
-                    ("sf_1", f"Going through difficulties around {anchor} naturally brings up acute disappointment. Experiencing a setback hurts, yet an isolated outcome does not define your total capabilities. How can you speak to yourself with kindness here?"),
-                    ("sf_2", f"Failing or struggling with {anchor} is deeply frustrating, but it is also a temporary moment in time. When feeling overwhelmed, binary thinking tries to convince us that everything is lost. What is a more balanced perspective?"),
-                    ("sf_3", f"Experiencing a setback with {anchor} hurts, but please remember that learning curves are rarely linear. If a friend went through this exact same thing, what compassionate words would you share with them?"),
-                    ("sf_4", f"It is completely natural to feel disappointed when things don't go as planned with {anchor}. Give yourself permission to feel the sting without turning it into harsh self-judgment."),
-                ]
-            elif intent == "relationship_conflict":
-                candidate_pool = [
-                    ("rc_1", f"Navigating the complexity of {anchor} is exhausting, and giving yourself space to process your emotions is vital. When interpersonal friction happens, taking a pause prevents reactive spirals. How is your body feeling right now?"),
-                    ("rc_2", f"Dealing with {anchor} puts a significant emotional demand on your heart and mind. Relational tension triggers our deepest attachment fears. What is the core need you want understood?"),
-                    ("rc_3", f"Facing the continuous friction with {anchor} brings real physical and emotional exhaustion. Let's take a slow breath together before figuring out the next conversation."),
-                ]
-            elif intent == "grief_loss":
-                candidate_pool = [
-                    ("gl_1", "Watching someone or a pet you cherish struggle triggers deep vulnerability. Your love and care are evident in every word you shared. Be exceedingly gentle with yourself right now."),
-                    ("gl_2", "Seeing someone you love face medical difficulty is heartbreaking, and carrying that helplessness is so painful. Make sure to breathe and allow support around you."),
-                ]
-            elif intent == "financial_stress":
-                candidate_pool = [
-                    ("fs_1", f"Experiencing a loss in {anchor} is deeply unsettling and directly impacts your sense of safety. While the numbers are stressful, catastrophic projection makes things feel even darker. Let's take it one step at a time."),
-                    ("fs_2", "Navigating a heavy financial hit triggers immediate fight-or-flight alarms. Ground yourself in the present moment before taking any financial decisions."),
-                ]
-            elif intent == "fatigue_insomnia":
-                candidate_pool = [
-                    ("fi_1", f"Holding the weight of {anchor} asks a lot of your reserves, especially when your nervous system remains on high alert. Rather than forcing sleep, let your body simply experience restful stillness."),
-                    ("fi_2", f"Dealing with {anchor} puts a significant emotional demand on your daily energy. Give your mind permission to put down today's worries until morning."),
-                ]
-            elif intent == "existential_comparison":
-                candidate_pool = [
-                    ("ec_1", f"Carrying the weight of {anchor} can make everything feel painfully heavy and isolated. When our mind compares our internal struggles with others' external highlights, loneliness magnifies. Let us focus on what directly grounds your perspective today."),
-                    ("ec_2", f"When feeling overwhelmed by {anchor}, binary thinking paints everything as permanent. You matter, and your presence in this space is deeply valued."),
-                ]
-
-        # 8. Fallback Dynamic Multi-Frame Synthesizer
-        if not candidate_pool:
-            candidate_pool = [
-                ("gen_1", f"Experiencing chronic tension with {anchor} drains cognitive focus and reserves. Before we dissect the thoughts, let's ease the physiological surge. Take a slow, grounded breath with me."),
-                ("gen_2", f"Managing what happened with {anchor} requires immense emotional energy. When our minds project worst-case scenarios, testing the evidence behind the fear restores perspective."),
-                ("gen_3", f"Navigating the nuances of {anchor} takes real emotional stamina. Rather than forcing a quick fix, let's identify what would bring you the greatest comfort right now."),
-                ("gen_4", f"Holding space for what's happening with {anchor} is an important step. As you reflect on this, notice where in your body you feel the most tension."),
-                ("gen_5", f"Surviving the relentless pace with {anchor} asks a lot of your nervous system. What is one tiny, gentle thing you can do for yourself in this exact moment?"),
-            ]
-
-        # Select a candidate that hasn't been used recently in this session
-        for key, text in candidate_pool:
-            if key not in self._used_keys:
-                self._used_keys.add(key)
-                if len(self._used_keys) > 25:
-                    self._used_keys.pop()
-                return text
-
-        # If all candidates have been shown, return with dynamic opening variation
-        key, text = candidate_pool[turn % len(candidate_pool)]
-        return text
+        return None, ""
 
     async def process_turn(
         self,
@@ -470,7 +417,7 @@ class KeylessPsychologistPartner:
         history: list[dict[str, str]] | None = None,
         locale: str = "en-US",
     ) -> HealerResponse:
-        """Processes user input through safety check, free search, and local inference."""
+        """Processes user input through safety check, free search, and LLM inference."""
         start_time = time.perf_counter()
 
         if check_crisis_text(user_message):
@@ -490,8 +437,7 @@ class KeylessPsychologistPartner:
         evidence_list = await search_task
 
         # Retrieve matched condition from Clinical & Psychoeducational Library RAG
-        # Wrapped in to_thread() to avoid blocking the event loop during ChromaDB I/O
-        rag_guidance = await asyncio.to_thread(psychology_rag.retrieve_guidance, user_message)
+        rag_guidance = await asyncio.to_thread(psychology_rag.retrieve_guidance, user_message) if psychology_rag else None
         rag_prompt_block = rag_guidance.get("prompt_context", "") if rag_guidance else ""
 
         if rag_guidance:
@@ -503,7 +449,7 @@ class KeylessPsychologistPartner:
 
         context_str = "\n".join(context_blocks)
 
-        ollama_reply = await self._call_local_ollama(user_message, context_str, history=history, locale=locale)
+        llm_reply, engine_name = await self._call_inference(user_message, context_str, history=history, locale=locale)
         latency = int((time.perf_counter() - start_time) * 1000)
 
         anchor = self._normalize_anchor(user_message)
@@ -519,27 +465,18 @@ class KeylessPsychologistPartner:
             )
             final_sources.insert(0, lib_source)
 
-        if ollama_reply:
+        if llm_reply:
             return HealerResponse(
-                reply=ollama_reply,
+                reply=llm_reply,
                 telemetry=telemetry,
                 sources=final_sources,
-                engine_used=f"Local Ollama ({self.ollama_model})",
+                engine_used=engine_name,
                 somatic_anchor=anchor,
                 latency_ms=latency
             )
 
-        fallback_reply = self._heuristic_synthesizer(
-            user_message, telemetry, evidence_list, history=history, rag_guidance=rag_guidance
-        )
-        return HealerResponse(
-            reply=fallback_reply,
-            telemetry=telemetry,
-            sources=final_sources,
-            engine_used="Local Cognitive Synthesizer (Key-Free)",
-            somatic_anchor=anchor,
-            latency_ms=latency
-        )
+        # Hard Purge: If inference fails, raise error rather than returning fake generic platitudes
+        raise RuntimeError("Clinical reasoning inference failed. Please ensure local Ollama daemon is running or API keys are configured.")
 
     async def respond(
         self,

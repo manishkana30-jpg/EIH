@@ -1,7 +1,6 @@
 // lib/services/therapist-engine.ts
 import { searchMentalHealthEvidence, ClinicalSearchResult } from "./search-fallback";
 import { detectCrisis } from "../safety/crisis-detector";
-import { generateDynamicCompanionReply } from "../nlp/conversational-companion-engine";
 import { queryPsychologyLibrary } from "../knowledge/psychology-library-rag";
 
 const THERAPIST_SYSTEM_PROMPT = `
@@ -244,27 +243,29 @@ export async function generateTherapeuticResponse(
     // Fallback to Dynamic Companion Engine
   }
 
-  // 4. In-Process Dynamic Cognitive Companion Engine (Zero repetition, rich attunement)
+  // 4. Free Open Inference
   try {
-    const companionReply = generateDynamicCompanionReply({ userText: userMessage });
-    if (companionReply && companionReply.reply) {
-      return {
-        reply: companionReply.reply,
-        sources: allSources,
-        providerUsed: "Cognitive Companion Engine (Ayurvedic & Neuro Grounded)",
-        isCrisis: false
-      };
+    const messagesPayload = [
+      { role: "system", content: `${THERAPIST_SYSTEM_PROMPT}\n\n[CLINICAL RESEARCH]:\n${contextString}` },
+      ...(history || []).slice(-6).map((h) => ({
+        role: h.role === "assistant" || h.sender === "ai" ? "assistant" : "user",
+        content: h.content || h.text || ""
+      })),
+      { role: "user", content: userMessage }
+    ];
+    const pollRes = await fetch("https://text.pollinations.ai/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages: messagesPayload, model: "openai", seed: 42 })
+    });
+    if (pollRes.ok) {
+      const text = await pollRes.text();
+      const cleaned = text.trim();
+      if (cleaned && cleaned.length > 25 && !cleaned.toLowerCase().startsWith("error")) {
+        return { reply: cleaned, sources: allSources, providerUsed: "Free Edge AI", isCrisis: false };
+      }
     }
-  } catch (err) {
-    console.warn("Companion engine fallback failed:", err);
-  }
+  } catch {}
 
-  // 5. Fail-safe Offline Emergency Script
-  return {
-    reply:
-      "I hear how much is on your mind right now. Let's pause together, take one slow breath in through your nose, and let your body settle before we unpack this.",
-    sources: allSources,
-    providerUsed: "Offline Safety Fallback",
-    isCrisis: false
-  };
+  throw new Error("All clinical reasoning engines unavailable. Please check your backend connection or API key.");
 }

@@ -259,11 +259,7 @@ class ClinicalExpansionEngine:
         ]
 
         # Step 4: Spoken voice script
-        audio_script = (
-            f"Let us ground right here together. {cbt_reframe} "
-            f"Now, let's calm your nervous system. {pranayama}. "
-            f"Feel your breath lengthen, and anchor into your body."
-        )
+        audio_script = f"{cbt_reframe} For somatic regulation: {pranayama}."
 
         return ClinicalSolution(
             title=title,

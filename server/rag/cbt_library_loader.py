@@ -78,9 +78,9 @@ class CBTLibraryLoader:
             return {
                 "detected_distortions": [],
                 "primary_distortion": None,
-                "socratic_prompts": ["What thought is most prominent in your awareness right now?"],
-                "reframing_insight": "Take a slow breath. Let us observe the pattern with curiosity rather than judgment.",
-                "somatic_cue": "Ground through your feet and feel the floor beneath you.",
+                "socratic_prompts": [],
+                "reframing_insight": "",
+                "somatic_cue": "",
                 "confidence_score": 0.0,
             }
 

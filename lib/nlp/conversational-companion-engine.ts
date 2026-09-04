@@ -223,7 +223,7 @@ function generateEnglishCognitiveReply(
   ) {
     const loopResets = [
       "I hear you loud and clear, my friend, and I apologize for sounding like a script! I am locking in directly to your thoughts right now. Tell me: what is the most important thing happening in your life right now?",
-      "You are 100% right, and I'm stepping completely out of any canned responses. I am right here, genuinely listening to your real thoughts. What's on your mind today?",
+      "You are 100% right, and I am stepping completely out of any canned responses. Tell me directly: what is on your mind right now?",
       "I appreciate you calling me out—I'm listening with fresh, unfiltered attention. Let's talk about what is truly bothering or occupying you right now.",
       "Message received loud and clear. Let's discard any routine phrasing—I'm here with fresh, open presence. Where would you like to take our focus?",
       "Thank you for the candid reset. I am present, attentive, and completely ready to hear what's genuinely happening in your world.",
@@ -264,7 +264,7 @@ function generateEnglishCognitiveReply(
       "I am your Emotional Intelligence companion—grounded in modern clinical neuroscience, CBT cognitive reframing, and Ayurvedic somatic healing. I'm here to help you unpack stressors, regulate your nervous system, and find clarity.",
       "Think of me as a deep listening space combining evidence-based psychology and somatic balancing. Whenever life feels heavy or confusing, we can talk through it together.",
       "I'm an AI companion dedicated to emotional regulation, thoughtful dialogue, and nervous system support. What brings you to our conversation today?",
-      "I am here as a mindful companion to support your emotional well-being through clinical insight and calming somatic practices. How can I best support you today?",
+      "This clinical intelligence system supports your emotional wellbeing through neuropsychological reframing and Ayurvedic somatic practices. What specific challenge would you like to explore today?",
     ];
     const reply = selectUniqueItem(identityPool, usedKeys, 'identity_inquiry', history);
     return {
@@ -297,7 +297,7 @@ function generateEnglishCognitiveReply(
 
   if (cognitiveDiag.conversationalIntent === 'farewell') {
     const farewellPool = [
-      "Take gentle care of yourself as you step away. I will be right here whenever you want to talk again.",
+      "Take gentle care of yourself as you step away. Return whenever you wish to explore further.",
       "Rest well and be kind to yourself. Wishing you a peaceful, restorative headspace.",
       "Until next time—carry that steady, grounded breath with you wherever you go.",
     ];
@@ -374,7 +374,7 @@ function constructGenerativePsychologicalReply(
   if (lower.includes('physiological sigh') || lower.includes('how to breathe') || lower.includes('sigh protocol') || lower.includes('breathing exercise') || lower.includes('hyperventilating')) {
     const sighPool = [
       "The Physiological Sigh is two quick inhales through your nose followed by one long, slow exhale through your mouth. It reinflates collapsed alveoli and activates the vagus nerve in under 60 seconds. You can launch the interactive Physiological Sigh pacemaker in the **Healing Tools & Guides ▲** drawer right below.",
-      "To quickly down-regulate autonomic alarm, try the Physiological Sigh: take a deep breath in through your nose, take a second top-off sip of air, then release a long, smooth exhale through your mouth. You can open the guided breathing pacemaker in **Healing Tools & Guides ▲** to practice together.",
+      "To quickly down-regulate autonomic alarm, try the Physiological Sigh: inhale deeply through your nose, take a second top-off sip of air, then release a long, smooth exhale through your mouth. You can open the guided breathing pacemaker in **Healing Tools & Guides ▲** to practice together.",
       "The Physiological Sigh (Huberman & Spiegel, 2023) is clinically proven to rapidly reduce autonomic heart rate and restore prefrontal clarity. Try three consecutive rounds, or open the interactive pacemaker in **Healing Tools & Guides ▲**."
     ];
     return selectUniqueItem(sighPool, usedKeys, 'skill_phys_sigh', history);
