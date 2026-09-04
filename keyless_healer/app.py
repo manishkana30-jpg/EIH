@@ -373,31 +373,6 @@ HTML_UI = r"""<!DOCTYPE html>
     }
     .audio-btn:hover { background: rgba(6, 182, 212, 0.15); border-color: var(--accent-cyan); }
 
-    .prompt-pills {
-      display: flex;
-      gap: 8px;
-      padding: 10px 20px;
-      overflow-x: auto;
-      border-top: 1px solid var(--card-border);
-      background: rgba(15, 23, 42, 0.4);
-    }
-    .pill {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      color: var(--text-muted);
-      padding: 6px 12px;
-      border-radius: 9999px;
-      font-size: 0.78rem;
-      white-space: nowrap;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .pill:hover {
-      background: rgba(6, 182, 212, 0.15);
-      border-color: var(--accent-cyan);
-      color: #fff;
-    }
-
     .input-bar {
       padding: 16px 20px;
       border-top: 1px solid var(--card-border);
@@ -535,13 +510,6 @@ HTML_UI = r"""<!DOCTYPE html>
   <main>
     <section class="chat-container">
       <div class="chat-messages" id="messagesContainer">
-      </div>
-
-      <div class="prompt-pills">
-        <div class="pill" onclick="sendQuickPrompt('I have an overwhelming job interview tomorrow and my heart is racing')">🎙️ Job Interview Panic</div>
-        <div class="pill" onclick="sendQuickPrompt('My manager yelled at me in front of everyone and I am furious')">🔥 Workplace Anger</div>
-        <div class="pill" onclick="sendQuickPrompt('I feel exhausted, empty, and unable to sleep for days')">🌙 Chronic Burnout & Fatigue</div>
-        <div class="pill" onclick="sendQuickPrompt('I failed my driving test and I feel like an absolute idiot')">💔 Self-Doubt & Failure</div>
       </div>
 
       <div class="input-bar">
@@ -691,11 +659,6 @@ HTML_UI = r"""<!DOCTYPE html>
       } catch (err) {
         appendMessage('ai', '[Connection Notice: Unable to communicate with clinical engine. Please verify backend status.]');
       }
-    }
-
-    function sendQuickPrompt(prompt) {
-      document.getElementById('userInput').value = prompt;
-      sendTextMessage();
     }
 
     async function playTTS(encodedText) {

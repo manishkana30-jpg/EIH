@@ -29,6 +29,18 @@ export interface CognitiveDiagnosticResult {
 export function normalizeEntityAnchor(entity: string): string {
   const e = (entity || '').toLowerCase().trim();
   if (!e || e === 'current situation' || e === 'this situation' || e === 'doing' || e === 'situation') return 'this situation';
+
+  if (/[\u0900-\u097F]/.test(e)) {
+    if (e === 'ऑफिस' || e === 'काम') return 'काम और ऑफिस';
+    if (e === 'बॉस' || e === 'मैनेजर') return 'बॉस और कार्यस्थल';
+    if (e === 'तनाव') return 'इस तनाव';
+    if (e === 'घबराहट' || e === 'चिंता') return 'घबराहट और बेचैनी';
+    if (e === 'सलाह' || e === 'उपाय') return 'मार्गदर्शन और उपाय';
+    if (e === 'दोस्त') return 'आपके मित्र';
+    if (e === 'नींद') return 'नींद और विश्राम';
+    return e;
+  }
+
   if (e === 'driving test') return 'your driving test';
   if (e === 'test' || e === 'exam') return 'your exam or test';
   if (e === 'interview') return 'your job interview';
@@ -113,20 +125,21 @@ export function runHiddenCognitiveDiagnostics(userText: string): CognitiveDiagno
     'colleague', 'partner', 'girlfriend', 'boyfriend', 'husband', 'wife', 'best friend', 'friend',
     'dog', 'cat', 'pet', 'money', 'savings', 'crypto', 'rent', 'debt', 'sleep', 'insomnia',
     'chest', 'throat', 'heart', 'stomach', 'quit', 'fired', 'failed', 'rejected', 'cheated',
-    'alone', 'exhausted', 'test'
+    'alone', 'exhausted', 'test',
+    'ऑफिस', 'काम', 'बॉस', 'मैनेजर', 'तनाव', 'घबराहट', 'चिंता', 'सलाह', 'उपाय', 'दोस्त', 'नींद'
   ];
 
   const foundAnchors: string[] = [];
   for (const entity of situationalEntities) {
     const escaped = entity.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    if (new RegExp(`\\b${escaped}\\b`, 'i').test(lower)) {
+    if (new RegExp(`(?:\\b|(?<=[\u0900-\u097F]))${escaped}(?:\\b|(?=[\u0900-\u097F]))`, 'i').test(text)) {
       foundAnchors.push(entity);
     }
   }
 
   // If no explicit domain keyword matched, extract significant content words
   if (foundAnchors.length === 0) {
-    const rawWords = text.match(/\b[A-Za-z]{4,}\b/g) || [];
+    const rawWords = text.match(/[\u0900-\u097F\w]{4,}/g) || [];
     const stopWords = new Set([
       'this', 'that', 'with', 'from', 'have', 'what', 'your', 'about', 'feel', 'feeling', 'like',
       'doing', 'today', 'hello', 'there', 'please', 'going', 'think', 'thinking', 'getting', 'trying',
@@ -136,7 +149,8 @@ export function runHiddenCognitiveDiagnostics(userText: string): CognitiveDiagno
       'stop', 'maybe', 'always', 'everyone', 'everything', 'never', 'nothing', 'nobody', 'parents',
       'parent', 'incompetent', 'idiot', 'stupid', 'useless', 'failure', 'worst', 'disaster',
       'again', 'single', 'time', 'night', 'morning', 'evening', 'tomorrow', 'sunday', 'monday',
-      'such', 'mess', 'passed', 'matter', 'matters', 'most'
+      'such', 'mess', 'passed', 'matter', 'matters', 'most', 'बहुत', 'सकते', 'सकता', 'सकती',
+      'रहा', 'रही', 'रहे', 'होता', 'होती', 'होते', 'करना', 'करूं', 'करें', 'मुझे', 'आपको'
     ]);
     const contentWords = rawWords.filter((w) => !stopWords.has(w.toLowerCase()));
     if (contentWords.length > 0) {

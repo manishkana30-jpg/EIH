@@ -570,23 +570,6 @@ export default function SanctuarySessionPage() {
             isEchoLocked={isEchoLocked}
           />
 
-          {/* 5. LOCALIZED GEO-LANGUAGE STARTER PROMPTS */}
-          {messages.length <= 2 && currentLanguage.companionPrompts && currentLanguage.companionPrompts.length > 0 && (
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none animate-fade-in">
-              {currentLanguage.companionPrompts.slice(0, 4).map((prompt, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleSendMessage(prompt.text)}
-                  disabled={isLoading || isPlayingAudio}
-                  className="px-2.5 py-1 rounded-full bg-[#17241d] hover:bg-[#22382c] border border-[#283c32] hover:border-[#3d584a] text-xs text-[#9cb5a6] hover:text-[#ecf3ee] transition-all shrink-0 whitespace-nowrap shadow-sm flex items-center gap-1.5"
-                >
-                  <span className="text-[11px]">{currentLanguage.flag}</span>
-                  <span>{prompt.label}</span>
-                </button>
-              ))}
-            </div>
-          )}
-
           {/* Input Bar */}
           <div className="bg-[#14201a] border border-[#283c32] focus-within:border-[#81a890] rounded-2xl p-1.5 flex items-center gap-2 shadow-2xl">
             <button

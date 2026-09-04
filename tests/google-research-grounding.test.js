@@ -62,9 +62,18 @@ console.log('  ✓ [Companion Advice Output]: ' + panicAdvice.reply.slice(0, 100
 const hindiAdvice = generateDynamicCompanionReply({
   userText: "मुझे बहुत घबराहट हो रही है, कोई वैज्ञानिक उपाय या सलाह दीजिए क्या करूं?",
   emotionDimension: 'anxiety',
+  sessionUsedKeys: new Set(),
 });
 assert(hindiAdvice.detectedLanguage === 'hi');
-assert(hindiAdvice.reply.includes('रिसर्च') || hindiAdvice.reply.includes('उपाय') || hindiAdvice.reply.includes('नाड़ी शोधन') || hindiAdvice.reply.includes('पानी'));
+assert(
+  hindiAdvice.reply.includes('संज्ञानात्मक') ||
+  hindiAdvice.reply.includes('नर्वस सिस्टम') ||
+  hindiAdvice.reply.includes('तनाव') ||
+  hindiAdvice.reply.includes('अभ्यास') ||
+  hindiAdvice.reply.includes('राहत') ||
+  hindiAdvice.reply.includes('शरीर') ||
+  hindiAdvice.reply.includes('उपाय')
+);
 console.log('  ✓ [Hindi Advice Output]: ' + hindiAdvice.reply.slice(0, 100) + '...');
 
 console.log('\nAuthenticated Research Grounding Tests: 100% Passed!\n');

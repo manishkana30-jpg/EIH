@@ -30,10 +30,12 @@ def test_cognitive_orchestration():
     case3 = extract_heuristic_diagnostics("This is the worst disaster, my entire life is over")
     assert case3["cbt_distortion"] == "catastrophizing", f"Expected catastrophizing, got {case3['cbt_distortion']}"
 
-    # 4. Anti-Canned Prompt Mandates
-    assert "FORBIDDEN FROM USING CANNED" in SYNTHESIS_SYSTEM_PROMPT
-    assert "I hear what you are saying" in SYNTHESIS_SYSTEM_PROMPT
-    assert "ANCHOR TO SPECIFICS" in SYNTHESIS_SYSTEM_PROMPT
+    # 4. Anti-Canned & Clinical Mandates
+    assert "Expert Clinical Psychologist" in SYNTHESIS_SYSTEM_PROMPT
+    assert "MUST NEVER use generic greetings" in SYNTHESIS_SYSTEM_PROMPT
+    assert "DEEP VALIDATION" in SYNTHESIS_SYSTEM_PROMPT
+    assert "CBT REFRAME" in SYNTHESIS_SYSTEM_PROMPT
+    assert "CLINICAL PRESCRIPTION" in SYNTHESIS_SYSTEM_PROMPT
 
     print("All Cognitive Orchestrator & Anti-Canned Safety Checks Passed!")
 

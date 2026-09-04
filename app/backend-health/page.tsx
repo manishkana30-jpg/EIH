@@ -185,7 +185,7 @@ export default function BackendHealthPage() {
 
     try {
       const testText = encodeURIComponent(
-        currentLanguage.companionGreeting || `Hello from ${currentLanguage.name}`
+        `Neural voice synthesis test in ${currentLanguage.name}`
       );
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL ? process.env.NEXT_PUBLIC_BACKEND_URL.replace(/\/$/, '') : '';
       const voiceBase = backendUrl ? `${backendUrl}/api/voice` : '/api/voice';
@@ -623,15 +623,6 @@ export default function BackendHealthPage() {
                  currentLanguage.code === 'ar' ? 'ar-SA-ZariyahNeural' :
                  'en-US-AriaNeural'}
               </strong>
-            </div>
-          </div>
-
-          {/* Greeting Preview */}
-          <div className="p-3 rounded-xl bg-[#08130d]/80 border border-[#1b3325] flex items-center justify-between text-xs">
-            <div className="flex items-center gap-2">
-              <span className="text-[#74c69d]">💬</span>
-              <span className="text-[#88a896]">Localized Greeting Sample:</span>
-              <span className="text-[#ecf3ee] italic">"{currentLanguage.companionGreeting}"</span>
             </div>
           </div>
 
