@@ -1399,37 +1399,7 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
                 </div>
               )}
 
-              {/* Live Instruction Banner at Bottom */}
-              <motion.div
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5, duration: 0.6 }}
-                className="absolute bottom-16 sm:bottom-20 max-w-lg px-6 text-center space-y-2 pointer-events-none z-30"
-              >
-                <p className="text-xs sm:text-sm font-medium text-amber-200/90 tracking-wide drop-shadow-md">
-                  {tratakaMode === 'bindu' &&
-                    'Gaze continuously at the center amber Bindu. Try not to blink. Let your peripheral vision soften. If your eyes water or burn, blink softly.'}
-                  {tratakaMode === 'flame' &&
-                    'Fixate steadily on the tip of the golden flame. Feel its warmth purifying mental inertia and fatigue. Soften your breath.'}
-                  {tratakaMode === 'murti' &&
-                    'Rest your gaze at the center lotus of the sacred mandala. Allow the symmetrical geometry to absorb and quiet scattered thoughts.'}
-                  {tratakaMode === 'pratibimb' &&
-                    'Gaze softly into your own eyes in the mirror. Release all self-judgment and hold your inner being with unconditional compassion.'}
-                  {tratakaMode === 'shoonya' && (
-                    <span className="block text-[11px] font-mono uppercase tracking-widest text-purple-300/90 mb-1">
-                      Akasha • Wide Cosmic Horizon Breathing
-                    </span>
-                  )}
-                  {tratakaMode === 'shoonya' &&
-                    'Rest your gaze into the boundless dark void. Synchronize your breath with the wide cosmic horizon. Nothing to seek, nothing to grasp. Total formless stillness.'}
-                </p>
-                <div className="flex items-center justify-center gap-2 text-[11px] font-mono text-slate-400">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>
-                    External Gazing Remaining: <strong>{formatTimer(180 - elapsedSec)}</strong> (Strict 2-Min Safe Limit)
-                  </span>
-                </div>
-              </motion.div>
+              {/* Stage 2 gazing canvas remains 100% pristine and distraction-free */}
             </motion.div>
           )}
 
@@ -1634,23 +1604,58 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
       {/* ─────────────────────────────────────────────────────────────
           3. BOTTOM TIMELINE SCRUBBER & CLINICAL CITATION FOOTER
       ───────────────────────────────────────────────────────────── */}
-      <footer className="relative z-50 px-4 sm:px-8 py-3 border-t border-white/10 bg-black/80 backdrop-blur-md shrink-0 flex flex-col sm:flex-row items-center justify-between gap-3">
-        {/* Active Stage Clinical Mechanism Footnote */}
-        <div className="flex items-center gap-2 text-xs text-slate-400 max-w-xl truncate">
-          <Info className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-          <span className="truncate">
-            {currentStageConfig?.clinicalMechanism ||
-              'Clinical Trataka: Neuroplastic attention restoration integrating Hatha Yoga Pradipika with modern ocular saccade dampening.'}
-          </span>
-        </div>
+      <footer className="relative z-50 px-4 sm:px-8 py-2.5 border-t border-white/10 bg-black/90 backdrop-blur-md shrink-0 flex items-center justify-between gap-3 min-h-[44px]">
+        {isStage2 ? (
+          /* One-Line Deep-Down Edge Instruction for Gazing (Zero Visual Interference) */
+          <div className="w-full flex items-center justify-between gap-4 text-xs">
+            <div className="flex items-center gap-2 text-slate-300 min-w-0 truncate">
+              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0" />
+              <span className="font-mono text-[11px] text-amber-300 uppercase tracking-wider shrink-0 hidden sm:inline">
+                {activeModeConfig.name}:
+              </span>
+              <span className="text-xs sm:text-sm text-slate-200 truncate font-light">
+                {tratakaMode === 'bindu' &&
+                  'Gaze steadily at the center amber Bindu. Soften peripheral focus. Blink gently if eyes tire.'}
+                {tratakaMode === 'flame' &&
+                  'Fixate steadily on the tip of the golden flame. Feel calm radiant warmth clearing mental fatigue.'}
+                {tratakaMode === 'murti' &&
+                  'Rest gaze at the sacred mandala center. Allow symmetrical geometry to absorb and quiet thoughts.'}
+                {tratakaMode === 'pratibimb' &&
+                  'Gaze softly into your own eyes in the mirror. Release self-judgment with unconditional compassion.'}
+                {tratakaMode === 'shoonya' &&
+                  'Rest gaze into the boundless dark void. Synchronize breath with the wide cosmic horizon in stillness.'}
+              </span>
+            </div>
 
-        {/* Quick Safety Badge */}
-        <div className="flex items-center gap-2 shrink-0">
-          <span className="text-[11px] font-mono text-emerald-400 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-950/40 border border-emerald-800/60">
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <span>Digital Eye-Safety Certified (2-Min Max Gaze)</span>
-          </span>
-        </div>
+            <div className="flex items-center gap-2 text-[11px] font-mono text-slate-400 shrink-0">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              <span className="hidden sm:inline text-slate-400">Safe Gaze:</span>
+              <strong className="text-amber-400 font-bold">{formatTimer(180 - elapsedSec)}</strong>
+              <span className="text-[10px] text-emerald-400/80 px-2 py-0.5 rounded-full bg-emerald-950/50 border border-emerald-800/50 hidden md:inline">
+                2-Min Limit
+              </span>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Active Stage Clinical Mechanism Footnote */}
+            <div className="flex items-center gap-2 text-xs text-slate-400 max-w-xl truncate">
+              <Info className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+              <span className="truncate">
+                {currentStageConfig?.clinicalMechanism ||
+                  'Clinical Trataka: Neuroplastic attention restoration integrating Hatha Yoga Pradipika with modern ocular saccade dampening.'}
+              </span>
+            </div>
+
+            {/* Quick Safety Badge */}
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="text-[11px] font-mono text-emerald-400 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-950/40 border border-emerald-800/60">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>Digital Eye-Safety Certified (2-Min Max Gaze)</span>
+              </span>
+            </div>
+          </>
+        )}
       </footer>
     </div>
   );

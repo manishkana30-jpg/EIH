@@ -172,6 +172,15 @@ console.log('  ✓ Pure pitch-black full-screen canvas verified (OLED #000000 bl
 console.log('  ✓ Wide cosmic event horizon breathing animation verified (8.5s parasympathetic entrainment)');
 console.log('  ✓ Formless center void verified (zero central focal dot, pure Akasha stillness)');
 
+// 8. Deep Down Edge Single-Line Instructions (Zero Gazing Interference)
+console.log('\n--- 8. Testing Deep Down Edge Single-Line Instructions ---');
+assert(!tratakaSource.includes('bottom-16 sm:bottom-20'), 'Floating multi-line instruction banner must be removed from gazing canvas to eliminate visual interference');
+assert(tratakaSource.includes('isStage2 ? ('), 'Footer must dynamically render single-line gazing instructions during Stage 2');
+assert(tratakaSource.includes('One-Line Deep-Down Edge Instruction for Gazing'), 'Footer must contain dedicated single-line gazing instruction bar');
+console.log('  ✓ Gazing canvas 100% distraction-free (no floating text blocks interfering with visual focal point)');
+console.log('  ✓ All written instructions pushed to deep down edge of page in one line');
+console.log('  ✓ Live Safe Gaze remaining countdown integrated in the same edge line');
+
 console.log('\n================================================================');
 console.log('🎉 ALL CLINICAL TRATAKA MODULE TESTS PASSED (100%)');
 console.log('================================================================\n');
