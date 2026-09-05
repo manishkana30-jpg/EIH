@@ -12,8 +12,7 @@
     "start": "next start",
     "lint": "next lint",
     "test": "node --no-warnings tests/run-all-tests.js",
-    "deploy:vercel": "vercel --prod",
-    "tunnel": "node scripts/launch-tunnel.js"
+    "deploy:vercel": "vercel --prod"
   },
   "dependencies": {
     "clsx": "^2.1.1",

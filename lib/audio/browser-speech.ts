@@ -612,7 +612,7 @@ export class BrowserSpeechController {
     this.callbacks.onAssistantStart?.();
     onStart?.();
 
-    // 1. Primary: High-Fidelity Microsoft Edge Neural Voice Streaming (/api/voice or Cloudflare Tunnel)
+    // 1. Primary: High-Fidelity Microsoft Edge Neural Voice Streaming (/api/voice or Vercel Backend)
     try {
       const backendUrl = typeof window !== 'undefined' && process.env.NEXT_PUBLIC_BACKEND_URL 
         ? process.env.NEXT_PUBLIC_BACKEND_URL.replace(/\/$/, '') 
