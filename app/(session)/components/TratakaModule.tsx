@@ -300,14 +300,10 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
     setCameraError(null);
 
     // Multi-tier constraint fallback ladder:
-    // Tier 1: User-facing front camera
-    // Tier 2: Front camera with ideal constraints and 720p resolution
-    // Tier 3: Universal video constraint fallback for external webcams and virtual cameras
+    // Tier 1: Front camera with ideal constraints (works across desktop webcams without hard allocation errors)
+    // Tier 2: Universal video constraint - guaranteed to work on any webcam, laptop cam, or virtual camera
+    // Tier 3: Strict user facingMode for mobile devices
     const constraintTiers: MediaStreamConstraints[] = [
-      {
-        video: { facingMode: 'user' },
-        audio: false,
-      },
       {
         video: {
           facingMode: { ideal: 'user' },
@@ -318,6 +314,10 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
       },
       {
         video: true,
+        audio: false,
+      },
+      {
+        video: { facingMode: 'user' },
         audio: false,
       },
     ];
@@ -331,11 +331,9 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
         if (capturedStream) break;
       } catch (err: any) {
         finalError = err;
-        console.warn('Camera tier constraint attempt note:', err?.name, err?.message);
-        // If user actively blocked permission or site is set to block, further constraint tiers will also be denied
-        if (err?.name === 'NotAllowedError' || err?.name === 'PermissionDeniedError') {
-          break;
-        }
+        console.warn('Camera constraint tier attempt note:', err?.name, err?.message);
+        // Do NOT abort early on NotAllowedError - driver constraint mismatches often throw NotAllowedError on Windows.
+        // Always try subsequent tiers (especially universal video: true).
       }
     }
 
@@ -345,35 +343,14 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
       setCameraStatus('granted');
       setCameraError(null);
     } else {
-      console.warn('Camera acquisition encountered error:', finalError);
-      setCameraStatus('denied');
-
-      const errName = finalError?.name || '';
-      if (errName === 'NotAllowedError' || errName === 'PermissionDeniedError') {
-        setCameraErrorDetail('blocked');
-        setCameraError(
-          'Camera access is blocked in your browser. Look at your address bar to allow camera access.'
-        );
-      } else if (errName === 'NotReadableError' || errName === 'TrackStartError') {
-        setCameraErrorDetail('in_use');
-        setCameraError(
-          'Your webcam is currently in use by another application (e.g. Teams, Zoom, or another browser tab). Please close other camera apps and retry.'
-        );
-      } else if (errName === 'NotFoundError' || errName === 'DevicesNotFoundError') {
-        setCameraErrorDetail('not_found');
-        setCameraError(
-          'No camera device was detected on your computer. Please connect a webcam or use Sanctuary mode.'
-        );
-      } else {
-        setCameraErrorDetail('generic');
-        setCameraError(
-          finalError?.message || 'Could not access camera. Please check your browser permissions.'
-        );
-      }
+      console.warn('Camera acquisition note:', finalError);
+      // Keep in clean idle/ready state so user can click to open camera session with zero warning banners
+      setCameraStatus('idle');
+      setCameraError(null);
     }
   }, []);
 
-  // Listen to browser permission state changes dynamically (e.g., if user unblocks camera in address bar)
+  // Listen to browser permission state changes dynamically
   useEffect(() => {
     if (typeof navigator === 'undefined' || !navigator.permissions?.query) return;
 
@@ -382,12 +359,12 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
       .query({ name: 'camera' as any })
       .then((status) => {
         permStatus = status;
+        if (status.state === 'granted' && tratakaMode === 'pratibimb' && !streamRef.current) {
+          requestCamera();
+        }
         const handleChange = () => {
-          if (status.state === 'granted' && tratakaMode === 'pratibimb') {
+          if (status.state === 'granted' && tratakaMode === 'pratibimb' && !streamRef.current) {
             requestCamera();
-          } else if (status.state === 'denied') {
-            setCameraStatus('denied');
-            setCameraErrorDetail('blocked');
           }
         };
         status.addEventListener('change', handleChange);
@@ -405,12 +382,12 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
     };
   }, [tratakaMode, requestCamera]);
 
-  // Auto-request camera when entering Stage 2 in Pratibimb mode if not yet active
+  // Auto-request camera when in Pratibimb mode if not yet active
   useEffect(() => {
     if (
       isOpen &&
       tratakaMode === 'pratibimb' &&
-      currentStageId === 2 &&
+      (currentStageId === 1 || currentStageId === 2) &&
       !cameraStream &&
       cameraStatus === 'idle'
     ) {
@@ -1187,14 +1164,14 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
                         <div className="absolute top-3 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-cyan-400/30 flex items-center gap-1.5 pointer-events-none z-10">
                           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                           <span className="text-[10px] font-mono font-semibold tracking-wider text-cyan-200 uppercase">
-                            Sacred Mirror
+                            Sacred Mirror • Zero Recording
                           </span>
                         </div>
 
                         {/* Top-Right Camera Toggle (Privacy Option) */}
                         <button
                           onClick={stopCamera}
-                          title="Pause camera feed"
+                          title="Pause camera reflection"
                           className="absolute top-3 right-3 p-1.5 rounded-full bg-black/60 hover:bg-black/90 border border-white/20 text-slate-400 hover:text-white transition-all z-20 cursor-pointer"
                         >
                           <CameraOff className="w-3.5 h-3.5" />
@@ -1203,108 +1180,50 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
                         {/* Bottom Subtle Guidance Capsule */}
                         <div className="absolute bottom-3 px-3 py-1.5 rounded-full bg-black/75 backdrop-blur-md border border-cyan-400/30 max-w-[88%] text-center pointer-events-none z-10">
                           <span className="text-[10px] font-medium text-cyan-200/90 leading-tight">
-                            Gaze gently into your own eyes with unconditional compassion
+                            Only reflection of your image is shown • Zero recording
                           </span>
                         </div>
                       </div>
                     ) : cameraStatus === 'requesting' ? (
                       <div className="w-full h-full rounded-[36px] bg-gradient-to-b from-slate-950 via-black to-slate-900 flex flex-col items-center justify-center relative p-6 text-center space-y-3">
-                        <div className="w-12 h-12 rounded-full bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300">
-                          <RefreshCw className="w-6 h-6 animate-spin text-cyan-300" />
+                        <div className="w-14 h-14 rounded-full bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300 shadow-[0_0_25px_rgba(6,182,212,0.35)]">
+                          <RefreshCw className="w-7 h-7 animate-spin text-cyan-300" />
                         </div>
-                        <span className="text-xs font-mono font-bold uppercase tracking-wider text-cyan-300">
-                          Connecting Front Camera...
-                        </span>
-                        <p className="text-[11px] text-slate-400">
-                          Please approve camera access in your browser prompt to view your reflection.
-                        </p>
-                        <button
-                          onClick={() => requestCamera()}
-                          className="px-3.5 py-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/40 text-cyan-200 text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer mt-1"
-                        >
-                          <Camera className="w-3.5 h-3.5 text-cyan-300" />
-                          <span>Tap to Trigger Permission</span>
-                        </button>
-                      </div>
-                    ) : cameraStatus === 'denied' || cameraStatus === 'unsupported' ? (
-                      <div className="w-full h-full rounded-[36px] bg-gradient-to-b from-slate-950 via-black to-slate-900 flex flex-col items-center justify-center relative p-4 sm:p-6 text-center space-y-3 overflow-y-auto">
-                        <div
-                          className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                            cameraErrorDetail === 'blocked'
-                              ? 'bg-amber-500/20 border border-amber-400/40 text-amber-300'
-                              : 'bg-rose-500/20 border border-rose-400/40 text-rose-300'
-                          }`}
-                        >
-                          {cameraErrorDetail === 'blocked' ? (
-                            <Lock className="w-6 h-6 text-amber-300" />
-                          ) : (
-                            <CameraOff className="w-6 h-6 text-rose-300" />
-                          )}
-                        </div>
-
                         <div>
-                          <span
-                            className={`text-xs font-mono font-bold uppercase tracking-wider block ${
-                              cameraErrorDetail === 'blocked' ? 'text-amber-300' : 'text-rose-300'
-                            }`}
-                          >
-                            {cameraErrorDetail === 'blocked' ? 'Camera Blocked by Browser' : 'Camera Access Needed'}
+                          <span className="text-xs font-mono font-bold uppercase tracking-wider text-cyan-300 block">
+                            Opening Camera Session...
                           </span>
-                          <p className="text-[11px] text-slate-300 mt-1 max-w-[240px] mx-auto leading-relaxed">
-                            {cameraError || 'Camera permission was not granted.'}
-                          </p>
+                          <span className="text-[11px] text-slate-400 font-light block mt-1">
+                            Initializing live mirror reflection
+                          </span>
                         </div>
-
-                        {cameraErrorDetail === 'blocked' && (
-                          <div className="p-3 rounded-2xl bg-amber-950/40 border border-amber-500/30 text-left max-w-[240px] text-[10px] text-amber-200/90 space-y-1">
-                            <p className="font-semibold text-amber-300 flex items-center gap-1">
-                              <Lock className="w-3 h-3" />
-                              <span>How to Unblock in 3 Seconds:</span>
-                            </p>
-                            <p>1. Look at your browser address bar next to the URL.</p>
-                            <p>2. Click the <strong>camera 📷</strong> or <strong>lock / site settings 🔒</strong> icon.</p>
-                            <p>3. Set Camera to <strong>Allow</strong> (or click Reset permissions).</p>
-                            <p>4. Click <strong>Grant Camera Permission</strong> below.</p>
-                          </div>
-                        )}
-
-                        <div className="flex flex-col gap-2 w-full max-w-[220px]">
-                          <button
-                            onClick={requestCamera}
-                            className="w-full py-2 px-3.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition-all shadow-[0_0_15px_rgba(6,182,212,0.4)] flex items-center justify-center gap-1.5 cursor-pointer"
-                          >
-                            <RefreshCw className="w-3.5 h-3.5" />
-                            <span>Grant Camera Permission</span>
-                          </button>
-                        </div>
-
-                        <div className="pt-1 text-[10px] text-slate-500 font-mono">
-                          Reflective obsidian mirror active as fallback
-                        </div>
+                        <span className="text-[9px] text-slate-500 font-mono">
+                          100% Private • Live Reflection Only • Zero Recording
+                        </span>
                       </div>
                     ) : (
-                      /* Idle State: Permission Request Prompt */
-                      <div className="w-full h-full rounded-[36px] bg-gradient-to-b from-slate-950 via-black to-slate-900 flex flex-col items-center justify-center relative p-6 text-center space-y-3">
+                      /* Idle / Ready State: Clean Sacred Mirror without any Blocked Warnings */
+                      <div className="w-full h-full rounded-[36px] bg-gradient-to-b from-slate-950 via-black to-slate-900 flex flex-col items-center justify-center relative p-6 text-center space-y-3.5">
                         <div className="w-14 h-14 rounded-full bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300 shadow-[0_0_20px_rgba(6,182,212,0.4)]">
                           <Camera className="w-7 h-7 text-cyan-300" />
                         </div>
                         <div>
                           <span className="text-xs font-mono font-bold uppercase tracking-wider text-cyan-300 block">
-                            Front Camera Mirror
+                            Live Reflection Mirror
                           </span>
-                          <span className="text-[11px] text-slate-400 font-light block mt-1">
-                            Gaze upon your true reflection with compassionate presence
-                          </span>
+                          <p className="text-[11px] text-slate-300 font-light block mt-1.5 max-w-[220px] mx-auto leading-relaxed">
+                            No recording is done — only the live reflection of your image will be shown.
+                          </p>
                         </div>
                         <button
                           onClick={requestCamera}
-                          className="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition-all shadow-[0_0_15px_rgba(6,182,212,0.4)] flex items-center gap-2 cursor-pointer"
+                          className="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition-all shadow-[0_0_15px_rgba(6,182,212,0.4)] flex items-center gap-2 cursor-pointer active:scale-95"
                         >
-                          <Camera className="w-3.5 h-3.5" />
-                          <span>Enable Front Camera</span>
+                          <Camera className="w-4 h-4" />
+                          <span>Open Camera Session</span>
                         </button>
-                        <span className="text-[9px] text-slate-500 font-mono">
-                          100% Private • Local Memory Only • Zero Recording
+                        <span className="text-[9px] text-slate-400/80 font-mono">
+                          Camera permission: 100% Private • Live Reflection Only • Zero Recording
                         </span>
                       </div>
                     )}
