@@ -47,15 +47,27 @@ export default function RootLayout({
       <body className="bg-[var(--bg-nature-base)] text-[var(--text-nature-primary)] min-h-screen flex flex-col antialiased selection:bg-[#588e73]/30 selection:text-[#ecf3ee]">
         {children}
 
-        {/* Service worker registration for offline PWA functionality */}
+        {/* Service worker registration with automatic cache invalidation */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
+              if ('caches' in window) {
+                caches.keys().then(function(names) {
+                  for (var i = 0; i < names.length; i++) {
+                    if (names[i] !== 'eih-pwa-v2') {
+                      caches.delete(names[i]);
+                    }
+                  }
+                });
+              }
               if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function() {
+                  navigator.serviceWorker.getRegistrations().then(function(regs) {
+                    for (var r of regs) { r.update(); }
+                  });
                   navigator.serviceWorker.register('/sw.js').then(
                     function(registration) {
-                      console.log('EIH ServiceWorker registration successful with scope: ', registration.scope);
+                      registration.update();
                     },
                     function(err) {
                       console.log('EIH ServiceWorker registration failed: ', err);

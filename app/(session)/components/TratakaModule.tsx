@@ -284,15 +284,16 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
   }, []);
 
   const requestCamera = useCallback(async () => {
-    if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
-      const isInsecure = typeof window !== 'undefined' && window.isSecureContext === false;
-      setCameraStatus('unsupported');
-      setCameraErrorDetail(isInsecure ? 'insecure' : 'generic');
-      setCameraError(
-        isInsecure
-          ? 'Camera access requires a secure connection (https:// or http://localhost).'
-          : 'Camera API (getUserMedia) is not supported or accessible on this browser.'
-      );
+    // Cross-browser getUserMedia detection with vendor prefix support
+    const getMedia =
+      navigator?.mediaDevices?.getUserMedia?.bind(navigator.mediaDevices) ||
+      (navigator as any)?.getUserMedia?.bind(navigator) ||
+      (navigator as any)?.webkitGetUserMedia?.bind(navigator) ||
+      (navigator as any)?.mozGetUserMedia?.bind(navigator);
+
+    if (!getMedia) {
+      console.warn('Camera API (getUserMedia) is not supported in this browser environment.');
+      setCameraStatus('idle');
       return;
     }
 
@@ -300,20 +301,20 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
     setCameraError(null);
 
     // Multi-tier constraint fallback ladder:
-    // Tier 1: Front camera with ideal constraints (works across desktop webcams without hard allocation errors)
-    // Tier 2: Universal video constraint - guaranteed to work on any webcam, laptop cam, or virtual camera
+    // Tier 1: Direct universal constraint - fastest & 100% reliable on all webcams, virtual cams & laptops
+    // Tier 2: Front camera with ideal constraints for high-definition reflection
     // Tier 3: Strict user facingMode for mobile devices
     const constraintTiers: MediaStreamConstraints[] = [
+      {
+        video: true,
+        audio: false,
+      },
       {
         video: {
           facingMode: { ideal: 'user' },
           width: { ideal: 1280 },
           height: { ideal: 720 },
         },
-        audio: false,
-      },
-      {
-        video: true,
         audio: false,
       },
       {
@@ -327,13 +328,11 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
 
     for (const constraints of constraintTiers) {
       try {
-        capturedStream = await navigator.mediaDevices.getUserMedia(constraints);
+        capturedStream = await getMedia(constraints);
         if (capturedStream) break;
       } catch (err: any) {
         finalError = err;
         console.warn('Camera constraint tier attempt note:', err?.name, err?.message);
-        // Do NOT abort early on NotAllowedError - driver constraint mismatches often throw NotAllowedError on Windows.
-        // Always try subsequent tiers (especially universal video: true).
       }
     }
 
@@ -344,7 +343,7 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
       setCameraError(null);
     } else {
       console.warn('Camera acquisition note:', finalError);
-      // Keep in clean idle/ready state so user can click to open camera session with zero warning banners
+      // Keep in clean idle state with direct CTA so user can retry anytime with zero block screens
       setCameraStatus('idle');
       setCameraError(null);
     }
