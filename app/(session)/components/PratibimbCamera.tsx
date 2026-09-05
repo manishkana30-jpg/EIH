@@ -38,6 +38,7 @@ export default function PratibimbCamera() {
   }, []);
 
   const setupCamera = useCallback(async () => {
+    console.log('[PratibimbCamera] setupCamera() triggered - initiating camera hardware handshake');
     setIsRequesting(true);
     setError(false);
     setErrorType(null);
@@ -250,7 +251,11 @@ export default function PratibimbCamera() {
         {/* Buttons: Retry & Fallback */}
         <div className="flex flex-col sm:flex-row items-center gap-2 pt-1">
           <button
-            onClick={setupCamera}
+            id="allow-camera-access-btn"
+            onClick={() => {
+              console.log('[PratibimbCamera] "Allow Camera Access" button clicked by user');
+              setupCamera();
+            }}
             disabled={isRequesting}
             className="px-4 py-1.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 disabled:bg-cyan-500/50 text-slate-950 font-bold text-xs transition-all shadow-[0_0_15px_rgba(6,182,212,0.4)] cursor-pointer active:scale-95 flex items-center gap-1.5"
           >

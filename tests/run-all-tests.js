@@ -17,6 +17,7 @@ require('./audit_fix_verification.test.js');
 require('./cbt-library.test.js');
 require('./test-psychology-library-rag.js');
 require('./trataka_protocol.test.js');
+require('./verify_camera_button_execution.test.js');
 
 
 console.log('================================================================');
