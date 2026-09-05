@@ -16,8 +16,90 @@ import {
   Brain,
   CheckCircle2,
   Info,
+  ArrowRight,
+  Flame,
+  Layers,
+  Sparkle,
 } from 'lucide-react';
 import { browserSpeechController } from '@/lib/audio/browser-speech';
+
+export type TratakaModeId = 'bindu' | 'flame' | 'murti' | 'pratibimb' | 'shoonya';
+
+export interface TratakaModeOption {
+  id: TratakaModeId;
+  name: string;
+  sanskritName: string;
+  tagline: string;
+  description: string;
+  clinicalBenefit: string;
+  element: string;
+  accentColor: string;
+  borderAccent: string;
+  bgAccent: string;
+}
+
+export const TRATAKA_MODES: TratakaModeOption[] = [
+  {
+    id: 'bindu',
+    name: 'Bindu (The Point)',
+    sanskritName: 'बिन्दु • Single-Pointedness',
+    tagline: 'Pure Focus, Working Memory & Grounding',
+    description: 'A glowing amber radiant point. Halts scattered cognitive rumination and anchors wandering attention into profound prefrontal stillness.',
+    clinicalBenefit: 'Reduces cognitive bandwidth overload and trains voluntary ocular fixation.',
+    element: 'Prithvi (Earth / Steadiness)',
+    accentColor: 'text-amber-400',
+    borderAccent: 'border-amber-500/40 hover:border-amber-400',
+    bgAccent: 'from-amber-500/15 to-transparent',
+  },
+  {
+    id: 'flame',
+    name: 'Jyoti (The Flame)',
+    sanskritName: 'ज्योति • Divine Fire',
+    tagline: 'Dynamic Concentration & Warmth',
+    description: 'A pure flickering teardrop flame. Cultivates internal metabolic fire (Tejas) to dispel emotional heaviness, lethargy, and stagnation.',
+    clinicalBenefit: 'Stimulates dopamine activation and counteracts tamasic depressive inertia.',
+    element: 'Tejas (Fire / Illumination)',
+    accentColor: 'text-orange-400',
+    borderAccent: 'border-orange-500/40 hover:border-orange-400',
+    bgAccent: 'from-orange-500/15 to-transparent',
+  },
+  {
+    id: 'murti',
+    name: 'Murti (Sacred Mandala)',
+    sanskritName: 'मण्डल • Sacred Form',
+    tagline: 'Visual Anchoring & Neural Coherence',
+    description: 'An intricate geometric sacred mandala. Entrains visual cortex harmonics through balanced radial symmetry and floral geometry.',
+    clinicalBenefit: 'Promotes alpha-theta brainwave coherence and dampens hyper-analytical stress.',
+    element: 'Vayu (Air / Harmonic Motion)',
+    accentColor: 'text-emerald-400',
+    borderAccent: 'border-emerald-500/40 hover:border-emerald-400',
+    bgAccent: 'from-emerald-500/15 to-transparent',
+  },
+  {
+    id: 'pratibimb',
+    name: 'Pratibimb (The Reflection)',
+    sanskritName: 'प्रतिबिम्ब • Pure Witness',
+    tagline: 'Self-Compassion & Introspection',
+    description: 'A softly glowing obsidian mirror. Invites compassionate gaze into self-acceptance, emotional validation, and shame neutralization.',
+    clinicalBenefit: 'Activates ventral vagal self-soothing and dismantles harsh internal criticism.',
+    element: 'Jala (Water / Fluid Acceptance)',
+    accentColor: 'text-cyan-400',
+    borderAccent: 'border-cyan-500/40 hover:border-cyan-400',
+    bgAccent: 'from-cyan-500/15 to-transparent',
+  },
+  {
+    id: 'shoonya',
+    name: 'Shoonya (The Void)',
+    sanskritName: 'शून्य • The Unconditioned Void',
+    tagline: 'Formless Meditation & Deep Peace',
+    description: 'A pitch-black expanse with zero focal points. For advanced practitioners seeking total cognitive de-cluttering and mental liberation.',
+    clinicalBenefit: 'Maximizes Default Mode Network (DMN) quieting and down-regulates hyperarousal.',
+    element: 'Akasha (Ether / Boundless Space)',
+    accentColor: 'text-purple-400',
+    borderAccent: 'border-purple-500/40 hover:border-purple-400',
+    bgAccent: 'from-purple-500/15 to-transparent',
+  },
+];
 
 export interface TratakaModuleProps {
   isOpen: boolean;
@@ -149,6 +231,7 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
   conditionName = 'Working Memory & Attention Restoration',
   userLocale = 'en-US',
 }) => {
+  const [tratakaMode, setTratakaMode] = useState<TratakaModeId | null>(null);
   const [elapsedSec, setElapsedSec] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
@@ -161,6 +244,8 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
     activeCbtReframe ||
     'You are not your racing thoughts; you are the calm, witnessing awareness behind them. Notice how the mind naturally settles into quiet power when anchored in single-pointed focus.';
 
+  const activeModeConfig = TRATAKA_MODES.find((m) => m.id === tratakaMode) || TRATAKA_MODES[0];
+
   // Determine current stage from elapsed seconds
   const currentStageConfig =
     elapsedSec >= TOTAL_TRATAKA_SECONDS
@@ -171,7 +256,7 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
 
   // Sound cues on stage transitions
   useEffect(() => {
-    if (!isOpen || !isPlaying || !isAudioEnabled) return;
+    if (!isOpen || !isPlaying || !isAudioEnabled || tratakaMode === null) return;
 
     if (currentStageConfig && lastPlayedStageRef.current !== currentStageConfig.id) {
       lastPlayedStageRef.current = currentStageConfig.id as number;
@@ -181,13 +266,14 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
       if (currentStageConfig.id === 4) playSolfeggioTone(741, 2.5);
       if (currentStageConfig.id === 5) playSolfeggioTone(432, 3.0);
     }
-  }, [isOpen, isPlaying, isAudioEnabled, currentStageConfig]);
+  }, [isOpen, isPlaying, isAudioEnabled, currentStageConfig, tratakaMode]);
 
-  // Main Session Timeline Timer
+  // Main Session Timeline Timer (Only runs when a mode is selected)
   useEffect(() => {
     if (!isOpen) {
       if (timerRef.current) clearInterval(timerRef.current);
       setElapsedSec(0);
+      setTratakaMode(null);
       setIsPlaying(true);
       setHasAnnouncedStage4(false);
       lastPlayedStageRef.current = null;
@@ -195,7 +281,7 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
       return;
     }
 
-    if (isPlaying && elapsedSec < TOTAL_TRATAKA_SECONDS) {
+    if (tratakaMode !== null && isPlaying && elapsedSec < TOTAL_TRATAKA_SECONDS) {
       timerRef.current = setInterval(() => {
         setElapsedSec((prev) => prev + 1);
       }, 1000);
@@ -206,28 +292,28 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [isOpen, isPlaying, elapsedSec]);
+  }, [isOpen, isPlaying, elapsedSec, tratakaMode]);
 
   // Box Breathing pacing cycle during Stage 1 (4-4-4-4 cycle = 16s)
   useEffect(() => {
-    if (currentStageId !== 1 || !isOpen || !isPlaying) return;
+    if (tratakaMode === null || currentStageId !== 1 || !isOpen || !isPlaying) return;
     const cycleSec = elapsedSec % 16;
     if (cycleSec < 4) setBoxBreathStep('inhale');
     else if (cycleSec < 8) setBoxBreathStep('hold-in');
     else if (cycleSec < 12) setBoxBreathStep('exhale');
     else setBoxBreathStep('hold-out');
-  }, [currentStageId, elapsedSec, isOpen, isPlaying]);
+  }, [currentStageId, elapsedSec, isOpen, isPlaying, tratakaMode]);
 
   // Stage 4: Voice synthesis of the CBT reframe
   useEffect(() => {
-    if (currentStageId === 4 && isAudioEnabled && !hasAnnouncedStage4 && isOpen) {
+    if (tratakaMode !== null && currentStageId === 4 && isAudioEnabled && !hasAnnouncedStage4 && isOpen) {
       setHasAnnouncedStage4(true);
       if (userLocale) {
         browserSpeechController.setLanguageLocale(userLocale);
       }
       browserSpeechController.speak(defaultReframe);
     }
-  }, [currentStageId, isAudioEnabled, hasAnnouncedStage4, isOpen, defaultReframe, userLocale]);
+  }, [currentStageId, isAudioEnabled, hasAnnouncedStage4, isOpen, defaultReframe, userLocale, tratakaMode]);
 
   // Escape key handler for instantaneous safe force-exit
   useEffect(() => {
@@ -245,6 +331,25 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
     if (timerRef.current) clearInterval(timerRef.current);
     onClose();
   }, [onClose]);
+
+  const handleSelectMode = (modeId: TratakaModeId) => {
+    setTratakaMode(modeId);
+    setElapsedSec(0);
+    setIsPlaying(true);
+    setHasAnnouncedStage4(false);
+    lastPlayedStageRef.current = 1;
+    playSolfeggioTone(432, 2.5);
+  };
+
+  const handleChangeMode = () => {
+    browserSpeechController.stop();
+    if (timerRef.current) clearInterval(timerRef.current);
+    setTratakaMode(null);
+    setElapsedSec(0);
+    setIsPlaying(true);
+    setHasAnnouncedStage4(false);
+    lastPlayedStageRef.current = null;
+  };
 
   const handleTogglePlay = () => {
     setIsPlaying((prev) => !prev);
@@ -286,6 +391,155 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
   const stage2Elapsed = Math.max(0, elapsedSec - 60);
   const isHypnoticPeripheralActive = isStage2 && stage2Elapsed >= 60; // Fades in at 2:00 (1 min into gazing)
 
+  if (tratakaMode === null) {
+    return (
+      <div
+        className="fixed inset-0 z-[100] flex flex-col justify-between overflow-y-auto select-none bg-black/95 backdrop-blur-2xl text-slate-100 font-sans p-4 sm:p-8"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Select Trataka Gazing Mode"
+      >
+        {/* Header */}
+        <header className="flex items-center justify-between pb-6 border-b border-white/10 max-w-5xl mx-auto w-full shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.3)]">
+              <Eye className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base sm:text-lg font-bold text-white tracking-wide">
+                  Clinical Trataka Gazing
+                </h2>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300">
+                  Ancient Yogic Science
+                </span>
+              </div>
+              <p className="text-xs text-slate-400">
+                Ancient Sattvavajaya gazing archetypes calibrated for cognitive restoration
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={handleForceExit}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 hover:text-white text-xs font-semibold transition-all group cursor-pointer"
+            title="Close Trataka (Press ESC)"
+          >
+            <X className="w-4 h-4 group-hover:rotate-90 transition-transform duration-200" />
+            <span className="hidden sm:inline">Close</span>
+            <kbd className="hidden md:inline-block text-[10px] bg-black/60 px-1.5 py-0.5 rounded border border-white/20 text-slate-400">
+              ESC
+            </kbd>
+          </button>
+        </header>
+
+        {/* Center Mode Cards Grid */}
+        <main className="flex-1 max-w-5xl mx-auto w-full py-8 flex flex-col justify-center">
+          <div className="text-center max-w-xl mx-auto mb-8 space-y-2">
+            <span className="text-xs font-mono uppercase tracking-widest text-amber-400 font-semibold">
+              Pre-Session Mode Calibration
+            </span>
+            <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+              Choose Your Gazing Archetype
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+              Select one of the 5 classical Trataka variations. Each mode activates a distinct autonomic and neuro-cognitive pathway, all operating within the strict 2-minute digital eye safety limit.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+            {TRATAKA_MODES.map((mode) => (
+              <button
+                key={mode.id}
+                onClick={() => handleSelectMode(mode.id)}
+                className={`p-5 rounded-3xl bg-slate-950/70 hover:bg-slate-900/90 border ${mode.borderAccent} text-left transition-all duration-300 flex flex-col justify-between group relative overflow-hidden shadow-lg hover:shadow-2xl hover:scale-[1.02] cursor-pointer`}
+              >
+                {/* Ambient Radial Accent */}
+                <div
+                  className={`absolute -top-10 -right-10 w-36 h-36 bg-gradient-to-bl ${mode.bgAccent} rounded-full blur-2xl pointer-events-none group-hover:scale-150 transition-transform duration-500`}
+                />
+
+                <div className="space-y-3 relative z-10">
+                  {/* Top Tags */}
+                  <div className="flex items-center justify-between">
+                    <span
+                      className={`text-[10px] font-mono font-bold tracking-wider px-2 py-0.5 rounded-full bg-white/5 border border-white/10 ${mode.accentColor}`}
+                    >
+                      {mode.sanskritName}
+                    </span>
+                    <span className="text-[10px] font-mono text-slate-500">
+                      {mode.element}
+                    </span>
+                  </div>
+
+                  {/* Mode Title & Tagline */}
+                  <div>
+                    <h3 className="text-base font-bold text-white group-hover:text-amber-200 transition-colors flex items-center gap-2">
+                      {mode.name}
+                    </h3>
+                    <p className="text-xs font-medium text-slate-300 mt-0.5">
+                      {mode.tagline}
+                    </p>
+                  </div>
+
+                  {/* Description */}
+                  <p className="text-[11px] text-slate-400 leading-relaxed">
+                    {mode.description}
+                  </p>
+                </div>
+
+                {/* Bottom Preview Thumbnail & Trigger */}
+                <div className="pt-4 mt-4 border-t border-white/5 flex items-center justify-between relative z-10">
+                  {/* Mini Preview Thumbnail */}
+                  <div className="w-12 h-12 rounded-2xl bg-black/90 border border-white/10 flex items-center justify-center shrink-0">
+                    {mode.id === 'bindu' && (
+                      <div className="w-3 h-3 bg-amber-400 rounded-full shadow-[0_0_12px_4px_rgba(251,191,36,0.9)]" />
+                    )}
+                    {mode.id === 'flame' && (
+                      <div
+                        className="w-3 h-5 rounded-full bg-gradient-to-t from-orange-600 via-amber-400 to-yellow-200 blur-[0.5px] shadow-[0_0_10px_3px_rgba(249,115,22,0.8)]"
+                        style={{ borderRadius: '50% 50% 35% 35% / 60% 60% 40% 40%' }}
+                      />
+                    )}
+                    {mode.id === 'murti' && (
+                      <div className="w-6 h-6 rounded-full border border-emerald-400/60 flex items-center justify-center text-emerald-400">
+                        <Layers className="w-3.5 h-3.5 opacity-90" />
+                      </div>
+                    )}
+                    {mode.id === 'pratibimb' && (
+                      <div className="w-5 h-7 rounded-lg border border-cyan-400/50 bg-gradient-to-b from-slate-900 to-black flex items-center justify-center">
+                        <div className="w-1.5 h-1.5 rounded-full bg-cyan-300/80 shadow-[0_0_6px_rgba(6,182,212,0.8)]" />
+                      </div>
+                    )}
+                    {mode.id === 'shoonya' && (
+                      <div className="w-6 h-6 rounded-lg border border-purple-500/30 bg-black flex items-center justify-center">
+                        <div className="w-1 h-1 rounded-full bg-purple-400/40" />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-1 text-xs font-semibold text-amber-400 group-hover:translate-x-1 transition-transform">
+                    <span>Begin</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </main>
+
+        {/* Footer */}
+        <footer className="max-w-5xl mx-auto w-full pt-4 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500 font-mono shrink-0">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            <span>Digital Eye Safety Certified (2-Min Maximum Screen Gaze)</span>
+          </div>
+          <span>5-Stage Sattvavajaya Timeline (330s / 5:30)</span>
+        </footer>
+      </div>
+    );
+  }
+
   return (
     <div
       className="fixed inset-0 z-[100] flex flex-col justify-between overflow-hidden select-none bg-black text-slate-100 font-sans"
@@ -297,7 +551,7 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
           1. TOP NAVIGATION / SAFETY CONTROLS HEADER
       ───────────────────────────────────────────────────────────── */}
       <header className="relative z-50 flex items-center justify-between px-4 sm:px-8 py-3.5 border-b border-white/10 bg-black/80 backdrop-blur-md shrink-0">
-        {/* Left: Stage Information */}
+        {/* Left: Stage Information & Mode Indicator */}
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.4)]">
             <Eye className="w-4 h-4" />
@@ -310,6 +564,15 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
               <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/30 hidden sm:inline">
                 {currentStageConfig?.sanskritName || 'Shanti'}
               </span>
+              {/* In-Session Mode Switch Capsule */}
+              <button
+                onClick={handleChangeMode}
+                className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-800/90 hover:bg-slate-700/90 border border-slate-600/60 text-slate-300 hover:text-amber-200 transition-all flex items-center gap-1 cursor-pointer"
+                title="Switch Trataka Gazing Mode"
+              >
+                <span>Mode: {activeModeConfig.name.split(' ')[0]}</span>
+                <RotateCcw className="w-2.5 h-2.5 text-amber-400" />
+              </button>
             </div>
             <span className="text-[11px] text-slate-400 hidden md:inline">
               {currentStageConfig?.subtitle || 'Session Finished'}
@@ -509,24 +772,195 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
                 )}
               </AnimatePresence>
 
-              {/* The Central Glowing Digital Bindu (Pure CSS) */}
-              <div className="relative flex items-center justify-center">
-                {/* Outer radial ambient aura */}
-                <div className="absolute w-40 h-40 rounded-full bg-amber-400/10 blur-2xl pointer-events-none" />
+              {/* Dynamic Focal Point based on selected Trataka Mode */}
+              {/* 1. BINDU: Pure CSS Central Glowing Amber Dot */}
+              {tratakaMode === 'bindu' && (
+                <div className="relative flex items-center justify-center">
+                  {/* Outer radial ambient aura */}
+                  <div className="absolute w-40 h-40 rounded-full bg-amber-400/10 blur-2xl pointer-events-none" />
 
-                {/* Subtle pulsating focus halo */}
-                <motion.div
-                  animate={{ scale: [1, 1.35, 1], opacity: [0.35, 0.7, 0.35] }}
-                  transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
-                  className="absolute w-12 h-12 rounded-full border border-amber-400/40 pointer-events-none"
-                />
+                  {/* Subtle pulsating focus halo */}
+                  <motion.div
+                    animate={{ scale: [1, 1.35, 1], opacity: [0.35, 0.7, 0.35] }}
+                    transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
+                    className="absolute w-12 h-12 rounded-full border border-amber-400/40 pointer-events-none"
+                  />
 
-                {/* Exact Specified Bindu: w-4 h-4 bg-amber-400 rounded-full shadow */}
-                <div
-                  className="w-4 h-4 bg-amber-400 rounded-full shadow-[0_0_40px_10px_rgba(251,191,36,0.8)] relative z-30"
-                  aria-label="The Digital Bindu Focal Point"
-                />
-              </div>
+                  {/* Exact Specified Bindu: w-4 h-4 bg-amber-400 rounded-full shadow */}
+                  <div
+                    className="w-4 h-4 bg-amber-400 rounded-full shadow-[0_0_40px_10px_rgba(251,191,36,0.8)] relative z-30"
+                    aria-label="The Digital Bindu Focal Point"
+                  />
+                </div>
+              )}
+
+              {/* 2. FLAME (JYOTI): Pure CSS Flickering Flame */}
+              {tratakaMode === 'flame' && (
+                <div className="relative flex flex-col items-center justify-center">
+                  {/* Ambient Tejas radiant heat aura */}
+                  <div className="absolute w-64 h-64 rounded-full bg-orange-500/15 blur-3xl pointer-events-none" />
+
+                  {/* Animated Flickering Flame Container */}
+                  <motion.div
+                    animate={{
+                      scaleY: [1, 1.05, 0.96, 1.03, 1],
+                      scaleX: [1, 0.97, 1.03, 0.98, 1],
+                      rotate: [-0.6, 1.0, -0.8, 0.7, 0],
+                    }}
+                    transition={{
+                      duration: 2.4,
+                      repeat: Infinity,
+                      ease: 'easeInOut',
+                    }}
+                    className="relative flex items-center justify-center"
+                    aria-label="The Sacred Jyoti Flame Focal Point"
+                  >
+                    {/* Outer Flame Envelope */}
+                    <div
+                      className="w-16 h-28 sm:w-20 sm:h-36 bg-gradient-to-t from-orange-600 via-amber-500 to-yellow-300 blur-[2px] shadow-[0_0_55px_18px_rgba(249,115,22,0.85)]"
+                      style={{ borderRadius: '50% 50% 35% 35% / 60% 60% 40% 40%' }}
+                    />
+
+                    {/* Middle Luminous Flame */}
+                    <div
+                      className="absolute w-10 h-20 sm:w-12 sm:h-24 bg-gradient-to-t from-amber-500 via-yellow-300 to-yellow-100 shadow-[0_0_22px_6px_rgba(253,224,71,0.9)]"
+                      style={{ borderRadius: '50% 50% 35% 35% / 60% 60% 40% 40%' }}
+                    />
+
+                    {/* Core Pure White Heat */}
+                    <div
+                      className="absolute bottom-2 sm:bottom-3 w-5 h-12 sm:w-6 sm:h-14 bg-white/95 blur-[1px]"
+                      style={{ borderRadius: '50% 50% 35% 35% / 60% 60% 40% 40%' }}
+                    />
+
+                    {/* Base Blue Oxygen Halo */}
+                    <div className="absolute -bottom-1 w-8 h-4 sm:w-9 sm:h-5 rounded-full bg-sky-500/70 blur-[2px]" />
+                  </motion.div>
+
+                  {/* Candle Wick */}
+                  <div className="w-1 h-3.5 bg-neutral-800 rounded-b mt-[-2px] z-10" />
+                </div>
+              )}
+
+              {/* 3. MURTI (SACRED MANDALA): Sacred Geometry Harmonics */}
+              {tratakaMode === 'murti' && (
+                <div className="relative flex items-center justify-center">
+                  {/* Outer Emerald / Cyan radial glow */}
+                  <div className="absolute w-64 h-64 rounded-full bg-emerald-500/15 blur-3xl pointer-events-none" />
+
+                  {/* Rotating Outer Sacred Mandala Geometry */}
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 75, repeat: Infinity, ease: 'linear' }}
+                    className="relative w-52 h-52 sm:w-64 sm:h-64 flex items-center justify-center"
+                    aria-label="The Sacred Geometry Mandala Focal Point"
+                  >
+                    <svg viewBox="0 0 200 200" className="w-full h-full text-emerald-400/80 drop-shadow-[0_0_20px_rgba(16,185,129,0.5)]">
+                      <circle cx="100" cy="100" r="92" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="3 3" opacity="0.6" />
+                      <circle cx="100" cy="100" r="78" fill="none" stroke="currentColor" strokeWidth="1.2" opacity="0.85" />
+                      
+                      {/* 8 Symmetrical Petals */}
+                      {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
+                        <g key={angle} transform={`rotate(${angle} 100 100)`}>
+                          <ellipse cx="100" cy="46" rx="14" ry="32" fill="none" stroke="currentColor" strokeWidth="1.2" opacity="0.8" />
+                          <circle cx="100" cy="24" r="2.5" fill="currentColor" opacity="0.9" />
+                        </g>
+                      ))}
+
+                      {/* Sacred Octagram Interlocking Squares */}
+                      <rect x="52" y="52" width="96" height="96" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.6" />
+                      <rect x="52" y="52" width="96" height="96" transform="rotate(45 100 100)" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.6" />
+
+                      {/* Inner Floral Core */}
+                      <circle cx="100" cy="100" r="32" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.9" />
+                    </svg>
+                  </motion.div>
+
+                  {/* Counter-rotating Inner Sri Harmonic Star */}
+                  <motion.div
+                    animate={{ rotate: -360 }}
+                    transition={{ duration: 40, repeat: Infinity, ease: 'linear' }}
+                    className="absolute w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center pointer-events-none"
+                  >
+                    <svg viewBox="0 0 100 100" className="w-full h-full text-cyan-300 drop-shadow-[0_0_12px_rgba(6,182,212,0.85)]">
+                      {[0, 60, 120, 180, 240, 300].map((angle) => (
+                        <polygon
+                          key={angle}
+                          points="50,15 62,50 50,85 38,50"
+                          transform={`rotate(${angle} 50 50)`}
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.2"
+                          opacity="0.85"
+                        />
+                      ))}
+                    </svg>
+                  </motion.div>
+
+                  {/* Central Luminous Lotus Bindu */}
+                  <div className="absolute w-3.5 h-3.5 bg-emerald-300 rounded-full shadow-[0_0_25px_8px_rgba(52,211,153,0.9)] z-30" />
+                </div>
+              )}
+
+              {/* 4. PRATIBIMB (THE REFLECTION): Softly Glowing Obsidian Mirror */}
+              {tratakaMode === 'pratibimb' && (
+                <div className="relative flex items-center justify-center" aria-label="The Pratibimb Mirror Focal Point">
+                  {/* Soft Cyan / Aquamarine Halo */}
+                  <div className="absolute w-72 h-72 rounded-full bg-cyan-500/15 blur-3xl pointer-events-none" />
+
+                  {/* Reflective Mirror Frame with Breathing Glow */}
+                  <motion.div
+                    animate={{
+                      boxShadow: [
+                        '0 0 30px 4px rgba(6,182,212,0.25)',
+                        '0 0 55px 12px rgba(6,182,212,0.45)',
+                        '0 0 30px 4px rgba(6,182,212,0.25)',
+                      ],
+                    }}
+                    transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut' }}
+                    className="relative w-52 h-68 sm:w-64 sm:h-84 rounded-[42px] p-1 bg-gradient-to-b from-cyan-400/40 via-slate-700/50 to-cyan-500/25 border border-cyan-300/40 flex items-center justify-center overflow-hidden"
+                  >
+                    {/* Deep Obsidian Reflective Interior */}
+                    <div className="w-full h-full rounded-[38px] bg-gradient-to-b from-slate-950 via-black to-slate-900 flex flex-col items-center justify-center relative p-6">
+                      {/* Subtle Diagonal Shimmer */}
+                      <motion.div
+                        animate={{ x: [-160, 160] }}
+                        transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+                        className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan-400/8 to-transparent skew-x-12 pointer-events-none"
+                      />
+
+                      {/* Compassionate Witnessing Beacon */}
+                      <motion.div
+                        animate={{ scale: [1, 1.25, 1], opacity: [0.4, 0.85, 0.4] }}
+                        transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
+                        className="w-12 h-12 rounded-full bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300 mb-3 shadow-[0_0_20px_rgba(6,182,212,0.4)]"
+                      >
+                        <Heart className="w-6 h-6 opacity-85 text-cyan-300" />
+                      </motion.div>
+
+                      <span className="text-[11px] font-mono tracking-widest uppercase text-cyan-300/80 text-center font-bold">
+                        Witnessing Presence
+                      </span>
+                      <span className="text-xs text-slate-400 font-light text-center mt-1">
+                        Gaze upon yourself with warmth &amp; gentle grace
+                      </span>
+                    </div>
+                  </motion.div>
+                </div>
+              )}
+
+              {/* 5. SHOONYA (THE VOID): Pitch-black screen with zero focal point */}
+              {tratakaMode === 'shoonya' && (
+                <div className="relative flex items-center justify-center w-full h-full" aria-label="The Shoonya Void Focal Point">
+                  {/* Faint Breathing Void Expansion Horizon */}
+                  <motion.div
+                    animate={{ scale: [0.92, 1.08, 0.92], opacity: [0.03, 0.09, 0.03] }}
+                    transition={{ duration: 7.5, repeat: Infinity, ease: 'easeInOut' }}
+                    className="w-96 h-96 rounded-full border border-purple-400/20 bg-purple-950/10 pointer-events-none"
+                  />
+                  {/* Complete center stillness */}
+                </div>
+              )}
 
               {/* Live Instruction Banner at Bottom */}
               <motion.div
@@ -536,8 +970,16 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
                 className="absolute bottom-16 sm:bottom-20 max-w-lg px-6 text-center space-y-2 pointer-events-none z-30"
               >
                 <p className="text-xs sm:text-sm font-medium text-amber-200/90 tracking-wide drop-shadow-md">
-                  Gaze continuously at the center amber Bindu. Try not to blink. Let your peripheral vision soften.
-                  If your eyes water or burn, blink softly.
+                  {tratakaMode === 'bindu' &&
+                    'Gaze continuously at the center amber Bindu. Try not to blink. Let your peripheral vision soften. If your eyes water or burn, blink softly.'}
+                  {tratakaMode === 'flame' &&
+                    'Fixate steadily on the tip of the golden flame. Feel its warmth purifying mental inertia and fatigue. Soften your breath.'}
+                  {tratakaMode === 'murti' &&
+                    'Rest your gaze at the center lotus of the sacred mandala. Allow the symmetrical geometry to absorb and quiet scattered thoughts.'}
+                  {tratakaMode === 'pratibimb' &&
+                    'Gaze into the reflective obsidian sanctuary. Release all self-judgment and hold your inner being with unconditional compassion.'}
+                  {tratakaMode === 'shoonya' &&
+                    'Gaze into the boundless dark void. There is nothing to hold onto, nothing to track. Rest in open formless presence.'}
                 </p>
                 <div className="flex items-center justify-center gap-2 text-[11px] font-mono text-slate-400">
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
@@ -580,8 +1022,16 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
                   Close Your Eyes
                 </h2>
                 <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-light">
-                  Observe the glowing optical after-image floating in the space behind your closed eyelids. Anchor your
-                  attention directly in the center of your forehead (Chidakasha).
+                  {tratakaMode === 'bindu' &&
+                    'Observe the glowing optical after-image floating in the space behind your closed eyelids. Anchor your attention directly in the center of your forehead (Chidakasha).'}
+                  {tratakaMode === 'flame' &&
+                    'Visualize the dancing golden flame imprint in the dark space of your mind\'s eye. Feel its calming, steady warmth radiating through your brow.'}
+                  {tratakaMode === 'murti' &&
+                    'Trace the lingering sacred geometry of the mandala within your inner visual space. Rest in balanced, symmetrical calm.'}
+                  {tratakaMode === 'pratibimb' &&
+                    'Hold the feeling of your own warm presence inside your heart and mind. You are safe, validated, and whole in your own awareness.'}
+                  {tratakaMode === 'shoonya' &&
+                    'Rest in the infinite inner darkness. The mind is a boundless sky; thoughts are merely passing clouds. Abide in pure stillness.'}
                 </p>
               </div>
 
