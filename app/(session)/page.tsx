@@ -594,7 +594,7 @@ export default function SanctuarySessionPage() {
         </div>
 
         {/* Middle Area: Scrollable Chat Stream with Fade Mask */}
-        <div className="flex-1 overflow-y-auto px-4 md:px-8 py-2 space-y-4 [mask-image:linear-gradient(to_bottom,transparent_0%,black_30px,black_calc(100%-30px),transparent_100%)]">
+        <div className="relative z-10 flex-1 overflow-y-auto px-4 md:px-8 py-2 space-y-4 [mask-image:linear-gradient(to_bottom,transparent_0%,black_30px,black_calc(100%-30px),transparent_100%)]">
           {/* Error Banner */}
           {errorMessage && (
             <motion.div
@@ -730,7 +730,7 @@ export default function SanctuarySessionPage() {
         </div>
 
         {/* Bottom Area: Floating Centered Input Dock */}
-        <div className="shrink-0 p-4 z-20">
+        <div className="relative z-10 shrink-0 p-4">
           <div className="max-w-2xl w-full mx-auto">
             <div className="rounded-full bg-slate-900/80 border border-slate-700/80 backdrop-blur-xl p-1.5 sm:p-2 flex items-center gap-2 shadow-[0_10px_35px_rgba(0,0,0,0.6)] focus-within:border-emerald-500/60 focus-within:shadow-[0_0_25px_rgba(16,185,129,0.2)] transition-all">
               {/* Pulsing Mic Button */}
