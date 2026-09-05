@@ -12,6 +12,7 @@
     "start": "next start",
     "lint": "next lint",
     "test": "node --no-warnings tests/run-all-tests.js",
+    "clean": "node -e \"const fs=require('fs');['.next','.ruff_cache','tsconfig.tsbuildinfo','.tmp.driveupload','.tmp.drivedownload','scratch'].forEach(p=>{if(fs.existsSync(p)){fs.rmSync(p,{recursive:true,force:true});console.log('Cleaned '+p);}});\"",
     "deploy:vercel": "vercel --prod"
   },
   "dependencies": {
