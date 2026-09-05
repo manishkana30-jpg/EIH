@@ -1229,8 +1229,10 @@ async def stream_voice(
     if not clean_text:
         raise HTTPException(status_code=400, detail="Text contained no speakable characters after sanitization")
 
+    voice_str: str | None = str(target_voice) if target_voice and not isinstance(target_voice, UploadFile) else None
+
     try:
-        audio_bytes = await audio_engine.synthesize_speech_bytes(clean_text, voice=target_voice)
+        audio_bytes = await audio_engine.synthesize_speech_bytes(clean_text, voice=voice_str)
         if not audio_bytes:
             raise HTTPException(status_code=500, detail="Voice synthesis returned empty audio")
 

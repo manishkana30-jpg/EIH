@@ -147,7 +147,9 @@ class ClinicalExpansionEngine:
         if not matched_condition and raw_text:
             # Semantic keyword matching
             for c in conditions:
-                if c.get("id") in lower or c.get("name", "").lower() in lower:
+                cid = c.get("id")
+                cname = c.get("name", "")
+                if (cid and cid in lower) or (cname and cname.lower() in lower):
                     matched_condition = c
                     break
                 for sym in c.get("core_symptoms", []):

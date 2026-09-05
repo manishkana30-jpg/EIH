@@ -20,17 +20,17 @@ try:
     from keyless_healer.lib.clinical_search import ClinicalEvidence, KeylessClinicalSearch
 except ImportError:
     try:
-        from lib.clinical_search import ClinicalEvidence, KeylessClinicalSearch
+        from lib.clinical_search import ClinicalEvidence, KeylessClinicalSearch  # type: ignore[import-not-found]
     except ImportError:
-        from clinical_search import ClinicalEvidence, KeylessClinicalSearch
+        from clinical_search import ClinicalEvidence, KeylessClinicalSearch  # type: ignore[import-not-found]
 
 try:
     from keyless_healer.lib.psychology_library_rag import psychology_rag
 except ImportError:
     try:
-        from lib.psychology_library_rag import psychology_rag
+        from lib.psychology_library_rag import psychology_rag  # type: ignore[import-not-found]
     except ImportError:
-        from psychology_library_rag import psychology_rag
+        from psychology_library_rag import psychology_rag  # type: ignore[import-not-found]
 
 logger = logging.getLogger("PsychologistPartner")
 
