@@ -103,7 +103,32 @@ function simulateButtonClick() {
   assert.strictEqual(setupCameraInvocationCount, 2, 'Subsequent click must invoke setupCamera() again');
   console.log('  ✓ Subsequent click re-executed setupCamera() as expected (count: 2)');
 
+  console.log('\n--- 3. HTTP Permissions-Policy Document Security Verification ---');
+  const nextConfigPath = path.join(__dirname, '../next.config.mjs');
+  assert(fs.existsSync(nextConfigPath), 'next.config.mjs must exist');
+  const nextConfigSource = fs.readFileSync(nextConfigPath, 'utf8');
+
+  assert(
+    nextConfigSource.includes('camera=(self)'),
+    'next.config.mjs Permissions-Policy MUST explicitly allow camera=(self)'
+  );
+  assert(
+    !nextConfigSource.includes('camera=()'),
+    'next.config.mjs Permissions-Policy must NEVER disallow camera with camera=()'
+  );
+  console.log('  ✓ next.config.mjs Permissions-Policy explicitly permits camera=(self)');
+
+  const vercelJsonPath = path.join(__dirname, '../vercel.json');
+  if (fs.existsSync(vercelJsonPath)) {
+    const vercelJson = JSON.parse(fs.readFileSync(vercelJsonPath, 'utf8'));
+    const headerObj = vercelJson.headers?.find((h) => h.source === '/(.*)')?.headers?.find((h) => h.key === 'Permissions-Policy');
+    if (headerObj) {
+      assert(headerObj.value.includes('camera=(self)'), 'vercel.json Permissions-Policy must allow camera=(self)');
+      console.log('  ✓ vercel.json Permissions-Policy explicitly permits camera=(self)');
+    }
+  }
+
   console.log('\n================================================================');
-  console.log('🎉 VERIFICATION PASSED: Button click unequivocally executes setupCamera');
+  console.log('🎉 VERIFICATION PASSED: Button click & Permissions-Policy verified 100%');
   console.log('================================================================\n');
 })();
