@@ -23,6 +23,8 @@ import {
   Camera,
   CameraOff,
   RefreshCw,
+  Lock,
+  AlertCircle,
 } from 'lucide-react';
 import { browserSpeechController } from '@/lib/audio/browser-speech';
 
@@ -261,6 +263,7 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
   const [cameraStatus, setCameraStatus] = useState<'idle' | 'requesting' | 'granted' | 'denied' | 'unsupported'>('idle');
   const [cameraError, setCameraError] = useState<string | null>(null);
+  const [cameraErrorDetail, setCameraErrorDetail] = useState<'blocked' | 'in_use' | 'not_found' | 'insecure' | 'generic'>('generic');
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
@@ -277,40 +280,145 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
     }
     setCameraStream(null);
     setCameraStatus('idle');
+    setCameraError(null);
   }, []);
 
   const requestCamera = useCallback(async () => {
+    // 1. Check secure context (Chrome & Edge restrict camera on non-localhost HTTP)
+    if (typeof window !== 'undefined' && window.isSecureContext === false) {
+      setCameraStatus('unsupported');
+      setCameraErrorDetail('insecure');
+      setCameraError('Webcam access requires a secure context (https:// or http://localhost).');
+      return;
+    }
+
     if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
       setCameraStatus('unsupported');
-      setCameraError('Front camera is not supported or accessible on this browser.');
+      setCameraErrorDetail('generic');
+      setCameraError('Camera API is not supported or accessible on this browser.');
       return;
+    }
+
+    // 2. Enumerate devices to check if camera hardware is present
+    if (navigator.mediaDevices.enumerateDevices) {
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoInputs = devices.filter((d) => d.kind === 'videoinput');
+        if (devices.length > 0 && videoInputs.length === 0) {
+          setCameraStatus('unsupported');
+          setCameraErrorDetail('not_found');
+          setCameraError('No webcam or camera device was detected on your computer.');
+          return;
+        }
+      } catch {
+        // EnumerateDevices might fail prior to first permission; continue
+      }
     }
 
     setCameraStatus('requesting');
     setCameraError(null);
 
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: 'user',
-          width: { ideal: 640 },
-          height: { ideal: 640 },
-        },
+    // Multi-tier constraint fallback ladder:
+    // Tier 1: User-facing front camera
+    // Tier 2: Any video camera without facingMode constraints (vital for desktop USB webcams & Windows laptops)
+    // Tier 3: Minimal fallback video constraint
+    const constraintTiers: MediaStreamConstraints[] = [
+      {
+        video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 640 } },
         audio: false,
-      });
-      streamRef.current = stream;
-      setCameraStream(stream);
+      },
+      {
+        video: { facingMode: 'user' },
+        audio: false,
+      },
+      {
+        video: true,
+        audio: false,
+      },
+    ];
+
+    let capturedStream: MediaStream | null = null;
+    let finalError: any = null;
+
+    for (const constraints of constraintTiers) {
+      try {
+        capturedStream = await navigator.mediaDevices.getUserMedia(constraints);
+        if (capturedStream) break;
+      } catch (err: any) {
+        finalError = err;
+        console.warn('Camera tier constraint attempt note:', err?.name, err?.message);
+        // If user actively blocked permission or site is set to block, further constraint tiers will also be denied
+        if (err?.name === 'NotAllowedError' || err?.name === 'PermissionDeniedError') {
+          break;
+        }
+      }
+    }
+
+    if (capturedStream) {
+      streamRef.current = capturedStream;
+      setCameraStream(capturedStream);
       setCameraStatus('granted');
-    } catch (err: any) {
-      console.warn('Camera access denied or failed:', err);
+      setCameraError(null);
+    } else {
+      console.warn('Camera acquisition encountered error:', finalError);
       setCameraStatus('denied');
-      setCameraError(
-        err?.name === 'NotAllowedError' || err?.name === 'PermissionDeniedError'
-          ? 'Camera permission denied. Please allow camera access to view your reflection.'
-          : 'Could not access front camera. Please verify device permissions.'
-      );
+
+      const errName = finalError?.name || '';
+      if (errName === 'NotAllowedError' || errName === 'PermissionDeniedError') {
+        setCameraErrorDetail('blocked');
+        setCameraError(
+          'Camera access is blocked in your browser. Look at your address bar to allow camera access.'
+        );
+      } else if (errName === 'NotReadableError' || errName === 'TrackStartError') {
+        setCameraErrorDetail('in_use');
+        setCameraError(
+          'Your webcam is currently in use by another application (e.g. Teams, Zoom, or another browser tab). Please close other camera apps and retry.'
+        );
+      } else if (errName === 'NotFoundError' || errName === 'DevicesNotFoundError') {
+        setCameraErrorDetail('not_found');
+        setCameraError(
+          'No camera device was detected on your computer. Please connect a webcam or use Sanctuary mode.'
+        );
+      } else {
+        setCameraErrorDetail('generic');
+        setCameraError(
+          finalError?.message || 'Could not access camera. Please check your browser permissions.'
+        );
+      }
     }
   }, []);
+
+  // Listen to browser permission state changes dynamically (e.g., if user unblocks camera in address bar)
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || !navigator.permissions?.query) return;
+
+    let permStatus: PermissionStatus | null = null;
+    navigator.permissions
+      .query({ name: 'camera' as any })
+      .then((status) => {
+        permStatus = status;
+        const handleChange = () => {
+          if (status.state === 'granted' && tratakaMode === 'pratibimb') {
+            requestCamera();
+          } else if (status.state === 'denied') {
+            setCameraStatus('denied');
+            setCameraErrorDetail('blocked');
+          }
+        };
+        status.addEventListener('change', handleChange);
+      })
+      .catch(() => {
+        // Browser may not support querying 'camera'; graceful fallback
+      });
+
+    return () => {
+      if (permStatus) {
+        try {
+          permStatus.removeEventListener('change', () => {});
+        } catch {}
+      }
+    };
+  }, [tratakaMode, requestCamera]);
 
   // Stop camera when session is closed, mode is not Pratibimb, or Stage 2 has completed (eyes close in Stage 3)
   useEffect(() => {
@@ -835,6 +943,17 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
                   to 2 minutes to prevent visual strain.
                 </span>
               </div>
+
+              {tratakaMode === 'pratibimb' && (
+                <button
+                  onClick={() => handleJumpToStage(2)}
+                  className="px-4 py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/40 text-cyan-200 text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer shadow-lg hover:shadow-cyan-500/10"
+                >
+                  <Camera className="w-3.5 h-3.5 text-cyan-300" />
+                  <span>Pratibimb: Skip breathing &amp; open Sacred Mirror now</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              )}
             </motion.div>
           )}
 
@@ -1033,7 +1152,16 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
                       <div className="w-full h-full rounded-[36px] bg-black flex flex-col items-center justify-center relative overflow-hidden">
                         {/* Live Front Camera Feed (Mirrored via scale-x-[-1]) */}
                         <video
-                          ref={videoRef}
+                          ref={(el) => {
+                            videoRef.current = el;
+                            if (el && cameraStream && el.srcObject !== cameraStream) {
+                              el.srcObject = cameraStream;
+                              el.onloadedmetadata = () => {
+                                el.play().catch((err) => console.warn('Video play onloadedmetadata notice:', err));
+                              };
+                              el.play().catch((err) => console.warn('Video play notice:', err));
+                            }
+                          }}
                           autoPlay
                           playsInline
                           muted
@@ -1087,24 +1215,58 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
                         </p>
                       </div>
                     ) : cameraStatus === 'denied' || cameraStatus === 'unsupported' ? (
-                      <div className="w-full h-full rounded-[36px] bg-gradient-to-b from-slate-950 via-black to-slate-900 flex flex-col items-center justify-center relative p-6 text-center space-y-3">
-                        <div className="w-12 h-12 rounded-full bg-rose-500/20 border border-rose-400/40 flex items-center justify-center text-rose-300">
-                          <CameraOff className="w-6 h-6 text-rose-300" />
-                        </div>
-                        <span className="text-xs font-mono font-bold uppercase tracking-wider text-rose-300">
-                          Camera Access Needed
-                        </span>
-                        <p className="text-[11px] text-slate-400 max-w-[200px]">
-                          {cameraError || 'Camera permission was not granted.'}
-                        </p>
-                        <button
-                          onClick={requestCamera}
-                          className="px-3.5 py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/40 text-cyan-200 text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer"
+                      <div className="w-full h-full rounded-[36px] bg-gradient-to-b from-slate-950 via-black to-slate-900 flex flex-col items-center justify-center relative p-4 sm:p-6 text-center space-y-3 overflow-y-auto">
+                        <div
+                          className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                            cameraErrorDetail === 'blocked'
+                              ? 'bg-amber-500/20 border border-amber-400/40 text-amber-300'
+                              : 'bg-rose-500/20 border border-rose-400/40 text-rose-300'
+                          }`}
                         >
-                          <RefreshCw className="w-3.5 h-3.5" />
-                          <span>Grant Camera Permission</span>
-                        </button>
-                        <div className="pt-2 text-[10px] text-slate-500 font-mono">
+                          {cameraErrorDetail === 'blocked' ? (
+                            <Lock className="w-6 h-6 text-amber-300" />
+                          ) : (
+                            <CameraOff className="w-6 h-6 text-rose-300" />
+                          )}
+                        </div>
+
+                        <div>
+                          <span
+                            className={`text-xs font-mono font-bold uppercase tracking-wider block ${
+                              cameraErrorDetail === 'blocked' ? 'text-amber-300' : 'text-rose-300'
+                            }`}
+                          >
+                            {cameraErrorDetail === 'blocked' ? 'Camera Blocked by Browser' : 'Camera Access Needed'}
+                          </span>
+                          <p className="text-[11px] text-slate-300 mt-1 max-w-[240px] mx-auto leading-relaxed">
+                            {cameraError || 'Camera permission was not granted.'}
+                          </p>
+                        </div>
+
+                        {cameraErrorDetail === 'blocked' && (
+                          <div className="p-3 rounded-2xl bg-amber-950/40 border border-amber-500/30 text-left max-w-[240px] text-[10px] text-amber-200/90 space-y-1">
+                            <p className="font-semibold text-amber-300 flex items-center gap-1">
+                              <Lock className="w-3 h-3" />
+                              <span>How to Unblock in 3 Seconds:</span>
+                            </p>
+                            <p>1. Look at your browser address bar next to the URL.</p>
+                            <p>2. Click the <strong>camera 📷</strong> or <strong>lock / site settings 🔒</strong> icon.</p>
+                            <p>3. Set Camera to <strong>Allow</strong> (or click Reset permissions).</p>
+                            <p>4. Click <strong>Grant Camera Permission</strong> below.</p>
+                          </div>
+                        )}
+
+                        <div className="flex flex-col gap-2 w-full max-w-[220px]">
+                          <button
+                            onClick={requestCamera}
+                            className="w-full py-2 px-3.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition-all shadow-[0_0_15px_rgba(6,182,212,0.4)] flex items-center justify-center gap-1.5 cursor-pointer"
+                          >
+                            <RefreshCw className="w-3.5 h-3.5" />
+                            <span>Grant Camera Permission</span>
+                          </button>
+                        </div>
+
+                        <div className="pt-1 text-[10px] text-slate-500 font-mono">
                           Reflective obsidian mirror active as fallback
                         </div>
                       </div>
