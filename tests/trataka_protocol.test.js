@@ -24,7 +24,9 @@ console.log('--- 1. Testing Trataka Architecture & Stage Configuration ---');
 
 const tratakaFilePath = path.join(__dirname, '../app/(session)/components/TratakaModule.tsx');
 assert(fs.existsSync(tratakaFilePath), 'TratakaModule.tsx must exist');
-const tratakaSource = fs.readFileSync(tratakaFilePath, 'utf8');
+const pratibimbFilePath = path.join(__dirname, '../app/(session)/components/PratibimbCamera.tsx');
+assert(fs.existsSync(pratibimbFilePath), 'PratibimbCamera.tsx must exist');
+const tratakaSource = fs.readFileSync(tratakaFilePath, 'utf8') + '\n' + fs.readFileSync(pratibimbFilePath, 'utf8');
 
 // Match TRATAKA_STAGES array
 const stagesMatch = tratakaSource.match(/export const TRATAKA_STAGES: TratakaStageConfig\[\] = (\[[\s\S]*?\]);/);

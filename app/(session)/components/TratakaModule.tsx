@@ -26,6 +26,7 @@ import {
   Lock,
   AlertCircle,
 } from 'lucide-react';
+import PratibimbCamera from './PratibimbCamera';
 import { browserSpeechController } from '@/lib/audio/browser-speech';
 
 export type TratakaModeId = 'bindu' | 'flame' | 'murti' | 'pratibimb' | 'shoonya';
@@ -259,174 +260,7 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
 
   const currentStageId = elapsedSec >= TOTAL_TRATAKA_SECONDS ? 'complete' : currentStageConfig?.id || 1;
 
-  // Front Camera MediaStream State for Pratibimb (Self-Reflection Mirror)
-  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
-  const [cameraStatus, setCameraStatus] = useState<'idle' | 'requesting' | 'granted' | 'denied' | 'unsupported'>('idle');
-  const [cameraError, setCameraError] = useState<string | null>(null);
-  const [cameraErrorDetail, setCameraErrorDetail] = useState<'blocked' | 'in_use' | 'not_found' | 'insecure' | 'generic'>('generic');
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
 
-  const stopCamera = useCallback(() => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => {
-        try {
-          track.stop();
-        } catch (err) {
-          console.warn('Error stopping camera track:', err);
-        }
-      });
-      streamRef.current = null;
-    }
-    setCameraStream(null);
-    setCameraStatus('idle');
-    setCameraError(null);
-  }, []);
-
-  const requestCamera = useCallback(async () => {
-    // Cross-browser getUserMedia detection with vendor prefix support
-    const getMedia =
-      navigator?.mediaDevices?.getUserMedia?.bind(navigator.mediaDevices) ||
-      (navigator as any)?.getUserMedia?.bind(navigator) ||
-      (navigator as any)?.webkitGetUserMedia?.bind(navigator) ||
-      (navigator as any)?.mozGetUserMedia?.bind(navigator);
-
-    if (!getMedia) {
-      console.warn('Camera API (getUserMedia) is not supported in this browser environment.');
-      setCameraStatus('idle');
-      return;
-    }
-
-    setCameraStatus('requesting');
-    setCameraError(null);
-
-    // Multi-tier constraint fallback ladder:
-    // Tier 1: Direct universal constraint - fastest & 100% reliable on all webcams, virtual cams & laptops
-    // Tier 2: Front camera with ideal constraints for high-definition reflection
-    // Tier 3: Strict user facingMode for mobile devices
-    const constraintTiers: MediaStreamConstraints[] = [
-      {
-        video: true,
-        audio: false,
-      },
-      {
-        video: {
-          facingMode: { ideal: 'user' },
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-        },
-        audio: false,
-      },
-      {
-        video: { facingMode: 'user' },
-        audio: false,
-      },
-    ];
-
-    let capturedStream: MediaStream | null = null;
-    let finalError: any = null;
-
-    for (const constraints of constraintTiers) {
-      try {
-        capturedStream = await getMedia(constraints);
-        if (capturedStream) break;
-      } catch (err: any) {
-        finalError = err;
-        console.warn('Camera constraint tier attempt note:', err?.name, err?.message);
-      }
-    }
-
-    if (capturedStream) {
-      streamRef.current = capturedStream;
-      setCameraStream(capturedStream);
-      setCameraStatus('granted');
-      setCameraError(null);
-    } else {
-      console.warn('Camera acquisition note:', finalError);
-      // Keep in clean idle state with direct CTA so user can retry anytime with zero block screens
-      setCameraStatus('idle');
-      setCameraError(null);
-    }
-  }, []);
-
-  // Listen to browser permission state changes dynamically
-  useEffect(() => {
-    if (typeof navigator === 'undefined' || !navigator.permissions?.query) return;
-
-    let permStatus: PermissionStatus | null = null;
-    navigator.permissions
-      .query({ name: 'camera' as any })
-      .then((status) => {
-        permStatus = status;
-        if (status.state === 'granted' && tratakaMode === 'pratibimb' && !streamRef.current) {
-          requestCamera();
-        }
-        const handleChange = () => {
-          if (status.state === 'granted' && tratakaMode === 'pratibimb' && !streamRef.current) {
-            requestCamera();
-          }
-        };
-        status.addEventListener('change', handleChange);
-      })
-      .catch(() => {
-        // Browser may not support querying 'camera'; graceful fallback
-      });
-
-    return () => {
-      if (permStatus) {
-        try {
-          permStatus.removeEventListener('change', () => {});
-        } catch {}
-      }
-    };
-  }, [tratakaMode, requestCamera]);
-
-  // Auto-request camera when in Pratibimb mode if not yet active
-  useEffect(() => {
-    if (
-      isOpen &&
-      tratakaMode === 'pratibimb' &&
-      (currentStageId === 1 || currentStageId === 2) &&
-      !cameraStream &&
-      cameraStatus === 'idle'
-    ) {
-      requestCamera();
-    }
-  }, [isOpen, tratakaMode, currentStageId, cameraStream, cameraStatus, requestCamera]);
-
-  // Stop camera when session is closed, mode is not Pratibimb, or Stage 2 has completed (eyes close in Stage 3)
-  useEffect(() => {
-    if (
-      !isOpen ||
-      tratakaMode !== 'pratibimb' ||
-      currentStageId === 3 ||
-      currentStageId === 4 ||
-      currentStageId === 5 ||
-      currentStageId === 'complete'
-    ) {
-      stopCamera();
-    }
-  }, [isOpen, tratakaMode, currentStageId, stopCamera]);
-
-  // When video element mounts and camera stream is active, bind stream and play
-  useEffect(() => {
-    if (videoRef.current && cameraStream) {
-      videoRef.current.srcObject = cameraStream;
-      const playPromise = videoRef.current.play();
-      if (playPromise !== undefined) {
-        playPromise.catch((err) => {
-          console.warn('Video playback notice:', err);
-        });
-      }
-    }
-  }, [cameraStream, tratakaMode, currentStageId]);
-
-  // Clean up all tracks on unmount
-  useEffect(() => {
-    return () => {
-      stopCamera();
-    };
-  }, [stopCamera]);
 
   // Sound cues on stage transitions
   useEffect(() => {
@@ -452,7 +286,6 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
       setHasAnnouncedStage4(false);
       lastPlayedStageRef.current = null;
       browserSpeechController.stop();
-      stopCamera();
       return;
     }
 
@@ -467,7 +300,7 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [isOpen, isPlaying, elapsedSec, tratakaMode, stopCamera]);
+  }, [isOpen, isPlaying, elapsedSec, tratakaMode]);
 
   // Box Breathing pacing cycle during Stage 1 (4-4-4-4 cycle = 16s)
   useEffect(() => {
@@ -502,11 +335,10 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
   }, [isOpen]);
 
   const handleForceExit = useCallback(() => {
-    stopCamera();
     browserSpeechController.stop();
     if (timerRef.current) clearInterval(timerRef.current);
     onClose();
-  }, [onClose, stopCamera]);
+  }, [onClose]);
 
   const handleSelectMode = (modeId: TratakaModeId) => {
     setTratakaMode(modeId);
@@ -518,16 +350,13 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
       // In Pratibimb (The Reflection), transition immediately to Stage 2 so the Sacred Mirror opens automatically
       setElapsedSec(60);
       lastPlayedStageRef.current = 2;
-      requestCamera();
     } else {
       setElapsedSec(0);
       lastPlayedStageRef.current = 1;
-      stopCamera();
     }
   };
 
   const handleChangeMode = () => {
-    stopCamera();
     browserSpeechController.stop();
     if (timerRef.current) clearInterval(timerRef.current);
     setTratakaMode(null);
@@ -550,9 +379,6 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
     setIsPlaying(true);
     setHasAnnouncedStage4(false);
     lastPlayedStageRef.current = null;
-    if (tratakaMode === 'pratibimb') {
-      requestCamera();
-    }
   };
 
   const handleJumpToStage = (stageId: TratakaStageId) => {
@@ -562,11 +388,6 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
       setElapsedSec(target.startSec);
       setIsPlaying(true);
       if (stageId !== 4) setHasAnnouncedStage4(false);
-      if (stageId !== 2 && tratakaMode === 'pratibimb') {
-        stopCamera();
-      } else if (stageId === 2 && tratakaMode === 'pratibimb' && !cameraStream) {
-        requestCamera();
-      }
     }
   };
 
@@ -1110,123 +931,14 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
                 </div>
               )}
 
-              {/* 4. PRATIBIMB (THE REFLECTION): Front Camera Self-Image Mirror with Permission */}
+              {/* 4. PRATIBIMB (THE REFLECTION): Dedicated WebRTC Sacred Mirror Component */}
               {tratakaMode === 'pratibimb' && (
                 <div className="relative flex items-center justify-center" aria-label="The Pratibimb Front Camera Mirror Focal Point">
                   {/* Soft Cyan / Aquamarine Halo */}
-                  <div className="absolute w-72 h-72 rounded-full bg-cyan-500/15 blur-3xl pointer-events-none" />
+                  <div className="absolute w-72 h-72 sm:w-96 sm:h-96 rounded-full bg-cyan-500/15 blur-3xl pointer-events-none" />
 
-                  {/* Reflective Mirror Frame with Breathing Glow */}
-                  <motion.div
-                    animate={{
-                      boxShadow: [
-                        '0 0 30px 4px rgba(6,182,212,0.25)',
-                        '0 0 55px 12px rgba(6,182,212,0.45)',
-                        '0 0 30px 4px rgba(6,182,212,0.25)',
-                      ],
-                    }}
-                    transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut' }}
-                    className="relative w-60 h-80 sm:w-72 sm:h-96 rounded-[42px] p-1.5 bg-gradient-to-b from-cyan-400/40 via-slate-700/50 to-cyan-500/25 border border-cyan-300/40 flex items-center justify-center overflow-hidden shadow-2xl"
-                  >
-                    {/* Interior Mirror Display */}
-                    {cameraStream && cameraStatus === 'granted' ? (
-                      <div className="w-full h-full rounded-[36px] bg-black flex flex-col items-center justify-center relative overflow-hidden">
-                        {/* Live Front Camera Feed (Mirrored via scale-x-[-1]) */}
-                        <video
-                          ref={(el) => {
-                            videoRef.current = el;
-                            if (el && cameraStream && el.srcObject !== cameraStream) {
-                              el.srcObject = cameraStream;
-                              el.onloadedmetadata = () => {
-                                el.play().catch((err) => console.warn('Video play onloadedmetadata notice:', err));
-                              };
-                              el.play().catch((err) => console.warn('Video play notice:', err));
-                            }
-                          }}
-                          autoPlay
-                          playsInline
-                          muted
-                          className="w-full h-full object-cover -scale-x-100 rounded-[36px]"
-                        />
-
-                        {/* Gentle Vignette Gradient Overlay */}
-                        <div className="absolute inset-0 rounded-[36px] pointer-events-none shadow-[inset_0_0_50px_rgba(0,0,0,0.7)] border border-cyan-400/20" />
-
-                        {/* Soft Ambient Cyan Tint */}
-                        <motion.div
-                          animate={{ opacity: [0.08, 0.2, 0.08] }}
-                          transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-                          className="absolute inset-0 bg-gradient-to-b from-cyan-500/10 via-transparent to-cyan-950/25 pointer-events-none"
-                        />
-
-                        {/* Top Mirror Status Capsule */}
-                        <div className="absolute top-3 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-cyan-400/30 flex items-center gap-1.5 pointer-events-none z-10">
-                          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                          <span className="text-[10px] font-mono font-semibold tracking-wider text-cyan-200 uppercase">
-                            Sacred Mirror • Zero Recording
-                          </span>
-                        </div>
-
-                        {/* Top-Right Camera Toggle (Privacy Option) */}
-                        <button
-                          onClick={stopCamera}
-                          title="Pause camera reflection"
-                          className="absolute top-3 right-3 p-1.5 rounded-full bg-black/60 hover:bg-black/90 border border-white/20 text-slate-400 hover:text-white transition-all z-20 cursor-pointer"
-                        >
-                          <CameraOff className="w-3.5 h-3.5" />
-                        </button>
-
-                        {/* Bottom Subtle Guidance Capsule */}
-                        <div className="absolute bottom-3 px-3 py-1.5 rounded-full bg-black/75 backdrop-blur-md border border-cyan-400/30 max-w-[88%] text-center pointer-events-none z-10">
-                          <span className="text-[10px] font-medium text-cyan-200/90 leading-tight">
-                            Only reflection of your image is shown • Zero recording
-                          </span>
-                        </div>
-                      </div>
-                    ) : cameraStatus === 'requesting' ? (
-                      <div className="w-full h-full rounded-[36px] bg-gradient-to-b from-slate-950 via-black to-slate-900 flex flex-col items-center justify-center relative p-6 text-center space-y-3">
-                        <div className="w-14 h-14 rounded-full bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300 shadow-[0_0_25px_rgba(6,182,212,0.35)]">
-                          <RefreshCw className="w-7 h-7 animate-spin text-cyan-300" />
-                        </div>
-                        <div>
-                          <span className="text-xs font-mono font-bold uppercase tracking-wider text-cyan-300 block">
-                            Opening Camera Session...
-                          </span>
-                          <span className="text-[11px] text-slate-400 font-light block mt-1">
-                            Initializing live mirror reflection
-                          </span>
-                        </div>
-                        <span className="text-[9px] text-slate-500 font-mono">
-                          100% Private • Live Reflection Only • Zero Recording
-                        </span>
-                      </div>
-                    ) : (
-                      /* Idle / Ready State: Clean Sacred Mirror without any Blocked Warnings */
-                      <div className="w-full h-full rounded-[36px] bg-gradient-to-b from-slate-950 via-black to-slate-900 flex flex-col items-center justify-center relative p-6 text-center space-y-3.5">
-                        <div className="w-14 h-14 rounded-full bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300 shadow-[0_0_20px_rgba(6,182,212,0.4)]">
-                          <Camera className="w-7 h-7 text-cyan-300" />
-                        </div>
-                        <div>
-                          <span className="text-xs font-mono font-bold uppercase tracking-wider text-cyan-300 block">
-                            Live Reflection Mirror
-                          </span>
-                          <p className="text-[11px] text-slate-300 font-light block mt-1.5 max-w-[220px] mx-auto leading-relaxed">
-                            No recording is done — only the live reflection of your image will be shown.
-                          </p>
-                        </div>
-                        <button
-                          onClick={requestCamera}
-                          className="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition-all shadow-[0_0_15px_rgba(6,182,212,0.4)] flex items-center gap-2 cursor-pointer active:scale-95"
-                        >
-                          <Camera className="w-4 h-4" />
-                          <span>Open Camera Session</span>
-                        </button>
-                        <span className="text-[9px] text-slate-400/80 font-mono">
-                          Camera permission: 100% Private • Live Reflection Only • Zero Recording
-                        </span>
-                      </div>
-                    )}
-                  </motion.div>
+                  {/* Dedicated Pratibimb WebRTC Camera Mirror with Strict Track Cleanup */}
+                  <PratibimbCamera />
                 </div>
               )}
 
