@@ -79,6 +79,7 @@ const CLINICAL_TRIGGER_PATTERNS: Record<string, RegExp> = {
   shame_core_defectiveness: /(?:\b(shame|ashamed|toxic shame|deeply flawed|defective|fundamentally broken|unworthy|hate myself|disgusted with myself|want to disappear|sharmindagi|vergüenza|honte|scham)\b|शर्मिंदगी|खुद से नफरत|अपराधबोध|खामी)/i,
   workplace_mobbing_toxic_culture: /(?:\b(toxic workplace|toxic boss|toxic manager|gaslighting boss|workplace mobbing|workplace harassment|coworker sabotage|hostile workplace|sunday dread|corporate politics|office politics)\b|ऑफिस का तनाव|बॉस की डांट|कार्यस्थल)/i,
   somatic_chronic_pain_amplification: /(?:\b(chronic pain|neuroplastic pain|back pain|fibromyalgia|pain reprocessing|tension headache|pain flare|somatic tracking|central sensitization|migraine|body ache|neck pain|muscle ache|dard)\b|दर्द|सिरदर्द|पीठ दर्द|बदन दर्द|माइग्रेन)/i,
+  cognitive_memory_brain_fog: /(?:\b(memory|memories|weak memory|week memory|bad memory|poor memory|loose memory|lose memory|losing memory|forget|forgetful|forgetfulness|forgetting|forgot|cannot remember|cant remember|hard to remember|recall|short term memory|working memory|brain fog|mental fog|cloudy head|absent minded|cognitive fatigue|mental exhaustion|yaad nahi|yaaddasht|bhool|bhul gaya|bhul jata|memoria|oubli|gedachtnis|vergesslich)\b|याददाश्त|याद नहीं|भूल जाता|भूलना|कमजोर याददाश्त|दिमागी धुंध)/i,
 };
 
 /**
@@ -165,6 +166,14 @@ export const CLINICAL_BREATHWORK_PACERS: Record<string, BreathCadence> = {
     pause: 1,
     description: 'Throat-constricted audible breath stabilizes prefrontal cortical decision circuits.',
   },
+  cognitive_memory_brain_fog: {
+    name: 'Bhramari Cranial Resonance Breath',
+    inhale: 4,
+    hold: 2,
+    exhale: 6,
+    pause: 1,
+    description: 'Humming sound vibrations stimulate cerebral nitric oxide production, clearing mental fog and soothing cognitive fatigue.',
+  },
 };
 
 /**
@@ -173,7 +182,16 @@ export const CLINICAL_BREATHWORK_PACERS: Record<string, BreathCadence> = {
 export function queryPsychologyLibrary(userText: string): LibraryRAGResult | null {
   if (!userText || !userText.trim()) return null;
 
-  const rawLower = userText.toLowerCase();
+  let rawLower = userText.toLowerCase();
+  // Pre-normalize common phonetic typos and transliterations
+  rawLower = rawLower
+    .replace(/\bweek\s+memory\b/g, 'weak memory')
+    .replace(/\bloose\s+memory\b/g, 'lose memory')
+    .replace(/\bpanick\b/g, 'panic')
+    .replace(/\btierd\b/g, 'tired')
+    .replace(/\bdepresed\b/g, 'depressed')
+    .replace(/\bforgoting\b/g, 'forgetting');
+
   const words = rawLower.split(/[\s,.;:!?()]+/).filter((w) => w.length >= 3);
 
   let bestMatch: PsychologyCondition | null = null;
@@ -262,7 +280,7 @@ export function queryPsychologyLibrary(userText: string): LibraryRAGResult | nul
         disgust: 'shame_core_defectiveness',
         boredom: 'burnout_fatigue',
         awkwardness: 'social_evaluative_threat',
-        confusion: 'decision_paralysis_ambivalence',
+        confusion: 'cognitive_memory_brain_fog',
         craving: 'adhd_executive_overwhelm',
         empathic_pain: 'compassion_fatigue_caregiver',
         entrancement: 'existential_loneliness',
@@ -275,7 +293,7 @@ export function queryPsychologyLibrary(userText: string): LibraryRAGResult | nul
         romance: 'relationship_heartbreak',
         satisfaction: 'imposter_perfectionism',
         surprise: 'panic_dysregulation',
-        calmness: 'gad',
+        calmness: 'burnout_fatigue',
         admiration: 'imposter_perfectionism',
         adoration: 'relationship_heartbreak',
         aesthetic_appreciation: 'existential_loneliness',
@@ -283,17 +301,21 @@ export function queryPsychologyLibrary(userText: string): LibraryRAGResult | nul
         sexual_desire: 'relationship_heartbreak',
       };
 
-      const mappedId = dimensionToConditionMap[dimId] || 'gad';
-      const fallbackCondition = getConditionById(mappedId) || PSYCHOLOGY_LIBRARY[0];
+      const mappedId =
+        dimensionToConditionMap[dimId] ||
+        (rawLower.includes('memory') || rawLower.includes('fog') || rawLower.includes('recall') || rawLower.includes('forget')
+          ? 'cognitive_memory_brain_fog'
+          : 'burnout_fatigue');
+      const fallbackCondition = getConditionById(mappedId) || getConditionById('cognitive_memory_brain_fog') || PSYCHOLOGY_LIBRARY[0];
       if (fallbackCondition) {
         bestMatch = fallbackCondition;
         highestScore = 4;
         matchedTerms = [`emotion:${dimId}`];
       }
     } catch {
-      bestMatch = PSYCHOLOGY_LIBRARY[0];
+      bestMatch = getConditionById('cognitive_memory_brain_fog') || PSYCHOLOGY_LIBRARY[0];
       highestScore = 4;
-      matchedTerms = ['fallback_gad'];
+      matchedTerms = ['fallback_cognitive'];
     }
   }
 

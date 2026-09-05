@@ -176,7 +176,79 @@ CLINICAL_LOCALIZATION_CATALOG: Dict[str, Dict[str, Dict[str, str]]] = {
             "pranayama": "Üben Sie 3 Minuten die Sonnenatmung (Surya Bhedana über das rechte Nasenloch), um frische Lebensenergie zu wecken.",
         },
     },
+
+    "cognitive_memory_brain_fog": {
+        "en": {
+            "name": "Cognitive Fatigue, Memory Deficits & Brain Fog",
+            "validation": "I hear how frustrating and unsettling it feels when your memory feels weak or foggy and you struggle to recall things clearly.",
+            "cbt_reframing": "Notice the fear that your brain is failing. In reality, memory slips and brain fog are almost always caused by stress, sleep debt, or cognitive overload occupying your working memory—not permanent damage. Your brain's storage is completely intact; it is simply your retrieval bandwidth that is temporarily crowded.",
+            "somatic_anchor": "Sensory focus re-anchoring: take a sip of cool water, notice its sensation, and gently tap your temples and forehead with your fingertips for 30 seconds to awaken prefrontal circulation.",
+            "pranayama": "Practice 5 rounds of gentle Bhramari (Humming Bee Breath) with your index fingers softly closing your ears to generate cranial micro-vibrations, stimulate nitric oxide, and restore mental clarity.",
+        },
+        "hi": {
+            "name": "कमज़ोर याददाश्त, विस्मृति और दिमागी धुंध (ब्रेन फॉग)",
+            "validation": "मैं समझ सकता हूँ कि जब याददाश्त कमजोर लगने लगे या बातें याद रखने में कठिनाई हो, तो यह कितना निराशाजनक और डरावना लग सकता है।",
+            "cbt_reframing": "इस डर को पहचानें कि आपका दिमाग कमजोर हो रहा है। वास्तव में, भूलने की समस्या या दिमागी धुंध अक्सर मानसिक तनाव, नींद की कमी या दिमाग पर अत्यधिक काम के बोझ के कारण होती है—यह कोई स्थायी क्षति नहीं है। आपकी याददाश्त पूरी तरह सुरक्षित है, केवल अत्यधिक विचारों के कारण सही समय पर बातें याद आने में बाधा आ रही है।",
+            "somatic_anchor": "इंद्रिय सजगता का अभ्यास: ठंडे पानी का एक घूंट लें, उसे गले से नीचे उतरते महसूस करें और 30 सेकंड तक अपनी उंगलियों से कनपटी और माथे को धीरे-धीरे थपथपाएं ताकि मस्तिष्क में रक्त संचार बढ़ सके।",
+            "pranayama": "5 चक्र भ्रामरी प्राणायाम का अभ्यास करें: अपनी तर्जनी उंगलियों से कानों को हल्के से बंद करें और सांस छोड़ते हुए भौंरे जैसी मधुर गुंजन करें। यह कपाल में सूक्ष्म स्पंदन पैदा कर मानसिक स्पष्टता लौटाता है।",
+        },
+        "es": {
+            "name": "Fatiga Cognitiva, Pérdida de Memoria y Niebla Mental",
+            "validation": "Comprendo lo frustrante e inquietante que resulta sentir la memoria débil o dispersa y tener dificultades para recordar las cosas con claridad.",
+            "cbt_reframing": "Desafía la idea de que tu capacidad mental se está deteriorando. La niebla mental y los olvidos cotidianos son casi siempre consecuencia del estrés acumulado, la falta de sueño o la sobrecarga sensorial. La memoria a largo plazo está intacta; es el canal de recuperación el que se encuentra saturado.",
+            "somatic_anchor": "Reanclaje sensorial: bebe un sorbo de agua fresca, nota la sensación al tragar y date suaves golpecitos con las yemas de los dedos en las sienes y la frente durante 30 segundos para activar la circulación frontal.",
+            "pranayama": "Practica 5 rondas de respiración Bhramari (zumbido de la abeja) tapando suavemente los oídos con los índices para generar microvibraciones craneales, liberar óxido nítrico y despejar la mente.",
+        },
+        "fr": {
+            "name": "Fatigue Cognitive, Trous de Mémoire et Brouillard Mental",
+            "validation": "J'entends combien il est déstabilisant et anxiogène de sentir sa mémoire fléchir et d'avoir du mal à retrouver ses idées.",
+            "cbt_reframing": "Prenez du recul face à la crainte d'un déclin cognitif irréversible. Les oublis fréquents et le brouillard mental résultent presque toujours du stress, d'un manque de sommeil ou d'une surcharge d'informations. Votre mémoire profonde est parfaitement préservée ; c'est simplement votre bande passante mentale qui est temporairement saturée.",
+            "somatic_anchor": "Réancrage sensoriel : buvez une gorgée d'eau fraîche en observant la sensation dans la gorge, puis tapotez doucement vos tempes et votre front du bout des doigts pendant 30 secondes.",
+            "pranayama": "Réalisez 5 cycles de respiration Bhramari (le souffle du bourdonnement) en bouchant légèrement vos oreilles avec les index pour diffuser des micro-vibrations crâniennes et clarifier l'esprit.",
+        },
+        "de": {
+            "name": "Kognitive Erschöpfung, Gedächtnisschwäche und Brain Fog",
+            "validation": "Ich verstehe, wie beunruhigend und frustrierend es ist, wenn das Gedächtnis nachlässt und man sich Dinge schwer merken kann.",
+            "cbt_reframing": "Hinterfragen Sie die Befürchtung, dass Ihre geistige Leistungsfähigkeit dauerhaft geschädigt ist. Gedächtnislücken und geistige Trübheit sind in den allermeisten Fällen die Folge von chronischem Stress, Schlafmangel oder Reizüberflutung. Ihr Langzeitgedächtnis ist intakt; lediglich der Arbeitsspeicher ist im Moment überfüllt.",
+            "somatic_anchor": "Sensorische Re-Fokussierung: Trinken Sie einen Schluck kühles Wasser, spüren Sie die Frische und klopfen Sie für 30 Sekunden sanft mit den Fingerkuppen auf Schläfen und Stirn, um die Durchblutung zu fördern.",
+            "pranayama": "Führen Sie 5 Runden der Bhramari-Atmung (Summen der Biene) durch, indem Sie die Ohren sanft verschließen und summend ausatmen, um den Geist durch feine Vibrationen zu klären.",
+        },
+    },
 }
+
+# Dynamically load full 21 conditions x 5 locales from clinical_localization.json if available
+import json
+import os
+
+def _init_localization_catalog() -> None:
+    candidates = [
+        os.path.abspath("data/clinical_localization.json"),
+        os.path.abspath("../data/clinical_localization.json"),
+        os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "data", "clinical_localization.json"),
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "data", "clinical_localization.json"),
+    ]
+    for c in candidates:
+        if os.path.exists(c):
+            try:
+                with open(c, encoding="utf-8") as f:
+                    data = json.load(f)
+                    catalog = data.get("catalog", {})
+                    for cond_k, cond_v in catalog.items():
+                        if cond_k not in CLINICAL_LOCALIZATION_CATALOG:
+                            CLINICAL_LOCALIZATION_CATALOG[cond_k] = cond_v
+                        else:
+                            for loc_k, loc_v in cond_v.items():
+                                CLINICAL_LOCALIZATION_CATALOG[cond_k][loc_k] = loc_v
+                    for k, v in data.get("general_advice", {}).items():
+                        if k in GENERAL_LOCALIZED_ADVICE:
+                            GENERAL_LOCALIZED_ADVICE[k].update(v)
+                        else:
+                            GENERAL_LOCALIZED_ADVICE[k] = v
+                break
+            except Exception:
+                pass
+
+_init_localization_catalog()
 
 GENERAL_LOCALIZED_ADVICE: Dict[str, Dict[str, str]] = {
     "en": {
@@ -202,9 +274,17 @@ def format_human_therapeutic_message(
     user_message: str = ""
 ) -> str:
     norm = normalize_language_code(lang_code)
-    cond = CLINICAL_LOCALIZATION_CATALOG.get(cond_id) or CLINICAL_LOCALIZATION_CATALOG.get("gad")
-    loc = cond.get(norm) or cond.get("en")
+    cond = CLINICAL_LOCALIZATION_CATALOG.get(cond_id)
+    if not cond:
+        # Check if condition exists in psychology library RAG
+        from .psychology_library_rag import psychology_rag
+        lib_cond = psychology_rag.get_condition_by_id(cond_id)
+        if lib_cond:
+            sols = lib_cond.get("solutions", {})
+            return f"I hear what you are navigating with {lib_cond.get('name')}. {sols.get('cbt_reframing', '')} To steady your autonomic nervous system right now: engage in {sols.get('somatic_anchor', '')} alongside {sols.get('pranayama', '')}"
+        cond = CLINICAL_LOCALIZATION_CATALOG.get("cognitive_memory_brain_fog") or CLINICAL_LOCALIZATION_CATALOG.get("gad")
 
+    loc = cond.get(norm) or cond.get("en")
     if not loc:
         return GENERAL_LOCALIZED_ADVICE.get(norm, GENERAL_LOCALIZED_ADVICE["en"])["default"]
 

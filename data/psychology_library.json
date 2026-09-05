@@ -476,5 +476,29 @@
     },
     "severity_level": "Moderate",
     "requires_immediate_crisis": false
+  },
+  {
+    "id": "cognitive_memory_brain_fog",
+    "name": "Cognitive Fatigue, Memory Deficits & Brain Fog",
+    "category": "Cognitive & Neuro-Performance",
+    "triguna_balance": "Depleted Sattva, Elevated Tamas (Kaphaja Fog)",
+    "core_symptoms": [
+      "Working memory lapses, forgetfulness, and word-finding difficulty",
+      "Brain fog and sensation of mental fuzziness under stress or fatigue",
+      "Difficulty retaining recently learned instructions or recalling details",
+      "Executive cognitive fatigue and feeling mentally slowed down"
+    ],
+    "cognitive_distortions": [
+      "Catastrophic Overgeneralization ('My brain is permanently damaged or declining')",
+      "Selective Abstraction (fixating on occasional memory lapses while ignoring normal daily recall)"
+    ],
+    "solutions": {
+      "cbt_reframing": "Normalize working memory limits under stress: Cognitive slips and brain fog are almost always caused by cortisol spikes, sleep debt, or sensory overload occupying mental bandwidth—not permanent neurological decay. Your brain's storage is intact; it is your retrieval bandwidth that is temporarily crowded.",
+      "somatic_anchor": "Sensory Focus Re-Anchoring: Take a sip of cold water, feel the sensation as it travels down your throat, and gently tap your temples and forehead with your fingertips for 30 seconds to stimulate prefrontal blood flow.",
+      "pranayama": "Brahmi / Bhramari Pranayama (Cranial Resonating Breath): Practice 5 rounds of gentle humming exhalations with your index fingers lightly closing your ear tragus to stimulate cerebral nitric oxide production, calm mental noise, and enhance recall clarity.",
+      "micro_habit": "The External Mind Protocol: Free your working memory immediately—never rely on raw mental storage for to-do items. Write everything down on physical paper or a dedicated capture app the moment it enters your mind."
+    },
+    "severity_level": "Mild to Moderate",
+    "requires_immediate_crisis": false
   }
 ]

@@ -116,7 +116,14 @@ class PsychologyLibraryRAG:
         if not query or not query.strip():
             return None
 
+        import re
         clean_query = query.strip().lower()
+        clean_query = re.sub(r"\bweek\s+memory\b", "weak memory", clean_query)
+        clean_query = re.sub(r"\bloose\s+memory\b", "lose memory", clean_query)
+        clean_query = re.sub(r"\bpanick\b", "panic", clean_query)
+        clean_query = re.sub(r"\btierd\b", "tired", clean_query)
+        clean_query = re.sub(r"\bdepresed\b", "depressed", clean_query)
+        clean_query = re.sub(r"\bforgoting\b", "forgetting", clean_query)
 
         # 1. Lexical, Symptom & Multi-lingual Domain Pattern Matcher
         domain_patterns = {
@@ -140,6 +147,7 @@ class PsychologyLibraryRAG:
             "shame_core_defectiveness": r"(?:\b(shame|ashamed|toxic shame|deeply flawed|defective|fundamentally broken|unworthy|hate myself|want to disappear|sharmindagi|scham)\b|शर्मिंदगी|खुद से नफरत)",
             "workplace_mobbing_toxic_culture": r"(?:\b(toxic workplace|toxic boss|toxic manager|gaslighting boss|workplace mobbing|workplace harassment|hostile workplace|sunday dread)\b|ऑफिस का तनाव|बॉस की डांट)",
             "somatic_chronic_pain_amplification": r"(?:\b(chronic pain|neuroplastic pain|back pain|fibromyalgia|pain reprocessing|tension headache|pain flare|somatic tracking|migraine|headache|body ache|neck pain|dard)\b|दर्द|सिरदर्द|पीठ दर्द|बदन दर्द|माइग्रेन)",
+            "cognitive_memory_brain_fog": r"(?:\b(memory|memories|weak memory|week memory|bad memory|poor memory|loose memory|lose memory|losing memory|forget|forgetful|forgetfulness|forgetting|forgot|cannot remember|cant remember|hard to remember|recall|short term memory|working memory|brain fog|mental fog|cloudy head|absent minded|cognitive fatigue|mental exhaustion|yaad nahi|yaaddasht|bhool|bhul gaya|bhul jata|memoria|oubli|gedachtnis|vergesslich)\b|याददाश्त|याद नहीं|भूल जाता|भूलना|कमजोर याददाश्त|दिमागी धुंध)",
         }
 
         # 2. Lexical, Symptom & Multi-lingual Weighted Scoring Matcher
@@ -239,6 +247,7 @@ class PsychologyLibraryRAG:
         )
 
         return {
+            "id": condition.get("id"),
             "condition_id": condition.get("id"),
             "name": condition.get("name"),
             "category": condition.get("category"),

@@ -556,7 +556,7 @@ class KeylessPsychologistPartner:
             lang_key = "hi"
 
         if rag_guidance:
-            cond_id = rag_guidance.get("id", "gad")
+            cond_id = rag_guidance.get("id") or rag_guidance.get("condition_id") or "cognitive_memory_brain_fog"
             synth_reply = format_human_therapeutic_message(
                 cond_id,
                 lang_code=lang_key,
