@@ -284,18 +284,15 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
   }, []);
 
   const requestCamera = useCallback(async () => {
-    // 1. Check secure context (Chrome & Edge restrict camera on non-localhost HTTP)
-    if (typeof window !== 'undefined' && window.isSecureContext === false) {
-      setCameraStatus('unsupported');
-      setCameraErrorDetail('insecure');
-      setCameraError('Webcam access requires a secure context (https:// or http://localhost).');
-      return;
-    }
-
     if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
+      const isInsecure = typeof window !== 'undefined' && window.isSecureContext === false;
       setCameraStatus('unsupported');
-      setCameraErrorDetail('generic');
-      setCameraError('Camera API is not supported or accessible on this browser.');
+      setCameraErrorDetail(isInsecure ? 'insecure' : 'generic');
+      setCameraError(
+        isInsecure
+          ? 'Camera access requires a secure connection (https:// or http://localhost).'
+          : 'Camera API (getUserMedia) is not supported or accessible on this browser.'
+      );
       return;
     }
 
@@ -304,10 +301,19 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
 
     // Multi-tier constraint fallback ladder:
     // Tier 1: User-facing front camera
-    // Tier 2: Any video camera without facingMode constraint (vital for desktop USB webcams & Windows laptops)
+    // Tier 2: Front camera with ideal constraints and 720p resolution
+    // Tier 3: Universal video constraint fallback for external webcams and virtual cameras
     const constraintTiers: MediaStreamConstraints[] = [
       {
         video: { facingMode: 'user' },
+        audio: false,
+      },
+      {
+        video: {
+          facingMode: { ideal: 'user' },
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+        },
         audio: false,
       },
       {
@@ -528,14 +534,18 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
 
   const handleSelectMode = (modeId: TratakaModeId) => {
     setTratakaMode(modeId);
-    setElapsedSec(0);
-    setIsPlaying(true);
     setHasAnnouncedStage4(false);
-    lastPlayedStageRef.current = 1;
+    setIsPlaying(true);
     playSolfeggioTone(432, 2.5);
+
     if (modeId === 'pratibimb') {
+      // In Pratibimb (The Reflection), transition immediately to Stage 2 so the Sacred Mirror opens automatically
+      setElapsedSec(60);
+      lastPlayedStageRef.current = 2;
       requestCamera();
     } else {
+      setElapsedSec(0);
+      lastPlayedStageRef.current = 1;
       stopCamera();
     }
   };
@@ -1208,6 +1218,13 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
                         <p className="text-[11px] text-slate-400">
                           Please approve camera access in your browser prompt to view your reflection.
                         </p>
+                        <button
+                          onClick={() => requestCamera()}
+                          className="px-3.5 py-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/40 text-cyan-200 text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer mt-1"
+                        >
+                          <Camera className="w-3.5 h-3.5 text-cyan-300" />
+                          <span>Tap to Trigger Permission</span>
+                        </button>
                       </div>
                     ) : cameraStatus === 'denied' || cameraStatus === 'unsupported' ? (
                       <div className="w-full h-full rounded-[36px] bg-gradient-to-b from-slate-950 via-black to-slate-900 flex flex-col items-center justify-center relative p-4 sm:p-6 text-center space-y-3 overflow-y-auto">
