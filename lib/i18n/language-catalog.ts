@@ -21,6 +21,9 @@ export interface DetectedLocationInfo {
   regionName: string;
   defaultLanguageCode: string;
   isGps: boolean;
+  isIp?: boolean;
+  source?: 'gps' | 'ip' | 'timezone' | 'default';
+  city?: string;
   latitude?: number;
   longitude?: number;
 }
@@ -338,6 +341,8 @@ export async function detectLocationAndLanguage(): Promise<DetectedLocationInfo>
       regionName: 'Global',
       defaultLanguageCode: 'en',
       isGps: false,
+      isIp: false,
+      source: 'default',
     };
   }
 
@@ -359,25 +364,57 @@ export async function detectLocationAndLanguage(): Promise<DetectedLocationInfo>
           countryCode: gpsCountry.countryCode,
           countryName: gpsCountry.countryName,
           regionName: `${gpsCountry.countryName} (GPS Satellite)`,
-          defaultLanguageCode: gpsCountry.defaultLanguageCode,
+          defaultLanguageCode: gpsCountry.defaultLanguageCode || 'en',
           isGps: true,
+          isIp: false,
+          source: 'gps',
           latitude,
           longitude,
         };
       }
     } catch (_) {
-      // User declined or timed out; seamlessly proceed to timezone/locale detection
+      // User declined or timed out; proceed to server-side IP detection
     }
   }
 
-  // 2. Deterministic Browser Timezone and Locale fallback
+  // 2. High-Fidelity Server-Side IP Address Geolocation (/api/location)
+  try {
+    const res = await fetch('/api/location', {
+      signal: AbortSignal.timeout(2800),
+      headers: { Accept: 'application/json' },
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.countryCode) {
+        const cityPrefix = data.city ? `${data.city}, ` : '';
+        return {
+          countryCode: data.countryCode,
+          countryName: data.countryName || data.countryCode,
+          regionName: `${cityPrefix}${data.countryName || data.countryCode} (IP Location)`,
+          city: data.city,
+          defaultLanguageCode: data.defaultLanguageCode || 'en',
+          isGps: false,
+          isIp: true,
+          source: 'ip',
+          latitude: data.latitude,
+          longitude: data.longitude,
+        };
+      }
+    }
+  } catch (_) {
+    // IP location timed out or failed; proceed to browser timezone/locale fallback
+  }
+
+  // 3. Deterministic Browser Timezone and Locale fallback
   const tzResult = deduceCountryFromTimezoneAndLocale();
   return {
     countryCode: tzResult.countryCode,
     countryName: tzResult.countryName,
-    regionName: `${tzResult.countryName} (Detected Region)`,
-    defaultLanguageCode: tzResult.defaultLanguageCode,
+    regionName: `${tzResult.countryName} (Regional Timezone)`,
+    defaultLanguageCode: tzResult.defaultLanguageCode || 'en',
     isGps: false,
+    isIp: false,
+    source: 'timezone',
   };
 }
 

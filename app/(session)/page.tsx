@@ -555,6 +555,29 @@ export default function SanctuarySessionPage() {
         transition={{ duration: 0.4 }}
         className="flex-1 relative flex flex-col h-full h-screen max-h-screen overflow-hidden z-0 bg-gradient-to-b from-slate-950 via-slate-900/30 to-slate-950"
       >
+        {/* TOP STATUS & PERSISTENT LANGUAGE SELECTOR HEADER */}
+        <header className="relative z-30 flex items-center justify-between px-4 sm:px-6 py-2.5 border-b border-slate-800/60 bg-slate-950/70 backdrop-blur-md shrink-0">
+          <div className="flex items-center gap-2.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
+            <div className="flex flex-col">
+              <span className="text-xs font-semibold text-slate-100 tracking-wide">
+                EIH Clinical Sanctuary
+              </span>
+              <span className="text-[10px] text-slate-400 font-mono hidden sm:inline">
+                Cognitive Neuro-Psychology &amp; Somatic Resilience
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <LanguageSelector
+              currentLanguage={currentLanguage}
+              onLanguageChange={handleLanguageChange}
+              variant="header"
+            />
+          </div>
+        </header>
+
         {/* HYPNOTIC SPIRAL — CIRCULAR MASK */}
         <div className="absolute inset-0 pointer-events-none -z-10 flex items-center justify-center">
           {/*

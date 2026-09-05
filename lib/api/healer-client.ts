@@ -3,6 +3,11 @@ import { emotionClassifier } from '../knowledge/emotion-classifier';
 import { detectCrisis } from '../safety/crisis-detector';
 import { queryPsychologyLibrary } from '../knowledge/psychology-library-rag';
 import { getResearchedAdviceForEmotion } from '../knowledge/authenticated-research-bank';
+import {
+  formatHumanTherapeuticMessage,
+  getLocalizedClinicalIntervention,
+  getLocalizedGeneralAdvice,
+} from '../i18n/clinical-localization';
 
 export interface ClinicalSource {
   title: string;
@@ -202,19 +207,26 @@ class HealerBackendClient {
       const arousal = diag.coreAffect?.arousal || 0.5;
       const polyvagalState = arousal > 0.6 ? 'Sympathetic (Fight/Flight)' : (diag.coreAffect?.valence && diag.coreAffect.valence < -0.4) ? 'Dorsal Vagal (Shutdown)' : 'Ventral Vagal (Safe)';
 
-      let fallbackReply = `I hear the emotional weight you are holding right now. Rather than letting this distress define you, remember that difficult moments are temporary physiological signals. Take a slow breath in and exhale longer than your inhale to activate your parasympathetic calming response.`;
+      const targetLang = language || locale || (cleanMessage.match(/[\u0900-\u097F]/) ? 'hi' : 'en');
+      let fallbackReply = '';
 
       if (libraryResult) {
-        fallbackReply = `I recognize how challenging this experience is for you. ${libraryResult.condition.solutions.cbt_reframing}. To restore calm, practice ${libraryResult.condition.solutions.somatic_anchor} and ${libraryResult.condition.solutions.pranayama}.`;
+        fallbackReply = formatHumanTherapeuticMessage(libraryResult.condition, targetLang, cleanMessage);
       } else if (study) {
-        fallbackReply = `I hear the emotional strain you are carrying right now. ${study.scientificActionProtocol}. Take a moment for ${study.ayurvedicActionProtocol} to help regulate your nervous system.`;
+        fallbackReply = getLocalizedGeneralAdvice(diag.dimensionName || 'anxiety', targetLang);
+      } else {
+        fallbackReply = getLocalizedGeneralAdvice('default', targetLang);
       }
 
-      const sources: ClinicalSource[] = libraryResult
+      const localizedIntervention = libraryResult
+        ? getLocalizedClinicalIntervention(libraryResult.condition.id, targetLang)
+        : null;
+
+      const sources: ClinicalSource[] = libraryResult && localizedIntervention
         ? [
             {
-              title: `${libraryResult.condition.name} (${libraryResult.condition.triguna_balance})`,
-              summary: `CBT: ${libraryResult.condition.solutions.cbt_reframing} | Somatic: ${libraryResult.condition.solutions.somatic_anchor}`,
+              title: `${localizedIntervention.conditionName} (${libraryResult.condition.triguna_balance})`,
+              summary: `CBT: ${localizedIntervention.cbt_reframing} | Somatic: ${localizedIntervention.somatic_anchor}`,
               source: 'Clinical & Psychoeducational Library',
             },
           ]

@@ -48,6 +48,7 @@ Thumbs.db
 # CBT Library auto-upgrade backups
 *.backup
 *.backup.json
+scratch/
 *.tmp
 
 # Google Drive sync temp dirs

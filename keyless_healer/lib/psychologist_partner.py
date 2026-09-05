@@ -38,8 +38,28 @@ except ImportError:
     try:
         from lib.cbt_library_loader import cbt_loader  # type: ignore[import-not-found]
     except ImportError:
+        from cbt_library_loader import cbt_loader  # type: ignore[import-not-found]
+
+try:
+    from keyless_healer.lib.clinical_localization import (
+        format_human_therapeutic_message,
+        GENERAL_LOCALIZED_ADVICE,
+        normalize_language_code,
+    )
+except ImportError:
+    try:
+        from lib.clinical_localization import (  # type: ignore[import-not-found]
+            format_human_therapeutic_message,
+            GENERAL_LOCALIZED_ADVICE,
+            normalize_language_code,
+        )
+    except ImportError:
         try:
-            from cbt_library_loader import cbt_loader  # type: ignore[import-not-found]
+            from clinical_localization import (  # type: ignore[import-not-found]
+                format_human_therapeutic_message,
+                GENERAL_LOCALIZED_ADVICE,
+                normalize_language_code,
+            )
         except ImportError:
             cbt_loader = None  # type: ignore[assignment]
 
@@ -531,58 +551,19 @@ class KeylessPsychologistPartner:
             )
 
         # Infallible Deterministic Clinical Synthesis (Zero External LLM Dependency)
-        loc_lower = (locale or "").lower()
-        is_hindi = loc_lower.startswith("hi") or "hindi" in loc_lower or bool(re.search(r"[\u0900-\u097F]", user_message))
-        is_spanish = loc_lower.startswith("es")
-        is_french = loc_lower.startswith("fr")
-        is_german = loc_lower.startswith("de")
+        lang_key = normalize_language_code(locale)
+        if re.search(r"[\u0900-\u097F]", user_message):
+            lang_key = "hi"
 
         if rag_guidance:
-            cond_name = rag_guidance.get("name", "emotional strain")
-            sols = rag_guidance.get("solutions", {})
-            cbt_reframe = sols.get("cbt_reframing", "")
-            somatic_anc = sols.get("somatic_anchor", "")
-            pranayama = sols.get("pranayama", "")
-
-            if is_hindi:
-                synth_reply = (
-                    f"मैं समझ सकता हूँ कि इस समय आप शारीरिक और मानसिक रूप से कितना गहरा दबाव महसूस कर रहे हैं। "
-                    f"{cbt_reframe} अपने तंत्रिका तंत्र को स्थिर करने के लिए: {somatic_anc} और {pranayama} का अभ्यास करें।"
-                )
-            elif is_spanish:
-                synth_reply = (
-                    f"Comprendo profundamente la tensión emocional que estás experimentando con respecto a {cond_name.lower()}. "
-                    f"{cbt_reframe} Para regular tu sistema nervioso en este instante: practica {somatic_anc} junto con {pranayama}."
-                )
-            elif is_french:
-                synth_reply = (
-                    f"J'entends pleinement la charge émotionnelle que vous traversez en lien avec {cond_name.lower()}. "
-                    f"{cbt_reframe} Pour apaiser votre système nerveux dès maintenant : appliquez {somatic_anc} ainsi que {pranayama}."
-                )
-            elif is_german:
-                synth_reply = (
-                    f"Ich spüre, wie sehr Sie diese emotionale Belastung im Zusammenhang mit {cond_name.lower()} beansprucht. "
-                    f"{cbt_reframe} Um Ihr Nervensystem sofort zu beruhigen: Nutzen Sie {somatic_anc} und {pranayama}."
-                )
-            else:
-                synth_reply = (
-                    f"I hear how deeply this {cond_name.lower()} is affecting your mind and body right now. "
-                    f"{cbt_reframe} To steady your autonomic nervous system in this exact moment, engage in {somatic_anc} alongside {pranayama}."
-                )
+            cond_id = rag_guidance.get("id", "gad")
+            synth_reply = format_human_therapeutic_message(
+                cond_id,
+                lang_code=lang_key,
+                user_message=user_message,
+            )
         else:
-            cbt_analysis = cbt_loader.analyze_utterance(user_message) if cbt_loader else {}
-            reframe = cbt_analysis.get("reframing_insight") or "Notice that thoughts are mental events rather than permanent definitions of reality."
-            somatic = cbt_analysis.get("somatic_cue") or "Ground the soles of your feet firmly into the floor and lengthen your exhales."
-            if is_hindi:
-                synth_reply = (
-                    f"मैं आपकी इस मानसिक स्थिति को समझता हूँ। {reframe} "
-                    f"अपने शरीर को स्थिर करने के लिए: {somatic} 4 सेकंड तक सांस अंदर लें और 6 सेकंड तक धीरे-धीरे छोड़ें।"
-                )
-            else:
-                synth_reply = (
-                    f"I acknowledge the emotional weight you are carrying right now. {reframe} "
-                    f"To bring safety into your physiology: {somatic} Take a gentle inhale for 4 counts and extend your exhale for 6 counts."
-                )
+            synth_reply = GENERAL_LOCALIZED_ADVICE.get(lang_key, GENERAL_LOCALIZED_ADVICE["en"])["default"]
 
         return HealerResponse(
             reply=synth_reply,
