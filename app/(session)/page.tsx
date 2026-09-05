@@ -573,12 +573,11 @@ export default function SanctuarySessionPage() {
         className="flex-1 h-full min-h-0 flex flex-col justify-between relative z-0 overflow-hidden bg-gradient-to-b from-slate-950 via-slate-900/30 to-slate-950"
       >
         {/* AUTOMATIC ROTATING HYPNOTIC SPIRAL */}
-        <div className="absolute inset-0 pointer-events-none -z-10 flex items-center justify-center opacity-30 sm:opacity-35 [mask-image:radial-gradient(circle_at_center,black_25%,transparent_75%)]">
+        <div className="absolute inset-0 pointer-events-none -z-10 flex items-center justify-center opacity-40 [mask-image:radial-gradient(circle_at_center,black_40%,transparent_90%)]">
           <img
             src="/hypnotic-circles.png"
             alt="Hypnotic Anchor"
             className="w-full h-full object-cover min-w-[800px] min-h-[800px] animate-spin-ultra-slow"
-            style={{ animation: "spin-ultra-slow 120s linear infinite" }}
           />
         </div>
 
