@@ -570,20 +570,20 @@ export default function SanctuarySessionPage() {
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="flex-1 flex flex-col justify-between relative z-0 overflow-hidden bg-gradient-to-b from-slate-950 via-slate-900/30 to-slate-950"
+        className="flex-1 h-full min-h-0 flex flex-col justify-between relative z-0 overflow-hidden bg-gradient-to-b from-slate-950 via-slate-900/30 to-slate-950"
       >
         {/* AUTOMATIC ROTATING HYPNOTIC SPIRAL */}
-        <div className="absolute inset-0 pointer-events-none -z-10 flex items-center justify-center opacity-15 [mask-image:radial-gradient(circle_at_center,black_20%,transparent_70%)]">
+        <div className="absolute inset-0 pointer-events-none -z-10 flex items-center justify-center opacity-30 sm:opacity-35 [mask-image:radial-gradient(circle_at_center,black_25%,transparent_75%)]">
           <img
             src="/hypnotic-circles.png"
             alt="Hypnotic Anchor"
-            className="w-full h-full object-cover min-w-[800px] min-h-[800px]"
-            style={{ animation: 'spin 120s linear infinite' }}
+            className="w-full h-full object-cover min-w-[800px] min-h-[800px] animate-spin-ultra-slow"
+            style={{ animation: "spin-ultra-slow 120s linear infinite" }}
           />
         </div>
 
         {/* Upper Area: Glowing Breathing Orb / Visualizer */}
-        <div className="shrink-0 pt-4 px-4 z-10">
+        <div className="shrink-0 pt-3 px-4 z-10">
           <BreathingVisualizerOrb
             isRecording={isRecording}
             isPlayingAudio={isPlayingAudio}
@@ -594,7 +594,7 @@ export default function SanctuarySessionPage() {
         </div>
 
         {/* Middle Area: Scrollable Chat Stream with Fade Mask */}
-        <div className="relative z-10 flex-1 overflow-y-auto px-4 md:px-8 py-2 space-y-4 [mask-image:linear-gradient(to_bottom,transparent_0%,black_30px,black_calc(100%-30px),transparent_100%)]">
+        <div className="relative z-10 flex-1 min-h-0 overflow-y-auto px-4 md:px-8 py-2 space-y-4 [mask-image:linear-gradient(to_bottom,transparent_0%,black_30px,black_calc(100%-30px),transparent_100%)]">
           {/* Error Banner */}
           {errorMessage && (
             <motion.div
@@ -633,72 +633,6 @@ export default function SanctuarySessionPage() {
                   }`}
                 >
                   <p className="whitespace-pre-wrap">{m.text}</p>
-
-                  {/* Render Clinical & Psychoeducational Solution Cards */}
-                  {m.sender === "ai" && m.sources && m.sources.length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-slate-800/80 space-y-2">
-                      {m.sources.map((src, sIdx) => {
-                        const isLibraryProtocol = src.source === "psychology_library";
-                        if (isLibraryProtocol) {
-                          return (
-                            <div
-                              key={sIdx}
-                              className="bg-slate-950/80 rounded-xl p-3 border border-teal-800/50 shadow-sm space-y-2 text-xs"
-                            >
-                              <div className="flex items-center justify-between gap-1 text-teal-300 font-semibold">
-                                <span className="flex items-center gap-1.5">
-                                  <span>📚</span>
-                                  <span>{src.title}</span>
-                                </span>
-                                <span className="px-1.5 py-0.5 rounded bg-teal-950/90 border border-teal-700/60 text-[10px] text-teal-300 uppercase tracking-wider font-mono">
-                                  Verified Protocol
-                                </span>
-                              </div>
-
-                              {src.summary && (
-                                <div className="grid grid-cols-1 gap-1.5 pt-1 text-[11px] text-slate-300">
-                                  {src.summary.split(" | ").map((part, pIdx) => {
-                                    const [label, ...valParts] = part.split(": ");
-                                    const val = valParts.join(": ");
-                                    const icon = label.includes("CBT")
-                                      ? "🧠"
-                                      : label.includes("Somatic")
-                                      ? "🧘"
-                                      : label.includes("Pranayama")
-                                      ? "🌬️"
-                                      : "⏱️";
-                                    return (
-                                      <div
-                                        key={pIdx}
-                                        className="p-1.5 rounded-lg bg-slate-900/90 border border-slate-800 flex flex-col gap-0.5"
-                                      >
-                                        <span className="font-semibold text-emerald-400 flex items-center gap-1 text-[10px] uppercase">
-                                          <span>{icon}</span> {label}
-                                        </span>
-                                        <span className="text-slate-200 leading-normal pl-3">
-                                          {val}
-                                        </span>
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                              )}
-                            </div>
-                          );
-                        }
-
-                        return (
-                          <div
-                            key={sIdx}
-                            className="text-[10px] text-slate-400 flex items-center gap-1"
-                          >
-                            <span className="text-emerald-400">🔬 PubMed Grounding:</span>
-                            <span className="text-slate-300 truncate">{src.title}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
                 </div>
 
                 <div className="flex items-center gap-2 mt-1 px-1">
@@ -721,7 +655,7 @@ export default function SanctuarySessionPage() {
                 className="flex items-center gap-2 text-xs text-slate-400 px-3 py-2 rounded-xl bg-slate-900/60 border border-slate-800 w-fit"
               >
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                <span>Consulting PubMed &amp; Synthesizing clinical response...</span>
+                <span>Synthesizing response...</span>
               </motion.div>
             )}
 

@@ -343,3 +343,17 @@
   }
 }
 
+@keyframes spin-ultra-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-ultra-slow {
+  animation: spin-ultra-slow 120s linear infinite;
+  transform-origin: center center;
+}
+
