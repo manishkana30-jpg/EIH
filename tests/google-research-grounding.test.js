@@ -66,11 +66,13 @@ const hindiAdvice = generateDynamicCompanionReply({
 });
 assert(hindiAdvice.detectedLanguage === 'hi');
 assert(
-  hindiAdvice.reply.includes('संज्ञानात्मक') ||
-  hindiAdvice.reply.includes('नर्वस सिस्टम') ||
+  hindiAdvice.reply.includes('नाड़ी शोधन') ||
+  hindiAdvice.reply.includes('प्राणायाम') ||
+  hindiAdvice.reply.includes('इंद्रिय') ||
+  hindiAdvice.reply.includes('चिंता') ||
+  hindiAdvice.reply.includes('वास्तविक') ||
   hindiAdvice.reply.includes('तनाव') ||
   hindiAdvice.reply.includes('अभ्यास') ||
-  hindiAdvice.reply.includes('राहत') ||
   hindiAdvice.reply.includes('शरीर') ||
   hindiAdvice.reply.includes('उपाय')
 );

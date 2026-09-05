@@ -54,8 +54,6 @@ export interface LocalizedClinicalSolution {
   microHabit: string;
 }
 
-const globalUsedKeys = new Set<string>();
-
 /**
  * Localized clinical solutions dictionary for all 20 psychology conditions.
  * Ensures zero code-switching (no English fragments inside non-English replies).
@@ -786,7 +784,6 @@ export function generateDynamicCompanionReply(context: ConversationalContext): C
   const text = (context.userText || '').trim();
   const lower = text.toLowerCase();
   const history = context.history || [];
-  const usedKeys = context.sessionUsedKeys || globalUsedKeys;
 
   // Diagnostic assessment
   const diagnostic = context.diagnostic || emotionClassifier.classifyText(text);
@@ -1015,7 +1012,7 @@ export function generateDynamicCompanionReply(context: ConversationalContext): C
     }
   }
 
-  // 9. Dynamic 3-Phase Clinical Synthesis (Deep Validation, CBT Reframe, Somatic Prescription)
+  // 9. Dynamic Clinical Protocol Synthesis for LLM Context
   const reply = constructDynamicClinicalReply(
     text,
     langInfo.langCode,
@@ -1023,14 +1020,11 @@ export function generateDynamicCompanionReply(context: ConversationalContext): C
     diagnostic,
     study,
     libraryMatch?.condition,
-    history,
-    usedKeys,
     isDevanagari,
     activeBreakthrough
   );
 
   const responseKey = `${libraryMatch?.condition?.id || emotion}_${Math.random().toString(36).slice(2, 7)}`;
-  usedKeys.add(responseKey);
 
   const detectedTopic =
     lower.includes('what should i do') ||
@@ -1058,8 +1052,6 @@ function constructDynamicClinicalReply(
   diagnostic: NeuroscienceDiagnosticResult,
   study: AuthenticatedStudy,
   libraryCondition?: PsychologyCondition,
-  history?: Array<{ role: string; text: string }>,
-  usedKeys?: Set<string>,
   isDevanagari: boolean = false,
   breakthroughInsight?: string
 ): string {
@@ -1072,233 +1064,18 @@ function constructDynamicClinicalReply(
   );
 
   let { cbtReframe, somaticAnchor, pranayama, microHabit } = localized;
-  if (breakthroughInsight && langCode === 'en') {
-    cbtReframe = `Anchor on your breakthrough insight: "${breakthroughInsight}". ${cbtReframe}`;
-  }
-  const turnIndex = Math.max(usedKeys?.size || 0, Math.floor((history?.length || 0) / 2)) % 12;
-
-  if (langCode === 'hi') {
-    if (isDevanagari) {
-      if (turnIndex === 1) {
-        return `${anchor} को लेकर यह मानसिक दबाव महसूस होना बिल्कुल स्वाभाविक है। इस स्थिति को एक शांत नजरिए से देखते हुए ${cbtReframe}। इसके साथ ही ${microHabit} शुरू करें और ${pranayama} से अपनी सांसों को स्थिर करें।`;
-      }
-      if (turnIndex === 2) {
-        return `${anchor} के कारण शरीर में तनाव और भारीपन महसूस होना स्वाभाविक है। इस समय अपने शरीर पर ध्यान दें और ${somaticAnchor} करें। खुद से यह भी पूछें कि क्या इस परिस्थिति में कोई स्वस्थ सीमा तय की जा सकती है?`;
-      }
-      if (turnIndex === 3) {
-        return `${anchor} से जुड़ी इस थकान और परेशानी को बिना किसी झिझक के स्वीकार करें। जब भी बेचैनी बढ़े, तो ${cbtReframe}। कुछ मिनट ${pranayama} का अभ्यास करें और ${microHabit} अपनाएं।`;
-      }
-      if (turnIndex === 4) {
-        return `${anchor} को लेकर लगातार चिंता करने से शरीर और मन का तनाव बढ़ता है। इस चक्र को धीमा करने के लिए ${cbtReframe}। अभी इसी पल ${somaticAnchor} द्वारा अपने नर्वस सिस्टम को शांत करें।`;
-      }
-      if (turnIndex === 5) {
-        return `${anchor} के संदर्भ में स्वयं पर अत्यधिक दबाव डालने के बजाय थोड़ा समय अपने लिए निकालें। याद रखें कि ${cbtReframe}। गहरी आंतरिक शांति और संतुलन के लिए ${pranayama} करें।`;
-      }
-      if (turnIndex === 6) {
-        return `इस समय ${anchor} पर विचार करते हुए अपने शरीर में हो रही संवेदनाओं को महसूस करें। ${somaticAnchor} के माध्यम से उस तनाव को मुक्त करें। यह असहजता आपकी आंतरिक क्षमता को कम नहीं करती।`;
-      }
-      if (turnIndex === 7) {
-        return `${anchor} की जटिलताओं का सामना करते हुए खुद के प्रति कठोर होने के बजाय सहानुभूति रखें। एक महत्वपूर्ण कदम यह है कि ${microHabit}। अपनी वेगस नर्व को सुरक्षा का संकेत देने के लिए ${pranayama} करें।`;
-      }
-      if (turnIndex === 8) {
-        return `आइए ${anchor} से जुड़े मानसिक भार को थोड़ा कम करें। इस विचार पर गौर करें: ${cbtReframe}। अपने शरीर की स्थिति को तुरंत संतुलित करने के लिए ${somaticAnchor} अपनाएं।`;
-      }
-      if (turnIndex === 9) {
-        return `आप ${anchor} के संबंध में लंबे समय से एक भावनात्मक बोझ वहन कर रहे हैं। पुनर्बहाली के लिए ${microHabit} का पालन करें और ${pranayama} का सहारा लें। आज आप अपने लिए सबसे सौम्य कदम क्या उठा सकते हैं?`;
-      }
-      if (turnIndex === 10) {
-        return `${anchor} की स्थिति को समझना और स्वीकारना आत्म-सहानुभूति का परिचायक है। ध्यान रखें कि ${cbtReframe}। मन और तंत्रिका तंत्र को शांत करने के लिए ${somaticAnchor} और ${pranayama} करें।`;
-      }
-      if (turnIndex === 11) {
-        return `${anchor} से जुड़े इस भावनात्मक दबाव को धैर्य और समझदारी से संभालने की आवश्यकता है। एक वैज्ञानिक दृष्टिकोण यह है कि ${cbtReframe}। अपने शरीर को अभी ${somaticAnchor} और ${microHabit} से स्थिर करें।`;
-      }
-      return `${anchor} को लेकर यह तनाव महसूस होना स्वाभाविक है। इस समय ${cbtReframe}। अपने नर्वस सिस्टम को तुरंत स्थिर करने के लिए ${somaticAnchor} का अभ्यास करें और ${pranayama} करें।`;
-    }
-
-    // Hinglish (Roman Hindi)
-    if (turnIndex === 1) {
-      return `${anchor} ko lekar yeh mental load naturally understandable hai. Ek fresh aur calm lens se dekhein toh ${cbtReframe}. Sath hi ${microHabit} shuru karein aur ${pranayama} se apni breathing ko steady karein.`;
-    }
-    if (turnIndex === 2) {
-      return `${anchor} ke friction se nervous system exhausted feel hona natural hai. Is waqt ${somaticAnchor} par focus karein. Aur apne aap se puchiye: is situation mein kaunsi healthy boundary set ki ja sakti hai?`;
-    }
-    if (turnIndex === 3) {
-      return `${anchor} ke cumulative stress ko gently acknowledge karein. Jab overthinking badhe, toh ${cbtReframe}. Thoda waqt nikaalkar ${pranayama} karein aur ${microHabit} try karein.`;
-    }
-    if (turnIndex === 4) {
-      return `${anchor} ko lekar constant overthinking body mein fight-or-flight trigger karti hai. Is thought loop ko break karne ke liye ${cbtReframe}. Abhi isi waqt ${somaticAnchor} se apne mind ko ground karein.`;
-    }
-    if (turnIndex === 5) {
-      return `${anchor} ke is phase mein khud par harsh hone ki jagah self-compassion zaroori hai. ${cbtReframe}. Reset karne ke liye ${pranayama} karein aur ${microHabit} follow karein.`;
-    }
-    if (turnIndex === 6) {
-      return `Is waqt notice karein ki ${anchor} ko lekar body mein kahan tension hold ho rahi hai. ${somaticAnchor} se use release karein. Yeh temporary discomfort aapki capability ko define nahi karta.`;
-    }
-    if (turnIndex === 7) {
-      return `${anchor} ke challenges ko handle karte waqt self-blame se bachein. Ek grounded step yeh hai ki ${microHabit}. Vagus nerve ko safety signal send karne ke liye ${pranayama} practice karein.`;
-    }
-    if (turnIndex === 8) {
-      return `Chaliye ${anchor} ke cognitive burden ko de-escalate karte hain. Is reality check par reflect karein: ${cbtReframe}. Immediate balance ke liye ${somaticAnchor} use karein.`;
-    }
-    if (turnIndex === 9) {
-      return `Aap kaafi time se ${anchor} ka heavy emotional weight carry kar rahe hain. Recovery ke liye ${microHabit} adopt karein aur ${pranayama} karein. Aaj khud ke liye ek gentle step kya le sakte hain?`;
-    }
-    if (turnIndex === 10) {
-      return `${anchor} ke saath deal karne mein patience aur self-kindness sabse important hai. Remember ki ${cbtReframe}. Nervous system ko settle karne ke liye ${somaticAnchor} aur ${pranayama} integrate karein.`;
-    }
-    if (turnIndex === 11) {
-      return `${anchor} se related stress structured clarity deserve karta hai. Ek scientifically proven shift yeh hai ki ${cbtReframe}. Body ko abhi ${somaticAnchor} aur ${microHabit} ke through ground karein.`;
-    }
-    return `${anchor} ko lekar jo strain aap feel kar rahe hain, wo completely natural hai. Is waqt ${cbtReframe}. Nervous system ko regulate karne ke liye ${somaticAnchor} practice karein aur ${pranayama} karein.`;
+  if (breakthroughInsight) {
+    cbtReframe = `Anchor on user breakthrough insight: "${breakthroughInsight}". ${cbtReframe}`;
   }
 
-  if (langCode === 'es') {
-    if (turnIndex === 1) {
-      return `Es completamente comprensible que ${anchor} genere esta sobrecarga continua. Mirándolo con perspectiva clínica, ${cbtReframe}. Pruebe a incorporar este micro-hábito: ${microHabit}, acompañado de ${pranayama}.`;
-    }
-    if (turnIndex === 2) {
-      return `La tensión sostenida en torno a ${anchor} activa una respuesta natural de alerta en su cuerpo. En este momento, concéntrese en ${somaticAnchor}. Pregúntese: ¿qué límite saludable puede establecer hoy?`;
-    }
-    if (turnIndex === 3) {
-      return `Reconozco el cansancio acumulado que ${anchor} le ha causado con el tiempo. Un enfoque constructivo es ${cbtReframe}. Dedique unos minutos a ${pranayama} y aplique ${microHabit}.`;
-    }
-    if (turnIndex === 4) {
-      return `La preocupación constante sobre ${anchor} sobrecarga su sistema nervioso. Para romper ese ciclo, ${cbtReframe}. Regule su cuerpo en este instante con ${somaticAnchor}.`;
-    }
-    if (turnIndex === 5) {
-      return `Frente a ${anchor}, la autocompasión es esencial para sanar. Recuerde que ${cbtReframe}. Dese permiso para pausar y estabilizarse con ${pranayama} junto con ${microHabit}.`;
-    }
-    if (turnIndex === 6) {
-      return `Observe las sensaciones corporales presentes al reflexionar sobre ${anchor}. Libere esa tensión mediante ${somaticAnchor}. Este malestar pasajero no define su capacidad fundamental.`;
-    }
-    if (turnIndex === 7) {
-      return `Afrontar los retos vinculados a ${anchor} exige tratarse con objetividad y sin autocrítica. Un paso restaurador es ${microHabit}. Practique ${pranayama} para brindar calma a su sistema nervioso.`;
-    }
-    if (turnIndex === 8) {
-      return `Desescalemos la carga cognitiva que rodea a ${anchor}. Reflexione en esto: ${cbtReframe}. Estabilice su fisiología ahora mismo con ${somaticAnchor}.`;
-    }
-    if (turnIndex === 9) {
-      return `Lleva tiempo sosteniendo una carga emocional considerable en relación con ${anchor}. Un protocolo reparador es ${microHabit}, complementado con ${pranayama}. ¿Cuál es el paso más compasivo que puede dar hoy?`;
-    }
-    if (turnIndex === 10) {
-      return `Dar espacio a la complejidad de ${anchor} es un acto de genuina autocompasión. Tenga presente que ${cbtReframe}. Para serenar el cuerpo, combine ${somaticAnchor} y ${pranayama}.` ;
-    }
-    if (turnIndex === 11) {
-      return `El peso emocional vinculado a ${anchor} merece atención paciente y estructurada. Un cambio respaldado por la ciencia es ${cbtReframe}. Ancle su bienestar con ${somaticAnchor} y ${microHabit}.`;
-    }
-    return `Es comprensible sentir esta tensión respecto a ${anchor}. Desde la perspectiva cognitiva, ${cbtReframe}. Para regular su sistema nervioso ahora, practique ${somaticAnchor} junto con ${pranayama}.`;
-  }
+  return `[CLINICAL DIRECTIVE FOR LLM]:
+- Anchor/Trigger: ${anchor}
+- CBT Reframe to apply: ${cbtReframe}
+- Somatic Grounding to prescribe: ${somaticAnchor}
+- Breathwork to prescribe: ${pranayama}
+- Micro-habit: ${microHabit}
 
-  if (langCode === 'fr') {
-    if (turnIndex === 1) {
-      return `Il est tout à fait naturel que ${anchor} engendre une telle charge mentale. Avec un regard bienveillant, ${cbtReframe}. Intégrez cette micro-habitude : ${microHabit}, accompagnée de ${pranayama}.`;
-    }
-    if (turnIndex === 2) {
-      return `La friction continue liée à ${anchor} sollicite lourdement votre système nerveux. Prenez un temps pour ${somaticAnchor}. Demandez-vous : quelle limite saine pouvez-vous poser dès aujourd'hui ?`;
-    }
-    if (turnIndex === 3) {
-      return `J'accueille avec respect la fatigue accumulée causée par ${anchor}. Une approche constructive consiste à ${cbtReframe}. Accordez-vous quelques minutes de ${pranayama} et testez ${microHabit}.`;
-    }
-    if (turnIndex === 4) {
-      return `L'inquiétude répétée autour de ${anchor} maintient votre corps en alerte. Pour apaiser ce flux mental, ${cbtReframe}. Recentrez votre physiologie immédiatement avec ${somaticAnchor}.`;
-    }
-    if (turnIndex === 5) {
-      return `Face aux défis de ${anchor}, traitez-vous avec douceur et sans auto-jugement. Gardez à l'esprit que ${cbtReframe}. Retrouvez votre sérénité grâce à ${pranayama} et ${microHabit}.`;
-    }
-    if (turnIndex === 6) {
-      return `Observez les sensations corporelles qui émergent face à ${anchor}. Libérez cette tension physique avec ${somaticAnchor}. Cet inconfort passager ne remet pas en cause vos capacités fondamentales.`;
-    }
-    if (turnIndex === 7) {
-      return `Traverser les complexités de ${anchor} demande de faire preuve de bienveillance envers vous-même. Un pas constructif consiste à ${microHabit}. Pratiquez ${pranayama} pour apaiser en profondeur votre système vagal.`;
-    }
-    if (turnIndex === 8) {
-      return `Allégeons la surcharge cognitive entourant ${anchor}. Méditez sur ce point : ${cbtReframe}. Rééquilibrez votre état corporel sans attendre grâce à ${somaticAnchor}.`;
-    }
-    if (turnIndex === 9) {
-      return `Vous portez un fardeau émotionnel prolongé concernant ${anchor}. Un protocole réparateur repose sur ${microHabit}, renforcé par ${pranayama}. Quel geste bienveillant pouvez-vous accomplir pour vous-même aujourd'hui ?`;
-    }
-    if (turnIndex === 10) {
-      return `Accueillir avec lucidité la réalité de ${anchor} témoigne d'un réel respect de soi. Rappelez-vous que ${cbtReframe}. Pour réguler votre système nerveux, associez ${somaticAnchor} et ${pranayama}.`;
-    }
-    if (turnIndex === 11) {
-      return `Le poids émotionnel lié à ${anchor} mérite une attention patiente et structurée. Une approche scientifiquement étayée consiste à ${cbtReframe}. Ancrez votre physiologie dès maintenant avec ${somaticAnchor} et ${microHabit}.`;
-    }
-    return `Il est tout à fait légitime de ressentir cette pression autour de ${anchor}. Sur le plan cognitif, ${cbtReframe}. Pour apaiser votre système nerveux, pratiquez ${somaticAnchor} avec ${pranayama}.`;
-  }
-
-  if (langCode === 'de') {
-    if (turnIndex === 1) {
-      return `Es ist völlig verständlich, dass ${anchor} eine spürbare mentale Belastung erzeugt. Aus einer heilsamen Perspektive betrachtet: ${cbtReframe}. Etablieren Sie diese Mikro-Gewohnheit: ${microHabit}, unterstützt durch ${pranayama}.`;
-    }
-    if (turnIndex === 2) {
-      return `Anhaltender Druck bezüglich ${anchor} beansprucht Ihr Nervensystem spürbar. Fokussieren Sie sich jetzt auf ${somaticAnchor}. Fragen Sie sich: Welche gesunde Grenze können Sie heute zum Selbstschutz setzen?`;
-    }
-    if (turnIndex === 3) {
-      return `Ich nehme die Erschöpfung wahr, die ${anchor} über die Zeit aufgebaut hat. Ein entlastender Ansatz lautet: ${cbtReframe}. Nehmen Sie sich Zeit für ${pranayama} und erproben Sie ${microHabit}.`;
-    }
-    if (turnIndex === 4) {
-      return `Die ständige Sorge um ${anchor} versetzt den Körper in eine ständige Alarmbereitschaft. Um diesen Kreislauf zu durchbrechen: ${cbtReframe}. Erden Sie Ihren Körper jetzt mit ${somaticAnchor}.`;
-    }
-    if (turnIndex === 5) {
-      return `Bezüglich ${anchor} ist gelebte Selbstfürsorge besonders wichtig. Verinnerlichen Sie: ${cbtReframe}. Schenken Sie sich eine heilsame Atempause mit ${pranayama} und ${microHabit}.`;
-    }
-    if (turnIndex === 6) {
-      return `Achten Sie auf die körperlichen Empfindungen, die im Zusammenhang mit ${anchor} auftreten. Lösen Sie diese Anspannung mit ${somaticAnchor}. Dieses vorübergehende Unbehagen schmälert nicht Ihre innere Stärke.`;
-    }
-    if (turnIndex === 7) {
-      return `Die Herausforderungen rund um ${anchor} erfordern einen mitfühlenden Umgang mit sich selbst ohne Selbstvorwürfe. Ein stärkender Schritt ist: ${microHabit}. Praktizieren Sie ${pranayama}, um Ihrem Vagusnerv Sicherheit zu signalisieren.`;
-    }
-    if (turnIndex === 8) {
-      return `Lassen Sie uns die mentale Last bezüglich ${anchor} abbauen. Reflektieren Sie über Folgendes: ${cbtReframe}. Erden Sie Ihren Körper umgehend mit ${somaticAnchor}.`;
-    }
-    if (turnIndex === 9) {
-      return `Sie tragen bezüglich ${anchor} bereits seit längerer Zeit eine spürbare emotionale Bürde. Ein heilsames Vorgehen ist: ${microHabit}, gestärkt durch ${pranayama}. Was ist der fürsorglichste nächste Schritt, den Sie heute für sich tun können?`;
-    }
-    if (turnIndex === 10) {
-      return `Der Komplexität von ${anchor} mit Raum und Verständnis zu begegnen, ist ein Akt wahrer Selbstfürsorge. Denken Sie daran: ${cbtReframe}. Um Ihr Nervensystem zu beruhigen, verbinden Sie ${somaticAnchor} und ${pranayama}.`;
-    }
-    if (turnIndex === 11) {
-      return `Das emotionale Gewicht rund um ${anchor} verdient geduldige und strukturierte Aufmerksamkeit. Ein wissenschaftlich fundierter Impuls lautet: ${cbtReframe}. Zentrieren Sie Ihren Körper jetzt mit ${somaticAnchor} und ${microHabit}.`;
-    }
-    return `Es ist verständlich, dass ${anchor} emotionale Anspannung auslöst. Aus kognitiver Sicht: ${cbtReframe}. Zur nachhaltigen Beruhigung des Nervensystems nutzen Sie ${somaticAnchor} und ${pranayama}.`;
-  }
-
-  // English 12-Turn Multi-Turn Clinical Progression
-  if (turnIndex === 1) {
-    return `It is completely valid that ${anchor} is escalating chronic pressure in your daily routine. Taking a compassionate and objective look: ${cbtReframe}. Try integrating this gentle habit: ${microHabit}, accompanied by ${pranayama}.`;
-  }
-  if (turnIndex === 2) {
-    return `Experiencing continuous friction around ${anchor} activates prolonged sympathetic arousal. Right now, gently anchor your body with ${somaticAnchor}. Consider: What is one small, protective boundary you can assert around this today?`;
-  }
-  if (turnIndex === 3) {
-    return `I hear the cumulative fatigue that ${anchor} has created over time. A constructive path forward is to remember that ${cbtReframe}. Dedicate a few minutes to ${pranayama}, and integrate this micro-habit: ${microHabit}.`;
-  }
-  if (turnIndex === 4) {
-    return `When facing ongoing difficulty with ${anchor}, our threat detection system often anticipates worst-case scenarios. Grounding yourself in reality: ${cbtReframe}. Re-center physically right now with ${somaticAnchor}.`;
-  }
-  if (turnIndex === 5) {
-    return `The persistent strain around ${anchor} is an invitation to down-regulate your central nervous system. Remember that ${cbtReframe}. Give yourself permission to pause and engage in ${pranayama}.`;
-  }
-  if (turnIndex === 6) {
-    return `Notice the bodily sensations arising right now as you reflect on ${anchor}. Allow your body to release that holding with ${somaticAnchor}. Emotional discomfort in this moment does not define your baseline capability.`;
-  }
-  if (turnIndex === 7) {
-    return `Navigating deep complexities around ${anchor} requires treating yourself with clinical objectivity rather than self-criticism. A grounding step is to ${microHabit}. Practice ${pranayama} to signal physical safety to your vagus nerve.`;
-  }
-  if (turnIndex === 8) {
-    return `Let us de-escalate the cognitive load surrounding ${anchor}. Reflect on this: ${cbtReframe}. Try shifting your physiological state immediately with ${somaticAnchor}.`;
-  }
-  if (turnIndex === 9) {
-    return `You have been carrying a sustained emotional burden regarding ${anchor}. A restorative protocol is to ${microHabit}, reinforced with ${pranayama}. What is the gentlest next step you can take today?`;
-  }
-  if (turnIndex === 10) {
-    return `Holding space for the complexity of ${anchor} is an act of deep self-compassion. Keep in mind that ${cbtReframe}. To settle your nervous system, engage in ${somaticAnchor} and ${pranayama}.`;
-  }
-  if (turnIndex === 11) {
-    return `The emotional weight around ${anchor} deserves patient, structured attention. An evidence-based shift is to ${cbtReframe}. Ground your physiology right now with ${somaticAnchor} and ${microHabit}.`;
-  }
-
-  return `Navigating ${anchor} places a real demand on your nervous system right now. An evidence-based approach is to ${cbtReframe}. To anchor your body and restore prefrontal clarity, engage in ${somaticAnchor}, paired with ${pranayama}.`;
+INSTRUCTIONS FOR AI: Write a fresh, natural, highly empathetic response using the above protocol. Do NOT repeat previous sentence structures. Be conversational and human.`;
 }
 
 function createAssessmentObject(diagnostic: NeuroscienceDiagnosticResult, study: AuthenticatedStudy) {

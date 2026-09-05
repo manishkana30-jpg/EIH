@@ -87,7 +87,13 @@ const spanishUtterance = "Hola, me siento muy triste y cansado hoy";
 const spanishRes = generateDynamicCompanionReply({ userText: spanishUtterance });
 assert.strictEqual(spanishRes.detectedLanguage, 'es');
 assert.strictEqual(spanishRes.speechLocale, 'es-ES');
-assert(spanishRes.reply.toLowerCase().includes('comprensible') || spanishRes.reply.toLowerCase().includes('tensión') || spanishRes.reply.toLowerCase().includes('nervioso'));
+assert(
+  spanishRes.reply.includes('[CLINICAL DIRECTIVE FOR LLM]') ||
+  spanishRes.reply.toLowerCase().includes('descanso') ||
+  spanishRes.reply.toLowerCase().includes('respiración') ||
+  spanishRes.reply.toLowerCase().includes('tensión') ||
+  spanishRes.reply.toLowerCase().includes('nervioso')
+);
 console.log(`  ✓ [Spanish]: "${spanishUtterance}" ➔ Companion (es-ES): "${spanishRes.reply.slice(0, 50)}..."`);
 
 // Turn D: User switches to French
