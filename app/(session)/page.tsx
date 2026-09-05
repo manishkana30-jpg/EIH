@@ -570,13 +570,15 @@ export default function SanctuarySessionPage() {
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="flex-1 flex flex-col justify-between overflow-hidden relative bg-gradient-to-b from-slate-950 via-slate-900/30 to-slate-950"
+        className="flex-1 flex flex-col justify-between relative z-0 overflow-hidden bg-gradient-to-b from-slate-950 via-slate-900/30 to-slate-950"
       >
-        {/* Psychological / Hypnotic Concentric Visual Anchor (Center Column Only) */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none -z-10 overflow-hidden select-none">
-          <div
-            className="w-[420px] sm:w-[580px] md:w-[700px] h-[420px] sm:h-[580px] md:h-[700px] bg-[url('/hypnotic-circles.png')] bg-center bg-no-repeat bg-[length:50%] sm:bg-[length:60%] md:bg-[length:65%] opacity-15 animate-[spin_120s_linear_infinite] [mask-image:radial-gradient(circle_at_center,black_30%,transparent_70%)]"
-            style={{ willChange: "transform" }}
+        {/* AUTOMATIC ROTATING HYPNOTIC SPIRAL */}
+        <div className="absolute inset-0 pointer-events-none -z-10 flex items-center justify-center opacity-15 [mask-image:radial-gradient(circle_at_center,black_20%,transparent_70%)]">
+          <img
+            src="/hypnotic-circles.png"
+            alt="Hypnotic Anchor"
+            className="w-full h-full object-cover min-w-[800px] min-h-[800px]"
+            style={{ animation: 'spin 120s linear infinite' }}
           />
         </div>
 
