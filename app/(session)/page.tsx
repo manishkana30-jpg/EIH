@@ -514,17 +514,6 @@ export default function SanctuarySessionPage() {
             </button>
 
             <button
-              onClick={() => setIsTratakaOpen(true)}
-              className="flex items-center gap-3 w-full p-2.5 rounded-xl text-amber-300/90 hover:text-amber-200 hover:bg-amber-950/30 border border-transparent hover:border-amber-700/40 transition-all duration-300 group"
-              title="Clinical Trataka (Gazing) Module"
-            >
-              <Eye className="w-5 h-5 shrink-0 group-hover:scale-110 transition-transform text-amber-400" />
-              <span className="hidden md:inline text-xs font-medium tracking-wide">
-                Clinical Trataka
-              </span>
-            </button>
-
-            <button
               onClick={() => setIsHistoryOpen(true)}
               className="flex items-center gap-3 w-full p-2.5 rounded-xl text-slate-400 hover:text-emerald-300 hover:bg-slate-800/80 border border-transparent hover:border-slate-700/60 transition-all duration-300 group"
               title="Encrypted Session Vault (AES-GCM)"
@@ -944,25 +933,38 @@ export default function SanctuarySessionPage() {
           </div>
 
           {/* Clinical Trataka (Gazing) Focus Module Card */}
-          <div className="hidden md:block p-3.5 rounded-2xl bg-gradient-to-br from-amber-950/25 via-slate-900/60 to-slate-900/80 border border-amber-500/30 hover:border-amber-400/60 transition-all duration-300 shadow-[0_0_20px_rgba(245,158,11,0.08)] group">
-            <div className="flex items-center justify-between text-xs mb-1.5">
-              <span className="text-amber-400 font-semibold flex items-center gap-1.5">
-                <Eye className="w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition-transform" />
-                <span>Clinical Trataka</span>
-              </span>
-              <span className="text-[10px] font-mono font-bold text-amber-400/80 bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 rounded-full">
-                5-Stage
-              </span>
+          <div className="p-2.5 md:p-3.5 rounded-2xl bg-gradient-to-br from-amber-950/25 via-slate-900/60 to-slate-900/80 border border-amber-500/30 hover:border-amber-400/60 transition-all duration-300 shadow-[0_0_20px_rgba(245,158,11,0.08)] group">
+            {/* Desktop Full Card */}
+            <div className="hidden md:block">
+              <div className="flex items-center justify-between text-xs mb-1.5">
+                <span className="text-amber-400 font-semibold flex items-center gap-1.5">
+                  <Eye className="w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition-transform" />
+                  <span>Clinical Trataka</span>
+                </span>
+                <span className="text-[10px] font-mono font-bold text-amber-400/80 bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 rounded-full">
+                  5-Stage
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-400 leading-snug mb-2.5">
+                Neuroplastic attention training: 2-min safe Bindu gaze, DMN quieting &amp; active CBT reframe.
+              </p>
+              <button
+                onClick={() => setIsTratakaOpen(true)}
+                className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-200 text-xs font-semibold transition-all shadow-[0_0_12px_rgba(245,158,11,0.2)]"
+              >
+                <Eye className="w-3.5 h-3.5" />
+                <span>Begin Gazing Session</span>
+              </button>
             </div>
-            <p className="text-[11px] text-slate-400 leading-snug mb-2.5">
-              Neuroplastic attention training: 2-min safe Bindu gaze, DMN quieting &amp; active CBT reframe.
-            </p>
+
+            {/* Compact / Mobile Icon Button */}
             <button
               onClick={() => setIsTratakaOpen(true)}
-              className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-200 text-xs font-semibold transition-all shadow-[0_0_12px_rgba(245,158,11,0.2)]"
+              className="md:hidden flex flex-col items-center justify-center w-full p-1.5 rounded-xl text-amber-400 hover:text-amber-200 hover:bg-amber-950/40 transition-all"
+              title="Clinical Trataka (Gazing) Module"
             >
-              <Eye className="w-3.5 h-3.5" />
-              <span>Begin Gazing Session</span>
+              <Eye className="w-5 h-5" />
+              <span className="text-[9px] font-mono font-bold mt-1 text-amber-400/90">Trataka</span>
             </button>
           </div>
         </div>
