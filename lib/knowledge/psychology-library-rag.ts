@@ -5,6 +5,7 @@
  */
 
 import psychologyLibraryData from '../../data/psychology_library.json' with { type: 'json' };
+import { emotionClassifier } from './emotion-classifier.ts';
 
 export interface ClinicalSolutions {
   cbt_reframing: string;
@@ -55,29 +56,29 @@ export const PSYCHOLOGY_LIBRARY: PsychologyCondition[] = psychologyLibraryData a
 
 /**
  * Domain-specific regex triggers mapped to condition IDs for rapid, high-accuracy clinical matching.
- * Includes English and Multi-lingual (Hindi/Hinglish, Spanish, French, German) clinical keywords.
+ * Includes English, Devanagari Hindi, Hinglish, Spanish, French, and German clinical keywords.
  */
 const CLINICAL_TRIGGER_PATTERNS: Record<string, RegExp> = {
-  gad: /\b(worry|worrying|worried|what if|anxious|anxiety|nervous|nervousness|tense|restless|racing mind|cannot relax|dread|on edge|ghabrahat|chinta|bechaini|tanaav|ansiedad|inquietude|angst)\b/i,
-  burnout_fatigue: /\b(burnout|burned out|burnt out|exhausted|exhaustion|brain fog|lethargy|overworked|depleted|no energy|drained|tired of working|work fatigue|thak gaya|thakan|agotamiento|epuisement|erschopfung)\b/i,
-  panic_dysregulation: /\b(panic|panic attack|heart racing|palpitations|cannot breathe|suffocating|trembling|cold chills|hot flashes|doom|shaking|chest pounding|loss of control|saas nahi|ghutan|ataque de panico|panique)\b/i,
-  major_depressive_inertia: /\b(depressed|depression|low mood|feeling down|empty|emptiness|hopeless|hopelessness|despair|anhedonia|unmotivated|no point|cannot get out of bed|worthless|useless|numb|udaas|udaasi|depresion)\b/i,
-  imposter_perfectionism: /\b(imposter|impostor|fraud|failure|failed|failing|perfectionist|perfectionism|not good enough|incompetent|will be exposed|cheat|mess up|messing up|fear of failing|kabil nahi)\b/i,
-  relationship_heartbreak: /\b(breakup|broke up|ex-|ex boyfriend|ex girlfriend|partner|husband|wife|fight|argument|heartbreak|broken heart|rejection|unloved|abandoned|abandonment|cheated|dil toot|rupture)\b/i,
-  existential_loneliness: /\b(lonely|loneliness|all alone|isolated|isolation|nobody cares|no friends|alienated|alienation|empty world|disconnected|no one to talk to|akela|akelepan|soledad|solitude|einsamkeit)\b/i,
-  anger_frustration_dysregulation: /\b(angry|anger|furious|fury|rage|raging|mad|irritated|irritation|annoyed|unfair|unfairness|hate them|screaming|boss yelled|yelled at me|injustice|betrayed|gussa|krodh|colere|wut)\b/i,
-  grief_bereavement: /\b(grief|grieving|bereavement|loss of|died|passed away|mourning|sorrow|funeral|lost my dog|lost my cat|lost my parent|lost my loved one|weeping|shok|duelo|deuil|trauer)\b/i,
-  social_evaluative_threat: /\b(social anxiety|shy|shyness|embarrassed|embarrassment|judging me|public speaking|awkward|crowds|humiliated|presentation|speech anxiety|people staring|sharm|timide)\b/i,
-  adhd_executive_overwhelm: /\b(adhd|procrastinate|procrastinating|procrastination|task paralysis|cannot start|overwhelmed with tasks|distract|distracted|executive dysfunction|frozen|stuck on tasks)\b/i,
-  insomnia_hyperarousal: /\b(insomnia|cannot sleep|cant sleep|waking up|sleep trouble|staying awake|lying in bed|midnight|toss and turn|tossing and turning|bedtime racing|sleep anxiety|neend nahi|insomnio|insomnie|schlaflosigkeit)\b/i,
-  health_somatic_anxiety: /\b(health anxiety|hypochondria|illness|disease|cancer|heart attack|checking pulse|medical symptoms|sick|tumor|body sensation|googling symptoms|bimaari)\b/i,
-  trauma_hypervigilance: /\b(trauma|traumatic|ptsd|flashback|flashbacks|triggered|hypervigilant|hypervigilance|abuse|assault|startled|safe space|nightmares|visceral reaction)\b/i,
-  ocd_intrusive_rumination: /\b(ocd|intrusive thought|intrusive thoughts|pure o|pure-o|bad thoughts|disturbing thought|unwanted thought|mental check|reassurance seeking|thought action fusion|compulsion|compulsive|bure vichar)\b/i,
-  compassion_fatigue_caregiver: /\b(caregiver|caregiving|taking care of my|caring for sick|caring for elderly|caregiver burnout|caregiver fatigue|secondary trauma|empathic strain|empathy burnout|caretaker)\b/i,
-  decision_paralysis_ambivalence: /\b(decision paralysis|cannot decide|cant decide|hard to choose|choice overload|too many options|analysis paralysis|paralyzed by choice|afraid of making wrong choice|indecisive|indecision)\b/i,
-  shame_core_defectiveness: /\b(shame|ashamed|toxic shame|deeply flawed|defective|fundamentally broken|unworthy|hate myself|disgusted with myself|want to disappear|sharmindagi|vergüenza|honte|scham)\b/i,
-  workplace_mobbing_toxic_culture: /\b(toxic workplace|toxic boss|toxic manager|gaslighting boss|workplace mobbing|workplace harassment|coworker sabotage|hostile workplace|sunday dread|corporate politics)\b/i,
-  somatic_chronic_pain_amplification: /\b(chronic pain|neuroplastic pain|back pain|fibromyalgia|pain reprocessing|tension headache|pain flare|somatic tracking|central sensitization|dard)\b/i,
+  gad: /(?:\b(worry|worrying|worried|what if|anxious|anxiety|nervous|nervousness|tense|tension|restless|racing mind|cannot relax|dread|on edge|stress|stressed|stressing|overwhelmed|overthinking|overthink|pressure|ghabrahat|chinta|bechaini|tanaav|ansiedad|inquietude|angst)\b|तनाव|चिंता|बेचैनी|घबराहट|परेशानी|दबाव)/i,
+  burnout_fatigue: /(?:\b(burnout|burned out|burnt out|exhausted|exhaustion|brain fog|lethargy|overworked|depleted|no energy|drained|tired of working|work fatigue|worn out|thak gaya|thakan|agotamiento|epuisement|erschopfung)\b|थकान|थक गया|ऊर्जा नहीं|बहुत थक|सुस्ती|निढाल)/i,
+  panic_dysregulation: /(?:\b(panic|panic attack|heart racing|palpitations|cannot breathe|suffocating|trembling|cold chills|hot flashes|doom|shaking|chest pounding|loss of control|gasping|hyperventilating|saas nahi|ghutan|ataque de panico|panique)\b|घबराहट का दौरा|सांस नहीं|घुटन|दिल तेजी से|कांप रहा)/i,
+  major_depressive_inertia: /(?:\b(depressed|depression|low mood|feeling down|empty|emptiness|hopeless|hopelessness|despair|anhedonia|unmotivated|no point|cannot get out of bed|worthless|useless|numb|sad|sadness|sorrow|crying|weep|weeping|tears|gloom|gloomy|downhearted|miserable|udaas|udaasi|depresion|tristesse)\b|उदास|उदासी|निराशा|रोना|रो रहा|कुछ अच्छा नहीं|मन उदास)/i,
+  imposter_perfectionism: /(?:\b(imposter|impostor|fraud|failure|failed|failing|perfectionist|perfectionism|not good enough|incompetent|will be exposed|cheat|mess up|messing up|fear of failing|kabil nahi)\b|काबिल नहीं|नाकाबिल|असफल|असफलता का डर)/i,
+  relationship_heartbreak: /(?:\b(breakup|broke up|ex-|ex boyfriend|ex girlfriend|partner|husband|wife|fight|argument|heartbreak|broken heart|rejection|unloved|abandoned|abandonment|cheated|divorce|infidelity|betrayed by|dil toot|rupture)\b|दिल टूट|ब्रेकअप|रिश्ता टूट|धोखा दिया|झगड़ा हुआ)/i,
+  existential_loneliness: /(?:\b(lonely|loneliness|all alone|isolated|isolation|nobody cares|no friends|alienated|alienation|empty world|disconnected|no one to talk to|solitary|friendless|akela|akelepan|soledad|solitude|einsamkeit)\b|अकेला|अकेलापन|कोई नहीं है|तनहाई|अलग-थलग)/i,
+  anger_frustration_dysregulation: /(?:\b(angry|anger|furious|fury|rage|raging|mad|irritated|irritation|annoyed|annoyance|frustrated|frustration|unfair|unfairness|hate them|screaming|boss yelled|yelled at me|injustice|betrayed|temper|resentment|gussa|krodh|colere|wut)\b|गुस्सा|क्रोध|चिड़चिड़ाहट|नाराज|क्रोधित|गुस्सा आ रहा)/i,
+  grief_bereavement: /(?:\b(grief|grieving|bereavement|loss of|died|passed away|mourning|sorrow|funeral|lost my dog|lost my cat|lost my parent|lost my loved one|passed on|deceased|weeping for|shok|duelo|deuil|trauer)\b|शोक|मौत|गुजर गए|खो दिया|शोकग्रस्त)/i,
+  social_evaluative_threat: /(?:\b(social anxiety|shy|shyness|embarrassed|embarrassment|judging me|public speaking|awkward|crowds|humiliated|presentation|speech anxiety|people staring|stage fear|stage fright|sharm|timide)\b|शर्म|झिझक|स्टेज का डर|लोग क्या सोचेंगे|मंच का डर)/i,
+  adhd_executive_overwhelm: /(?:\b(adhd|procrastinate|procrastinating|procrastination|task paralysis|cannot start|overwhelmed with tasks|distract|distracted|distraction|executive dysfunction|frozen|stuck on tasks|can't focus|cannot focus|unable to focus)\b|ध्यान नहीं लग रहा|टालमटोल|काम शुरू नहीं|फोकस नहीं)/i,
+  insomnia_hyperarousal: /(?:\b(insomnia|cannot sleep|cant sleep|waking up|sleep trouble|sleepless|sleeplessness|staying awake|lying in bed|midnight|toss and turn|tossing and turning|bedtime racing|sleep anxiety|wakeful|neend nahi|insomnio|insomnie|schlaflosigkeit)\b|नींद नहीं|सो नहीं पा रहा|अनिद्रा|जाग रहा)/i,
+  health_somatic_anxiety: /(?:\b(health anxiety|hypochondria|illness|disease|cancer|heart attack|checking pulse|medical symptoms|sick|tumor|body sensation|googling symptoms|bimaari)\b|बीमारी का डर|सेहत की चिंता|रोग|लक्षण)/i,
+  trauma_hypervigilance: /(?:\b(trauma|traumatic|ptsd|flashback|flashbacks|triggered|hypervigilant|hypervigilance|abuse|assault|startled|safe space|nightmares|visceral reaction)\b|सदमा|पुराना सदमा|डरावने सपने|आघात)/i,
+  ocd_intrusive_rumination: /(?:\b(ocd|intrusive thought|intrusive thoughts|pure o|pure-o|bad thoughts|disturbing thought|unwanted thought|mental check|reassurance seeking|thought action fusion|compulsion|compulsive|rumination|ruminating|bure vichar)\b|बुरे विचार|अवांछित विचार|बार बार वही सोच)/i,
+  compassion_fatigue_caregiver: /(?:\b(caregiver|caregiving|taking care of my|caring for sick|caring for elderly|caregiver burnout|caregiver fatigue|secondary trauma|empathic strain|empathy burnout|caretaker)\b|देखभाल का तनाव|मरीज की देखभाल|केयरगिवर)/i,
+  decision_paralysis_ambivalence: /(?:\b(decision paralysis|cannot decide|cant decide|hard to choose|choice overload|too many options|analysis paralysis|paralyzed by choice|afraid of making wrong choice|indecisive|indecision|dilemma)\b|फैसला नहीं कर पा रहा|असमंजस|क्या चुनूं|निर्णय नहीं)/i,
+  shame_core_defectiveness: /(?:\b(shame|ashamed|toxic shame|deeply flawed|defective|fundamentally broken|unworthy|hate myself|disgusted with myself|want to disappear|sharmindagi|vergüenza|honte|scham)\b|शर्मिंदगी|खुद से नफरत|अपराधबोध|खामी)/i,
+  workplace_mobbing_toxic_culture: /(?:\b(toxic workplace|toxic boss|toxic manager|gaslighting boss|workplace mobbing|workplace harassment|coworker sabotage|hostile workplace|sunday dread|corporate politics|office politics)\b|ऑफिस का तनाव|बॉस की डांट|कार्यस्थल)/i,
+  somatic_chronic_pain_amplification: /(?:\b(chronic pain|neuroplastic pain|back pain|fibromyalgia|pain reprocessing|tension headache|pain flare|somatic tracking|central sensitization|migraine|body ache|neck pain|muscle ache|dard)\b|दर्द|सिरदर्द|पीठ दर्द|बदन दर्द|माइग्रेन)/i,
 };
 
 /**
@@ -243,6 +244,56 @@ export function queryPsychologyLibrary(userText: string): LibraryRAGResult | nul
       highestScore = score;
       bestMatch = condition;
       matchedTerms = currentMatched;
+    }
+  }
+
+  // Fallback to Neuroscience Emotion Classifier when lexical/trigger threshold is not reached
+  if (!bestMatch || highestScore < 4) {
+    try {
+      const diag = emotionClassifier.classifyText(userText);
+      const dimId = diag.dimensionId || '';
+
+      const dimensionToConditionMap: Record<string, string> = {
+        anxiety: 'gad',
+        fear: 'panic_dysregulation',
+        horror: 'trauma_hypervigilance',
+        sadness: 'major_depressive_inertia',
+        anger: 'anger_frustration_dysregulation',
+        disgust: 'shame_core_defectiveness',
+        boredom: 'burnout_fatigue',
+        awkwardness: 'social_evaluative_threat',
+        confusion: 'decision_paralysis_ambivalence',
+        craving: 'adhd_executive_overwhelm',
+        empathic_pain: 'compassion_fatigue_caregiver',
+        entrancement: 'existential_loneliness',
+        excitement: 'panic_dysregulation',
+        interest: 'adhd_executive_overwhelm',
+        joy: 'major_depressive_inertia',
+        nostalgia: 'grief_bereavement',
+        pride: 'imposter_perfectionism',
+        relief: 'burnout_fatigue',
+        romance: 'relationship_heartbreak',
+        satisfaction: 'imposter_perfectionism',
+        surprise: 'panic_dysregulation',
+        calmness: 'gad',
+        admiration: 'imposter_perfectionism',
+        adoration: 'relationship_heartbreak',
+        aesthetic_appreciation: 'existential_loneliness',
+        amusement: 'burnout_fatigue',
+        sexual_desire: 'relationship_heartbreak',
+      };
+
+      const mappedId = dimensionToConditionMap[dimId] || 'gad';
+      const fallbackCondition = getConditionById(mappedId) || PSYCHOLOGY_LIBRARY[0];
+      if (fallbackCondition) {
+        bestMatch = fallbackCondition;
+        highestScore = 4;
+        matchedTerms = [`emotion:${dimId}`];
+      }
+    } catch {
+      bestMatch = PSYCHOLOGY_LIBRARY[0];
+      highestScore = 4;
+      matchedTerms = ['fallback_gad'];
     }
   }
 

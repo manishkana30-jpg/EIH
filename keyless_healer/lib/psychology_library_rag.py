@@ -120,26 +120,26 @@ class PsychologyLibraryRAG:
 
         # 1. Lexical, Symptom & Multi-lingual Domain Pattern Matcher
         domain_patterns = {
-            "gad": r"\b(worry|worrying|worried|what if|anxious|anxiety|nervous|tense|restless|dread|ghabrahat|chinta|bechaini|tanaav|ansiedad|angst)\b",
-            "burnout_fatigue": r"\b(burnout|burned out|exhausted|exhaustion|brain fog|lethargy|overworked|depleted|no energy|drained|thak gaya|thakan|agotamiento|epuisement)\b",
-            "panic_dysregulation": r"\b(panic|panic attack|heart racing|palpitations|cannot breathe|suffocating|trembling|doom|shaking|chest pounding|saas nahi|ghutan|ataque de panico)\b",
-            "major_depressive_inertia": r"\b(depressed|depression|low mood|feeling down|empty|emptiness|hopeless|despair|anhedonia|unmotivated|worthless|useless|udaas|udaasi|depresion)\b",
-            "imposter_perfectionism": r"\b(imposter|impostor|fraud|failure|failed|failing|perfectionist|perfectionism|not good enough|incompetent|will be exposed|kabil nahi)\b",
-            "relationship_heartbreak": r"\b(breakup|broke up|ex|partner|husband|wife|fight|argument|heartbreak|broken heart|rejection|unloved|abandoned|dil toot|rupture)\b",
-            "existential_loneliness": r"\b(lonely|loneliness|all alone|isolated|isolation|nobody cares|no friends|alienated|empty world|disconnected|akela|akelepan|soledad|solitude)\b",
-            "anger_frustration_dysregulation": r"\b(angry|anger|furious|rage|mad|irritated|annoyed|unfair|hate them|screaming|boss yelled|injustice|gussa|krodh|colere)\b",
-            "grief_bereavement": r"\b(grief|grieving|bereavement|died|passed away|mourning|sorrow|funeral|lost my|crying|wept|shok|duelo|deuil)\b",
-            "social_evaluative_threat": r"\b(social anxiety|shy|embarrassed|judging me|public speaking|awkward|crowds|humiliated|presentation|sharm|timide)\b",
-            "adhd_executive_overwhelm": r"\b(adhd|procrastinate|procrastinating|procrastination|task paralysis|cannot start|overwhelmed with tasks|distracted|frozen)\b",
-            "insomnia_hyperarousal": r"\b(insomnia|cannot sleep|cant sleep|waking up|sleep trouble|staying awake|lying in bed|midnight|toss and turn|neend nahi|insomnio)\b",
-            "health_somatic_anxiety": r"\b(health anxiety|hypochondria|illness|disease|cancer|heart attack|checking pulse|medical symptoms|tumor|googling symptoms|bimaari)\b",
-            "trauma_hypervigilance": r"\b(trauma|traumatic|ptsd|flashback|triggered|hypervigilant|abuse|startled|nightmares)\b",
-            "ocd_intrusive_rumination": r"\b(ocd|intrusive thought|pure o|bad thoughts|disturbing thought|unwanted thought|mental check|reassurance seeking|bure vichar)\b",
-            "compassion_fatigue_caregiver": r"\b(caregiver|caregiving|taking care of|caring for sick|caring for elderly|caregiver burnout|caregiver fatigue|secondary trauma|caretaker)\b",
-            "decision_paralysis_ambivalence": r"\b(decision paralysis|cannot decide|cant decide|hard to choose|choice overload|too many options|analysis paralysis|indecision)\b",
-            "shame_core_defectiveness": r"\b(shame|ashamed|toxic shame|deeply flawed|defective|fundamentally broken|unworthy|hate myself|want to disappear|sharmindagi|scham)\b",
-            "workplace_mobbing_toxic_culture": r"\b(toxic workplace|toxic boss|toxic manager|gaslighting boss|workplace mobbing|workplace harassment|hostile workplace|sunday dread)\b",
-            "somatic_chronic_pain_amplification": r"\b(chronic pain|neuroplastic pain|back pain|fibromyalgia|pain reprocessing|tension headache|pain flare|somatic tracking|dard)\b",
+            "gad": r"(?:\b(worry|worrying|worried|what if|anxious|anxiety|nervous|tense|tension|restless|dread|stress|stressed|overwhelmed|pressure|ghabrahat|chinta|bechaini|tanaav|ansiedad|angst)\b|तनाव|चिंता|बेचैनी|घबराहट|परेशानी)",
+            "burnout_fatigue": r"(?:\b(burnout|burned out|exhausted|exhaustion|brain fog|lethargy|overworked|depleted|no energy|drained|fatigue|worn out|thak gaya|thakan|agotamiento|epuisement)\b|थकान|थक गया|ऊर्जा नहीं|बहुत थक)",
+            "panic_dysregulation": r"(?:\b(panic|panic attack|heart racing|palpitations|cannot breathe|suffocating|trembling|doom|shaking|chest pounding|saas nahi|ghutan|ataque de panico)\b|घबराहट का दौरा|सांस नहीं|घुटन|कांप रहा)",
+            "major_depressive_inertia": r"(?:\b(depressed|depression|low mood|feeling down|empty|emptiness|hopeless|despair|anhedonia|unmotivated|worthless|useless|sad|sadness|crying|weep|tears|udaas|udaasi|depresion)\b|उदास|उदासी|निराशा|रोना|रो रहा)",
+            "imposter_perfectionism": r"(?:\b(imposter|impostor|fraud|failure|failed|failing|perfectionist|perfectionism|not good enough|incompetent|will be exposed|kabil nahi)\b|काबिल नहीं|नाकाबिल|असफल)",
+            "relationship_heartbreak": r"(?:\b(breakup|broke up|ex|partner|husband|wife|fight|argument|heartbreak|broken heart|rejection|unloved|abandoned|dil toot|rupture)\b|दिल टूट|ब्रेकअप|रिश्ता टूट|धोखा)",
+            "existential_loneliness": r"(?:\b(lonely|loneliness|all alone|isolated|isolation|nobody cares|no friends|alienated|empty world|disconnected|akela|akelepan|soledad|solitude)\b|अकेला|अकेलापन|कोई नहीं है)",
+            "anger_frustration_dysregulation": r"(?:\b(angry|anger|furious|rage|mad|irritated|annoyed|frustrated|frustration|unfair|hate them|screaming|boss yelled|injustice|gussa|krodh|colere)\b|गुस्सा|क्रोध|चिड़चिड़ाहट|नाराज)",
+            "grief_bereavement": r"(?:\b(grief|grieving|bereavement|died|passed away|mourning|sorrow|funeral|lost my|crying|wept|shok|duelo|deuil)\b|शोक|मौत|गुजर गए|खो दिया)",
+            "social_evaluative_threat": r"(?:\b(social anxiety|shy|embarrassed|judging me|public speaking|awkward|crowds|humiliated|presentation|stage fear|sharm|timide)\b|शर्म|झिझक|स्टेज का डर)",
+            "adhd_executive_overwhelm": r"(?:\b(adhd|procrastinate|procrastinating|procrastination|task paralysis|cannot start|overwhelmed with tasks|distracted|frozen|focus)\b|ध्यान नहीं लग रहा|टालमटोल)",
+            "insomnia_hyperarousal": r"(?:\b(insomnia|cannot sleep|cant sleep|waking up|sleep trouble|staying awake|lying in bed|midnight|toss and turn|neend nahi|insomnio)\b|नींद नहीं|सो नहीं पा रहा|अनिद्रा)",
+            "health_somatic_anxiety": r"(?:\b(health anxiety|hypochondria|illness|disease|cancer|heart attack|checking pulse|medical symptoms|tumor|googling symptoms|bimaari)\b|बीमारी का डर|सेहत की चिंता)",
+            "trauma_hypervigilance": r"(?:\b(trauma|traumatic|ptsd|flashback|triggered|hypervigilant|abuse|startled|nightmares)\b|सदमा|पुराना सदमा|डरावने सपने)",
+            "ocd_intrusive_rumination": r"(?:\b(ocd|intrusive thought|pure o|bad thoughts|disturbing thought|unwanted thought|mental check|reassurance seeking|bure vichar)\b|बुरे विचार|अवांछित विचार)",
+            "compassion_fatigue_caregiver": r"(?:\b(caregiver|caregiving|taking care of|caring for sick|caring for elderly|caregiver burnout|caregiver fatigue|secondary trauma|caretaker)\b|देखभाल का तनाव|केयरगिवर)",
+            "decision_paralysis_ambivalence": r"(?:\b(decision paralysis|cannot decide|cant decide|hard to choose|choice overload|too many options|analysis paralysis|indecision)\b|फैसला नहीं कर पा रहा|असमंजस)",
+            "shame_core_defectiveness": r"(?:\b(shame|ashamed|toxic shame|deeply flawed|defective|fundamentally broken|unworthy|hate myself|want to disappear|sharmindagi|scham)\b|शर्मिंदगी|खुद से नफरत)",
+            "workplace_mobbing_toxic_culture": r"(?:\b(toxic workplace|toxic boss|toxic manager|gaslighting boss|workplace mobbing|workplace harassment|hostile workplace|sunday dread)\b|ऑफिस का तनाव|बॉस की डांट)",
+            "somatic_chronic_pain_amplification": r"(?:\b(chronic pain|neuroplastic pain|back pain|fibromyalgia|pain reprocessing|tension headache|pain flare|somatic tracking|migraine|headache|body ache|neck pain|dard)\b|दर्द|सिरदर्द|पीठ दर्द|बदन दर्द|माइग्रेन)",
         }
 
         # 2. Lexical, Symptom & Multi-lingual Weighted Scoring Matcher
@@ -217,6 +217,10 @@ class PsychologyLibraryRAG:
                         return self._format_retrieval_result(condition)
             except Exception as e:
                 logger.debug(f"ChromaDB query fallback triggered: {e}")
+
+        # 3. Heuristic Fallback to Default Condition if available
+        if self.library_data:
+            return self._format_retrieval_result(self.library_data[0])
 
         return None
 

@@ -108,6 +108,19 @@ class CBTLibraryLoader:
                 "confidence_score": 0.88 if len(detected) > 0 else 0.4,
             }
 
+        # Dynamic somatic anchor tailored to somatic mention or polyvagal state
+        t_low = (text or "").lower()
+        if any(w in t_low for w in ["heart", "racing", "breath", "panic", "fear", "anxi", "ghabrahat"]):
+            dynamic_somatic = "Take two short sips of air through your nose, followed by a long, slow exhale through parted lips."
+        elif any(w in t_low for w in ["sad", "crying", "empty", "lonely", "alone", "udaas"]):
+            dynamic_somatic = "Place one warm palm over your chest and feel the gentle, rhythmic rise and fall of your heartbeat."
+        elif any(w in t_low for w in ["anger", "mad", "frustrat", "rage", "boss", "gussa"]):
+            dynamic_somatic = "Press the soles of your feet firmly into the floor and slowly unclench your hands."
+        elif any(w in t_low for w in ["tired", "exhaust", "burnout", "sleep", "thak", "neend"]):
+            dynamic_somatic = "Unglue your tongue from the roof of your mouth, soften your gaze, and let your spine settle naturally."
+        else:
+            dynamic_somatic = "Ground your awareness into the contact points between your physical body and the floor."
+
         return {
             "detected_distortions": [],
             "primary_distortion": "None Detected",
@@ -117,7 +130,7 @@ class CBTLibraryLoader:
                 "If a dear friend told you this exact concern, how would you respond to them?",
             ],
             "reframing_insight": "Holding space for what you are moving through.",
-            "somatic_cue": "Release any held tension in your jaw and shoulders.",
+            "somatic_cue": dynamic_somatic,
             "recommended_protocol": "act_defusion_toolkit",
             "confidence_score": 0.5,
         }

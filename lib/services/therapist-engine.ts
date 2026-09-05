@@ -289,12 +289,44 @@ Translate and explain all validation, CBT cognitive reframes, somatic grounding 
   } catch {}
 
   // 5. Infallible Tier 5: Pure Deterministic Healer Synthesis (Zero External Dependency, 100% Offline)
-  let fallbackReply = "I hear the distress you are navigating right now. Remind yourself that intense thoughts are mental events, not permanent facts. Take a deep diaphragmatic breath in for 4 seconds, hold gently for 4 seconds, and exhale slowly for 6 seconds to calm your autonomic nervous system.";
+  const isHindi =
+    (language || "").toLowerCase().startsWith("hi") ||
+    (locale || "").toLowerCase().startsWith("hi") ||
+    /[\u0900-\u097F]/.test(userMessage);
+  const isSpanish = (language || "").toLowerCase().startsWith("es") || (locale || "").toLowerCase().startsWith("es");
+  const isFrench = (language || "").toLowerCase().startsWith("fr") || (locale || "").toLowerCase().startsWith("fr");
+  const isGerman = (language || "").toLowerCase().startsWith("de") || (locale || "").toLowerCase().startsWith("de");
+
+  let fallbackReply = "";
 
   if (libraryRag) {
-    fallbackReply = `I understand how challenging this experience feels in your body. ${libraryRag.condition.solutions.cbt_reframing}. To ground yourself right now, practice ${libraryRag.condition.solutions.somatic_anchor} and ${libraryRag.condition.solutions.pranayama}.`;
+    const cond = libraryRag.condition;
+    const sols = cond.solutions;
+
+    if (isHindi) {
+      fallbackReply = `मैं समझ सकता हूँ कि इस समय आप शारीरिक और मानसिक रूप से कितना गहरा दबाव महसूस कर रहे हैं। ${sols.cbt_reframing} अपने तंत्रिका तंत्र को स्थिर करने के लिए: ${sols.somatic_anchor} और ${sols.pranayama} का अभ्यास करें।`;
+    } else if (isSpanish) {
+      fallbackReply = `Comprendo profundamente la tensión que estás experimentando con respecto a ${cond.name.toLowerCase()}. ${sols.cbt_reframing} Para regular tu sistema nervioso en este momento: practica ${sols.somatic_anchor} y ${sols.pranayama}.`;
+    } else if (isFrench) {
+      fallbackReply = `J'entends pleinement la tension émotionnelle que vous traversez face à ${cond.name.toLowerCase()}. ${sols.cbt_reframing} Pour apaiser votre système nerveux dès maintenant : pratiquez ${sols.somatic_anchor} et ${sols.pranayama}.`;
+    } else if (isGerman) {
+      fallbackReply = `Ich verstehe gut, wie sehr Sie diese Belastung rund um ${cond.name.toLowerCase()} beansprucht. ${sols.cbt_reframing} Um Ihr Nervensystem jetzt zu beruhigen: Nutzen Sie ${sols.somatic_anchor} und ${sols.pranayama}.`;
+    } else {
+      fallbackReply = `I understand how deeply this ${cond.name.toLowerCase()} is weighing on your mind and body right now. ${sols.cbt_reframing} To anchor your nervous system in this exact moment, engage in ${sols.somatic_anchor} alongside ${sols.pranayama}.`;
+    }
   } else if (clinicalEvidence.length > 0) {
-    fallbackReply = `I hear the emotional pressure you are experiencing. ${clinicalEvidence[0].summary}. Focus on slow rhythmic breathing and releasing tension in your jaw and shoulders.`;
+    const primaryEvidence = clinicalEvidence[0];
+    if (isHindi) {
+      fallbackReply = `मैं आपकी स्थिति की गंभीरता को समझता हूँ। ${primaryEvidence.summary} अपने शरीर में शांति लाने के लिए धीमी, गहरी सांसें लें और अपनी सांसों की गति पर ध्यान केंद्रित करें।`;
+    } else {
+      fallbackReply = `I hear the emotional pressure you are experiencing. ${primaryEvidence.summary} Anchor your awareness into your physical center with slow, deliberate breaths.`;
+    }
+  } else {
+    if (isHindi) {
+      fallbackReply = `मैं समझता हूँ कि आप एक कठिन परिस्थिति से गुजर रहे हैं। याद रखें कि तीव्र विचार स्थायी सत्य नहीं हैं, केवल मानसिक घटनाएँ हैं। 4 सेकंड के लिए गहरी सांस लें, 4 सेकंड रोकें और 6 सेकंड में धीरे-धीरे छोड़ें।`;
+    } else {
+      fallbackReply = `I hear the distress you are navigating right now. Remind yourself that intense thoughts are transient mental events, not permanent facts. Take a deep diaphragmatic breath in for 4 seconds, hold gently for 4 seconds, and exhale slowly for 6 seconds to settle your autonomic nervous system.`;
+    }
   }
 
   return {

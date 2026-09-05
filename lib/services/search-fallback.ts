@@ -123,13 +123,60 @@ export async function searchMentalHealthEvidence(query: string): Promise<Clinica
   results = await searchTavily(query);
   if (results.length > 0) return results;
 
-  // 3. Fallback to Local Verified Clinical Knowledge
+  // 3. Fallback to Local Verified Clinical Knowledge matching query domain
+  const lower = (query || '').toLowerCase();
+  if (/\b(depress|hopeless|empty|sad|exhaust|burnout|unmotivated|worthless|failure|udaas)\b/i.test(lower) || /उदास|निराशा/.test(lower)) {
+    return [
+      {
+        title: "Behavioral Activation & Micro-Momentum Intervention",
+        summary: "To counter depressive inertia, initiate 2-minute micro-movements and opposite action without waiting for motivation.",
+        source: "local_cache",
+      },
+    ];
+  }
+  if (/\b(anger|angry|furious|yell|frustrat|rage|gussa)\b/i.test(lower) || /गुस्सा|क्रोध/.test(lower)) {
+    return [
+      {
+        title: "DBT Distress Tolerance & Cooling Regulation",
+        summary: "For intense frustration and anger: apply cooling breath (Shitali), progressive physical grounding, and boundary clarification.",
+        source: "local_cache",
+      },
+    ];
+  }
+  if (/\b(sleep|insomnia|tired|nightmare|restless|neend)\b/i.test(lower) || /नींद|अनिद्रा/.test(lower)) {
+    return [
+      {
+        title: "CBT-I Stimulus Control & Autonomic Down-Regulation",
+        summary: "For insomnia and bedtime rumination: apply 4-7-8 extended exhale breathing and reset the bed strictly for sleep.",
+        source: "local_cache",
+      },
+    ];
+  }
+  if (/\b(grief|loss|died|death|passed away|mourning|shok)\b/i.test(lower) || /शोक|मौत/.test(lower)) {
+    return [
+      {
+        title: "Compassionate Bereavement & Dual-Process Regulation",
+        summary: "For grief and deep loss: place a hand over heart and belly with 4-6 rhythmic coherence to allow natural emotional wave processing.",
+        source: "local_cache",
+      },
+    ];
+  }
+  if (/\b(pain|back pain|fibromyalgia|headache|migraine|dard)\b/i.test(lower) || /दर्द|सिरदर्द/.test(lower)) {
+    return [
+      {
+        title: "Pain Reprocessing & Somatosensory Calming",
+        summary: "For neuroplastic physical tension and discomfort: engage in objective somatic tracking with light curiosity and abdominal safety breathing.",
+        source: "local_cache",
+      },
+    ];
+  }
+
   return [
     {
       title: "Evidence-Based Somatic & CBT Intervention",
       summary:
-        "For acute anxiety and stress: deploy 5-4-3-2-1 Sensory Grounding, Physiological Sighs (2 inhales, prolonged exhale), and Cognitive Defusion ('I am noticing the thought that...').",
-      source: "local_cache"
-    }
+        "For acute nervous system tension: deploy 5-4-3-2-1 Sensory Grounding, Physiological Sighs (2 inhales, prolonged exhale), and Cognitive Defusion ('I am noticing the thought that...').",
+      source: "local_cache",
+    },
   ];
 }
