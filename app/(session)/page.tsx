@@ -570,7 +570,7 @@ export default function SanctuarySessionPage() {
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="flex-1 h-full min-h-0 flex flex-col justify-between relative z-0 overflow-hidden bg-gradient-to-b from-slate-950 via-slate-900/30 to-slate-950"
+        className="flex-1 relative flex flex-col h-full h-screen max-h-screen overflow-hidden z-0 bg-gradient-to-b from-slate-950 via-slate-900/30 to-slate-950"
       >
         {/* AUTOMATIC ROTATING HYPNOTIC SPIRAL */}
         <div className="absolute inset-0 pointer-events-none -z-10 flex items-center justify-center opacity-40 [mask-image:radial-gradient(circle_at_center,black_40%,transparent_90%)]">
@@ -593,7 +593,7 @@ export default function SanctuarySessionPage() {
         </div>
 
         {/* Middle Area: Scrollable Chat Stream with Fade Mask */}
-        <div className="relative z-10 flex-1 min-h-0 overflow-y-auto px-4 md:px-8 py-2 space-y-4 [mask-image:linear-gradient(to_bottom,transparent_0%,black_30px,black_calc(100%-30px),transparent_100%)]">
+        <div className="flex-1 overflow-y-auto min-h-0 p-6 space-y-6 scroll-smooth pb-32 relative z-10 [mask-image:linear-gradient(to_bottom,transparent_0%,black_30px,black_calc(100%-30px),transparent_100%)]">
           {/* Error Banner */}
           {errorMessage && (
             <motion.div
@@ -663,7 +663,7 @@ export default function SanctuarySessionPage() {
         </div>
 
         {/* Bottom Area: Floating Centered Input Dock */}
-        <div className="relative z-10 shrink-0 p-4">
+        <div className="p-6 shrink-0 flex justify-center bg-transparent relative z-20">
           <div className="max-w-2xl w-full mx-auto">
             <div className="rounded-full bg-slate-900/80 border border-slate-700/80 backdrop-blur-xl p-1.5 sm:p-2 flex items-center gap-2 shadow-[0_10px_35px_rgba(0,0,0,0.6)] focus-within:border-emerald-500/60 focus-within:shadow-[0_0_25px_rgba(16,185,129,0.2)] transition-all">
               {/* Pulsing Mic Button */}
