@@ -299,34 +299,13 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
       return;
     }
 
-    // 2. Enumerate devices to check if camera hardware is present
-    if (navigator.mediaDevices.enumerateDevices) {
-      try {
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        const videoInputs = devices.filter((d) => d.kind === 'videoinput');
-        if (devices.length > 0 && videoInputs.length === 0) {
-          setCameraStatus('unsupported');
-          setCameraErrorDetail('not_found');
-          setCameraError('No webcam or camera device was detected on your computer.');
-          return;
-        }
-      } catch {
-        // EnumerateDevices might fail prior to first permission; continue
-      }
-    }
-
     setCameraStatus('requesting');
     setCameraError(null);
 
     // Multi-tier constraint fallback ladder:
     // Tier 1: User-facing front camera
-    // Tier 2: Any video camera without facingMode constraints (vital for desktop USB webcams & Windows laptops)
-    // Tier 3: Minimal fallback video constraint
+    // Tier 2: Any video camera without facingMode constraint (vital for desktop USB webcams & Windows laptops)
     const constraintTiers: MediaStreamConstraints[] = [
-      {
-        video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 640 } },
-        audio: false,
-      },
       {
         video: { facingMode: 'user' },
         audio: false,
@@ -419,6 +398,19 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
       }
     };
   }, [tratakaMode, requestCamera]);
+
+  // Auto-request camera when entering Stage 2 in Pratibimb mode if not yet active
+  useEffect(() => {
+    if (
+      isOpen &&
+      tratakaMode === 'pratibimb' &&
+      currentStageId === 2 &&
+      !cameraStream &&
+      cameraStatus === 'idle'
+    ) {
+      requestCamera();
+    }
+  }, [isOpen, tratakaMode, currentStageId, cameraStream, cameraStatus, requestCamera]);
 
   // Stop camera when session is closed, mode is not Pratibimb, or Stage 2 has completed (eyes close in Stage 3)
   useEffect(() => {
