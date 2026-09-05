@@ -24,7 +24,6 @@ export interface ConversationalContext {
   history?: Array<{ role: string; text: string }>;
   emotionDimension?: string;
   diagnostic?: NeuroscienceDiagnosticResult;
-  sessionUsedKeys?: Set<string>;
   userDosha?: string;
   cognitiveProfile?: UserCognitiveProfile;
 }

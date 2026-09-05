@@ -87,7 +87,6 @@ class VoiceRouter {
   private latencyMs: number = 0;
   private messages: VoiceMessage[] = [];
   private currentDiagnostic: NeuroscienceDiagnosticResult;
-  private sessionUsedKeys: Set<string> = new Set();
 
   // Tier 1 upgrade recovery timer
   private stableTimer: number | null = null;

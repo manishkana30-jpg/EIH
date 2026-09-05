@@ -43,7 +43,6 @@ console.log('  ✓ [Hopelessness/Freeze]: Grounded in ' + freezeStudy.citation);
 const panicAdvice = generateDynamicCompanionReply({
   userText: "I am having severe anxiety and panic, what should I do according to research?",
   emotionDimension: 'anxiety',
-  sessionUsedKeys: new Set(),
 });
 assert(panicAdvice.detectedTopic === 'advice_request', 'Must detect advice_request topic');
 const lowerReply = panicAdvice.reply.toLowerCase();
@@ -62,7 +61,6 @@ console.log('  ✓ [Companion Advice Output]: ' + panicAdvice.reply.slice(0, 100
 const hindiAdvice = generateDynamicCompanionReply({
   userText: "मुझे बहुत घबराहट हो रही है, कोई वैज्ञानिक उपाय या सलाह दीजिए क्या करूं?",
   emotionDimension: 'anxiety',
-  sessionUsedKeys: new Set(),
 });
 assert(hindiAdvice.detectedLanguage === 'hi');
 assert(
