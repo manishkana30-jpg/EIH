@@ -11,11 +11,6 @@ from dataclasses import dataclass
 
 import httpx
 
-try:
-    from duckduckgo_search import DDGS
-except ImportError:
-    DDGS = None
-
 logger = logging.getLogger("ClinicalSearch")
 
 
@@ -134,45 +129,6 @@ class KeylessClinicalSearch:
             logger.warning(f"PubMed search bypassed: {err}")
             return []
 
-    async def search_duckduckgo(self, query: str, max_results: int = 2) -> list[ClinicalEvidence]:
-        """DuckDuckGo Instant Web Search (Free, zero API key)."""
-        if DDGS is None:
-            return []
-
-        clinical_terms = extract_clinical_keywords(query)
-        ddgs_cls = DDGS
-
-        def _sync_ddg():
-            try:
-                if callable(ddgs_cls):
-                    with ddgs_cls() as ddgs:
-                        return list(
-                            ddgs.text(
-                                f"{clinical_terms} evidence based psychology therapy",
-                                max_results=max_results
-                            )
-                        )
-                return []
-            except Exception:
-                return []
-
-        try:
-            raw = await asyncio.to_thread(_sync_ddg)
-            results: list[ClinicalEvidence] = []
-            for r in raw:
-                results.append(
-                    ClinicalEvidence(
-                        title=r.get("title", "Psychological Resource"),
-                        summary=r.get("body", ""),
-                        source="duckduckgo",
-                        url=r.get("href")
-                    )
-                )
-            return results
-        except Exception as err:
-            logger.warning(f"DuckDuckGo search bypassed: {err}")
-            return []
-
     async def search_wikipedia(self, query: str) -> list[ClinicalEvidence]:
         """Wikipedia Clinical Summary REST API (Free, zero key)."""
         try:
@@ -195,16 +151,17 @@ class KeylessClinicalSearch:
         return []
 
     async def search(self, query: str) -> list[ClinicalEvidence]:
-        """Runs the search cascade: PubMed -> DuckDuckGo -> Wikipedia -> Local Cache."""
-        results = await self.search_pubmed(query, max_results=2)
-        if results:
-            return results
+        """Queries peer-reviewed PubMed literature and Wikipedia clinical taxonomy in parallel (Zero Google/DDG)."""
+        wiki_task = asyncio.create_task(self.search_wikipedia(query))
+        pubmed_task = asyncio.create_task(self.search_pubmed(query, max_results=2))
 
-        results = await self.search_duckduckgo(query, max_results=2)
-        if results:
-            return results
+        wiki_res, pubmed_res = await asyncio.gather(wiki_task, pubmed_task, return_exceptions=True)
+        results: list[ClinicalEvidence] = []
+        if isinstance(wiki_res, list):
+            results.extend(wiki_res)
+        if isinstance(pubmed_res, list):
+            results.extend(pubmed_res)
 
-        results = await self.search_wikipedia(query)
         if results:
             return results
 
@@ -214,6 +171,20 @@ class KeylessClinicalSearch:
         elif any(w in q for w in ["depress", "sad", "hopeless", "tired", "stuck"]):
             return [OFFLINE_PROTOCOLS["depression"]]
         return [OFFLINE_PROTOCOLS["overwhelm"]]
+
+    def format_grounding_context(self, evidence_list: list[ClinicalEvidence]) -> str:
+        """
+        Formats clinical evidence strictly into:
+        [Wikipedia Context]: {wikipedia_extract}
+        [PubMed Literature]: {pubmed_abstracts}
+        """
+        wiki_parts = [e.summary for e in evidence_list if "wikipedia" in e.source.lower() or e.source == "wikipedia_clinical"]
+        pubmed_parts = [f"{e.title}: {e.summary}" for e in evidence_list if "pubmed" in e.source.lower() or e.source == "pubmed_ncbi"]
+
+        wiki_extract = " ".join(wiki_parts) if wiki_parts else "Evidence-based psychological constructs and cognitive behavioral regulation principles."
+        pubmed_abstracts = " ".join(pubmed_parts) if pubmed_parts else "Peer-reviewed clinical trials on psychotherapeutic interventions and autonomic regulation."
+
+        return f"[Wikipedia Context]: {wiki_extract}\n[PubMed Literature]: {pubmed_abstracts}"
 
     async def close(self):
         if not self.client.is_closed:

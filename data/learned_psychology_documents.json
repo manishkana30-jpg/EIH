@@ -45,7 +45,7 @@
       "Catastrophic Overgeneralization"
     ],
     "solutions": {
-      "cbt_reframing": "Action precedes motivation. Do not wait to feel energized; taking even a tiny 1% physical step begins shifting neurochemistry. (Clinical Research Evidence: Clinical study on emotional numbness hypoarousal polyvagal evidence based therapy: Study protocol for a randomized controlled trial of a group-adapted Somatic Experiencing\u00ae interve...)",
+      "cbt_reframing": "Action precedes motivation. Do not wait to feel energized; taking even a tiny 1% physical step begins shifting neurochemistry.\n\n[Wikipedia Context]: Emotions are physical and mental states brought on by neurophysiological and neuropsychological changes, variously associated with subjective experiences such as thoughts, feelings, behavioral responses, and a degree of pleasure or displeasure. There is no scientific consensus on a definition. Emotions are often intertwined with mood, temperament, personality, disposition, or creativity.\n[PubMed Literature]: Clinical study on emotional numbness hypoarousal polyvagal evidence based therapy: Study protocol for a randomized controlled trial of a group-adapted Somatic Experiencing\u00ae intervention for Indonesian women survivors of sexual assault with PTSD symptoms.",
       "somatic_anchor": "Stand barefoot on the floor, feel the ground supporting you, and gently tap your sternum for 60 seconds.",
       "pranayama": "Surya Bhedana (Right Nostril Solar Breathing) for 3 minutes to disperse tamasic lethargy.",
       "micro_habit": "Commit to a 2-minute micro-task that is impossible to fail (drink water, open window curtains)."
@@ -53,8 +53,8 @@
     "severity_level": "Mild to Moderate",
     "requires_immediate_crisis": false,
     "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12721538/",
-    "source_platform": "Google Scholar / NCBI PubMed Central",
-    "learned_timestamp": "2026-09-05T19:22:11.502Z",
+    "source_platform": "NCBI PubMed & Wikipedia Clinical Knowledge",
+    "learned_timestamp": "2026-09-05T19:44:22.269Z",
     "query_trigger": "emotional numbness and dissociation"
   },
   {
@@ -106,7 +106,7 @@
     "severity_level": "Mild",
     "requires_immediate_crisis": false,
     "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12721538/",
-    "source_platform": "Google Search / NCBI PubMed",
+    "source_platform": "NCBI PubMed & Wikipedia Clinical Knowledge",
     "query_trigger": "python verification test query"
   },
   {

@@ -25,7 +25,7 @@ async function testSearchFallback() {
   assert(localFallback[0].summary.includes('Physiological Sighs'));
 
   console.log('  ✓ Local verified clinical knowledge fallback verified');
-  console.log('  ✓ Multi-tier fallback hierarchy structure validated (PubMed -> Tavily -> Local Cache)');
+  console.log('  ✓ Multi-tier fallback hierarchy structure validated (PubMed -> Wikipedia -> Local Cache)');
 
   console.log('================================================================');
   console.log('🎉 CLINICAL SEARCH FALLBACK TESTS PASSED (100%)');

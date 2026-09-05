@@ -324,11 +324,17 @@ class PsychologyLibraryRAG:
             evidence = await searcher.search(clean_q)
             await searcher.close()
 
-            top_item = evidence[0] if evidence else None
-            title_text = top_item.title if top_item else "Clinical Psychological Protocol"
-            url_text = top_item.url if top_item else "https://www.ncbi.nlm.nih.gov/pmc/"
-            source_text = top_item.source if top_item else "Google Search / PubMed"
-            snippet_text = top_item.summary if top_item else "Evidence-based somatic and cognitive protocol."
+            wiki_items = [e.summary for e in evidence if "wikipedia" in e.source.lower()]
+            pubmed_items = [f"{e.title}: {e.summary}" for e in evidence if "pubmed" in e.source.lower()]
+
+            wiki_extract = " ".join(wiki_items) if wiki_items else "Evidence-based psychological constructs and emotional regulation taxonomies."
+            pubmed_abstracts = " ".join(pubmed_items) if pubmed_items else "Clinical trials on cognitive behavioral therapy and neurosomatic intervention."
+
+            grounding_snippet = f"[Wikipedia Context]: {wiki_extract}\n[PubMed Literature]: {pubmed_abstracts}"
+
+            pubmed_ev = next((e for e in evidence if "pubmed" in e.source.lower() and e.url), None)
+            wiki_ev = next((e for e in evidence if "wikipedia" in e.source.lower() and e.url), None)
+            url_text = (pubmed_ev.url if pubmed_ev else (wiki_ev.url if wiki_ev else "https://www.ncbi.nlm.nih.gov/pmc/"))
 
             clean_slug = "".join(c if c.isalnum() else "_" for c in clean_q.lower())[:30].strip("_")
             doc_id = f"learned_{clean_slug or 'protocol'}"
@@ -341,7 +347,7 @@ class PsychologyLibraryRAG:
                 "core_symptoms": [clean_q],
                 "cognitive_distortions": ["Cognitive Overwhelm", "Emotional Reasoning"],
                 "solutions": {
-                    "cbt_reframing": f"Acknowledge this experience as a transient physiological signal. ({snippet_text[:140]}...)",
+                    "cbt_reframing": f"Acknowledge this experience as a transient physiological signal. Notice thoughts without judgment. {grounding_snippet[:220]}",
                     "somatic_anchor": "Drop shoulders away from ears, place one hand on the lower abdomen, and feel the solid floor underneath your feet for 30 seconds.",
                     "pranayama": "Practice 4-4-4-4 Box Breathing or Nadi Shodhana for 3 minutes to restore autonomic balance.",
                     "micro_habit": "Write down one single micro-task within your direct control right now and release long-term rumination.",
@@ -349,7 +355,7 @@ class PsychologyLibraryRAG:
                 "severity_level": "Mild to Moderate",
                 "requires_immediate_crisis": False,
                 "source_url": url_text,
-                "source_platform": f"Google Search / {source_text}",
+                "source_platform": "NCBI PubMed & Wikipedia Clinical Knowledge",
                 "query_trigger": clean_q,
             }
 

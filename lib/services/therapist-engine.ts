@@ -1,5 +1,5 @@
 // lib/services/therapist-engine.ts
-import { searchMentalHealthEvidence, type ClinicalSearchResult } from "./search-fallback.ts";
+import { searchMentalHealthEvidence, formatClinicalContext, type ClinicalSearchResult } from "./search-fallback.ts";
 import { detectCrisis } from "../safety/crisis-detector.ts";
 import { queryPsychologyLibrary } from "../knowledge/psychology-library-rag.ts";
 import { GLOBAL_LANGUAGE_CATALOG, getLanguageByCode } from "../i18n/language-catalog.ts";
@@ -208,12 +208,13 @@ export async function generateTherapeuticResponse(
     allSources.unshift({
       title: `${libraryRag.condition.name} (${libraryRag.condition.triguna_balance})`,
       summary: `CBT: ${libraryRag.condition.solutions.cbt_reframing} | Somatic: ${libraryRag.condition.solutions.somatic_anchor} | Pranayama: ${libraryRag.condition.solutions.pranayama}`,
-      source: libraryRag.structuredCard?.isLearnedDocument ? "google_search" : "psychology_library",
+      source: libraryRag.structuredCard?.isLearnedDocument ? "pubmed_wikipedia" : "psychology_library",
       url: libraryRag.structuredCard?.sourceUrl,
     });
   }
 
-  const contextBlocks = clinicalEvidence.map((e) => `• ${e.title}: ${e.summary}`);
+  const clinicalGroundingBlock = formatClinicalContext(clinicalEvidence);
+  const contextBlocks = [clinicalGroundingBlock];
   if (libraryRag) {
     contextBlocks.unshift(libraryRag.promptSnippet);
   }

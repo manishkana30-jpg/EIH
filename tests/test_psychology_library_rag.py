@@ -71,7 +71,7 @@ class TestPsychologyLibraryRAG(unittest.TestCase):
             "severity_level": "Mild",
             "requires_immediate_crisis": False,
             "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12721538/",
-            "source_platform": "Google Search / NCBI PubMed",
+            "source_platform": "NCBI PubMed & Wikipedia Clinical Knowledge",
             "query_trigger": "python verification test query",
         }
         psychology_rag.add_learned_document(test_doc)

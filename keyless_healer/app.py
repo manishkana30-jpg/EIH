@@ -3,7 +3,7 @@ Keyless Healer - FastAPI Web Server, Full Voice/Text Web UI & Interactive CLI Ru
 100% Zero-API-Key Architecture:
 • Free STT: Local Faster-Whisper (Int8)
 • Free TTS: Microsoft Edge Neural TTS (edge-tts) + Offline pyttsx3
-• Free Search: NCBI PubMed + DuckDuckGo + Wikipedia
+• Free Search: NCBI PubMed Central + Wikipedia Clinical Knowledge
 • Free Inference: Local Ollama + Rule-Based Cognitive & Somatic Synthesis
 """
 
@@ -762,7 +762,7 @@ async def health_check():
         "version": "2.1.0",
         "zero_api_key": True,
         "search_engine": {
-            "sources": ["PubMed NCBI", "DuckDuckGo", "Wikipedia", "Offline Protocols Cache"],
+            "sources": ["PubMed NCBI", "Wikipedia Clinical", "Offline Protocols Cache"],
         },
         "audio_engine": audio_engine.get_status(),
         "inference_engine": "Local Ollama (llama3.2) + Polyvagal/CBT Heuristic Synthesis",

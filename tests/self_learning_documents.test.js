@@ -43,6 +43,17 @@ async function runSelfLearningTests() {
   assert.ok(Array.isArray(evidence), 'Evidence must be an array');
   assert.ok(evidence.length > 0, 'Evidence cascade must return at least one clinical source');
 
+  for (const item of evidence) {
+    assert.ok(
+      !item.source.toLowerCase().includes('google') && !item.source.toLowerCase().includes('duckduckgo'),
+      `Evidence source must not contain Google or DuckDuckGo (got ${item.source})`
+    );
+    assert.ok(
+      item.source === 'Wikipedia Context' || item.source === 'PubMed Literature',
+      `Evidence source must be Wikipedia Context or PubMed Literature (got ${item.source})`
+    );
+  }
+
   const topEvidence = evidence[0];
   assert.ok(typeof topEvidence.title === 'string' && topEvidence.title.length > 0, 'Title must be non-empty');
   assert.ok(typeof topEvidence.summary === 'string' && topEvidence.summary.length > 0, 'Summary must be non-empty');
@@ -70,17 +81,18 @@ async function runSelfLearningTests() {
   assert.ok(typeof synthesizedDoc.solutions.pranayama === 'string' && synthesizedDoc.solutions.pranayama.length > 20, 'Pranayama must be detailed');
   assert.ok(typeof synthesizedDoc.solutions.micro_habit === 'string' && synthesizedDoc.solutions.micro_habit.length > 20, 'Micro habit must be actionable');
 
-  // Verify source attribution
+  // Verify source attribution & strict Wikipedia/PubMed grounding
   assert.ok(typeof synthesizedDoc.source_url === 'string' && synthesizedDoc.source_url.startsWith('http'), 'Must have valid source HTTP URL');
-  assert.ok(typeof synthesizedDoc.source_platform === 'string' && synthesizedDoc.source_platform.length > 0, 'Must specify source platform');
+  assert.strictEqual(synthesizedDoc.source_platform, 'NCBI PubMed & Wikipedia Clinical Knowledge', 'Must specify NCBI PubMed & Wikipedia Clinical Knowledge');
+  assert.ok(synthesizedDoc.solutions.cbt_reframing.includes('[Wikipedia Context]:'), 'Must include [Wikipedia Context]: block');
+  assert.ok(synthesizedDoc.solutions.cbt_reframing.includes('[PubMed Literature]:'), 'Must include [PubMed Literature]: block');
   assert.strictEqual(synthesizedDoc.requires_immediate_crisis, false);
 
   console.log(`  ✓ Synthesized: "${synthesizedDoc.name}" [${synthesizedDoc.id}]`);
   console.log(`  ✓ Source Platform: ${synthesizedDoc.source_platform}`);
   console.log(`  ✓ Source URL: ${synthesizedDoc.source_url}`);
   console.log(`  ✓ Category: ${synthesizedDoc.category}`);
-  console.log(`  ✓ CBT Reframing: ${synthesizedDoc.solutions.cbt_reframing.slice(0, 75)}...`);
-  console.log(`  ✓ Somatic Anchor: ${synthesizedDoc.solutions.somatic_anchor.slice(0, 75)}...`);
+  console.log(`  ✓ Verified Grounding: Contains [Wikipedia Context] & [PubMed Literature]!`);
 
   // Test 3: Indexing and Persistence
   console.log('\n--- 3. Testing Dynamic Indexing & Persistent Storage ---');

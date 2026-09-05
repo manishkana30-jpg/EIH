@@ -518,11 +518,12 @@ class KeylessPsychologistPartner:
         if rag_guidance:
             telemetry.suggested_strategy = f"{rag_guidance.get('name')} | {rag_guidance.get('solutions', {}).get('cbt_reframing', telemetry.suggested_strategy)}"
 
-        context_blocks = [f"• {e.title}: {e.summary}" for e in evidence_list]
+        grounded_research = self.search_engine.format_grounding_context(evidence_list)
+        context_blocks = [grounded_research]
         if rag_prompt_block:
             context_blocks.insert(0, rag_prompt_block)
 
-        context_str = "\n".join(context_blocks)
+        context_str = "\n\n".join(context_blocks)
 
         llm_reply, engine_name = await self._call_inference(user_message, context_str, history=history, locale=locale)
         latency = int((time.perf_counter() - start_time) * 1000)

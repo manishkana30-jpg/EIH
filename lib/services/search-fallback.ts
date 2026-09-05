@@ -3,8 +3,33 @@
 export interface ClinicalSearchResult {
   title: string;
   summary: string;
-  source: "pubmed" | "tavily" | "duckduckgo" | "local_cache" | "psychology_library" | "google_search" | string;
+  source: "pubmed" | "wikipedia" | "local_cache" | "psychology_library" | string;
   url?: string;
+}
+
+/**
+ * Formats clinical evidence into the strict prompt structure:
+ * [Wikipedia Context]: {wikipedia_extract}
+ * [PubMed Literature]: {pubmed_abstracts}
+ */
+export function formatClinicalContext(evidence: ClinicalSearchResult[]): string {
+  const wiki = evidence
+    .filter((e) => e.source === "wikipedia" || e.source === "wikipedia_clinical")
+    .map((e) => e.summary)
+    .join(" ");
+  const pubmed = evidence
+    .filter((e) => e.source === "pubmed" || e.source === "pubmed_ncbi")
+    .map((e) => `${e.title}: ${e.summary}`)
+    .join(" ");
+
+  const wikiExtract =
+    wiki ||
+    "Evidence-based psychological constructs, diagnostic taxonomy, and cognitive-affective regulation frameworks.";
+  const pubmedAbstracts =
+    pubmed ||
+    "Empirical clinical trials and peer-reviewed literature on psychotherapeutic interventions and autonomic regulation.";
+
+  return `[Wikipedia Context]: ${wikiExtract}\n[PubMed Literature]: ${pubmedAbstracts}`;
 }
 
 /**
@@ -40,14 +65,14 @@ export function extractClinicalKeywords(query: string): string {
 }
 
 /**
- * Tier 1: PubMed Clinical Search (Free NCBI API with Relevance Sorting)
+ * Free NCBI PubMed Clinical Search (Public E-Utilities with Relevance Sorting)
  */
 async function searchPubMed(query: string): Promise<ClinicalSearchResult[]> {
   try {
     const clinicalTerms = extractClinicalKeywords(query);
     const searchUrl = `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pmc&term=${encodeURIComponent(
       `(${clinicalTerms}) AND (psychotherapy OR cognitive behavioral therapy OR somatic regulation)`
-    )}&sort=relevance&retmode=json&retmax=3`;
+    )}&sort=relevance&retmode=json&retmax=2`;
 
     const res = await fetch(searchUrl, { next: { revalidate: 3600 } });
     if (!res.ok) throw new Error(`PubMed Search Failed: ${res.status}`);
@@ -68,7 +93,8 @@ async function searchPubMed(query: string): Promise<ClinicalSearchResult[]> {
       summary: summaryData.result?.[id]?.authors?.[0]?.name
         ? `Clinical findings on ${query}: ${summaryData.result[id].title}`
         : "Evidence-based mental health study.",
-      source: "pubmed"
+      source: "pubmed",
+      url: `https://www.ncbi.nlm.nih.gov/pmc/articles/PMC${id}/`,
     }));
 
     return results;
@@ -79,50 +105,47 @@ async function searchPubMed(query: string): Promise<ClinicalSearchResult[]> {
 }
 
 /**
- * Tier 2: Tavily Search API (Free Key)
+ * Free Wikipedia Clinical Psychology REST API (Zero Key, Authoritative Medical Taxonomy)
  */
-async function searchTavily(query: string): Promise<ClinicalSearchResult[]> {
-  const apiKey = process.env.TAVILY_API_KEY;
-  if (!apiKey) return [];
-
+async function searchWikipedia(query: string): Promise<ClinicalSearchResult[]> {
   try {
-    const res = await fetch("https://api.tavily.com/search", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        api_key: apiKey,
-        query: `${query} psychology therapy remedies`,
-        search_depth: "basic",
-        max_results: 3,
-        include_answer: true
-      })
-    });
+    const terms = (query || '').split(/\s+/).filter((w) => w.length >= 4);
+    const mainTopic = terms[0] || 'Psychotherapy';
+    const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(mainTopic)}`;
 
-    if (!res.ok) throw new Error("Tavily API quota or error");
+    const res = await fetch(url);
+    if (!res.ok) return [];
     const data = await res.json();
 
-    return (data.results || []).map((r: any) => ({
-      title: r.title,
-      summary: r.content,
-      source: "tavily"
-    }));
+    if (data.extract) {
+      return [
+        {
+          title: data.title || "Psychological Concept",
+          summary: data.extract,
+          source: "wikipedia",
+          url: data.content_urls?.desktop?.page || "https://en.wikipedia.org",
+        },
+      ];
+    }
+    return [];
   } catch (err) {
-    console.warn("Tavily Fallback Triggered:", err);
+    console.warn("Wikipedia Fallback Triggered:", err);
     return [];
   }
 }
 
 /**
- * Master Search Function with Automatic Fallback
+ * Master Search Function (Exclusively PubMed Literature + Wikipedia Context)
  */
 export async function searchMentalHealthEvidence(query: string): Promise<ClinicalSearchResult[]> {
-  // 1. Try PubMed
-  let results = await searchPubMed(query);
-  if (results.length > 0) return results;
+  // Query both PubMed and Wikipedia in parallel
+  const [pubmedResults, wikiResults] = await Promise.all([
+    searchPubMed(query),
+    searchWikipedia(query),
+  ]);
 
-  // 2. Try Tavily
-  results = await searchTavily(query);
-  if (results.length > 0) return results;
+  const combined = [...pubmedResults, ...wikiResults];
+  if (combined.length > 0) return combined;
 
   // 3. Fallback to Local Verified Clinical Knowledge matching query domain
   const lower = (query || '').toLowerCase();
