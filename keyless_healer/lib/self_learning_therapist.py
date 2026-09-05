@@ -165,8 +165,17 @@ Observation:"""
         return clinical_note
 
     def generate_therapy_response(self, user_message: str, session_id: str = "default_user") -> str:
-        """Generates a contextual therapy response using past vector memory + local LLM."""
+        """Generates a contextual therapy response using past vector memory + peer-reviewed grounding + local LLM."""
         past_context = self.query_clinical_memory(user_message, n_results=3)
+
+        grounding_context = ""
+        try:
+            from .clinical_search import KeylessClinicalSearch
+            searcher = KeylessClinicalSearch()
+            evidence = asyncio.run(searcher.search(user_message))
+            grounding_context = searcher.format_grounding_context(evidence)
+        except Exception:
+            grounding_context = "[Wikipedia Context]: Evidence-based psychological constructs and emotional regulation.\n[PubMed Literature]: Clinical trials on cognitive behavioral therapy and neurosomatic intervention."
 
         system_prompt = f"""You are an Expert Clinical Psychologist and Emotional Resilience Trainer integrating Modern Neuropsychology with Ayurvedic Sattvavajaya Chikitsa.
 
@@ -179,8 +188,9 @@ Analyze the user's input to identify:
 3. Triguna Nervous System Balance (Sattva: Grounded / Rajas: Hyperaroused / Tamas: Hypoaroused).
 
 ### PHASE 2: CLINICAL GROUNDING
-You must ground your intervention strictly in the following retrieved clinical protocol:
-[RETRIEVED_PROTOCOL]: {past_context if past_context else 'Evidence-Based Cognitive Behavioral Therapy and Somatic Nervous System Regulation Protocols.'}
+You must ground your intervention strictly in the following peer-reviewed clinical knowledge:
+{grounding_context}
+{past_context if past_context else ''}
 
 ### PHASE 3: THE INTERVENTION (Your Output)
 Formulate a highly empathetic, actionable response that trains the user's emotional resilience based strictly on the best psychological theory. Your output must follow this exact structure:

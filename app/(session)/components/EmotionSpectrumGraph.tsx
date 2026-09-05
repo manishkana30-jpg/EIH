@@ -428,7 +428,7 @@ export const EmotionSpectrumGraph: React.FC<EmotionSpectrumGraphProps> = ({
               <div className="flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 <span className="text-[10px] font-bold uppercase tracking-wider text-sky-300">
-                  Google AI Grounded Research Advice
+                  PubMed &amp; Wikipedia Grounded Clinical Advice
                 </span>
               </div>
               <button

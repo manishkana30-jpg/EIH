@@ -39,23 +39,29 @@ export function extractClinicalKeywords(query: string): string {
   const lower = (query || '').toLowerCase();
   const keywords: string[] = [];
 
-  if (/\b(anxi|panic|nervous|worry|overwhelm|fear|racing|dread)\b/i.test(lower)) {
+  if (/\b(anxi|panic|nervous|worry|overwhelm|fear|racing|dread|ghabrahat)\b/i.test(lower)) {
     keywords.push('anxiety OR panic OR autonomic regulation');
   }
-  if (/\b(depress|hopeless|empty|sad|exhaust|burnout|unmotivated|worthless|failure)\b/i.test(lower)) {
+  if (/\b(memory|forget|brain fog|confusion|recall|concentration|yaaddasht)\b/i.test(lower)) {
+    keywords.push('working memory OR cognitive fatigue OR brain fog');
+  }
+  if (/\b(depress|hopeless|empty|sad|exhaust|burnout|unmotivated|worthless|failure|udaas)\b/i.test(lower)) {
     keywords.push('depression OR behavioral activation OR burnout');
   }
-  if (/\b(anger|angry|furious|yell|frustrat|rage)\b/i.test(lower)) {
+  if (/\b(anger|angry|furious|yell|frustrat|rage|gussa)\b/i.test(lower)) {
     keywords.push('emotional regulation OR anger management OR DBT');
   }
-  if (/\b(sleep|insomnia|tired|nightmare|restless)\b/i.test(lower)) {
+  if (/\b(sleep|insomnia|tired|nightmare|restless|neend)\b/i.test(lower)) {
     keywords.push('insomnia OR sleep hygiene OR CBT-I');
   }
-  if (/\b(grief|loss|died|death|passed away|mourning)\b/i.test(lower)) {
+  if (/\b(grief|loss|died|death|passed away|mourning|shok)\b/i.test(lower)) {
     keywords.push('grief counseling OR bereavement');
   }
   if (/\b(trauma|ptsd|flashback|abuse|trigger)\b/i.test(lower)) {
     keywords.push('trauma informed therapy OR somatic grounding');
+  }
+  if (/\b(numb|dissociat|depersonaliz)\b/i.test(lower)) {
+    keywords.push('dissociation OR hypoarousal OR somatic experiencing');
   }
 
   if (keywords.length === 0) {
@@ -109,24 +115,64 @@ async function searchPubMed(query: string): Promise<ClinicalSearchResult[]> {
  */
 async function searchWikipedia(query: string): Promise<ClinicalSearchResult[]> {
   try {
-    const terms = (query || '').split(/\s+/).filter((w) => w.length >= 4);
-    const mainTopic = terms[0] || 'Psychotherapy';
-    const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(mainTopic)}`;
+    const lower = (query || '').toLowerCase().trim();
+    let topic = 'Cognitive_behavioral_therapy';
 
-    const res = await fetch(url);
-    if (!res.ok) return [];
-    const data = await res.json();
-
-    if (data.extract) {
-      return [
-        {
-          title: data.title || "Psychological Concept",
-          summary: data.extract,
-          source: "wikipedia",
-          url: data.content_urls?.desktop?.page || "https://en.wikipedia.org",
-        },
-      ];
+    if (/\b(anxi|panic|nervous|worry|dread|racing heart|heart pounding|ghabrahat)\b/i.test(lower)) topic = 'Anxiety';
+    else if (/\b(memory|forget|brain fog|confusion|recall|concentration|amnesia|yaaddasht)\b/i.test(lower)) topic = 'Memory';
+    else if (/\b(depress|hopeless|empty|sad|worthless|melancholy|udaas)\b/i.test(lower)) topic = 'Depression_(mood)';
+    else if (/\b(burnout|exhaust|overwhelm|stressed|work stress)\b/i.test(lower)) topic = 'Burnout_(psychology)';
+    else if (/\b(anger|angry|furious|yell|rage|irritab|gussa)\b/i.test(lower)) topic = 'Anger';
+    else if (/\b(sleep|insomnia|tired|nightmare|restless|neend)\b/i.test(lower)) topic = 'Insomnia';
+    else if (/\b(grief|loss|mourning|bereave|shok)\b/i.test(lower)) topic = 'Grief';
+    else if (/\b(trauma|ptsd|flashback|abuse)\b/i.test(lower)) topic = 'Psychological_trauma';
+    else if (/\b(numb|dissociat|depersonaliz)\b/i.test(lower)) topic = 'Dissociation_(psychology)';
+    else if (/\b(adhd|focus|distract|procrastinat)\b/i.test(lower)) topic = 'Attention_deficit_hyperactivity_disorder';
+    else if (/\b(lonel|isolat|alone)\b/i.test(lower)) topic = 'Loneliness';
+    else if (/\b(imposter|failure|inadequa)\b/i.test(lower)) topic = 'Impostor_syndrome';
+    else if (/\b(emotion|affect|feeling)\b/i.test(lower)) topic = 'Emotion';
+    else {
+      const stopwords = new Set(['have', 'feel', 'feeling', 'felt', 'with', 'from', 'today', 'very', 'much', 'about', 'that', 'this', 'what', 'when', 'where', 'help', 'cant', 'cannot', 'need', 'some', 'i', 'am', 'my']);
+      const words = lower.replace(/[^a-zA-Z0-9\s]/g, ' ').split(/\s+/).filter((w) => w.length >= 4 && !stopwords.has(w));
+      topic = words[0] ? words[0].charAt(0).toUpperCase() + words[0].slice(1) : 'Cognitive_behavioral_therapy';
     }
+
+    const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(topic)}`;
+    const res = await fetch(url, { headers: { 'User-Agent': 'EmotionalIntelligenceHealer/1.0' } });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.extract && data.type !== 'disambiguation') {
+        return [
+          {
+            title: data.title || "Psychological Concept",
+            summary: data.extract,
+            source: "wikipedia",
+            url: data.content_urls?.desktop?.page || "https://en.wikipedia.org",
+          },
+        ];
+      }
+    }
+
+    // Reliable fallback topic
+    if (topic !== 'Cognitive_behavioral_therapy') {
+      const fbRes = await fetch('https://en.wikipedia.org/api/rest_v1/page/summary/Cognitive_behavioral_therapy', {
+        headers: { 'User-Agent': 'EmotionalIntelligenceHealer/1.0' },
+      });
+      if (fbRes.ok) {
+        const fbData = await fbRes.json();
+        if (fbData.extract) {
+          return [
+            {
+              title: fbData.title || "Cognitive Behavioral Therapy",
+              summary: fbData.extract,
+              source: "wikipedia",
+              url: fbData.content_urls?.desktop?.page || "https://en.wikipedia.org",
+            },
+          ];
+        }
+      }
+    }
+
     return [];
   } catch (err) {
     console.warn("Wikipedia Fallback Triggered:", err);

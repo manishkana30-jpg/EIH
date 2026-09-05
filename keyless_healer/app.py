@@ -547,7 +547,7 @@ HTML_UI = r"""<!DOCTYPE html>
         <div id="sourcesContainer">
           <div class="source-card">
             <div class="source-title">NCBI PubMed & Polyvagal Protocol</div>
-            <div class="source-summary">Live grounding scans PubMed, DuckDuckGo, and Wikipedia without API keys.</div>
+            <div class="source-summary">Live grounding scans PubMed and Wikipedia Clinical knowledge without API keys.</div>
           </div>
         </div>
       </div>
@@ -809,7 +809,7 @@ async def chat_endpoint(payload: TherapyRequest, request: Request, background_ta
 
         clean_user_query = user_query.strip()
 
-        # Non-blocking self-learning: asynchronously discover & index psychology documents from Google/open search
+        # Non-blocking self-learning: asynchronously discover & index psychology documents from Wikipedia & PubMed
         if psychology_rag and len(clean_user_query) >= 4:
             background_tasks.add_task(psychology_rag.learn_document_from_query, clean_user_query)
 
@@ -1295,7 +1295,7 @@ async def stream_voice(
 def print_banner():
     print("=" * 72)
     print("[*] KEYLESS HEALER: 100% ZERO-API-KEY CLINICAL VOICE & COGNITIVE SYSTEM")
-    print("    PubMed | DuckDuckGo | Faster-Whisper | Edge-TTS | Local Ollama")
+    print("    PubMed | Wikipedia Clinical | Faster-Whisper | Edge-TTS | Local Ollama")
     print("=" * 72 + "\n")
 
 

@@ -6,7 +6,7 @@ const { runTtsSanitizerTests } = require('./test_tts_sanitizer.js');
 const { runSelfLearningTests } = require('./self_learning_documents.test.js');
 require('./language-catalog.test.js');
 require('./remedies-matrix.test.js');
-require('./google-research-grounding.test.js');
+require('./clinical-research-grounding.test.js');
 require('./api_key_encryption.test.js');
 require('./audit_remediation.test.js');
 require('./cbt_self_learning.test.js');

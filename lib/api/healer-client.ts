@@ -228,7 +228,7 @@ class HealerBackendClient {
               title: `${libraryResult.condition.name} (${libraryResult.condition.triguna_balance})`,
               summary: `CBT: ${libraryResult.condition.solutions.cbt_reframing} | Somatic: ${libraryResult.condition.solutions.somatic_anchor}`,
               source: libraryResult.structuredCard?.isLearnedDocument
-                ? (libraryResult.structuredCard.sourcePlatform || 'Google Search / Open Clinical Access')
+                ? (libraryResult.structuredCard.sourcePlatform || 'NCBI PubMed & Wikipedia Clinical Knowledge')
                 : 'Clinical & Psychoeducational Library',
             },
           ]

@@ -3,7 +3,7 @@
  * Autonomous Self-Learning RAG Ingestion Engine.
  *
  * Autonomously retrieves free, peer-reviewed clinical documents and psychological
- * research from Google Web, NCBI PubMed Central (NIH), and Open Clinical Knowledge Bases,
+ * research from Wikipedia Clinical Taxonomy and NCBI PubMed Central (NIH),
  * synthesizing and indexing them into the Psychology Library RAG whenever a new user query arrives.
  */
 
@@ -79,28 +79,72 @@ export function extractClinicalSearchTerms(query: string): string {
 }
 
 /**
+ * Intelligently maps patient symptoms to authoritative Wikipedia psychological taxonomy.
+ */
+export function extractClinicalTopic(query: string): string {
+  const lower = (query || '').toLowerCase().trim();
+  if (/\b(anxi|panic|nervous|worry|dread|racing heart|heart pounding|ghabrahat)\b/i.test(lower)) return 'Anxiety';
+  if (/\b(memory|forget|brain fog|confusion|recall|concentration|amnesia|yaaddasht)\b/i.test(lower)) return 'Memory';
+  if (/\b(depress|hopeless|empty|sad|worthless|melancholy|udaas)\b/i.test(lower)) return 'Depression_(mood)';
+  if (/\b(burnout|exhaust|overwhelm|stressed|work stress)\b/i.test(lower)) return 'Burnout_(psychology)';
+  if (/\b(anger|angry|furious|yell|rage|irritab|gussa)\b/i.test(lower)) return 'Anger';
+  if (/\b(sleep|insomnia|tired|nightmare|restless|neend)\b/i.test(lower)) return 'Insomnia';
+  if (/\b(grief|loss|mourning|bereave|shok)\b/i.test(lower)) return 'Grief';
+  if (/\b(trauma|ptsd|flashback|abuse)\b/i.test(lower)) return 'Psychological_trauma';
+  if (/\b(numb|dissociat|depersonaliz)\b/i.test(lower)) return 'Dissociation_(psychology)';
+  if (/\b(adhd|focus|distract|procrastinat)\b/i.test(lower)) return 'Attention_deficit_hyperactivity_disorder';
+  if (/\b(lonel|isolat|alone)\b/i.test(lower)) return 'Loneliness';
+  if (/\b(imposter|failure|inadequa)\b/i.test(lower)) return 'Impostor_syndrome';
+  if (/\b(emotion|affect|feeling)\b/i.test(lower)) return 'Emotion';
+
+  const stopwords = new Set(['have', 'feel', 'feeling', 'felt', 'with', 'from', 'today', 'very', 'much', 'about', 'that', 'this', 'what', 'when', 'where', 'help', 'cant', 'cannot', 'need', 'some', 'i', 'am', 'my']);
+  const words = lower.replace(/[^a-zA-Z0-9\s]/g, ' ').split(/\s+/).filter((w) => w.length >= 4 && !stopwords.has(w));
+  return words[0] ? words[0].charAt(0).toUpperCase() + words[0].slice(1) : 'Cognitive_behavioral_therapy';
+}
+
+/**
  * Free Wikipedia Clinical Psychology REST API (Zero API Key, Structured Taxonomy).
  */
 async function searchWikipediaClinical(query: string): Promise<ClinicalEvidenceItem[]> {
   try {
-    const terms = query.split(/\s+/).filter((w) => w.length >= 4);
-    const mainTopic = terms[0] || 'Psychotherapy';
-    const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(mainTopic)}`;
+    const topic = extractClinicalTopic(query);
+    const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(topic)}`;
 
-    const res = await fetch(url);
-    if (!res.ok) return [];
-    const data = await res.json();
-
-    if (data.extract) {
-      return [
-        {
-          title: data.title || 'Psychological Concept',
-          summary: data.extract,
-          source: 'Wikipedia Context',
-          url: data.content_urls?.desktop?.page || 'https://en.wikipedia.org',
-        },
-      ];
+    const res = await fetch(url, { headers: { 'User-Agent': 'EmotionalIntelligenceHealer/1.0' } });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.extract && data.type !== 'disambiguation') {
+        return [
+          {
+            title: data.title || 'Psychological Concept',
+            summary: data.extract,
+            source: 'Wikipedia Context',
+            url: data.content_urls?.desktop?.page || 'https://en.wikipedia.org',
+          },
+        ];
+      }
     }
+
+    // Fallback to Cognitive Behavioral Therapy if specific page not found
+    if (topic !== 'Cognitive_behavioral_therapy') {
+      const fbRes = await fetch('https://en.wikipedia.org/api/rest_v1/page/summary/Cognitive_behavioral_therapy', {
+        headers: { 'User-Agent': 'EmotionalIntelligenceHealer/1.0' },
+      });
+      if (fbRes.ok) {
+        const fbData = await fbRes.json();
+        if (fbData.extract) {
+          return [
+            {
+              title: fbData.title || 'Cognitive Behavioral Therapy',
+              summary: fbData.extract,
+              source: 'Wikipedia Context',
+              url: fbData.content_urls?.desktop?.page || 'https://en.wikipedia.org',
+            },
+          ];
+        }
+      }
+    }
+
     return [];
   } catch {
     return [];
@@ -328,7 +372,7 @@ export function getLearnedDocuments(): LearnedPsychologyDocument[] {
 }
 
 /**
- * Main Entry Point: Asynchronously searches Google & open web, synthesizes a clinical document,
+ * Main Entry Point: Asynchronously searches Wikipedia & PubMed, synthesizes a clinical document,
  * and indexes it into the Psychology Library RAG for the given user query.
  */
 export async function learnAndIndexQuery(userQuery: string): Promise<LearnedPsychologyDocument | null> {
@@ -352,7 +396,7 @@ export async function learnAndIndexQuery(userQuery: string): Promise<LearnedPsyc
   activeLearningJobs.add(cleanQuery);
 
   try {
-    // 1. Search Google and Open Web
+    // 1. Search Wikipedia Clinical & PubMed Central
     const rawEvidence = await searchFreePsychologyDocuments(userQuery);
 
     // 2. Synthesize structured psychology document

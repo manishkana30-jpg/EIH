@@ -718,7 +718,7 @@ export default function BackendHealthPage() {
               </span>
             </div>
             <div className="flex flex-wrap gap-1.5">
-              {(data?.search_engine?.sources || ['PubMed NCBI', 'DuckDuckGo', 'Wikipedia', 'Protocols Cache']).map(
+              {(data?.search_engine?.sources || ['PubMed NCBI', 'Wikipedia Clinical', 'Protocols Cache']).map(
                 (src) => (
                   <span
                     key={src}

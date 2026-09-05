@@ -347,7 +347,7 @@ class PsychologyLibraryRAG:
                 "core_symptoms": [clean_q],
                 "cognitive_distortions": ["Cognitive Overwhelm", "Emotional Reasoning"],
                 "solutions": {
-                    "cbt_reframing": f"Acknowledge this experience as a transient physiological signal. Notice thoughts without judgment. {grounding_snippet[:220]}",
+                    "cbt_reframing": f"Acknowledge this experience as a transient physiological signal. Notice thoughts without judgment.\n\n{grounding_snippet}",
                     "somatic_anchor": "Drop shoulders away from ears, place one hand on the lower abdomen, and feel the solid floor underneath your feet for 30 seconds.",
                     "pranayama": "Practice 4-4-4-4 Box Breathing or Nadi Shodhana for 3 minutes to restore autonomic balance.",
                     "micro_habit": "Write down one single micro-task within your direct control right now and release long-term rumination.",

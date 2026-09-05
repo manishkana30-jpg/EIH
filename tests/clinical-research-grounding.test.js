@@ -1,5 +1,5 @@
 /**
- * Authenticated Research Grounding & Deep Listening Test Suite
+ * Authenticated Clinical Research Grounding & Deep Listening Test Suite
  * 
  * Verifies:
  * 1. Listening & Deep Emotional Attunement.
@@ -12,7 +12,7 @@ const assert = require('assert');
 const { getResearchedAdviceForEmotion, AUTHENTICATED_RESEARCH_BANK } = require('../lib/knowledge/authenticated-research-bank.ts');
 const { queryPsychologyLibrary } = require('../lib/knowledge/psychology-library-rag.ts');
 
-console.log('\n--- Running Authenticated Research Grounding & Deep Listening Tests ---');
+console.log('\n--- Running Authenticated Clinical Research Grounding & Deep Listening Tests ---');
 
 // 1. Verify Research Bank Database
 assert(AUTHENTICATED_RESEARCH_BANK.length >= 4, 'Research bank must contain authenticated studies');
@@ -53,4 +53,4 @@ const burnoutStudy = getResearchedAdviceForEmotion('sadness');
 assert(burnoutStudy.citation && burnoutStudy.scientificActionProtocol, 'Must have valid citation and action protocol');
 console.log('  ✓ [Burnout Research Grounding]: ' + burnoutStudy.citation);
 
-console.log('\nAuthenticated Research Grounding Tests: 100% Passed!\n');
+console.log('\nAuthenticated Clinical Research Grounding Tests: 100% Passed!\n');

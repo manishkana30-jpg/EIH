@@ -3,7 +3,7 @@
  *
  * Verification suite for fixes resulting from the comprehensive audit report:
  * 1. Acute Psychosis Crisis Category Pattern Interception
- * 2. Clinical Keyword Extraction for PubMed & DuckDuckGo
+ * 2. Clinical Keyword Extraction for PubMed & Wikipedia
  * 3. Token Format Compatibility (serverUrl & wsUrl)
  * 4. Input Validation & Anti-Evasion Resilience
  */

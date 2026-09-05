@@ -3,7 +3,7 @@
  *
  * Comprehensive Automated Test Suite for Autonomous Self-Learning Psychology Documents.
  * Verifies:
- * 1. Multi-source clinical web discovery (Google Web / DuckDuckGo / PubMed / Wikipedia)
+ * 1. Multi-source clinical discovery (Wikipedia Clinical & NCBI PubMed Central)
  * 2. Complete Psychology Document Synthesis (CBT, Somatic, Pranayama, Triguna, Source URL)
  * 3. Atomic JSON persistence in data/learned_psychology_documents.json
  * 4. Dynamic indexing into Psychology Library RAG with high-priority match
