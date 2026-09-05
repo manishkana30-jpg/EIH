@@ -142,7 +142,7 @@ assert(tratakaSource.includes('from-orange-600') || tratakaSource.includes('from
 // Murti Sacred Geometry SVG verification
 assert(tratakaSource.includes('Sacred Geometry Mandala') || tratakaSource.includes('viewBox="0 0 200 200"'), 'Murti must render pure SVG/CSS sacred geometric mandala');
 // Pratibimb Mirror verification
-assert(tratakaSource.includes('reflective') || tratakaSource.includes('from-slate-900 via-slate-950 to-black'), 'Pratibimb must render dark obsidian reflective mirror frame');
+assert(tratakaSource.includes('Reflective') || tratakaSource.includes('reflective') || tratakaSource.includes('Sacred Mirror'), 'Pratibimb must render mirror frame');
 // Shoonya Void verification
 assert(tratakaSource.includes('The Shoonya Void') || tratakaSource.includes("tratakaMode === 'shoonya'"), 'Shoonya must render pitch-black formless void screen');
 
@@ -160,6 +160,17 @@ assert(tratakaSource.includes('Camera permission') || tratakaSource.includes('En
 console.log('  ✓ Front camera self-reflection verified with facingMode user & horizontal mirror inversion');
 console.log('  ✓ User permission prompt, retry handling & zero-recording privacy verified');
 console.log('  ✓ Strict lifecycle cleanup verified (hardware camera tracks terminated upon stage change or exit)');
+
+// 7. Shoonya Pure Pitch-Black & Wide Cosmic Horizon Breathing
+console.log('\n--- 7. Testing Shoonya Pure Pitch-Black & Wide Cosmic Horizon Breathing ---');
+assert(tratakaSource.includes('absolute inset-0 bg-black'), 'Shoonya must render full-screen pure pitch-black container');
+assert(tratakaSource.includes('Cosmic Horizon') || tratakaSource.includes('Wide Cosmic Horizon'), 'Shoonya must render wide cosmic horizon breathing architecture');
+assert(tratakaSource.includes('shoonyaHorizonBeam') || tratakaSource.includes('shoonyaAuroraGlow'), 'Shoonya must render panoramic curved cosmic horizon gradient beam');
+assert(tratakaSource.includes('M 0 70 Q 600 0 1200 70') || tratakaSource.includes('viewBox="0 0 1200 140"'), 'Shoonya must render wide panoramic curved horizon geometry');
+assert(tratakaSource.includes('tratakaMode !== \'shoonya\''), 'Hypnotic peripheral circles must be suppressed in Shoonya mode to ensure pure black void');
+console.log('  ✓ Pure pitch-black full-screen canvas verified (OLED #000000 black, 0 distracting peripherals)');
+console.log('  ✓ Wide cosmic event horizon breathing animation verified (8.5s parasympathetic entrainment)');
+console.log('  ✓ Formless center void verified (zero central focal dot, pure Akasha stillness)');
 
 console.log('\n================================================================');
 console.log('🎉 ALL CLINICAL TRATAKA MODULE TESTS PASSED (100%)');

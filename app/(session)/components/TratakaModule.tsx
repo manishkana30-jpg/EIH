@@ -96,8 +96,8 @@ export const TRATAKA_MODES: TratakaModeOption[] = [
     id: 'shoonya',
     name: 'Shoonya (The Void)',
     sanskritName: 'शून्य • The Unconditioned Void',
-    tagline: 'Formless Meditation & Deep Peace',
-    description: 'A pitch-black expanse with zero focal points. For advanced practitioners seeking total cognitive de-cluttering and mental liberation.',
+    tagline: 'Wide Cosmic Horizon & Boundless Stillness',
+    description: 'A pure pitch-black expanse with an expansive, breathing cosmic event horizon. For profound Default Mode Network quieting and formless open-monitoring.',
     clinicalBenefit: 'Maximizes Default Mode Network (DMN) quieting and down-regulates hyperarousal.',
     element: 'Akasha (Ether / Boundless Space)',
     accentColor: 'text-purple-400',
@@ -728,8 +728,9 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
                       </div>
                     )}
                     {mode.id === 'shoonya' && (
-                      <div className="w-6 h-6 rounded-lg border border-purple-500/30 bg-black flex items-center justify-center">
-                        <div className="w-1 h-1 rounded-full bg-purple-400/40" />
+                      <div className="w-8 h-8 rounded-xl border border-purple-500/40 bg-black flex items-center justify-center overflow-hidden relative shadow-[0_0_10px_rgba(168,85,247,0.3)]">
+                        <div className="w-6 h-[1.5px] bg-gradient-to-r from-transparent via-purple-300 to-transparent shadow-[0_0_8px_rgba(192,132,252,0.9)]" />
+                        <div className="absolute w-5 h-2 rounded-full bg-purple-600/25 blur-[2px]" />
                       </div>
                     )}
                   </div>
@@ -968,11 +969,13 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 1.0 }}
-              className="absolute inset-0 flex flex-col items-center justify-center z-20"
+              className={`absolute inset-0 flex flex-col items-center justify-center z-20 ${
+                tratakaMode === 'shoonya' ? 'bg-black' : ''
+              }`}
             >
               {/* Optional Subtle Hypnotic Circle Background (Fades in at 2:00 at 10% opacity) */}
               <AnimatePresence>
-                {isHypnoticPeripheralActive && (
+                {isHypnoticPeripheralActive && tratakaMode !== 'shoonya' && (
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 0.1 }}
@@ -1300,16 +1303,99 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
                 </div>
               )}
 
-              {/* 5. SHOONYA (THE VOID): Pitch-black screen with zero focal point */}
+              {/* 5. SHOONYA (THE VOID): Pure Pitch-Black Full Screen with Wide Cosmic Horizon Breathing */}
               {tratakaMode === 'shoonya' && (
-                <div className="relative flex items-center justify-center w-full h-full" aria-label="The Shoonya Void Focal Point">
-                  {/* Faint Breathing Void Expansion Horizon */}
-                  <motion.div
-                    animate={{ scale: [0.92, 1.08, 0.92], opacity: [0.03, 0.09, 0.03] }}
-                    transition={{ duration: 7.5, repeat: Infinity, ease: 'easeInOut' }}
-                    className="w-96 h-96 rounded-full border border-purple-400/20 bg-purple-950/10 pointer-events-none"
-                  />
-                  {/* Complete center stillness */}
+                <div
+                  className="absolute inset-0 bg-black flex flex-col items-center justify-center overflow-hidden select-none z-10"
+                  aria-label="The Shoonya Void Wide Cosmic Horizon Focal Point"
+                >
+                  {/* Distant Micro-Stardust Deep Field (Static Ethereal Cosmic Stars) */}
+                  <div className="absolute inset-0 pointer-events-none opacity-40">
+                    <div className="absolute top-[18%] left-[16%] w-[1.5px] h-[1.5px] bg-purple-200/70 rounded-full" />
+                    <div className="absolute top-[26%] right-[22%] w-1 h-1 bg-indigo-200/60 rounded-full blur-[0.5px]" />
+                    <div className="absolute bottom-[32%] left-[24%] w-[1px] h-[1px] bg-purple-300/50 rounded-full" />
+                    <div className="absolute bottom-[24%] right-[16%] w-[1.5px] h-[1.5px] bg-violet-200/70 rounded-full" />
+                    <div className="absolute top-[40%] left-[10%] w-1 h-1 bg-purple-400/50 rounded-full blur-[0.5px]" />
+                    <div className="absolute top-[34%] right-[12%] w-[1px] h-[1px] bg-slate-200/60 rounded-full" />
+                    <div className="absolute bottom-[40%] right-[28%] w-[1.5px] h-[1.5px] bg-indigo-300/50 rounded-full" />
+                    <div className="absolute top-[68%] left-[36%] w-[1px] h-[1px] bg-purple-200/50 rounded-full" />
+                  </div>
+
+                  {/* Vast Cosmic Horizon Breathing Architecture (8.5s Parasympathetic Breath Rhythm) */}
+                  <div className="relative w-full max-w-6xl h-72 sm:h-96 flex flex-col items-center justify-center">
+                    {/* Deep Cosmic Nebula Atmospheric Glow */}
+                    <motion.div
+                      animate={{
+                        scale: [0.85, 1.18, 0.85],
+                        opacity: [0.06, 0.26, 0.06],
+                      }}
+                      transition={{
+                        duration: 8.5,
+                        repeat: Infinity,
+                        ease: 'easeInOut',
+                      }}
+                      className="absolute w-[88vw] sm:w-[75vw] max-w-5xl h-44 sm:h-60 rounded-[100%] bg-gradient-to-r from-purple-950/0 via-purple-600/25 to-indigo-950/0 blur-3xl pointer-events-none"
+                    />
+
+                    {/* Expansive Wide Event Horizon Arc with Breathing Animation */}
+                    <motion.div
+                      animate={{
+                        scaleX: [0.94, 1.08, 0.94],
+                        scaleY: [0.88, 1.25, 0.88],
+                        opacity: [0.25, 0.75, 0.25],
+                      }}
+                      transition={{
+                        duration: 8.5,
+                        repeat: Infinity,
+                        ease: 'easeInOut',
+                      }}
+                      className="relative w-[96vw] sm:w-[85vw] max-w-6xl h-28 sm:h-40 flex flex-col items-center justify-center pointer-events-none"
+                    >
+                      {/* Panoramic Curved Cosmic Horizon SVG */}
+                      <svg
+                        viewBox="0 0 1200 140"
+                        className="w-full h-full text-purple-400 overflow-visible drop-shadow-[0_0_30px_rgba(168,85,247,0.75)]"
+                        preserveAspectRatio="none"
+                      >
+                        <defs>
+                          <linearGradient id="shoonyaHorizonBeam" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stopColor="#9333ea" stopOpacity="0" />
+                            <stop offset="15%" stopColor="#a855f7" stopOpacity="0.25" />
+                            <stop offset="50%" stopColor="#ffffff" stopOpacity="0.95" />
+                            <stop offset="85%" stopColor="#a855f7" stopOpacity="0.25" />
+                            <stop offset="100%" stopColor="#9333ea" stopOpacity="0" />
+                          </linearGradient>
+                          <linearGradient id="shoonyaAuroraGlow" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stopColor="#4f46e5" stopOpacity="0" />
+                            <stop offset="30%" stopColor="#a855f7" stopOpacity="0.45" />
+                            <stop offset="50%" stopColor="#e9d5ff" stopOpacity="0.85" />
+                            <stop offset="70%" stopColor="#a855f7" stopOpacity="0.45" />
+                            <stop offset="100%" stopColor="#4f46e5" stopOpacity="0" />
+                          </linearGradient>
+                        </defs>
+
+                        {/* Soft Ambient Horizon Aura Path */}
+                        <path
+                          d="M 0 70 Q 600 0 1200 70"
+                          fill="none"
+                          stroke="url(#shoonyaAuroraGlow)"
+                          strokeWidth="7"
+                          className="blur-[5px] opacity-75"
+                        />
+
+                        {/* Razor-Sharp Luminous Event Horizon Beam */}
+                        <path
+                          d="M 0 70 Q 600 0 1200 70"
+                          fill="none"
+                          stroke="url(#shoonyaHorizonBeam)"
+                          strokeWidth="1.8"
+                          opacity="0.95"
+                        />
+                      </svg>
+                    </motion.div>
+
+                    {/* Center Void: Infinite Formless Emptiness */}
+                  </div>
                 </div>
               )}
 
@@ -1328,9 +1414,14 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
                   {tratakaMode === 'murti' &&
                     'Rest your gaze at the center lotus of the sacred mandala. Allow the symmetrical geometry to absorb and quiet scattered thoughts.'}
                   {tratakaMode === 'pratibimb' &&
-                    'Gaze into the reflective obsidian sanctuary. Release all self-judgment and hold your inner being with unconditional compassion.'}
+                    'Gaze softly into your own eyes in the mirror. Release all self-judgment and hold your inner being with unconditional compassion.'}
+                  {tratakaMode === 'shoonya' && (
+                    <span className="block text-[11px] font-mono uppercase tracking-widest text-purple-300/90 mb-1">
+                      Akasha • Wide Cosmic Horizon Breathing
+                    </span>
+                  )}
                   {tratakaMode === 'shoonya' &&
-                    'Gaze into the boundless dark void. There is nothing to hold onto, nothing to track. Rest in open formless presence.'}
+                    'Rest your gaze into the boundless dark void. Synchronize your breath with the wide cosmic horizon. Nothing to seek, nothing to grasp. Total formless stillness.'}
                 </p>
                 <div className="flex items-center justify-center gap-2 text-[11px] font-mono text-slate-400">
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
