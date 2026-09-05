@@ -1,0 +1,141 @@
+[
+  {
+    "id": "learned_my_heart_is_pounding_and_i_am_panic",
+    "name": "Learned: Heart Pounding And Panicking Protocol",
+    "category": "Autonomic & Panic Regulation",
+    "triguna_balance": "Acute Rajas Surge",
+    "core_symptoms": [
+      "My heart is pounding and I am panicking",
+      "heart",
+      "pounding",
+      "and",
+      "panicking"
+    ],
+    "cognitive_distortions": [
+      "Emotional Reasoning",
+      "Catastrophic Overgeneralization"
+    ],
+    "solutions": {
+      "cbt_reframing": "This wave is an adrenaline surge that naturally metabolizes in 8 to 12 minutes. It is uncomfortable, but you are physically safe. (Clinical Research Evidence: In this review, Cognitive Behavioral Techniques (CBT) that are applied for people with panic disorder are examined. Panic Disorder (PD), in the category of anxiety disorders, is id...)",
+      "somatic_anchor": "Mammalian dive reflex: press a cool, damp towel or ice cube against your upper cheeks for 20 seconds.",
+      "pranayama": "Extended Exhale Breathing (4 seconds inhale through nose, 7 seconds exhale through pursed lips).",
+      "micro_habit": "Softly whisper: \"My body is releasing adrenaline. I am safe in this room.\""
+    },
+    "severity_level": "Mild to Moderate",
+    "requires_immediate_crisis": false,
+    "source_url": "https://psycnet.apa.org/record/2022-48920-010",
+    "source_platform": "Google Search / Open Web",
+    "learned_timestamp": "2026-09-05T19:20:07.843Z",
+    "query_trigger": "My heart is pounding and I am panicking"
+  },
+  {
+    "id": "learned_emotional_numbness_and_dissociation",
+    "name": "Learned: Emotional Numbness And Dissociation Protocol",
+    "category": "Affective & Behavioral Activation",
+    "triguna_balance": "Dorsal Vagal Freeze, Dominant Tamas",
+    "core_symptoms": [
+      "emotional numbness and dissociation",
+      "emotional",
+      "numbness",
+      "and",
+      "dissociation"
+    ],
+    "cognitive_distortions": [
+      "Emotional Reasoning",
+      "Catastrophic Overgeneralization"
+    ],
+    "solutions": {
+      "cbt_reframing": "Action precedes motivation. Do not wait to feel energized; taking even a tiny 1% physical step begins shifting neurochemistry. (Clinical Research Evidence: Clinical study on emotional numbness hypoarousal polyvagal evidence based therapy: Study protocol for a randomized controlled trial of a group-adapted Somatic Experiencing\u00ae interve...)",
+      "somatic_anchor": "Stand barefoot on the floor, feel the ground supporting you, and gently tap your sternum for 60 seconds.",
+      "pranayama": "Surya Bhedana (Right Nostril Solar Breathing) for 3 minutes to disperse tamasic lethargy.",
+      "micro_habit": "Commit to a 2-minute micro-task that is impossible to fail (drink water, open window curtains)."
+    },
+    "severity_level": "Mild to Moderate",
+    "requires_immediate_crisis": false,
+    "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12721538/",
+    "source_platform": "Google Scholar / NCBI PubMed Central",
+    "learned_timestamp": "2026-09-05T19:22:11.502Z",
+    "query_trigger": "emotional numbness and dissociation"
+  },
+  {
+    "id": "learned_alexithymia_difficulty_identifying",
+    "name": "Learned: Alexithymia Difficulty Identifying Emotions Protocol",
+    "category": "Cognitive & Neuro-Performance",
+    "triguna_balance": "Vata-Rajas Autonomic Agitation",
+    "core_symptoms": [
+      "alexithymia difficulty identifying emotions",
+      "alexithymia",
+      "difficulty",
+      "identifying",
+      "emotions"
+    ],
+    "cognitive_distortions": [
+      "Emotional Reasoning",
+      "Catastrophic Overgeneralization"
+    ],
+    "solutions": {
+      "cbt_reframing": "Acknowledge that feeling alexithymia difficulty identifying emotions is a valid physiological signal, not an identity. Notice automatic thoughts predicting helplessness, and gently re-anchor in what is factually true right now. (Clinical Research Evidence: Clinical study on alexithymia difficulty identifying emotions psychotherapy cbt somatic: Modified Alliance-Focused Training with Doubling as an integrative approach to improve ther...)",
+      "somatic_anchor": "Drop your shoulders, unglue your tongue from the roof of your mouth, and ground both feet firmly onto the floor for 30 seconds.",
+      "pranayama": "Practice 4-4-4-4 Sama Vritti Box Breathing or Alternate Nostril Breathing (Nadi Shodhana) for 3 minutes to restore vagal balance.",
+      "micro_habit": "Take one single micro-action within your direct control right now, ignoring long-term overwhelm."
+    },
+    "severity_level": "Mild to Moderate",
+    "requires_immediate_crisis": false,
+    "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12273124/",
+    "source_platform": "Google Scholar / NCBI PubMed Central",
+    "learned_timestamp": "2026-09-05T19:21:28.473Z",
+    "query_trigger": "alexithymia difficulty identifying emotions"
+  },
+  {
+    "id": "learned_python_verification_test",
+    "name": "Learned: Python Verification Protocol",
+    "category": "Self-Learned Clinical Knowledge",
+    "triguna_balance": "Sattva Restorative Balance",
+    "core_symptoms": [
+      "python verification test"
+    ],
+    "cognitive_distortions": [
+      "Mental Filtering"
+    ],
+    "solutions": {
+      "cbt_reframing": "Acknowledge physiological patterns with curiosity rather than fear.",
+      "somatic_anchor": "Lengthen the spine, relax the jaw, and place feet firmly on the ground.",
+      "pranayama": "Breathe in for 4 seconds and out for 6 seconds to trigger parasympathetic tone.",
+      "micro_habit": "Take a 60-second break before responding to stressful communication."
+    },
+    "severity_level": "Mild",
+    "requires_immediate_crisis": false,
+    "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12721538/",
+    "source_platform": "Google Search / NCBI PubMed",
+    "query_trigger": "python verification test query"
+  },
+  {
+    "id": "learned_i_feel_overwhelmed_with_work_stress",
+    "name": "Learned: Feel Overwhelmed With Work Protocol",
+    "category": "Cognitive & Neuro-Performance",
+    "triguna_balance": "Vata-Rajas Autonomic Agitation",
+    "core_symptoms": [
+      "I feel overwhelmed with work stress today",
+      "feel",
+      "overwhelmed",
+      "with",
+      "work"
+    ],
+    "cognitive_distortions": [
+      "Emotional Reasoning",
+      "Catastrophic Overgeneralization"
+    ],
+    "solutions": {
+      "cbt_reframing": "Acknowledge that feeling I feel overwhelmed with work stress today is a valid physiological signal, not an identity. Notice automatic thoughts predicting helplessness, and gently re-anchor in what is factually true right now. (Clinical Research Evidence: Clinical study on feel overwhelmed with work psychotherapy cbt somatic: Implementing panic-focused psychodynamic psychotherapy into clinical practice....)",
+      "somatic_anchor": "Drop your shoulders, unglue your tongue from the roof of your mouth, and ground both feet firmly onto the floor for 30 seconds.",
+      "pranayama": "Practice 4-4-4-4 Sama Vritti Box Breathing or Alternate Nostril Breathing (Nadi Shodhana) for 3 minutes to restore vagal balance.",
+      "micro_habit": "Take one single micro-action within your direct control right now, ignoring long-term overwhelm."
+    },
+    "severity_level": "Mild to Moderate",
+    "requires_immediate_crisis": false,
+    "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8327327/",
+    "source_platform": "Google Scholar / NCBI PubMed Central",
+    "learned_timestamp": "2026-09-05T19:22:07.198Z",
+    "query_trigger": "I feel overwhelmed with work stress today"
+  }
+]

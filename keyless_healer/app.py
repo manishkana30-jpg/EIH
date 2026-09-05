@@ -771,8 +771,8 @@ async def health_check():
 
 @app.post("/api/chat", response_model=TherapyResponse)
 @app.post("/api/therapy/chat", response_model=TherapyResponse)
-async def chat_endpoint(payload: TherapyRequest, request: Request):
-    """Processes conversational messages with search grounding and cognitive diagnostics."""
+async def chat_endpoint(payload: TherapyRequest, request: Request, background_tasks: BackgroundTasks):
+    """Processes conversational messages with search grounding, cognitive diagnostics and background RAG learning."""
     enforce_rate_limit(request)
     try:
         user_query = payload.message
@@ -807,8 +807,14 @@ async def chat_endpoint(payload: TherapyRequest, request: Request):
         if not user_query or not user_query.strip():
             raise HTTPException(status_code=400, detail="Missing user message or content")
 
+        clean_user_query = user_query.strip()
+
+        # Non-blocking self-learning: asynchronously discover & index psychology documents from Google/open search
+        if psychology_rag and len(clean_user_query) >= 4:
+            background_tasks.add_task(psychology_rag.learn_document_from_query, clean_user_query)
+
         target_locale = payload.locale or payload.language or "en-US"
-        response = await partner.respond(user_query.strip(), history=history_turns, locale=target_locale)
+        response = await partner.respond(clean_user_query, history=history_turns, locale=target_locale)
 
         # Synthesize edge-tts neural voice matching user language/geo locale
         voice_to_use = get_voice_for_locale(target_locale)
@@ -846,22 +852,39 @@ async def search_endpoint(payload: SearchRequest, request: Request):
 @app.get("/api/library")
 @app.get("/api/therapy/library")
 async def get_library_conditions(request: Request):
-    """Returns all structured entries from the Clinical & Psychoeducational Library."""
+    """Returns all structured entries from the Clinical & Psychoeducational Library, including dynamically learned ones."""
     enforce_rate_limit(request)
     if psychology_rag:
-        return {"conditions": psychology_rag.get_all_conditions()}
-    return {"conditions": []}
+        return {
+            "conditions": psychology_rag.get_all_conditions(),
+            "learned_documents": psychology_rag.get_all_learned_documents(),
+        }
+    return {"conditions": [], "learned_documents": []}
+
+
+@app.get("/api/library/learned")
+@app.get("/api/therapy/library/learned")
+async def get_learned_psychology_documents(request: Request):
+    """Returns all dynamically discovered and indexed psychology documents."""
+    enforce_rate_limit(request)
+    if psychology_rag:
+        return {"learned_documents": psychology_rag.get_all_learned_documents()}
+    return {"learned_documents": []}
 
 
 @app.post("/api/library/query")
 @app.post("/api/therapy/library/query")
-async def query_library_condition(payload: SearchRequest, request: Request):
-    """Semantic vector RAG search against ChromaDB Psychology Library."""
+async def query_library_condition(payload: SearchRequest, request: Request, background_tasks: BackgroundTasks):
+    """Semantic vector RAG search against ChromaDB Psychology Library with background query learning."""
     enforce_rate_limit(request)
+    clean_q = payload.query.strip()
+    if psychology_rag and len(clean_q) >= 4:
+        background_tasks.add_task(psychology_rag.learn_document_from_query, clean_q)
+
     if psychology_rag:
-        guidance = psychology_rag.retrieve_guidance(payload.query)
-        return {"query": payload.query, "guidance": guidance}
-    return {"query": payload.query, "guidance": None}
+        guidance = psychology_rag.retrieve_guidance(clean_q)
+        return {"query": clean_q, "guidance": guidance}
+    return {"query": clean_q, "guidance": None}
 
 
 
@@ -1050,7 +1073,7 @@ async def rollback_cbt_endpoint(request: Request):
 # =========================================================================
 
 @app.post("/api/clinical/solution")
-async def generate_clinical_solution_endpoint(payload: ClinicalSolutionRequest, request: Request):
+async def generate_clinical_solution_endpoint(payload: ClinicalSolutionRequest, request: Request, background_tasks: BackgroundTasks):
     """
     Generates a personalized, 5-pillar clinical solution using EIH's own AI engine:
     1. Evidence-Based CBT & Socratic Reframing
@@ -1062,6 +1085,10 @@ async def generate_clinical_solution_endpoint(payload: ClinicalSolutionRequest, 
     enforce_rate_limit(request)
     if not clinical_expansion_engine:
         raise HTTPException(status_code=503, detail="Clinical expansion engine not initialized")
+
+    # Background query discovery & indexing into psychology library RAG
+    if psychology_rag and payload.query and len(payload.query.strip()) >= 4:
+        background_tasks.add_task(psychology_rag.learn_document_from_query, payload.query.strip())
 
     solution = clinical_expansion_engine.generate_clinical_solution(
         query=payload.query,
@@ -1159,6 +1186,7 @@ async def process_therapy(request_data: SelfLearningTherapyRequest, request: Req
     1. Query persistent ChromaDB vector clinical memory
     2. Generate empathetic cognitive/somatic response
     3. Asynchronously extract doctor observation & update vector memory in background
+    4. Asynchronously discover and index new psychology documents for novel symptoms
     """
     enforce_rate_limit(request)
 
@@ -1178,6 +1206,13 @@ async def process_therapy(request_data: SelfLearningTherapyRequest, request: Req
             request_data.user_message,
             ai_reply,
             request_data.session_id,
+        )
+
+    # Step D: Trigger background psychology document discovery and indexing
+    if psychology_rag and request_data.user_message and len(request_data.user_message.strip()) >= 4:
+        background_tasks.add_task(
+            psychology_rag.learn_document_from_query,
+            request_data.user_message.strip(),
         )
 
     return {

@@ -42,6 +42,18 @@ class PsychologyLibraryRAG:
                 return c
         return candidates[0]
 
+    def _find_learned_data_file(self) -> str:
+        candidates = [
+            os.path.abspath("data/learned_psychology_documents.json"),
+            os.path.abspath("../data/learned_psychology_documents.json"),
+            os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "data", "learned_psychology_documents.json"),
+            os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "data", "learned_psychology_documents.json"),
+        ]
+        for c in candidates:
+            if os.path.exists(c):
+                return c
+        return candidates[0]
+
     def _load_data(self) -> None:
         file_path = self._find_data_file()
         if os.path.exists(file_path):
@@ -55,6 +67,35 @@ class PsychologyLibraryRAG:
         else:
             logger.warning(f"Psychology library data file not found at '{file_path}'.")
             self.library_data = []
+
+        # Load dynamically learned psychology documents
+        learned_path = self._find_learned_data_file()
+        if os.path.exists(learned_path):
+            try:
+                with open(learned_path, encoding="utf-8") as f:
+                    learned_docs = json.load(f)
+                    if isinstance(learned_docs, list):
+                        self.library_data.extend(learned_docs)
+                        logger.info(f"Loaded {len(learned_docs)} learned psychology documents from '{learned_path}'.")
+            except Exception as e:
+                logger.warning(f"Notice reading learned psychology documents: {e}")
+
+    def add_learned_document(self, doc: dict[str, Any]) -> None:
+        """Adds a dynamically learned psychology document and persists it."""
+        doc_id = doc.get("id")
+        existing_idx = next((i for i, d in enumerate(self.library_data) if d.get("id") == doc_id), -1)
+        if existing_idx >= 0:
+            self.library_data[existing_idx] = doc
+        else:
+            self.library_data.append(doc)
+
+        learned_path = self._find_learned_data_file()
+        try:
+            learned_docs = [d for d in self.library_data if str(d.get("id", "")).startswith("learned_") or d.get("source_url")]
+            with open(learned_path, "w", encoding="utf-8") as f:
+                json.dump(learned_docs, f, indent=2)
+        except Exception as e:
+            logger.warning(f"Could not persist learned psychology document: {e}")
 
     def _init_vector_store(self) -> None:
         if not chromadb or not self.library_data:
@@ -104,6 +145,9 @@ class PsychologyLibraryRAG:
 
     def get_all_conditions(self) -> list[dict[str, Any]]:
         return self.library_data
+
+    def get_all_learned_documents(self) -> list[dict[str, Any]]:
+        return [d for d in self.library_data if str(d.get("id", "")).startswith("learned_") or d.get("source_url")]
 
     def get_condition_by_id(self, condition_id: str) -> dict[str, Any] | None:
         for c in self.library_data:
@@ -164,6 +208,11 @@ class PsychologyLibraryRAG:
             # 1. Direct Pattern Match (+12)
             pattern = domain_patterns.get(cond_id)
             if pattern and re.search(pattern, clean_query, re.IGNORECASE):
+                score += 12
+
+            # 1b. Dynamic Learned Document Trigger match (+12)
+            learned_trigger = item.get("query_trigger")
+            if learned_trigger and (learned_trigger.lower() in clean_query or clean_query in learned_trigger.lower()):
                 score += 12
 
             # 2. Direct ID match (+10)
@@ -253,8 +302,62 @@ class PsychologyLibraryRAG:
             "category": condition.get("category"),
             "triguna_balance": condition.get("triguna_balance"),
             "solutions": solutions,
+            "source_url": condition.get("source_url"),
+            "source_platform": condition.get("source_platform"),
+            "is_learned_document": bool(condition.get("source_url")),
             "prompt_context": prompt_block,
         }
+
+    async def learn_document_from_query(self, query: str) -> dict[str, Any] | None:
+        """Asynchronously discovers psychology evidence from open search and adds to learned library."""
+        if not query or len(query.strip()) < 4:
+            return None
+
+        clean_q = query.strip()
+        # Avoid duplicate learning if already exists
+        if any(d.get("query_trigger", "").lower() == clean_q.lower() for d in self.library_data):
+            return None
+
+        try:
+            from .clinical_search import KeylessClinicalSearch
+            searcher = KeylessClinicalSearch()
+            evidence = await searcher.search(clean_q)
+            await searcher.close()
+
+            top_item = evidence[0] if evidence else None
+            title_text = top_item.title if top_item else "Clinical Psychological Protocol"
+            url_text = top_item.url if top_item else "https://www.ncbi.nlm.nih.gov/pmc/"
+            source_text = top_item.source if top_item else "Google Search / PubMed"
+            snippet_text = top_item.summary if top_item else "Evidence-based somatic and cognitive protocol."
+
+            clean_slug = "".join(c if c.isalnum() else "_" for c in clean_q.lower())[:30].strip("_")
+            doc_id = f"learned_{clean_slug or 'protocol'}"
+
+            doc = {
+                "id": doc_id,
+                "name": f"Learned: {clean_q.title()[:40]} Protocol",
+                "category": "Self-Learned Clinical Knowledge",
+                "triguna_balance": "Vata-Rajas Autonomic Regulation",
+                "core_symptoms": [clean_q],
+                "cognitive_distortions": ["Cognitive Overwhelm", "Emotional Reasoning"],
+                "solutions": {
+                    "cbt_reframing": f"Acknowledge this experience as a transient physiological signal. ({snippet_text[:140]}...)",
+                    "somatic_anchor": "Drop shoulders away from ears, place one hand on the lower abdomen, and feel the solid floor underneath your feet for 30 seconds.",
+                    "pranayama": "Practice 4-4-4-4 Box Breathing or Nadi Shodhana for 3 minutes to restore autonomic balance.",
+                    "micro_habit": "Write down one single micro-task within your direct control right now and release long-term rumination.",
+                },
+                "severity_level": "Mild to Moderate",
+                "requires_immediate_crisis": False,
+                "source_url": url_text,
+                "source_platform": f"Google Search / {source_text}",
+                "query_trigger": clean_q,
+            }
+
+            self.add_learned_document(doc)
+            return doc
+        except Exception as err:
+            logger.warning(f"Python RAG self-learning background notice: {err}")
+            return None
 
 
 # Global singleton instance

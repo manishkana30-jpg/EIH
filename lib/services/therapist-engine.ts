@@ -208,7 +208,8 @@ export async function generateTherapeuticResponse(
     allSources.unshift({
       title: `${libraryRag.condition.name} (${libraryRag.condition.triguna_balance})`,
       summary: `CBT: ${libraryRag.condition.solutions.cbt_reframing} | Somatic: ${libraryRag.condition.solutions.somatic_anchor} | Pranayama: ${libraryRag.condition.solutions.pranayama}`,
-      source: "psychology_library",
+      source: libraryRag.structuredCard?.isLearnedDocument ? "google_search" : "psychology_library",
+      url: libraryRag.structuredCard?.sourceUrl,
     });
   }
 

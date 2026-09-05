@@ -222,12 +222,14 @@ class HealerBackendClient {
         ? getLocalizedClinicalIntervention(libraryResult.condition.id, targetLang)
         : null;
 
-      const sources: ClinicalSource[] = libraryResult && localizedIntervention
+      const sources: ClinicalSource[] = libraryResult
         ? [
             {
-              title: `${localizedIntervention.conditionName} (${libraryResult.condition.triguna_balance})`,
-              summary: `CBT: ${localizedIntervention.cbt_reframing} | Somatic: ${localizedIntervention.somatic_anchor}`,
-              source: 'Clinical & Psychoeducational Library',
+              title: `${libraryResult.condition.name} (${libraryResult.condition.triguna_balance})`,
+              summary: `CBT: ${libraryResult.condition.solutions.cbt_reframing} | Somatic: ${libraryResult.condition.solutions.somatic_anchor}`,
+              source: libraryResult.structuredCard?.isLearnedDocument
+                ? (libraryResult.structuredCard.sourcePlatform || 'Google Search / Open Clinical Access')
+                : 'Clinical & Psychoeducational Library',
             },
           ]
         : study

@@ -3,6 +3,7 @@ const { runCryptoAndAudioTests } = require('./audio-crypto.test.js');
 const { runHybridRagTests } = require('./hybrid-rag.test.js');
 const { runConversationalDiversityTests } = require('./conversational-diversity.test.js');
 const { runTtsSanitizerTests } = require('./test_tts_sanitizer.js');
+const { runSelfLearningTests } = require('./self_learning_documents.test.js');
 require('./language-catalog.test.js');
 require('./remedies-matrix.test.js');
 require('./google-research-grounding.test.js');
@@ -28,6 +29,7 @@ async function main() {
     runHybridRagTests();
     await runConversationalDiversityTests();
     runTtsSanitizerTests();
+    await runSelfLearningTests();
     console.log('================================================================');
     console.log('🎉 ALL SYSTEM TESTS PASSED WITH 100% SUCCESS RATE');
     console.log('================================================================');

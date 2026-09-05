@@ -50,6 +50,40 @@ class TestPsychologyLibraryRAG(unittest.TestCase):
             self.assertEqual(res["condition_id"], expected_id, f"Query '{query}' expected {expected_id}, got {res['condition_id']}")
             self.assertIn("prompt_context", res)
 
+    def test_learned_psychology_documents(self):
+        learned_docs = psychology_rag.get_all_learned_documents()
+        self.assertIsInstance(learned_docs, list, "Learned documents must be a list")
+
+        # Test adding a dynamic learned document
+        test_doc = {
+            "id": "learned_python_verification_test",
+            "name": "Learned: Python Verification Protocol",
+            "category": "Self-Learned Clinical Knowledge",
+            "triguna_balance": "Sattva Restorative Balance",
+            "core_symptoms": ["python verification test"],
+            "cognitive_distortions": ["Mental Filtering"],
+            "solutions": {
+                "cbt_reframing": "Acknowledge physiological patterns with curiosity rather than fear.",
+                "somatic_anchor": "Lengthen the spine, relax the jaw, and place feet firmly on the ground.",
+                "pranayama": "Breathe in for 4 seconds and out for 6 seconds to trigger parasympathetic tone.",
+                "micro_habit": "Take a 60-second break before responding to stressful communication.",
+            },
+            "severity_level": "Mild",
+            "requires_immediate_crisis": False,
+            "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12721538/",
+            "source_platform": "Google Search / NCBI PubMed",
+            "query_trigger": "python verification test query",
+        }
+        psychology_rag.add_learned_document(test_doc)
+
+        # Retrieve guidance for the newly learned document
+        guidance = psychology_rag.retrieve_guidance("python verification test query")
+        self.assertIsNotNone(guidance, "Must retrieve guidance for newly learned document")
+        self.assertEqual(guidance["condition_id"], "learned_python_verification_test")
+        self.assertTrue(guidance.get("is_learned_document"), "is_learned_document must be True")
+        self.assertEqual(guidance.get("source_url"), test_doc["source_url"])
+        self.assertEqual(guidance.get("source_platform"), test_doc["source_platform"])
+
 
 if __name__ == "__main__":
     unittest.main()

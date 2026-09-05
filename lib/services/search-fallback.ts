@@ -3,7 +3,8 @@
 export interface ClinicalSearchResult {
   title: string;
   summary: string;
-  source: "pubmed" | "tavily" | "duckduckgo" | "local_cache" | "psychology_library";
+  source: "pubmed" | "tavily" | "duckduckgo" | "local_cache" | "psychology_library" | "google_search" | string;
+  url?: string;
 }
 
 /**

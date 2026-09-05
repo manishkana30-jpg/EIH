@@ -6,6 +6,13 @@
 
 import psychologyLibraryData from '../../data/psychology_library.json' with { type: 'json' };
 import { emotionClassifier } from './emotion-classifier.ts';
+import {
+  DYNAMIC_LEARNED_DOCUMENTS,
+  learnAndIndexQuery,
+  addLearnedDocument,
+  getLearnedDocuments,
+  type LearnedPsychologyDocument,
+} from './self-learning-rag.ts';
 
 export interface ClinicalSolutions {
   cbt_reframing: string;
@@ -49,6 +56,9 @@ export interface LibraryRAGResult {
     pranayama: string;
     microHabit: string;
     breathCadence?: BreathCadence;
+    sourceUrl?: string;
+    sourcePlatform?: string;
+    isLearnedDocument?: boolean;
   };
 }
 
@@ -182,6 +192,13 @@ export const CLINICAL_BREATHWORK_PACERS: Record<string, BreathCadence> = {
 export function queryPsychologyLibrary(userText: string): LibraryRAGResult | null {
   if (!userText || !userText.trim()) return null;
 
+  // Autonomous background self-learning: retrieve and index free clinical documents for new queries
+  try {
+    learnAndIndexQuery(userText).catch(() => {});
+  } catch {
+    // Non-blocking background task
+  }
+
   let rawLower = userText.toLowerCase();
   // Pre-normalize common phonetic typos and transliterations
   rawLower = rawLower
@@ -198,7 +215,9 @@ export function queryPsychologyLibrary(userText: string): LibraryRAGResult | nul
   let highestScore = 0;
   let matchedTerms: string[] = [];
 
-  for (const condition of PSYCHOLOGY_LIBRARY) {
+  const allConditions: PsychologyCondition[] = [...PSYCHOLOGY_LIBRARY, ...DYNAMIC_LEARNED_DOCUMENTS];
+
+  for (const condition of allConditions) {
     let score = 0;
     const currentMatched: string[] = [];
 
@@ -207,6 +226,13 @@ export function queryPsychologyLibrary(userText: string): LibraryRAGResult | nul
     if (triggerRegex && triggerRegex.test(rawLower)) {
       score += 12;
       currentMatched.push(`pattern:${condition.id}`);
+    }
+
+    // 1b. Dynamic Learned Document Trigger match (+12)
+    const learnedTrigger = (condition as LearnedPsychologyDocument).query_trigger;
+    if (learnedTrigger && (rawLower.includes(learnedTrigger.toLowerCase()) || learnedTrigger.toLowerCase().includes(rawLower))) {
+      score += 12;
+      currentMatched.push(`learned_trigger:${condition.id}`);
     }
 
     // 2. Direct ID matching (+10)
@@ -337,6 +363,9 @@ export function queryPsychologyLibrary(userText: string): LibraryRAGResult | nul
       description: 'Standard parasympathetic coherence breathing.',
     };
 
+    const learnedDoc = bestMatch as LearnedPsychologyDocument;
+    const isLearned = Boolean(learnedDoc.source_url);
+
     return {
       condition: bestMatch,
       matchScore: highestScore,
@@ -351,6 +380,9 @@ export function queryPsychologyLibrary(userText: string): LibraryRAGResult | nul
         pranayama: bestMatch.solutions.pranayama,
         microHabit: bestMatch.solutions.micro_habit,
         breathCadence: pacer,
+        sourceUrl: learnedDoc.source_url,
+        sourcePlatform: learnedDoc.source_platform,
+        isLearnedDocument: isLearned,
       },
     };
   }
@@ -359,15 +391,32 @@ export function queryPsychologyLibrary(userText: string): LibraryRAGResult | nul
 }
 
 /**
- * Gets a condition by its unique ID
+ * Gets a condition by its unique ID (searches bundled conditions and learned documents)
  */
 export function getConditionById(id: string): PsychologyCondition | undefined {
-  return PSYCHOLOGY_LIBRARY.find((c) => c.id === id);
+  return (
+    PSYCHOLOGY_LIBRARY.find((c) => c.id === id) ||
+    DYNAMIC_LEARNED_DOCUMENTS.find((c) => c.id === id)
+  );
 }
 
 /**
- * Returns all available conditions in the library
+ * Returns all available conditions in the library (bundled + dynamically learned)
  */
 export function getAllConditions(): PsychologyCondition[] {
-  return PSYCHOLOGY_LIBRARY;
+  return [...PSYCHOLOGY_LIBRARY, ...DYNAMIC_LEARNED_DOCUMENTS];
+}
+
+/**
+ * Returns all dynamically self-learned psychology documents
+ */
+export function getAllLearnedDocuments(): LearnedPsychologyDocument[] {
+  return getLearnedDocuments();
+}
+
+/**
+ * Manually adds a newly learned condition to the active library
+ */
+export function addLearnedCondition(doc: LearnedPsychologyDocument): void {
+  addLearnedDocument(doc);
 }
