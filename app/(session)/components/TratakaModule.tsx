@@ -20,6 +20,9 @@ import {
   Flame,
   Layers,
   Sparkle,
+  Camera,
+  CameraOff,
+  RefreshCw,
 } from 'lucide-react';
 import { browserSpeechController } from '@/lib/audio/browser-speech';
 
@@ -78,9 +81,9 @@ export const TRATAKA_MODES: TratakaModeOption[] = [
   {
     id: 'pratibimb',
     name: 'Pratibimb (The Reflection)',
-    sanskritName: 'प्रतिबिम्ब • Pure Witness',
-    tagline: 'Self-Compassion & Introspection',
-    description: 'A softly glowing obsidian mirror. Invites compassionate gaze into self-acceptance, emotional validation, and shame neutralization.',
+    sanskritName: 'प्रतिबिम्ब • Sacred Mirror',
+    tagline: 'Self-Compassion & Front Camera Mirror',
+    description: 'A live sacred mirror using your front camera. Invites compassionate gaze into your own eyes for emotional validation, self-acceptance, and shame neutralization.',
     clinicalBenefit: 'Activates ventral vagal self-soothing and dismantles harsh internal criticism.',
     element: 'Jala (Water / Fluid Acceptance)',
     accentColor: 'text-cyan-400',
@@ -254,6 +257,95 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
 
   const currentStageId = elapsedSec >= TOTAL_TRATAKA_SECONDS ? 'complete' : currentStageConfig?.id || 1;
 
+  // Front Camera MediaStream State for Pratibimb (Self-Reflection Mirror)
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+  const [cameraStatus, setCameraStatus] = useState<'idle' | 'requesting' | 'granted' | 'denied' | 'unsupported'>('idle');
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+
+  const stopCamera = useCallback(() => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => {
+        try {
+          track.stop();
+        } catch (err) {
+          console.warn('Error stopping camera track:', err);
+        }
+      });
+      streamRef.current = null;
+    }
+    setCameraStream(null);
+    setCameraStatus('idle');
+  }, []);
+
+  const requestCamera = useCallback(async () => {
+    if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
+      setCameraStatus('unsupported');
+      setCameraError('Front camera is not supported or accessible on this browser.');
+      return;
+    }
+
+    setCameraStatus('requesting');
+    setCameraError(null);
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: 'user',
+          width: { ideal: 640 },
+          height: { ideal: 640 },
+        },
+        audio: false,
+      });
+      streamRef.current = stream;
+      setCameraStream(stream);
+      setCameraStatus('granted');
+    } catch (err: any) {
+      console.warn('Camera access denied or failed:', err);
+      setCameraStatus('denied');
+      setCameraError(
+        err?.name === 'NotAllowedError' || err?.name === 'PermissionDeniedError'
+          ? 'Camera permission denied. Please allow camera access to view your reflection.'
+          : 'Could not access front camera. Please verify device permissions.'
+      );
+    }
+  }, []);
+
+  // Stop camera when session is closed, mode is not Pratibimb, or Stage 2 has completed (eyes close in Stage 3)
+  useEffect(() => {
+    if (
+      !isOpen ||
+      tratakaMode !== 'pratibimb' ||
+      currentStageId === 3 ||
+      currentStageId === 4 ||
+      currentStageId === 5 ||
+      currentStageId === 'complete'
+    ) {
+      stopCamera();
+    }
+  }, [isOpen, tratakaMode, currentStageId, stopCamera]);
+
+  // When video element mounts and camera stream is active, bind stream and play
+  useEffect(() => {
+    if (videoRef.current && cameraStream) {
+      videoRef.current.srcObject = cameraStream;
+      const playPromise = videoRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((err) => {
+          console.warn('Video playback notice:', err);
+        });
+      }
+    }
+  }, [cameraStream, tratakaMode, currentStageId]);
+
+  // Clean up all tracks on unmount
+  useEffect(() => {
+    return () => {
+      stopCamera();
+    };
+  }, [stopCamera]);
+
   // Sound cues on stage transitions
   useEffect(() => {
     if (!isOpen || !isPlaying || !isAudioEnabled || tratakaMode === null) return;
@@ -278,6 +370,7 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
       setHasAnnouncedStage4(false);
       lastPlayedStageRef.current = null;
       browserSpeechController.stop();
+      stopCamera();
       return;
     }
 
@@ -292,7 +385,7 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [isOpen, isPlaying, elapsedSec, tratakaMode]);
+  }, [isOpen, isPlaying, elapsedSec, tratakaMode, stopCamera]);
 
   // Box Breathing pacing cycle during Stage 1 (4-4-4-4 cycle = 16s)
   useEffect(() => {
@@ -327,10 +420,11 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
   }, [isOpen]);
 
   const handleForceExit = useCallback(() => {
+    stopCamera();
     browserSpeechController.stop();
     if (timerRef.current) clearInterval(timerRef.current);
     onClose();
-  }, [onClose]);
+  }, [onClose, stopCamera]);
 
   const handleSelectMode = (modeId: TratakaModeId) => {
     setTratakaMode(modeId);
@@ -339,9 +433,15 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
     setHasAnnouncedStage4(false);
     lastPlayedStageRef.current = 1;
     playSolfeggioTone(432, 2.5);
+    if (modeId === 'pratibimb') {
+      requestCamera();
+    } else {
+      stopCamera();
+    }
   };
 
   const handleChangeMode = () => {
+    stopCamera();
     browserSpeechController.stop();
     if (timerRef.current) clearInterval(timerRef.current);
     setTratakaMode(null);
@@ -364,6 +464,9 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
     setIsPlaying(true);
     setHasAnnouncedStage4(false);
     lastPlayedStageRef.current = null;
+    if (tratakaMode === 'pratibimb') {
+      requestCamera();
+    }
   };
 
   const handleJumpToStage = (stageId: TratakaStageId) => {
@@ -373,6 +476,11 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
       setElapsedSec(target.startSec);
       setIsPlaying(true);
       if (stageId !== 4) setHasAnnouncedStage4(false);
+      if (stageId !== 2 && tratakaMode === 'pratibimb') {
+        stopCamera();
+      } else if (stageId === 2 && tratakaMode === 'pratibimb' && !cameraStream) {
+        requestCamera();
+      }
     }
   };
 
@@ -507,8 +615,8 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
                       </div>
                     )}
                     {mode.id === 'pratibimb' && (
-                      <div className="w-5 h-7 rounded-lg border border-cyan-400/50 bg-gradient-to-b from-slate-900 to-black flex items-center justify-center">
-                        <div className="w-1.5 h-1.5 rounded-full bg-cyan-300/80 shadow-[0_0_6px_rgba(6,182,212,0.8)]" />
+                      <div className="w-5 h-7 rounded-lg border border-cyan-400/50 bg-gradient-to-b from-slate-900 to-black flex items-center justify-center text-cyan-300">
+                        <Camera className="w-3 h-3 text-cyan-300 opacity-90" />
                       </div>
                     )}
                     {mode.id === 'shoonya' && (
@@ -902,9 +1010,9 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
                 </div>
               )}
 
-              {/* 4. PRATIBIMB (THE REFLECTION): Softly Glowing Obsidian Mirror */}
+              {/* 4. PRATIBIMB (THE REFLECTION): Front Camera Self-Image Mirror with Permission */}
               {tratakaMode === 'pratibimb' && (
-                <div className="relative flex items-center justify-center" aria-label="The Pratibimb Mirror Focal Point">
+                <div className="relative flex items-center justify-center" aria-label="The Pratibimb Front Camera Mirror Focal Point">
                   {/* Soft Cyan / Aquamarine Halo */}
                   <div className="absolute w-72 h-72 rounded-full bg-cyan-500/15 blur-3xl pointer-events-none" />
 
@@ -918,33 +1026,114 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
                       ],
                     }}
                     transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut' }}
-                    className="relative w-52 h-68 sm:w-64 sm:h-84 rounded-[42px] p-1 bg-gradient-to-b from-cyan-400/40 via-slate-700/50 to-cyan-500/25 border border-cyan-300/40 flex items-center justify-center overflow-hidden"
+                    className="relative w-60 h-80 sm:w-72 sm:h-96 rounded-[42px] p-1.5 bg-gradient-to-b from-cyan-400/40 via-slate-700/50 to-cyan-500/25 border border-cyan-300/40 flex items-center justify-center overflow-hidden shadow-2xl"
                   >
-                    {/* Deep Obsidian Reflective Interior */}
-                    <div className="w-full h-full rounded-[38px] bg-gradient-to-b from-slate-950 via-black to-slate-900 flex flex-col items-center justify-center relative p-6">
-                      {/* Subtle Diagonal Shimmer */}
-                      <motion.div
-                        animate={{ x: [-160, 160] }}
-                        transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-                        className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan-400/8 to-transparent skew-x-12 pointer-events-none"
-                      />
+                    {/* Interior Mirror Display */}
+                    {cameraStream && cameraStatus === 'granted' ? (
+                      <div className="w-full h-full rounded-[36px] bg-black flex flex-col items-center justify-center relative overflow-hidden">
+                        {/* Live Front Camera Feed (Mirrored via scale-x-[-1]) */}
+                        <video
+                          ref={videoRef}
+                          autoPlay
+                          playsInline
+                          muted
+                          className="w-full h-full object-cover -scale-x-100 rounded-[36px]"
+                        />
 
-                      {/* Compassionate Witnessing Beacon */}
-                      <motion.div
-                        animate={{ scale: [1, 1.25, 1], opacity: [0.4, 0.85, 0.4] }}
-                        transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
-                        className="w-12 h-12 rounded-full bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300 mb-3 shadow-[0_0_20px_rgba(6,182,212,0.4)]"
-                      >
-                        <Heart className="w-6 h-6 opacity-85 text-cyan-300" />
-                      </motion.div>
+                        {/* Gentle Vignette Gradient Overlay */}
+                        <div className="absolute inset-0 rounded-[36px] pointer-events-none shadow-[inset_0_0_50px_rgba(0,0,0,0.7)] border border-cyan-400/20" />
 
-                      <span className="text-[11px] font-mono tracking-widest uppercase text-cyan-300/80 text-center font-bold">
-                        Witnessing Presence
-                      </span>
-                      <span className="text-xs text-slate-400 font-light text-center mt-1">
-                        Gaze upon yourself with warmth &amp; gentle grace
-                      </span>
-                    </div>
+                        {/* Soft Ambient Cyan Tint */}
+                        <motion.div
+                          animate={{ opacity: [0.08, 0.2, 0.08] }}
+                          transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+                          className="absolute inset-0 bg-gradient-to-b from-cyan-500/10 via-transparent to-cyan-950/25 pointer-events-none"
+                        />
+
+                        {/* Top Mirror Status Capsule */}
+                        <div className="absolute top-3 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-cyan-400/30 flex items-center gap-1.5 pointer-events-none z-10">
+                          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                          <span className="text-[10px] font-mono font-semibold tracking-wider text-cyan-200 uppercase">
+                            Sacred Mirror
+                          </span>
+                        </div>
+
+                        {/* Top-Right Camera Toggle (Privacy Option) */}
+                        <button
+                          onClick={stopCamera}
+                          title="Pause camera feed"
+                          className="absolute top-3 right-3 p-1.5 rounded-full bg-black/60 hover:bg-black/90 border border-white/20 text-slate-400 hover:text-white transition-all z-20 cursor-pointer"
+                        >
+                          <CameraOff className="w-3.5 h-3.5" />
+                        </button>
+
+                        {/* Bottom Subtle Guidance Capsule */}
+                        <div className="absolute bottom-3 px-3 py-1.5 rounded-full bg-black/75 backdrop-blur-md border border-cyan-400/30 max-w-[88%] text-center pointer-events-none z-10">
+                          <span className="text-[10px] font-medium text-cyan-200/90 leading-tight">
+                            Gaze gently into your own eyes with unconditional compassion
+                          </span>
+                        </div>
+                      </div>
+                    ) : cameraStatus === 'requesting' ? (
+                      <div className="w-full h-full rounded-[36px] bg-gradient-to-b from-slate-950 via-black to-slate-900 flex flex-col items-center justify-center relative p-6 text-center space-y-3">
+                        <div className="w-12 h-12 rounded-full bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300">
+                          <RefreshCw className="w-6 h-6 animate-spin text-cyan-300" />
+                        </div>
+                        <span className="text-xs font-mono font-bold uppercase tracking-wider text-cyan-300">
+                          Connecting Front Camera...
+                        </span>
+                        <p className="text-[11px] text-slate-400">
+                          Please approve camera access in your browser prompt to view your reflection.
+                        </p>
+                      </div>
+                    ) : cameraStatus === 'denied' || cameraStatus === 'unsupported' ? (
+                      <div className="w-full h-full rounded-[36px] bg-gradient-to-b from-slate-950 via-black to-slate-900 flex flex-col items-center justify-center relative p-6 text-center space-y-3">
+                        <div className="w-12 h-12 rounded-full bg-rose-500/20 border border-rose-400/40 flex items-center justify-center text-rose-300">
+                          <CameraOff className="w-6 h-6 text-rose-300" />
+                        </div>
+                        <span className="text-xs font-mono font-bold uppercase tracking-wider text-rose-300">
+                          Camera Access Needed
+                        </span>
+                        <p className="text-[11px] text-slate-400 max-w-[200px]">
+                          {cameraError || 'Camera permission was not granted.'}
+                        </p>
+                        <button
+                          onClick={requestCamera}
+                          className="px-3.5 py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/40 text-cyan-200 text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <RefreshCw className="w-3.5 h-3.5" />
+                          <span>Grant Camera Permission</span>
+                        </button>
+                        <div className="pt-2 text-[10px] text-slate-500 font-mono">
+                          Reflective obsidian mirror active as fallback
+                        </div>
+                      </div>
+                    ) : (
+                      /* Idle State: Permission Request Prompt */
+                      <div className="w-full h-full rounded-[36px] bg-gradient-to-b from-slate-950 via-black to-slate-900 flex flex-col items-center justify-center relative p-6 text-center space-y-3">
+                        <div className="w-14 h-14 rounded-full bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300 shadow-[0_0_20px_rgba(6,182,212,0.4)]">
+                          <Camera className="w-7 h-7 text-cyan-300" />
+                        </div>
+                        <div>
+                          <span className="text-xs font-mono font-bold uppercase tracking-wider text-cyan-300 block">
+                            Front Camera Mirror
+                          </span>
+                          <span className="text-[11px] text-slate-400 font-light block mt-1">
+                            Gaze upon your true reflection with compassionate presence
+                          </span>
+                        </div>
+                        <button
+                          onClick={requestCamera}
+                          className="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition-all shadow-[0_0_15px_rgba(6,182,212,0.4)] flex items-center gap-2 cursor-pointer"
+                        >
+                          <Camera className="w-3.5 h-3.5" />
+                          <span>Enable Front Camera</span>
+                        </button>
+                        <span className="text-[9px] text-slate-500 font-mono">
+                          100% Private • Local Memory Only • Zero Recording
+                        </span>
+                      </div>
+                    )}
                   </motion.div>
                 </div>
               )}

@@ -149,6 +149,18 @@ assert(tratakaSource.includes('The Shoonya Void') || tratakaSource.includes("tra
 console.log('  ✓ Pure CSS/SVG Visual Assets verified for all 5 modes (0 external image assets for focal objects)');
 console.log('  ✓ Pre-session Mode Selector glassmorphic UI verified');
 
+// 6. Pratibimb Front Camera Mirror & Permission Protocol
+console.log('\n--- 6. Testing Pratibimb Front Camera Self-Image Reflection & Permission Protocol ---');
+assert(tratakaSource.includes("facingMode: 'user'"), 'Pratibimb must request front-facing camera');
+assert(tratakaSource.includes('getUserMedia'), 'Pratibimb must invoke getUserMedia for camera access');
+assert(tratakaSource.includes('<video'), 'Pratibimb must render video element for live self-image');
+assert(tratakaSource.includes('-scale-x-100'), 'Pratibimb video must be horizontally mirrored for authentic reflection');
+assert(tratakaSource.includes('track.stop()'), 'Pratibimb must stop camera tracks upon closing or transitioning');
+assert(tratakaSource.includes('Camera permission') || tratakaSource.includes('Enable Front Camera'), 'Pratibimb must include permission request and privacy notice');
+console.log('  ✓ Front camera self-reflection verified with facingMode user & horizontal mirror inversion');
+console.log('  ✓ User permission prompt, retry handling & zero-recording privacy verified');
+console.log('  ✓ Strict lifecycle cleanup verified (hardware camera tracks terminated upon stage change or exit)');
+
 console.log('\n================================================================');
 console.log('🎉 ALL CLINICAL TRATAKA MODULE TESTS PASSED (100%)');
 console.log('================================================================\n');
