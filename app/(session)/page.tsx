@@ -572,6 +572,14 @@ export default function SanctuarySessionPage() {
         transition={{ duration: 0.4 }}
         className="flex-1 flex flex-col justify-between overflow-hidden relative bg-gradient-to-b from-slate-950 via-slate-900/30 to-slate-950"
       >
+        {/* Psychological / Hypnotic Concentric Visual Anchor (Center Column Only) */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none -z-10 overflow-hidden select-none">
+          <div
+            className="w-[420px] sm:w-[580px] md:w-[700px] h-[420px] sm:h-[580px] md:h-[700px] bg-[url('/hypnotic-circles.png')] bg-center bg-no-repeat bg-[length:50%] sm:bg-[length:60%] md:bg-[length:65%] opacity-15 animate-[spin_120s_linear_infinite] [mask-image:radial-gradient(circle_at_center,black_30%,transparent_70%)]"
+            style={{ willChange: "transform" }}
+          />
+        </div>
+
         {/* Upper Area: Glowing Breathing Orb / Visualizer */}
         <div className="shrink-0 pt-4 px-4 z-10">
           <BreathingVisualizerOrb
