@@ -93,9 +93,43 @@ export function runHiddenCognitiveDiagnostics(userText: string): CognitiveDiagno
   // 0. Detect Conversational Social Intents
   let conversationalIntent: CognitiveDiagnosticResult['conversationalIntent'] = 'distress_expression';
   if (
-    lower.includes('stop repeating') || lower.includes('again and again') || lower.includes('same question') ||
-    lower.includes('repeating the same') || lower.includes('same sentences') || lower.includes('stuck in loop') ||
-    lower.includes('stuck in a loop') || lower.includes('why do you keep asking')
+    lower.includes('stop repeating') ||
+    lower.includes('again and again') ||
+    lower.includes('same question') ||
+    lower.includes('repeating the same') ||
+    lower.includes('same sentence') ||
+    lower.includes('same reply') ||
+    lower.includes('same replies') ||
+    lower.includes('same answer') ||
+    lower.includes('same response') ||
+    lower.includes('same thing') ||
+    lower.includes('same dialogue') ||
+    lower.includes('same words') ||
+    lower.includes('again same') ||
+    lower.includes('keep repeating') ||
+    lower.includes('repeating yourself') ||
+    lower.includes('repeats the same') ||
+    lower.includes('stuck in loop') ||
+    lower.includes('stuck in a loop') ||
+    lower.includes('in a loop') ||
+    lower.includes('in loop') ||
+    lower.includes('looping') ||
+    lower.includes('why do you keep asking') ||
+    lower.includes('bar bar') ||
+    lower.includes('baar baar') ||
+    lower.includes('wahi baat') ||
+    lower.includes('wahi sentence') ||
+    lower.includes('ek hi baat') ||
+    lower.includes('ek hi sentence') ||
+    lower.includes('ek hi dialogue') ||
+    lower.includes('dobara wahi') ||
+    lower.includes('phir se wahi') ||
+    text.includes('बार बार') ||
+    text.includes('वही बात') ||
+    text.includes('एक ही बात') ||
+    text.includes('एक ही वाक्य') ||
+    text.includes('दोबारा वही') ||
+    text.includes('फिर वही')
   ) {
     conversationalIntent = 'repetition_complaint';
   } else if (
@@ -155,7 +189,9 @@ export function runHiddenCognitiveDiagnostics(userText: string): CognitiveDiagno
       'stop', 'maybe', 'always', 'everyone', 'everything', 'never', 'nothing', 'nobody', 'parents',
       'parent', 'incompetent', 'idiot', 'stupid', 'useless', 'failure', 'worst', 'disaster',
       'again', 'single', 'time', 'night', 'morning', 'evening', 'tomorrow', 'sunday', 'monday',
-      'such', 'mess', 'passed', 'matter', 'matters', 'most', 'बहुत', 'सकते', 'सकता', 'सकती',
+      'such', 'mess', 'passed', 'matter', 'matters', 'most', 'same', 'sentence', 'sentences',
+      'using', 'reply', 'replies', 'words', 'speak', 'speaking', 'repeat', 'repeating',
+      'बहुत', 'सकते', 'सकता', 'सकती',
       'रहा', 'रही', 'रहे', 'होता', 'होती', 'होते', 'करना', 'करूं', 'करें', 'मुझे', 'आपको'
     ]);
     const contentWords = rawWords.filter((w) => !stopWords.has(w.toLowerCase()));

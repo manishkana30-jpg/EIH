@@ -164,94 +164,154 @@ function runConversationalDiversityTests() {
   console.log('  ✓ 8 consecutive failure turns produced 8 distinct Socratic & somatic reframings.\n');
 
   // ------------------------------------------------------------------------
-  // SUITE 4: Multi-Language Anti-Looping (Hindi, Hinglish, Spanish, French, German)
+  // SUITE 4: Multi-Language 12-Turn Anti-Looping (Hindi, Hinglish, Spanish, French, German)
   // ------------------------------------------------------------------------
-  console.log('--- 4. Testing Multi-Language Consecutive Anti-Looping ---');
+  console.log('--- 4. Testing Multi-Language Consecutive Anti-Looping (Full 12 Turns) ---');
 
-  // 4A: Hindi (Devanagari)
+  // 4A: Hindi (Devanagari) - 12 Turns
   const hindiTurns = [
     "आज ऑफिस में बहुत ज्यादा काम का तनाव था।",
     "बॉस ने सबके सामने बहुत बुरा भला कहा।",
     "मुझे समझ नहीं आ रहा क्या करूं, बहुत घबराहट हो रही है।",
     "क्या आप मुझे कोई उपाय या सलाह दे सकते हैं?",
+    "रात को ठीक से नींद भी नहीं आती, मन बेचैन रहता है।",
+    "घर वाले भी मुझसे बहुत ज्यादा उम्मीदें रखते हैं।",
+    "मुझे लगता है कि मैं किसी काम के लायक नहीं हूँ।",
+    "हर बार मेरे साथ ही ऐसा क्यों होता है?",
+    "शरीर में भारीपन और थकान महसूस हो रही है।",
+    "क्या प्राणायाम करने से मुझे कोई राहत मिलेगी?",
+    "मैं इस नकारात्मक सोच के चक्र से बाहर निकलना चाहता हूँ।",
+    "आज के इस सत्र के बाद मुझे क्या कदम उठाना चाहिए?",
   ];
   const hindiKeys = new Set();
   const hindiReplies = [];
-  for (const t of hindiTurns) {
-    const res = generateDynamicCompanionReply({ userText: t, sessionUsedKeys: hindiKeys });
-    assert(!hindiReplies.includes(res.reply), `Hindi duplicate: "${res.reply}"`);
+  const hindiHistory = [];
+  for (let i = 0; i < hindiTurns.length; i++) {
+    const t = hindiTurns[i];
+    const res = generateDynamicCompanionReply({ userText: t, sessionUsedKeys: hindiKeys, history: hindiHistory });
+    assert(!hindiReplies.includes(res.reply), `Hindi turn ${i + 1} duplicate: "${res.reply}"`);
     assert(res.detectedLanguage === 'hi');
     hindiReplies.push(res.reply);
+    hindiHistory.push({ role: 'user', text: t });
+    hindiHistory.push({ role: 'assistant', text: res.reply });
   }
-  console.log('  ✓ Hindi (Devanagari): 4 distinct consecutive turns verified.');
+  console.log('  ✓ Hindi (Devanagari): 12 distinct consecutive turns verified.');
 
-  // 4B: Hinglish
+  // 4B: Hinglish - 12 Turns
   const hinglishTurns = [
     "Mujhe office mein bohot zyada tension ho raha hai.",
     "Manager ne project reject kar diya aur bohot daanta.",
     "Main bohot pareshan hoon aur dimag kaam nahi kar raha.",
     "Kya karu shanti ke liye koi remedy bataiye?",
+    "Neend nahi aati raat ko overthinking ki wajah se.",
+    "Lagta hai main kabhi successful nahi ho paunga.",
+    "Family ka bhi bohot pressure hai mere upar.",
+    "Gussa bohot jaldi aa jata hai chhoti baaton par.",
+    "Body mein heavy fatigue aur headache feel hota hai.",
+    "Pranayama kaise start karu thoda guide karein.",
+    "Overthinking loop ko break karne ka best tareeqa kya hai?",
+    "Aaj ke din ke liye koi positive suggestion dein.",
   ];
   const hinglishKeys = new Set();
   const hinglishReplies = [];
-  for (const t of hinglishTurns) {
-    const res = generateDynamicCompanionReply({ userText: t, sessionUsedKeys: hinglishKeys });
-    assert(!hinglishReplies.includes(res.reply), `Hinglish duplicate: "${res.reply}"`);
+  const hinglishHistory = [];
+  for (let i = 0; i < hinglishTurns.length; i++) {
+    const t = hinglishTurns[i];
+    const res = generateDynamicCompanionReply({ userText: t, sessionUsedKeys: hinglishKeys, history: hinglishHistory });
+    assert(!hinglishReplies.includes(res.reply), `Hinglish turn ${i + 1} duplicate: "${res.reply}"`);
     assert(res.detectedLanguage === 'hi');
     hinglishReplies.push(res.reply);
+    hinglishHistory.push({ role: 'user', text: t });
+    hinglishHistory.push({ role: 'assistant', text: res.reply });
   }
-  console.log('  ✓ Hinglish (Roman Hindi): 4 distinct consecutive turns verified.');
+  console.log('  ✓ Hinglish (Roman Hindi): 12 distinct consecutive turns verified.');
 
-  // 4C: Spanish
+  // 4C: Spanish - 12 Turns
   const spanishTurns = [
     "Hola, tengo mucho estrés en el trabajo hoy.",
     "Mi jefe fue muy injusto conmigo en la oficina.",
     "Me siento muy triste y abrumado con todo esto.",
     "¿Qué puedo hacer para calmarme?",
+    "No puedo dormir bien por las noches debido a la ansiedad.",
+    "Siento que todo el mundo me juzga negativamente.",
+    "Tengo miedo de perder mi trabajo y no poder pagar el alquiler.",
+    "El agotamiento mental es insoportable ahora mismo.",
+    "¿Hay algún ejercicio de respiración que recomiende?",
+    "Quiero aprender a poner límites saludables.",
+    "A veces siento una fuerte presión en el pecho.",
+    "Gracias por escucharme, ¿cuál es el siguiente paso?",
   ];
   const spanishKeys = new Set();
   const spanishReplies = [];
-  for (const t of spanishTurns) {
-    const res = generateDynamicCompanionReply({ userText: t, sessionUsedKeys: spanishKeys });
-    assert(!spanishReplies.includes(res.reply), `Spanish duplicate: "${res.reply}"`);
+  const spanishHistory = [];
+  for (let i = 0; i < spanishTurns.length; i++) {
+    const t = spanishTurns[i];
+    const res = generateDynamicCompanionReply({ userText: t, sessionUsedKeys: spanishKeys, history: spanishHistory });
+    assert(!spanishReplies.includes(res.reply), `Spanish turn ${i + 1} duplicate: "${res.reply}"`);
     assert(res.detectedLanguage === 'es');
     spanishReplies.push(res.reply);
+    spanishHistory.push({ role: 'user', text: t });
+    spanishHistory.push({ role: 'assistant', text: res.reply });
   }
-  console.log('  ✓ Spanish (Español): 4 distinct consecutive turns verified.');
+  console.log('  ✓ Spanish (Español): 12 distinct consecutive turns verified.');
 
-  // 4D: French
+  // 4D: French - 12 Turns
   const frenchTurns = [
     "Bonjour, je suis très stressé par mon travail.",
     "Mon chef me met une pression insupportable.",
     "Je me sens épuisé et incapable de me détendre.",
     "Comment calmer cette anxiété s'il vous plaît?",
+    "Les insomnies s'accumulent et mon énergie est au plus bas.",
+    "J'ai l'impression de ne jamais en faire assez.",
+    "La solitude pèse lourdement sur mon moral.",
+    "Comment éviter de ruminer les mêmes pensées?",
+    "Mon rythme cardiaque s'accélère sans raison apparente.",
+    "Pouvez-vous m'enseigner un exercice de respiration apaisant?",
+    "Je souhaite retrouver ma clarté d'esprit.",
+    "Quel micro-geste puis-je poser dès aujourd'hui?",
   ];
   const frenchKeys = new Set();
   const frenchReplies = [];
-  for (const t of frenchTurns) {
-    const res = generateDynamicCompanionReply({ userText: t, sessionUsedKeys: frenchKeys });
-    assert(!frenchReplies.includes(res.reply), `French duplicate: "${res.reply}"`);
+  const frenchHistory = [];
+  for (let i = 0; i < frenchTurns.length; i++) {
+    const t = frenchTurns[i];
+    const res = generateDynamicCompanionReply({ userText: t, sessionUsedKeys: frenchKeys, history: frenchHistory });
+    assert(!frenchReplies.includes(res.reply), `French turn ${i + 1} duplicate: "${res.reply}"`);
     assert(res.detectedLanguage === 'fr');
     frenchReplies.push(res.reply);
+    frenchHistory.push({ role: 'user', text: t });
+    frenchHistory.push({ role: 'assistant', text: res.reply });
   }
-  console.log('  ✓ French (Français): 4 distinct consecutive turns verified.');
+  console.log('  ✓ French (Français): 12 distinct consecutive turns verified.');
 
-  // 4E: German
+  // 4E: German - 12 Turns
   const germanTurns = [
     "Hallo, ich habe heute großen Stress bei der Arbeit.",
     "Mein Chef fordert zu viel und ich bin überfordert.",
     "Ich fühle mich völlig erschöpft und ängstlich.",
     "Was kann ich tun, um mich zu beruhigen?",
+    "Nachts kreisen meine Gedanken und ich finde keinen Schlaf.",
+    "Ich habe Versagensängste bezüglich meiner Zukunft.",
+    "Die ständige Hektik raubt mir jegliche Lebensfreude.",
+    "Wie kann ich lernen, rechtzeitig Nein zu sagen?",
+    "Ich spüre eine Enge in der Brust und körperliche Unruhe.",
+    "Welche Atemübung hilft bei akuter Anspannung?",
+    "Ich möchte mich aus dieser Gedankenspirale befreien.",
+    "Was ist der nächste sanfte Schritt für meine Erholung?",
   ];
   const germanKeys = new Set();
   const germanReplies = [];
-  for (const t of germanTurns) {
-    const res = generateDynamicCompanionReply({ userText: t, sessionUsedKeys: germanKeys });
-    assert(!germanReplies.includes(res.reply), `German duplicate: "${res.reply}"`);
+  const germanHistory = [];
+  for (let i = 0; i < germanTurns.length; i++) {
+    const t = germanTurns[i];
+    const res = generateDynamicCompanionReply({ userText: t, sessionUsedKeys: germanKeys, history: germanHistory });
+    assert(!germanReplies.includes(res.reply), `German turn ${i + 1} duplicate: "${res.reply}"`);
     assert(res.detectedLanguage === 'de');
     germanReplies.push(res.reply);
+    germanHistory.push({ role: 'user', text: t });
+    germanHistory.push({ role: 'assistant', text: res.reply });
   }
-  console.log('  ✓ German (Deutsch): 4 distinct consecutive turns verified.\n');
+  console.log('  ✓ German (Deutsch): 12 distinct consecutive turns verified.\n');
 
   // ------------------------------------------------------------------------
   // SUITE 5: Dynamic Syntactic Frame Alternation
@@ -283,8 +343,13 @@ function runConversationalDiversityTests() {
     { text: "Stop repeating the same thing over and over!", lang: 'en' },
     { text: "You are stuck in a loop, answer properly", lang: 'en' },
     { text: "Why do you keep asking the same question?", lang: 'en' },
+    { text: "again same sentence it is using", lang: 'en' },
+    { text: "same sentence again", lang: 'en' },
+    { text: "it is using same replies", lang: 'en' },
     { text: "बार बार वही बात मत बोलो", lang: 'hi' },
     { text: "Aap bar bar same dialogue repeat kar rahe ho", lang: 'hi' },
+    { text: "wahi sentence dobara bol rahe ho", lang: 'hi' },
+    { text: "ek hi baat baar baar repeat ho rahi hai", lang: 'hi' },
   ];
 
   for (const cc of complaintCases) {

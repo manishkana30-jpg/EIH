@@ -70,8 +70,20 @@ CRISIS_MESSAGE = (
     "You do not have to carry this alone."
 )
 
-def build_healer_system_prompt(retrieved_rag_data: str = "") -> str:
+def build_healer_system_prompt(retrieved_rag_data: str = "", target_locale: str = "en-US") -> str:
     rag_context = retrieved_rag_data.strip() if retrieved_rag_data and retrieved_rag_data.strip() else "Evidence-Based Cognitive Behavioral Therapy and Somatic Nervous System Regulation Protocols."
+
+    lang_directive = ""
+    loc_lower = (target_locale or "en-US").lower()
+    if loc_lower.startswith("hi") or "hindi" in loc_lower or "in" in loc_lower:
+        lang_directive = "\n\n### MANDATORY MULTILINGUAL CLINICAL DIRECTIVE:\nYou MUST formulate your ENTIRE therapeutic response in fluent, empathetic Hindi (हिंदी).\nStrictly DO NOT output English sentences or raw English formatting."
+    elif loc_lower.startswith("es"):
+        lang_directive = "\n\n### MANDATORY MULTILINGUAL CLINICAL DIRECTIVE:\nYou MUST formulate your ENTIRE therapeutic response in fluent, empathetic Spanish (Español)."
+    elif loc_lower.startswith("fr"):
+        lang_directive = "\n\n### MANDATORY MULTILINGUAL CLINICAL DIRECTIVE:\nYou MUST formulate your ENTIRE therapeutic response in fluent, empathetic French (Français)."
+    elif loc_lower.startswith("de"):
+        lang_directive = "\n\n### MANDATORY MULTILINGUAL CLINICAL DIRECTIVE:\nYou MUST formulate your ENTIRE therapeutic response in fluent, empathetic German (Deutsch)."
+
     return f"""You are an Expert Clinical Psychologist and Emotional Resilience Trainer integrating Modern Neuropsychology with Ayurvedic Sattvavajaya Chikitsa.
 
 You MUST NEVER use generic greetings, repetitive platitudes, or filler phrases. Respond directly with profound clinical insight.
@@ -87,12 +99,12 @@ You must ground your intervention strictly in the following retrieved clinical p
 [RETRIEVED_PROTOCOL]: {rag_context}
 
 ### PHASE 3: THE INTERVENTION (Your Output)
-Formulate a highly empathetic, actionable response that trains the user's emotional resilience based strictly on the best psychological theory. Your output must follow this exact structure:
-1. DEEP VALIDATION: In one sentence, deeply validate their exact emotion and somatic experience without trying to "fix" it immediately. 
-2. CBT REFRAME: Apply the specific cognitive reframe from the retrieved protocol to shift their perspective.
-3. CLINICAL PRESCRIPTION: Prescribe the exact somatic anchor or psychological exercise from the protocol.
+Formulate a warm, highly empathetic, and actionable response that trains the user's emotional resilience in a single, fluid conversational paragraph (3-4 sentences):
+- Deeply validate their exact emotional and bodily state with compassion without immediate fixing.
+- Provide a targeted cognitive reframe from the retrieved protocol to shift perspective.
+- Prescribe the specific somatic anchor or pranayama breathwork exercise.
 
-RULES: Keep your response concise (3-4 sentences). Do not use Markdown formatting, asterisks, or bullet points, as your response will be synthesized into human speech."""
+RULES: Keep your response concise (3-4 sentences in a single fluid paragraph). DO NOT output numbered lists (1., 2., 3.), bullet points, section headers (like "Validation:", "CBT Reframe:"), asterisks, or markdown formatting, as your response will be synthesized directly into human speech.{lang_directive}"""
 
 SYSTEM_PERSONA = build_healer_system_prompt("Evidence-Based Cognitive Behavioral Therapy & Somatic Grounding Protocols.")
 
@@ -193,7 +205,14 @@ class KeylessPsychologistPartner:
         t = (text or "").lower().strip()
 
         # 1. Repetition or Looping Complaints (Immediate Priority Interceptor)
-        if any(w in t for w in ["stop repeating", "repeating yourself", "repeating the same", "same thing over", "stuck in a loop", "same dialogue", "bar bar", "wahi baat", "same sentence", "saying the same"]):
+        if any(w in t for w in [
+            "stop repeating", "repeating yourself", "repeating the same", "same thing over",
+            "stuck in a loop", "stuck in loop", "in a loop", "in loop", "looping",
+            "same dialogue", "bar bar", "baar baar", "wahi baat", "wahi sentence",
+            "same sentence", "same sentences", "same reply", "same replies", "same answer",
+            "again same", "saying the same", "ek hi sentence", "ek hi baat", "ek hi dialogue",
+            "dobara wahi", "phir se wahi", "बार बार", "वही बात", "एक ही बात", "एक ही वाक्य", "दोबारा वही", "फिर वही"
+        ]):
             return "loop_complaint"
 
         # 2. Identity Inquiry
@@ -300,7 +319,7 @@ class KeylessPsychologistPartner:
         locale: str = "en-US",
     ) -> tuple[str | None, str]:
         """Calls local Ollama daemon or cascaded LLM inference with multi-turn history and 3-phase prompt."""
-        sys_prompt = build_healer_system_prompt(context)
+        sys_prompt = build_healer_system_prompt(context, target_locale=locale)
         messages = [{"role": "system", "content": sys_prompt}]
         if history:
             for h in history[-6:]:
@@ -429,6 +448,30 @@ class KeylessPsychologistPartner:
                 sources=[],
                 engine_used="Deterministic Crisis Safety Interceptor",
                 is_crisis=True,
+                latency_ms=int((time.perf_counter() - start_time) * 1000)
+            )
+
+        intent = self._detect_intent(user_message)
+        if intent == "loop_complaint":
+            telemetry = self._heuristic_analysis(user_message)
+            telemetry.dominant_emotion = "Loop Reset"
+            loop_msg = "I apologize for repeating myself. Let us step out of any fixed patterns and reset completely: speak to me freely about whatever is on your mind right now, without any rigid steps."
+            loc_lower = (locale or "").lower()
+            if loc_lower.startswith("hi") or "hindi" in loc_lower or re.search(r"[\u0900-\u097F]", user_message):
+                loop_msg = "मैं अपनी बात दोहराने के लिए क्षमा चाहता हूँ। आइए किसी निश्चित पैटर्न से बाहर निकलकर बिल्कुल नए सिरे से शुरुआत करें: इस समय आपके मन में जो भी बात या उलझन चल रही है, उसे बिना किसी झिझक के सीधे मुझसे साझा करें।"
+            elif loc_lower.startswith("es"):
+                loop_msg = "Me disculpo sinceramente por sonar repetitivo. Dejemos de lado cualquier respuesta estructurada y hablemos directamente: ¿qué es lo que realmente estás sintiendo o pensando en este momento?"
+            elif loc_lower.startswith("fr"):
+                loop_msg = "Je vous présente mes excuses pour ces répétitions. Sortons de tout schéma figé et repartons à zéro : dites-moi librement ce que vous traversez en ce moment même."
+            elif loc_lower.startswith("de"):
+                loop_msg = "Ich entschuldige mich aufrichtig für die Wiederholungen. Lassen Sie uns jedes starre Muster hinter uns lassen und direkt sprechen: Was geht Ihnen in diesem Moment wirklich durch den Kopf?"
+
+            return HealerResponse(
+                reply=loop_msg,
+                telemetry=telemetry,
+                sources=[],
+                engine_used="Deterministic Loop Reset Interceptor",
+                somatic_anchor="fresh start",
                 latency_ms=int((time.perf_counter() - start_time) * 1000)
             )
 

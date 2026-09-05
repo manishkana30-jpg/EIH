@@ -490,27 +490,56 @@ function getLocalizedClinicalSolution(
  * Localize anchor into target language so no raw English anchor leaks into non-English sentences.
  */
 function localizeAnchor(rawText: string, langCode: string, isDevanagari: boolean): string {
-  const lower = rawText.toLowerCase();
+  const lower = (rawText || '').toLowerCase();
 
   if (langCode === 'hi') {
     if (isDevanagari) {
-      if (lower.includes('work') || lower.includes('office') || lower.includes('job') || lower.includes('kaam') || lower.includes('boss')) {
+      if (lower.includes('work') || lower.includes('office') || lower.includes('job') || lower.includes('kaam') || lower.includes('boss') || lower.includes('काम') || lower.includes('दफ्तर') || lower.includes('बॉस')) {
         return "काम और दफ्तर के दबाव";
       }
-      if (lower.includes('exam') || lower.includes('padhai') || lower.includes('study') || lower.includes('test')) {
+      if (lower.includes('exam') || lower.includes('padhai') || lower.includes('study') || lower.includes('test') || lower.includes('परीक्षा') || lower.includes('पढ़ाई') || lower.includes('पेपर')) {
         return "परीक्षा और पढ़ाई की चिंता";
       }
-      if (lower.includes('sleep') || lower.includes('neend') || lower.includes('insomnia')) {
+      if (lower.includes('sleep') || lower.includes('neend') || lower.includes('insomnia') || lower.includes('नींद') || lower.includes('रात')) {
         return "अनिद्रा और बेचैनी";
       }
-      if (lower.includes('health') || lower.includes('bimar') || lower.includes('pain') || lower.includes('dard')) {
+      if (lower.includes('health') || lower.includes('bimar') || lower.includes('pain') || lower.includes('dard') || lower.includes('बीमार') || lower.includes('दर्द') || lower.includes('तबीयत')) {
         return "स्वास्थ्य और शारीरिक तनाव";
       }
-      if (lower.includes('relationship') || lower.includes('breakup') || lower.includes('partner') || lower.includes('dost')) {
+      if (lower.includes('relationship') || lower.includes('breakup') || lower.includes('partner') || lower.includes('dost') || lower.includes('friend') || lower.includes('दोस्त') || lower.includes('रिश्ते')) {
         return "रिश्तों की उलझन";
       }
-      return "इस परिस्थिति और तनाव";
+      if (lower.includes('money') || lower.includes('paise') || lower.includes('salary') || lower.includes('debt') || lower.includes('पैसे') || lower.includes('खर्च') || lower.includes('कर्ज')) {
+        return "आर्थिक चिंता और दबाव";
+      }
+      if (lower.includes('gussa') || lower.includes('anger') || lower.includes('angry') || lower.includes('गुस्सा') || lower.includes('क्रोध')) {
+        return "क्रोध और मानसिक असंतोष";
+      }
+      if (lower.includes('alone') || lower.includes('lonely') || lower.includes('akela') || lower.includes('अकेला') || lower.includes('अकेलेपन')) {
+        return "अकेलेपन और अलगाव";
+      }
+      if (lower.includes('fail') || lower.includes('har') || lower.includes('हार') || lower.includes('विफल')) {
+        return "इस असफलता और निराशा";
+      }
+      if (lower.includes('tired') || lower.includes('exhausted') || lower.includes('thak') || lower.includes('थकान') || lower.includes('थक')) {
+        return "शारीरिक व मानसिक थकान";
+      }
+
+      // Dynamic alternating anchors for general Hindi predicaments
+      const hindiFallbacks = [
+        "इस आंतरिक खिंचाव और दबाव",
+        "आपके द्वारा साझा किए गए इन अनुभवों",
+        "मन में चल रही इन उलझनों",
+        "वर्तमान परिस्थिति और तनाव",
+        "मन की इस असहज बेचैनी",
+        "इन चुनौतीपूर्ण भावनाओं और विचारों"
+      ];
+      let hash = 0;
+      for (let i = 0; i < rawText.length; i++) hash = (hash * 31 + rawText.charCodeAt(i)) & 0xffff;
+      return hindiFallbacks[Math.abs(hash) % hindiFallbacks.length];
     }
+
+    // Hinglish (Roman Hindi)
     if (lower.includes('work') || lower.includes('office') || lower.includes('job') || lower.includes('kaam') || lower.includes('boss')) {
       return "work aur office pressure";
     }
@@ -520,7 +549,35 @@ function localizeAnchor(rawText: string, langCode: string, isDevanagari: boolean
     if (lower.includes('sleep') || lower.includes('neend') || lower.includes('insomnia')) {
       return "restless sleep";
     }
-    return "is situation";
+    if (lower.includes('health') || lower.includes('bimar') || lower.includes('pain') || lower.includes('dard')) {
+      return "health aur physical strain";
+    }
+    if (lower.includes('relationship') || lower.includes('breakup') || lower.includes('partner') || lower.includes('dost') || lower.includes('friend')) {
+      return "relationship conflict";
+    }
+    if (lower.includes('money') || lower.includes('paise') || lower.includes('salary') || lower.includes('debt')) {
+      return "financial strain";
+    }
+    if (lower.includes('gussa') || lower.includes('anger') || lower.includes('angry')) {
+      return "gusse aur frustration";
+    }
+    if (lower.includes('alone') || lower.includes('lonely') || lower.includes('akela')) {
+      return "loneliness aur isolation";
+    }
+    if (lower.includes('fail') || lower.includes('har')) {
+      return "is setback";
+    }
+
+    const hinglishFallbacks = [
+      "is inner struggle",
+      "in shared experiences",
+      "is current scenario",
+      "in challenging thoughts",
+      "is situation aur strain"
+    ];
+    let hash = 0;
+    for (let i = 0; i < rawText.length; i++) hash = (hash * 31 + rawText.charCodeAt(i)) & 0xffff;
+    return hinglishFallbacks[Math.abs(hash) % hinglishFallbacks.length];
   }
 
   if (langCode === 'es') {
@@ -533,7 +590,13 @@ function localizeAnchor(rawText: string, langCode: string, isDevanagari: boolean
     if (lower.includes('salud') || lower.includes('dolor') || lower.includes('health')) {
       return "el malestar físico";
     }
-    return "esta situación";
+    if (lower.includes('pareja') || lower.includes('relacion') || lower.includes('relación') || lower.includes('amigo')) {
+      return "este conflicto personal";
+    }
+    const esFallbacks = ["esta situación", "esta sobrecarga emocional", "este momento de incertidumbre"];
+    let hash = 0;
+    for (let i = 0; i < rawText.length; i++) hash = (hash * 31 + rawText.charCodeAt(i)) & 0xffff;
+    return esFallbacks[Math.abs(hash) % esFallbacks.length];
   }
 
   if (langCode === 'fr') {
@@ -543,7 +606,13 @@ function localizeAnchor(rawText: string, langCode: string, isDevanagari: boolean
     if (lower.includes('exam') || lower.includes('études') || lower.includes('examen')) {
       return "la pression des examens";
     }
-    return "cette situation";
+    if (lower.includes('santé') || lower.includes('douleur') || lower.includes('health')) {
+      return "cet inconfort physique";
+    }
+    const frFallbacks = ["cette situation", "cette charge émotionnelle", "cette période d'incertitude"];
+    let hash = 0;
+    for (let i = 0; i < rawText.length; i++) hash = (hash * 31 + rawText.charCodeAt(i)) & 0xffff;
+    return frFallbacks[Math.abs(hash) % frFallbacks.length];
   }
 
   if (langCode === 'de') {
@@ -553,7 +622,13 @@ function localizeAnchor(rawText: string, langCode: string, isDevanagari: boolean
     if (lower.includes('exam') || lower.includes('prüfung') || lower.includes('studium')) {
       return "den Prüfungsstress";
     }
-    return "diese Situation";
+    if (lower.includes('gesundheit') || lower.includes('schmerz') || lower.includes('health')) {
+      return "die körperliche Belastung";
+    }
+    const deFallbacks = ["diese Situation", "diese emotionale Belastung", "diesen inneren Druck"];
+    let hash = 0;
+    for (let i = 0; i < rawText.length; i++) hash = (hash * 31 + rawText.charCodeAt(i)) & 0xffff;
+    return deFallbacks[Math.abs(hash) % deFallbacks.length];
   }
 
   if (lower.includes('presentation')) return 'your presentation';
@@ -612,11 +687,24 @@ export function detectUserSpokenLanguage(text: string): { langCode: string; spee
 
   // 2. Romanized / Latin script lexical markers scoring
   const hinglishMarkers = [
+    'main', 'mein', 'hoon', 'aur', 'ne', 'kar', 'diya', 'par', 'se', 'ki', 'ka', 'ko', 'ke',
     'mujhe', 'mera', 'meri', 'mere', 'hum', 'tum', 'aap', 'kaise', 'kya', 'nahi', 'nahin',
     'kyun', 'bahut', 'bohot', 'accha', 'theek', 'tension', 'pareshan', 'yaar', 'bhai',
-    'hai', 'hain', 'ho raha', 'karna', 'kuch', 'samajh', 'dard', 'baat', 'dost', 'kaisa',
-    'kaisi', 'lag raha', 'udas', 'khush', 'pata nahi', 'kuch nahi', 'suno', 'karu', 'karein',
-    'dimag', 'soch', 'kaam', 'ghabrahat', 'chinta'
+    'hai', 'hain', 'ho raha', 'karna', 'kuch', 'samajh', 'dard', 'baat', 'baaton', 'dost', 'kaisa',
+    'kaisi', 'lag raha', 'lagta', 'udas', 'khush', 'pata nahi', 'kuch nahi', 'suno', 'karu', 'karein',
+    'dimag', 'soch', 'kaam', 'ghabrahat', 'chinta', 'neend', 'aati', 'aata', 'raat', 'kabhi', 'paunga',
+    'paungi', 'bhi', 'upar', 'gussa', 'jaldi', 'chhoti', 'thoda', 'tareeqa', 'aaj', 'din',
+    'liye', 'dein', 'bataiye', 'shanti', 'daanta', 'wajah', 'hoga', 'hogi', 'karo', 'karne',
+    'hota', 'hoti', 'hote', 'raha', 'rahi', 'rahe'
+  ];
+
+  const englishMarkers = [
+    'the', 'this', 'that', 'with', 'from', 'have', 'what', 'your', 'about', 'feel', 'feeling',
+    'today', 'please', 'think', 'thinking', 'getting', 'trying', 'want', 'need', 'know',
+    'would', 'could', 'should', 'more', 'much', 'very', 'here', 'when', 'where', 'which',
+    'will', 'good', 'well', 'help', 'tell', 'talk', 'someone', 'anyone', 'something', 'anything',
+    'really', 'always', 'everyone', 'everything', 'never', 'nothing', 'nobody', 'worried', 'anxious',
+    'design', 'presentation', 'interview', 'driving', 'myself', 'because', 'cannot'
   ];
 
   const spanishMarkers = [
@@ -624,27 +712,49 @@ export function detectUserSpokenLanguage(text: string): { langCode: string; spee
     'amiga', 'muy', 'bien', 'por qué', 'porque', 'triste', 'ayuda', 'quiero', 'hacer', 'bueno',
     'dias', 'días', 'tardes', 'noches', 'estrés', 'estres', 'miedo', 'cansado', 'cansada',
     'como estas', 'cómo estás', 'abrumado', 'abrumada', 'trabajo', 'jefe', 'ansiedad', 'calmar',
-    'mi', 'mis', 'tu', 'tus', 'su', 'sus', 'nuestro', 'nuestra', 'para', 'pero', 'con', 'sin'
+    'calmarme', 'mis', 'tus', 'nuestro', 'nuestra', 'para', 'pero', 'con', 'sin',
+    'los', 'las', 'unos', 'unas', 'del', 'que', 'por',
+    'les', 'nos', 'todo', 'toda', 'todos', 'todas', 'mundo', 'veces',
+    'fuerte', 'presión', 'pecho', 'siguiente', 'paso', 'aprender', 'poner', 'límites', 'saludables',
+    'respiración', 'ejercicio', 'recomiende', 'agotamiento', 'mental', 'insoportable', 'mismo',
+    'perder', 'pagar', 'alquiler', 'dormir', 'debido', 'injusto', 'oficina', 'conmigo', 'puedo', 'puedo hacer'
   ];
 
   const frenchMarkers = [
     'bonjour', 'salut', 'suis', 'es', 'est', 'sommes', 'êtes', 'sont', 'triste', 'peur', 'merci',
     'avec', 'pourquoi', 'très', 'fatigué', 'fatiguée', 'besoin', 'veux', 'ami', 'amie', 'comment',
     'sens', 'stressé', 'stressée', 'aide', 'journée', 'seul', 'seule', 'travail', 'chef', 'boulot',
-    'anxiété', 'angoisse', 'calmer', 'mon', 'ma', 'mes', 'ton', 'ta', 'tes', 'son', 'sa', 'ses'
+    'anxiété', 'angoisse', 'calmer', 'mon', 'ma', 'mes', 'ton', 'ta', 'tes', 'son', 'sa', 'ses',
+    'les', 'des', 'aux', 'qui', 'dans', 'je', 'tu', 'il', 'elle', 'nous', 'vous', 'ils', 'elles',
+    'pour', 'pas', 'plus', 'cet', 'cette', 'ces', 'quel', 'quelle', 'souhaite', 'retrouver',
+    'toute', 'tous', 'toutes', 'faire', 'pouvez', 'clarté', 'esprit', 'micro', 'geste', 'poser',
+    'svp', 'plait', 'plaît', 'aujourd', 'hui', 'insomnies', 'énergie', 'solitude', 'ruminer',
+    'pensées', 'cardiaque', 'respiration', 'geste', 'poser', 'épuisé', 'incapable', 'détendre',
+    'pression', 'insupportable', 'rythme', 'accélère', 'raison', 'apparente', 'éviter', 'mêmes',
+    'pèse', 'lourdement', 'moral', 'impression', 'jamais', 'assez', 'accumulent', 'apaisant', 'enseigner'
   ];
 
   const germanMarkers = [
     'hallo', 'fühle', 'mich', 'danke', 'sehr', 'warum', 'angst', 'traurig', 'überfordert',
     'freund', 'heute', 'nicht', 'kann', 'gut', 'geht', 'hilfe', 'müde', 'einsam', 'arbeit',
-    'chef', 'stress', 'beruhigen', 'ich', 'wir', 'mein', 'meine', 'dein', 'deine', 'sein'
+    'chef', 'stress', 'beruhigen', 'ich', 'wir', 'mein', 'meine', 'dein', 'deine', 'sein',
+    'der', 'die', 'das', 'den', 'dem', 'des', 'eine', 'einer', 'einem', 'einen',
+    'und', 'zum', 'zur', 'auf', 'für', 'mit', 'von', 'vom', 'bei', 'beim',
+    'über', 'unter', 'vor', 'nach', 'aus', 'wie', 'wer', 'wann',
+    'ihr', 'ihm', 'ihnen', 'uns', 'dich', 'dir', 'mir', 'sich',
+    'nachts', 'gedanken', 'schlaf', 'zukunft', 'lebensfreude', 'nein', 'sagen', 'brust',
+    'atemübung', 'gedankenspirale', 'schritt', 'erholung'
   ];
 
+  let enScore = 0;
   let hiScore = 0;
   let esScore = 0;
   let frScore = 0;
   let deScore = 0;
 
+  for (const m of englishMarkers) {
+    if (new RegExp(`\\b${m}\\b`, 'i').test(lower)) enScore += 1;
+  }
   for (const m of hinglishMarkers) {
     if (new RegExp(`\\b${m}\\b`, 'i').test(lower)) hiScore += 1;
   }
@@ -658,8 +768,8 @@ export function detectUserSpokenLanguage(text: string): { langCode: string; spee
     if (new RegExp(`\\b${m}\\b`, 'i').test(lower)) deScore += 1;
   }
 
-  const maxScore = Math.max(hiScore, esScore, frScore, deScore);
-  if (maxScore > 0) {
+  const maxScore = Math.max(enScore, hiScore, esScore, frScore, deScore);
+  if (maxScore > 0 && maxScore !== enScore) {
     if (deScore === maxScore) return { langCode: 'de', speechLocale: 'de-DE', name: 'German' };
     if (frScore === maxScore) return { langCode: 'fr', speechLocale: 'fr-FR', name: 'French' };
     if (esScore === maxScore) return { langCode: 'es', speechLocale: 'es-ES', name: 'Spanish' };
@@ -713,24 +823,50 @@ export function generateDynamicCompanionReply(context: ConversationalContext): C
     lower.includes('again and again') ||
     lower.includes('same question') ||
     lower.includes('repeating the same') ||
+    lower.includes('same sentence') ||
+    lower.includes('same reply') ||
+    lower.includes('same replies') ||
+    lower.includes('same answer') ||
+    lower.includes('same response') ||
+    lower.includes('same thing') ||
+    lower.includes('same dialogue') ||
+    lower.includes('same words') ||
+    lower.includes('again same') ||
+    lower.includes('keep repeating') ||
+    lower.includes('repeating yourself') ||
+    lower.includes('repeats the same') ||
     lower.includes('in loop') ||
+    lower.includes('in a loop') ||
     lower.includes('stuck in loop') ||
     lower.includes('stuck in a loop') ||
+    lower.includes('looping') ||
     lower.includes('bar bar') ||
+    lower.includes('baar baar') ||
     lower.includes('wahi baat') ||
-    text.includes('बार बार')
+    lower.includes('wahi sentence') ||
+    lower.includes('ek hi baat') ||
+    lower.includes('ek hi sentence') ||
+    lower.includes('ek hi dialogue') ||
+    lower.includes('dobara wahi') ||
+    lower.includes('phir se wahi') ||
+    text.includes('बार बार') ||
+    text.includes('वही बात') ||
+    text.includes('एक ही बात') ||
+    text.includes('एक ही वाक्य') ||
+    text.includes('दोबारा वही') ||
+    text.includes('फिर वही')
   ) {
-    let loopReply = "I acknowledge your feedback directly. Let us reset our focus: what is the core emotional challenge or priority you wish to explore right now?";
+    let loopReply = "I apologize for repeating myself. Let us step out of any fixed patterns and reset completely: speak to me freely about whatever is on your mind right now, without any rigid steps.";
     if (langInfo.langCode === 'hi') {
       loopReply = isDevanagari
-        ? "मैं आपकी बात को सीधे स्वीकार करता हूँ। बताइए, इस समय आपके लिए सबसे महत्वपूर्ण विचार या चुनौती क्या है?"
-        : "Main aapki baat ko seedhe accept karta hoon. Bataiye, is waqt aapke liye sabse zaroori thought ya challenge kya hai?";
+        ? "मैं अपनी बात दोहराने के लिए क्षमा चाहता हूँ। आइए किसी निश्चित पैटर्न से बाहर निकलकर बिल्कुल नए सिरे से शुरुआत करें: इस समय आपके मन में जो भी बात या उलझन चल रही है, उसे बिना किसी झिझक के सीधे मुझसे साझा करें।"
+        : "Main repeat karne ke liye maafi chahta hoon. Chaliye kisi fixed pattern se bahar nikal kar fresh start karte hain: is waqt aapke dil aur dimag mein kya chal raha hai, freely share karein.";
     } else if (langInfo.langCode === 'es') {
-      loopReply = "Entiendo perfectamente tu comentario. Cuéntame con claridad: ¿cuál es el desafío o emoción central que deseas abordar en este momento?";
+      loopReply = "Me disculpo sinceramente por sonar repetitivo. Dejemos de lado cualquier respuesta estructurada y hablemos directamente: ¿qué es lo que realmente estás sintiendo o pensando en este momento?";
     } else if (langInfo.langCode === 'fr') {
-      loopReply = "Je prends note directement de votre retour. Concentrons-nous sur l'essentiel : quel est le défi émotionnel prioritaire que vous souhaitez explorer ?";
+      loopReply = "Je vous présente mes excuses pour ces répétitions. Sortons de tout schéma figé et repartons à zéro : dites-moi librement ce que vous traversez en ce moment même.";
     } else if (langInfo.langCode === 'de') {
-      loopReply = "Ich nehme dein Feedback direkt an. Lass uns den Fokus neu setzen: Welches zentrale Anliegen beschäftigt dich in diesem Moment am meisten?";
+      loopReply = "Ich entschuldige mich aufrichtig für die Wiederholungen. Lassen Sie uns jedes starre Muster hinter uns lassen und direkt sprechen: Was geht Ihnen in diesem Moment wirklich durch den Kopf?";
     }
 
     return {
@@ -956,10 +1092,25 @@ function constructDynamicClinicalReply(
         return `${anchor} को लेकर लगातार चिंता करने से शरीर और मन का तनाव बढ़ता है। इस चक्र को धीमा करने के लिए ${cbtReframe}। अभी इसी पल ${somaticAnchor} द्वारा अपने नर्वस सिस्टम को शांत करें।`;
       }
       if (turnIndex === 5) {
-        return `${anchor} के संदर्भ में स्वयं पर अत्यधिक दबाव डालने के बजाय थोड़ा समय अपने लिए निकालें। ${cbtReframe}। गहरी आंतरिक शांति और संतुलन के लिए ${pranayama} करें।`;
+        return `${anchor} के संदर्भ में स्वयं पर अत्यधिक दबाव डालने के बजाय थोड़ा समय अपने लिए निकालें। याद रखें कि ${cbtReframe}। गहरी आंतरिक शांति और संतुलन के लिए ${pranayama} करें।`;
       }
-      if (turnIndex >= 6) {
-        return `${anchor} के अनुभव को गहराई से समझते हुए, यह याद रखें कि आपकी भावनाएं पूरी तरह मान्य हैं। ${somaticAnchor} के साथ ${microHabit} अपनाएं ताकि मन शांत और स्थिर हो सके।`;
+      if (turnIndex === 6) {
+        return `इस समय ${anchor} पर विचार करते हुए अपने शरीर में हो रही संवेदनाओं को महसूस करें। ${somaticAnchor} के माध्यम से उस तनाव को मुक्त करें। यह असहजता आपकी आंतरिक क्षमता को कम नहीं करती।`;
+      }
+      if (turnIndex === 7) {
+        return `${anchor} की जटिलताओं का सामना करते हुए खुद के प्रति कठोर होने के बजाय सहानुभूति रखें। एक महत्वपूर्ण कदम यह है कि ${microHabit}। अपनी वेगस नर्व को सुरक्षा का संकेत देने के लिए ${pranayama} करें।`;
+      }
+      if (turnIndex === 8) {
+        return `आइए ${anchor} से जुड़े मानसिक भार को थोड़ा कम करें। इस विचार पर गौर करें: ${cbtReframe}। अपने शरीर की स्थिति को तुरंत संतुलित करने के लिए ${somaticAnchor} अपनाएं।`;
+      }
+      if (turnIndex === 9) {
+        return `आप ${anchor} के संबंध में लंबे समय से एक भावनात्मक बोझ वहन कर रहे हैं। पुनर्बहाली के लिए ${microHabit} का पालन करें और ${pranayama} का सहारा लें। आज आप अपने लिए सबसे सौम्य कदम क्या उठा सकते हैं?`;
+      }
+      if (turnIndex === 10) {
+        return `${anchor} की स्थिति को समझना और स्वीकारना आत्म-सहानुभूति का परिचायक है। ध्यान रखें कि ${cbtReframe}। मन और तंत्रिका तंत्र को शांत करने के लिए ${somaticAnchor} और ${pranayama} करें।`;
+      }
+      if (turnIndex === 11) {
+        return `${anchor} से जुड़े इस भावनात्मक दबाव को धैर्य और समझदारी से संभालने की आवश्यकता है। एक वैज्ञानिक दृष्टिकोण यह है कि ${cbtReframe}। अपने शरीर को अभी ${somaticAnchor} और ${microHabit} से स्थिर करें।`;
       }
       return `${anchor} को लेकर यह तनाव महसूस होना स्वाभाविक है। इस समय ${cbtReframe}। अपने नर्वस सिस्टम को तुरंत स्थिर करने के लिए ${somaticAnchor} का अभ्यास करें और ${pranayama} करें।`;
     }
@@ -977,8 +1128,26 @@ function constructDynamicClinicalReply(
     if (turnIndex === 4) {
       return `${anchor} ko lekar constant overthinking body mein fight-or-flight trigger karti hai. Is thought loop ko break karne ke liye ${cbtReframe}. Abhi isi waqt ${somaticAnchor} se apne mind ko ground karein.`;
     }
-    if (turnIndex >= 5) {
+    if (turnIndex === 5) {
       return `${anchor} ke is phase mein khud par harsh hone ki jagah self-compassion zaroori hai. ${cbtReframe}. Reset karne ke liye ${pranayama} karein aur ${microHabit} follow karein.`;
+    }
+    if (turnIndex === 6) {
+      return `Is waqt notice karein ki ${anchor} ko lekar body mein kahan tension hold ho rahi hai. ${somaticAnchor} se use release karein. Yeh temporary discomfort aapki capability ko define nahi karta.`;
+    }
+    if (turnIndex === 7) {
+      return `${anchor} ke challenges ko handle karte waqt self-blame se bachein. Ek grounded step yeh hai ki ${microHabit}. Vagus nerve ko safety signal send karne ke liye ${pranayama} practice karein.`;
+    }
+    if (turnIndex === 8) {
+      return `Chaliye ${anchor} ke cognitive burden ko de-escalate karte hain. Is reality check par reflect karein: ${cbtReframe}. Immediate balance ke liye ${somaticAnchor} use karein.`;
+    }
+    if (turnIndex === 9) {
+      return `Aap kaafi time se ${anchor} ka heavy emotional weight carry kar rahe hain. Recovery ke liye ${microHabit} adopt karein aur ${pranayama} karein. Aaj khud ke liye ek gentle step kya le sakte hain?`;
+    }
+    if (turnIndex === 10) {
+      return `${anchor} ke saath deal karne mein patience aur self-kindness sabse important hai. Remember ki ${cbtReframe}. Nervous system ko settle karne ke liye ${somaticAnchor} aur ${pranayama} integrate karein.`;
+    }
+    if (turnIndex === 11) {
+      return `${anchor} se related stress structured clarity deserve karta hai. Ek scientifically proven shift yeh hai ki ${cbtReframe}. Body ko abhi ${somaticAnchor} aur ${microHabit} ke through ground karein.`;
     }
     return `${anchor} ko lekar jo strain aap feel kar rahe hain, wo completely natural hai. Is waqt ${cbtReframe}. Nervous system ko regulate karne ke liye ${somaticAnchor} practice karein aur ${pranayama} karein.`;
   }
@@ -996,8 +1165,26 @@ function constructDynamicClinicalReply(
     if (turnIndex === 4) {
       return `La preocupación constante sobre ${anchor} sobrecarga su sistema nervioso. Para romper ese ciclo, ${cbtReframe}. Regule su cuerpo en este instante con ${somaticAnchor}.`;
     }
-    if (turnIndex >= 5) {
+    if (turnIndex === 5) {
       return `Frente a ${anchor}, la autocompasión es esencial para sanar. Recuerde que ${cbtReframe}. Dese permiso para pausar y estabilizarse con ${pranayama} junto con ${microHabit}.`;
+    }
+    if (turnIndex === 6) {
+      return `Observe las sensaciones corporales presentes al reflexionar sobre ${anchor}. Libere esa tensión mediante ${somaticAnchor}. Este malestar pasajero no define su capacidad fundamental.`;
+    }
+    if (turnIndex === 7) {
+      return `Afrontar los retos vinculados a ${anchor} exige tratarse con objetividad y sin autocrítica. Un paso restaurador es ${microHabit}. Practique ${pranayama} para brindar calma a su sistema nervioso.`;
+    }
+    if (turnIndex === 8) {
+      return `Desescalemos la carga cognitiva que rodea a ${anchor}. Reflexione en esto: ${cbtReframe}. Estabilice su fisiología ahora mismo con ${somaticAnchor}.`;
+    }
+    if (turnIndex === 9) {
+      return `Lleva tiempo sosteniendo una carga emocional considerable en relación con ${anchor}. Un protocolo reparador es ${microHabit}, complementado con ${pranayama}. ¿Cuál es el paso más compasivo que puede dar hoy?`;
+    }
+    if (turnIndex === 10) {
+      return `Dar espacio a la complejidad de ${anchor} es un acto de genuina autocompasión. Tenga presente que ${cbtReframe}. Para serenar el cuerpo, combine ${somaticAnchor} y ${pranayama}.` ;
+    }
+    if (turnIndex === 11) {
+      return `El peso emocional vinculado a ${anchor} merece atención paciente y estructurada. Un cambio respaldado por la ciencia es ${cbtReframe}. Ancle su bienestar con ${somaticAnchor} y ${microHabit}.`;
     }
     return `Es comprensible sentir esta tensión respecto a ${anchor}. Desde la perspectiva cognitiva, ${cbtReframe}. Para regular su sistema nervioso ahora, practique ${somaticAnchor} junto con ${pranayama}.`;
   }
@@ -1015,8 +1202,26 @@ function constructDynamicClinicalReply(
     if (turnIndex === 4) {
       return `L'inquiétude répétée autour de ${anchor} maintient votre corps en alerte. Pour apaiser ce flux mental, ${cbtReframe}. Recentrez votre physiologie immédiatement avec ${somaticAnchor}.`;
     }
-    if (turnIndex >= 5) {
+    if (turnIndex === 5) {
       return `Face aux défis de ${anchor}, traitez-vous avec douceur et sans auto-jugement. Gardez à l'esprit que ${cbtReframe}. Retrouvez votre sérénité grâce à ${pranayama} et ${microHabit}.`;
+    }
+    if (turnIndex === 6) {
+      return `Observez les sensations corporelles qui émergent face à ${anchor}. Libérez cette tension physique avec ${somaticAnchor}. Cet inconfort passager ne remet pas en cause vos capacités fondamentales.`;
+    }
+    if (turnIndex === 7) {
+      return `Traverser les complexités de ${anchor} demande de faire preuve de bienveillance envers vous-même. Un pas constructif consiste à ${microHabit}. Pratiquez ${pranayama} pour apaiser en profondeur votre système vagal.`;
+    }
+    if (turnIndex === 8) {
+      return `Allégeons la surcharge cognitive entourant ${anchor}. Méditez sur ce point : ${cbtReframe}. Rééquilibrez votre état corporel sans attendre grâce à ${somaticAnchor}.`;
+    }
+    if (turnIndex === 9) {
+      return `Vous portez un fardeau émotionnel prolongé concernant ${anchor}. Un protocole réparateur repose sur ${microHabit}, renforcé par ${pranayama}. Quel geste bienveillant pouvez-vous accomplir pour vous-même aujourd'hui ?`;
+    }
+    if (turnIndex === 10) {
+      return `Accueillir avec lucidité la réalité de ${anchor} témoigne d'un réel respect de soi. Rappelez-vous que ${cbtReframe}. Pour réguler votre système nerveux, associez ${somaticAnchor} et ${pranayama}.`;
+    }
+    if (turnIndex === 11) {
+      return `Le poids émotionnel lié à ${anchor} mérite une attention patiente et structurée. Une approche scientifiquement étayée consiste à ${cbtReframe}. Ancrez votre physiologie dès maintenant avec ${somaticAnchor} et ${microHabit}.`;
     }
     return `Il est tout à fait légitime de ressentir cette pression autour de ${anchor}. Sur le plan cognitif, ${cbtReframe}. Pour apaiser votre système nerveux, pratiquez ${somaticAnchor} avec ${pranayama}.`;
   }
@@ -1034,8 +1239,26 @@ function constructDynamicClinicalReply(
     if (turnIndex === 4) {
       return `Die ständige Sorge um ${anchor} versetzt den Körper in eine ständige Alarmbereitschaft. Um diesen Kreislauf zu durchbrechen: ${cbtReframe}. Erden Sie Ihren Körper jetzt mit ${somaticAnchor}.`;
     }
-    if (turnIndex >= 5) {
+    if (turnIndex === 5) {
       return `Bezüglich ${anchor} ist gelebte Selbstfürsorge besonders wichtig. Verinnerlichen Sie: ${cbtReframe}. Schenken Sie sich eine heilsame Atempause mit ${pranayama} und ${microHabit}.`;
+    }
+    if (turnIndex === 6) {
+      return `Achten Sie auf die körperlichen Empfindungen, die im Zusammenhang mit ${anchor} auftreten. Lösen Sie diese Anspannung mit ${somaticAnchor}. Dieses vorübergehende Unbehagen schmälert nicht Ihre innere Stärke.`;
+    }
+    if (turnIndex === 7) {
+      return `Die Herausforderungen rund um ${anchor} erfordern einen mitfühlenden Umgang mit sich selbst ohne Selbstvorwürfe. Ein stärkender Schritt ist: ${microHabit}. Praktizieren Sie ${pranayama}, um Ihrem Vagusnerv Sicherheit zu signalisieren.`;
+    }
+    if (turnIndex === 8) {
+      return `Lassen Sie uns die mentale Last bezüglich ${anchor} abbauen. Reflektieren Sie über Folgendes: ${cbtReframe}. Erden Sie Ihren Körper umgehend mit ${somaticAnchor}.`;
+    }
+    if (turnIndex === 9) {
+      return `Sie tragen bezüglich ${anchor} bereits seit längerer Zeit eine spürbare emotionale Bürde. Ein heilsames Vorgehen ist: ${microHabit}, gestärkt durch ${pranayama}. Was ist der fürsorglichste nächste Schritt, den Sie heute für sich tun können?`;
+    }
+    if (turnIndex === 10) {
+      return `Der Komplexität von ${anchor} mit Raum und Verständnis zu begegnen, ist ein Akt wahrer Selbstfürsorge. Denken Sie daran: ${cbtReframe}. Um Ihr Nervensystem zu beruhigen, verbinden Sie ${somaticAnchor} und ${pranayama}.`;
+    }
+    if (turnIndex === 11) {
+      return `Das emotionale Gewicht rund um ${anchor} verdient geduldige und strukturierte Aufmerksamkeit. Ein wissenschaftlich fundierter Impuls lautet: ${cbtReframe}. Zentrieren Sie Ihren Körper jetzt mit ${somaticAnchor} und ${microHabit}.`;
     }
     return `Es ist verständlich, dass ${anchor} emotionale Anspannung auslöst. Aus kognitiver Sicht: ${cbtReframe}. Zur nachhaltigen Beruhigung des Nervensystems nutzen Sie ${somaticAnchor} und ${pranayama}.`;
   }
