@@ -36,7 +36,6 @@ import { EncryptedHistoryModal } from "./components/EncryptedHistoryModal";
 import { CrisisModal } from "./components/CrisisModal";
 import { SettingsModal } from "./components/SettingsModal";
 import { LanguageSelector } from "./components/LanguageSelector";
-import { BreathingVisualizerOrb } from "./components/BreathingVisualizerOrb";
 
 import { browserSpeechController } from "@/lib/audio/browser-speech";
 import { getCleanAudioStream } from "@/lib/audio/audio-manager";
@@ -572,28 +571,49 @@ export default function SanctuarySessionPage() {
         transition={{ duration: 0.4 }}
         className="flex-1 relative flex flex-col h-full h-screen max-h-screen overflow-hidden z-0 bg-gradient-to-b from-slate-950 via-slate-900/30 to-slate-950"
       >
-        {/* AUTOMATIC ROTATING HYPNOTIC SPIRAL */}
-        <div className="absolute inset-0 pointer-events-none -z-10 flex items-center justify-center opacity-40 [mask-image:radial-gradient(circle_at_center,black_40%,transparent_90%)]">
-          <img
-            src="/hypnotic-circles.png"
-            alt="Hypnotic Anchor"
-            className="w-full h-full object-cover min-w-[800px] min-h-[800px] animate-spin-ultra-slow"
-          />
+        {/* HYPNOTIC SPIRAL — CIRCULAR MASK */}
+        <div className="absolute inset-0 pointer-events-none -z-10 flex items-center justify-center">
+          {/*
+            rounded-full + overflow-hidden = hard circular clip on all four corners.
+            mask-image applied as inline style for cross-Tailwind-version safety
+            (arbitrary [mask-image:...] variants are unreliable before Tailwind v3.3).
+          */}
+          <div
+            className="relative w-[700px] h-[700px] rounded-full overflow-hidden opacity-50"
+            style={{
+              maskImage: 'radial-gradient(circle at center, black 55%, transparent 100%)',
+              WebkitMaskImage: 'radial-gradient(circle at center, black 55%, transparent 100%)',
+            }}
+          >
+            <img
+              src="/hypnotic-circles.png"
+              alt=""
+              aria-hidden="true"
+              className="w-full h-full object-cover grayscale contrast-[1.3] brightness-110"
+              style={{ animation: 'spin 45s linear infinite' }}
+            />
+          </div>
         </div>
 
-        {/* Upper Area: Glowing Breathing Orb / Visualizer */}
-        <div className="shrink-0 pt-3 px-4 z-10">
-          <BreathingVisualizerOrb
-            isRecording={isRecording}
-            isPlayingAudio={isPlayingAudio}
-            hasMessages={messages.length > 0}
-            dominantEmotion={telemetry.dominant_emotion}
-            onOrbClick={toggleRecording}
-          />
-        </div>
-
-        {/* Middle Area: Scrollable Chat Stream with Fade Mask */}
-        <div className="flex-1 overflow-y-auto min-h-0 p-6 space-y-6 scroll-smooth pb-32 relative z-10 [mask-image:linear-gradient(to_bottom,transparent_0%,black_30px,black_calc(100%-30px),transparent_100%)]">
+        {/* CHAT AREA — GLASSMORPHISM OVERLAY */}
+        <div
+          className={[
+            // Layout — do not remove any of these three
+            'flex-1 overflow-y-auto min-h-0',
+            // Scroll behaviour
+            'scroll-smooth',
+            // Spacing
+            'p-6 pb-32 space-y-6',
+            // Stacking — must be above the -z-10 spiral
+            'relative z-10',
+            // Glass card shape
+            'm-4 rounded-3xl',
+            // Glassmorphism
+            'bg-slate-950/40 backdrop-blur-[2px]',
+            // Depth cues
+            'border border-white/5 shadow-2xl',
+          ].join(' ')}
+        >
           {/* Error Banner */}
           {errorMessage && (
             <motion.div
