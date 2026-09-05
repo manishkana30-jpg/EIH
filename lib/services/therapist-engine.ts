@@ -20,12 +20,12 @@ Analyze the user's input to identify:
 You must ground your intervention strictly in the retrieved clinical protocol and research context.
 
 ### PHASE 3: THE INTERVENTION (Your Output)
-Formulate a highly empathetic, actionable response that trains the user's emotional resilience based strictly on the best psychological theory. Your output must follow this exact structure:
-1. DEEP VALIDATION: In one sentence, deeply validate their exact emotion and somatic experience without trying to "fix" it immediately. 
-2. CBT REFRAME: Apply the specific cognitive reframe from the retrieved protocol to shift their perspective.
-3. CLINICAL PRESCRIPTION: Prescribe the exact somatic anchor or psychological exercise from the protocol.
+Formulate a warm, highly empathetic, and actionable response that trains the user's emotional resilience in a single, fluid conversational paragraph:
+- Deeply validate their exact emotional and bodily state with compassion.
+- Provide a targeted cognitive reframe from the protocol.
+- Recommend the somatic anchor or pranayama breathwork exercise.
 
-RULES: Keep your response concise (3-4 sentences). Do not use Markdown formatting, asterisks, or bullet points, as your response will be synthesized into human speech.
+RULES: Keep your response concise (3-4 sentences in a single fluid paragraph). DO NOT output section titles or labels (like "Validation:", "CBT Reframe:", "Prescription:"), numbered lists, bullet points, asterisks, or markdown formatting, as your response will be synthesized directly into human speech.
 `;
 
 export interface ConversationTurn {
@@ -229,21 +229,7 @@ Translate and explain all validation, CBT cognitive reframes, somatic grounding 
 
   const systemPrompt = `${THERAPIST_SYSTEM_PROMPT}${langDirective}\n\n[CLINICAL RESEARCH]:\n${contextString}`;
 
-  // 3. Cascade across LLM inference providers with repetition penalties
-  try {
-    const reply = await callGroq(userMessage, systemPrompt, history);
-    return { reply, sources: allSources, providerUsed: "Groq (Llama 3.3 70B)", isCrisis: false };
-  } catch {
-    // Fallback to Gemini
-  }
-
-  try {
-    const reply = await callGemini(userMessage, systemPrompt, history);
-    return { reply, sources: allSources, providerUsed: "Google Gemini 2.0 Flash", isCrisis: false };
-  } catch {
-    // Fallback to Local Keyless FastAPI
-  }
-
+  // 3. Cascade across LLM inference providers prioritizing Local Keyless FastAPI daemon
   try {
     const localResult = await callLocalKeylessHealer(userMessage, history, language, locale);
     const finalSources = [...localResult.sources];
@@ -257,11 +243,25 @@ Translate and explain all validation, CBT cognitive reframes, somatic grounding 
     return {
       reply: localResult.reply,
       sources: finalSources,
-      providerUsed: "Keyless Healer (Local Synthesizer)",
+      providerUsed: "Keyless Healer (Local Python Daemon)",
       isCrisis: false
     };
   } catch {
-    // Fallback to Dynamic Companion Engine
+    // Fallback to cloud LLMs
+  }
+
+  try {
+    const reply = await callGroq(userMessage, systemPrompt, history);
+    return { reply, sources: allSources, providerUsed: "Groq (Llama 3.3 70B)", isCrisis: false };
+  } catch {
+    // Fallback to Gemini
+  }
+
+  try {
+    const reply = await callGemini(userMessage, systemPrompt, history);
+    return { reply, sources: allSources, providerUsed: "Google Gemini 2.0 Flash", isCrisis: false };
+  } catch {
+    // Fallback to Free Open Inference / Companion
   }
 
   // 4. Free Open Inference

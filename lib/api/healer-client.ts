@@ -38,18 +38,15 @@ export interface STTResponse {
 }
 
 class HealerBackendClient {
-  private getBackendUrl(): string | null {
+  private getBackendUrl(): string {
     if (typeof window !== 'undefined') {
       const publicUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
-      if (publicUrl && publicUrl.trim() && !publicUrl.includes('localhost') && !publicUrl.includes('127.0.0.1')) {
+      if (publicUrl && publicUrl.trim()) {
         return publicUrl.replace(/\/$/, '');
       }
-      if (publicUrl && (publicUrl.includes('localhost') || publicUrl.includes('127.0.0.1'))) {
-        return publicUrl.replace(/\/$/, '');
-      }
-      return null;
+      return 'http://127.0.0.1:8000';
     }
-    return process.env.BACKEND_URL || 'http://127.0.0.1:8000';
+    return (process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000').replace(/\/$/, '');
   }
 
   /**

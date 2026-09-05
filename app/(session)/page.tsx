@@ -10,7 +10,6 @@ import {
   History,
   ShieldAlert,
   Settings,
-  Sliders,
   User,
   Volume2,
   VolumeX,
@@ -34,12 +33,10 @@ import { CBTKnowledgeModal } from "./components/CBTKnowledgeModal";
 import { PranayamaGuide } from "./components/PranayamaGuide";
 import { EncryptedHistoryModal } from "./components/EncryptedHistoryModal";
 import { CrisisModal } from "./components/CrisisModal";
-import { SettingsModal } from "./components/SettingsModal";
 import { LanguageSelector } from "./components/LanguageSelector";
 
 import { browserSpeechController } from "@/lib/audio/browser-speech";
 import { getCleanAudioStream } from "@/lib/audio/audio-manager";
-import { VoiceTier } from "@/lib/audio/voice-router";
 import {
   GLOBAL_LANGUAGE_CATALOG,
   LanguageItem,
@@ -86,8 +83,6 @@ export default function SanctuarySessionPage() {
   const [isPranayamaOpen, setIsPranayamaOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isCrisisModalOpen, setIsCrisisModalOpen] = useState(false);
-  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-  const [currentTier, setCurrentTier] = useState<VoiceTier>(4);
 
   // ─── Live Clinical Telemetry ───
   const [telemetry, setTelemetry] = useState<PsychologicalTelemetry>({
@@ -461,7 +456,7 @@ export default function SanctuarySessionPage() {
                   }`}
                 />
                 <span className="text-[11px] text-slate-400 font-medium font-mono">
-                  {isBackendHealthy ? "Neural Engine Active" : "Connecting..."}
+                  {isBackendHealthy ? "FastAPI Keyless Engine" : "Connecting..."}
                 </span>
               </div>
             </div>
@@ -521,17 +516,6 @@ export default function SanctuarySessionPage() {
               <ShieldAlert className="w-5 h-5 shrink-0 group-hover:scale-110 transition-transform text-rose-400" />
               <span className="hidden md:inline text-xs font-medium tracking-wide">
                 Crisis Helplines
-              </span>
-            </button>
-
-            <button
-              onClick={() => setIsSettingsModalOpen(true)}
-              className="flex items-center gap-3 w-full p-2.5 rounded-xl text-slate-400 hover:text-emerald-300 hover:bg-slate-800/80 border border-transparent hover:border-slate-700/60 transition-all duration-300 group"
-              title="Voice Router Tier & BYOK"
-            >
-              <Sliders className="w-5 h-5 shrink-0 group-hover:scale-110 transition-transform text-amber-400" />
-              <span className="hidden md:inline text-xs font-medium tracking-wide">
-                Tier &amp; BYOK
               </span>
             </button>
           </nav>
@@ -945,13 +929,6 @@ export default function SanctuarySessionPage() {
         isOpen={isCrisisModalOpen}
         crisisData={null}
         onClose={() => setIsCrisisModalOpen(false)}
-      />
-
-      <SettingsModal
-        isOpen={isSettingsModalOpen}
-        onClose={() => setIsSettingsModalOpen(false)}
-        currentTier={currentTier}
-        onSelectTier={(tier) => setCurrentTier(tier)}
       />
     </div>
   );
