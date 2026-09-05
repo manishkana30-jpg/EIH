@@ -932,6 +932,10 @@ export class BrowserSpeechController {
     return this.isSpeaking;
   }
 
+  public stop(): void {
+    this.cancelSpeech();
+  }
+
   public getIsListening(): boolean {
     return this.isListening;
   }

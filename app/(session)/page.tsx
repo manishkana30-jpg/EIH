@@ -25,6 +25,7 @@ import {
   CheckCircle2,
   AlertTriangle,
   ChevronRight,
+  Eye,
 } from "lucide-react";
 
 import { healerClient, PsychologicalTelemetry, ClinicalSource, ChatHistoryItem } from "@/lib/api/healer-client";
@@ -34,6 +35,7 @@ import { PranayamaGuide } from "./components/PranayamaGuide";
 import { EncryptedHistoryModal } from "./components/EncryptedHistoryModal";
 import { CrisisModal } from "./components/CrisisModal";
 import { LanguageSelector } from "./components/LanguageSelector";
+import { TratakaModule } from "./components/TratakaModule";
 
 import { browserSpeechController } from "@/lib/audio/browser-speech";
 import { getCleanAudioStream } from "@/lib/audio/audio-manager";
@@ -46,7 +48,7 @@ import {
   saveLanguagePreference,
 } from "@/lib/i18n/language-catalog";
 import { saveLivePsychologyTelemetry } from "@/lib/telemetry/psychology-store";
-import { getConditionById } from "@/lib/knowledge/psychology-library-rag";
+import { getConditionById, queryPsychologyLibrary } from "@/lib/knowledge/psychology-library-rag";
 import { saveSessionMessage } from "@/lib/db/indexed-db";
 
 interface Message {
@@ -81,6 +83,7 @@ export default function SanctuarySessionPage() {
   // ─── Modal Visibility States ───
   const [isCBTModalOpen, setIsCBTModalOpen] = useState(false);
   const [isPranayamaOpen, setIsPranayamaOpen] = useState(false);
+  const [isTratakaOpen, setIsTratakaOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isCrisisModalOpen, setIsCrisisModalOpen] = useState(false);
 
@@ -92,6 +95,26 @@ export default function SanctuarySessionPage() {
     percentages: { Calmness: 74, Relief: 58, Anxiety: 18 },
     strategy: "Active reflective listening",
   });
+
+  // Dynamically resolve active CBT Reframe for Trataka Neuroplastic Phase
+  const activeCbtReframe = React.useMemo(() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const msg = messages[i];
+      if (msg.sender === "ai" && msg.sources && msg.sources.length > 0) {
+        const cbtSource = msg.sources.find((s) => s.summary?.includes("CBT:") || s.title?.toLowerCase().includes("cbt"));
+        if (cbtSource && cbtSource.summary) {
+          const match = cbtSource.summary.match(/CBT:\s*([^|]+)/i);
+          if (match && match[1]) return match[1].trim();
+          return cbtSource.summary;
+        }
+      }
+    }
+    const match = queryPsychologyLibrary(telemetry.cbt_distortion !== "None" ? telemetry.cbt_distortion : telemetry.dominant_emotion);
+    if (match && match.condition.solutions.cbt_reframing) {
+      return match.condition.solutions.cbt_reframing.split("[Wikipedia Context]")[0].trim();
+    }
+    return undefined;
+  }, [messages, telemetry]);
 
   // ─── Voice, Audio Playback & Echo Avoidance ───
   const [isRecording, setIsRecording] = useState(false);
@@ -494,6 +517,17 @@ export default function SanctuarySessionPage() {
               <Wind className="w-5 h-5 shrink-0 group-hover:scale-110 transition-transform text-cyan-400" />
               <span className="hidden md:inline text-xs font-medium tracking-wide">
                 Somatic Breathwork
+              </span>
+            </button>
+
+            <button
+              onClick={() => setIsTratakaOpen(true)}
+              className="flex items-center gap-3 w-full p-2.5 rounded-xl text-amber-300/90 hover:text-amber-200 hover:bg-amber-950/30 border border-transparent hover:border-amber-700/40 transition-all duration-300 group"
+              title="Clinical Trataka (Gazing) Module"
+            >
+              <Eye className="w-5 h-5 shrink-0 group-hover:scale-110 transition-transform text-amber-400" />
+              <span className="hidden md:inline text-xs font-medium tracking-wide">
+                Clinical Trataka
               </span>
             </button>
 
@@ -915,6 +949,29 @@ export default function SanctuarySessionPage() {
               </div>
             </div>
           </div>
+
+          {/* Clinical Trataka (Gazing) Focus Module Card */}
+          <div className="hidden md:block p-3.5 rounded-2xl bg-gradient-to-br from-amber-950/25 via-slate-900/60 to-slate-900/80 border border-amber-500/30 hover:border-amber-400/60 transition-all duration-300 shadow-[0_0_20px_rgba(245,158,11,0.08)] group">
+            <div className="flex items-center justify-between text-xs mb-1.5">
+              <span className="text-amber-400 font-semibold flex items-center gap-1.5">
+                <Eye className="w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition-transform" />
+                <span>Clinical Trataka</span>
+              </span>
+              <span className="text-[10px] font-mono font-bold text-amber-400/80 bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 rounded-full">
+                5-Stage
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-400 leading-snug mb-2.5">
+              Neuroplastic attention training: 2-min safe Bindu gaze, DMN quieting &amp; active CBT reframe.
+            </p>
+            <button
+              onClick={() => setIsTratakaOpen(true)}
+              className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-200 text-xs font-semibold transition-all shadow-[0_0_12px_rgba(245,158,11,0.2)]"
+            >
+              <Eye className="w-3.5 h-3.5" />
+              <span>Begin Gazing Session</span>
+            </button>
+          </div>
         </div>
 
         {/* Bottom Section: End Session Button */}
@@ -952,6 +1009,15 @@ export default function SanctuarySessionPage() {
         isOpen={isCrisisModalOpen}
         crisisData={null}
         onClose={() => setIsCrisisModalOpen(false)}
+      />
+
+      {/* 5-Stage Clinical Trataka Neuro-Cognitive Gazing Module */}
+      <TratakaModule
+        isOpen={isTratakaOpen}
+        onClose={() => setIsTratakaOpen(false)}
+        activeCbtReframe={activeCbtReframe}
+        conditionName={telemetry.dominant_emotion}
+        userLocale={userLocale}
       />
     </div>
   );

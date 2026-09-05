@@ -16,6 +16,7 @@ require('./therapist-engine.test.js');
 require('./audit_fix_verification.test.js');
 require('./cbt-library.test.js');
 require('./test-psychology-library-rag.js');
+require('./trataka_protocol.test.js');
 
 
 console.log('================================================================');

@@ -325,22 +325,28 @@ export function synthesizePsychologyDocument(
 export async function persistLearnedDocuments(): Promise<void> {
   if (typeof window === 'undefined') {
     try {
-      const fs = await import('fs');
-      const path = await import('path');
-      const candidates = [
-        path.resolve(process.cwd(), 'data', 'learned_psychology_documents.json'),
-        path.resolve(process.cwd(), '..', 'data', 'learned_psychology_documents.json'),
-      ];
-      let targetPath = candidates[0];
-      for (const c of candidates) {
-        if (fs.existsSync(path.dirname(c))) {
-          targetPath = c;
-          break;
+      // Edge-runtime safe node check
+      if (typeof process !== 'undefined' && process.release?.name === 'node') {
+        const nodeRequire = typeof (globalThis as any).__non_webpack_require__ !== 'undefined'
+          ? (globalThis as any).__non_webpack_require__
+          : eval('require');
+        const fs = nodeRequire('fs');
+        const path = nodeRequire('path');
+        const candidates = [
+          path.resolve(process.cwd(), 'data', 'learned_psychology_documents.json'),
+          path.resolve(process.cwd(), '..', 'data', 'learned_psychology_documents.json'),
+        ];
+        let targetPath = candidates[0];
+        for (const c of candidates) {
+          if (fs.existsSync(path.dirname(c))) {
+            targetPath = c;
+            break;
+          }
         }
+        await fs.promises.writeFile(targetPath, JSON.stringify(DYNAMIC_LEARNED_DOCUMENTS, null, 2), 'utf-8');
       }
-      await fs.promises.writeFile(targetPath, JSON.stringify(DYNAMIC_LEARNED_DOCUMENTS, null, 2), 'utf-8');
     } catch {
-      // Non-fatal if filesystem is read-only (e.g. Vercel serverless)
+      // Non-fatal in Edge runtime or read-only serverless filesystem
     }
   } else {
     try {
