@@ -3,8 +3,8 @@ tests/test_psychology_library_rag.py
 Verifies Python ChromaDB & Hybrid RAG module for 20 clinical conditions and multilingual matching.
 """
 
-import sys
 import os
+import sys
 import unittest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "keyless_healer", "lib")))

@@ -1,5 +1,5 @@
 """
-server/rag/cbt_library_loader.py
+keyless_healer/lib/cbt_library_loader.py
 Cognitive Behavioral Therapy (CBT) & Schema Therapy Ontology Loader.
 Loads, indexes, and queries the clinical CBT knowledge base for real-time cognitive reframing.
 """

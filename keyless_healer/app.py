@@ -24,7 +24,7 @@ from typing import Any
 import uvicorn
 from fastapi import BackgroundTasks, FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, Response, StreamingResponse
+from fastapi.responses import HTMLResponse, Response
 from pydantic import BaseModel, Field
 
 # Setup system path
@@ -41,6 +41,7 @@ try:
         get_voice_for_locale,
         sanitize_text_for_speech,
     )
+    from keyless_healer.lib.cbt_library_loader import cbt_loader
     from keyless_healer.lib.cbt_upgrader import cbt_upgrader
     from keyless_healer.lib.clinical_expansion import clinical_expansion_engine
     from keyless_healer.lib.clinical_search import (
@@ -54,7 +55,6 @@ try:
     from keyless_healer.lib.self_learning_therapist import (
         self_learning_therapist,
     )
-    from server.rag.cbt_library_loader import cbt_loader
 except ImportError:
     try:
         from lib.psychology_library_rag import psychology_rag  # type: ignore[import-untyped, import-not-found]
@@ -86,7 +86,7 @@ except ImportError:
     except ImportError:
         self_learning_therapist = None  # type: ignore[assignment]
     try:
-        from server.rag.cbt_library_loader import cbt_loader  # type: ignore[import-untyped, import-not-found]
+        from lib.cbt_library_loader import cbt_loader  # type: ignore[import-untyped, import-not-found]
     except ImportError:
         cbt_loader = None  # type: ignore[assignment]
 

@@ -21,6 +21,7 @@ __all__ = [
     "CBTLibraryUpgrader",
     "ClinicalEvidence",
     "ClinicalExpansionEngine",
+    "ClinicalSearchEngine",
     "ClinicalSearchResult",
     "ClinicalSolution",
     "KeylessClinicalSearch",

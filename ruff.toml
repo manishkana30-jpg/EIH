@@ -11,4 +11,4 @@ ignore = [
 ]
 
 [lint.isort]
-known-first-party = ["keyless_healer", "server"]
+known-first-party = ["keyless_healer"]

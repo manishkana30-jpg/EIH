@@ -184,7 +184,7 @@ You must ground your intervention strictly in the following retrieved clinical p
 
 ### PHASE 3: THE INTERVENTION (Your Output)
 Formulate a highly empathetic, actionable response that trains the user's emotional resilience based strictly on the best psychological theory. Your output must follow this exact structure:
-1. DEEP VALIDATION: In one sentence, deeply validate their exact emotion and somatic experience without trying to "fix" it immediately. 
+1. DEEP VALIDATION: In one sentence, deeply validate their exact emotion and somatic experience without trying to "fix" it immediately.
 2. CBT REFRAME: Apply the specific cognitive reframe from the retrieved protocol to shift their perspective.
 3. CLINICAL PRESCRIPTION: Prescribe the exact somatic anchor or psychological exercise from the protocol.
 

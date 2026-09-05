@@ -112,29 +112,13 @@ class PsychologyLibraryRAG:
         return None
 
     def retrieve_guidance(self, query: str, top_k: int = 1) -> dict[str, Any] | None:
-        """Retrieves best matching clinical condition and actionable solution protocols."""
+        """Retrieves best matching clinical condition and actionable solution protocols using hybrid routing."""
         if not query or not query.strip():
             return None
 
         clean_query = query.strip().lower()
 
-        # 1. Semantic Vector Search via ChromaDB
-        if self.collection:
-            try:
-                results = self.collection.query(
-                    query_texts=[query],
-                    n_results=top_k,
-                )
-                if results and results.get("metadatas") and len(results["metadatas"][0]) > 0:
-                    matched_meta = results["metadatas"][0][0]
-                    matched_id = matched_meta.get("id")
-                    condition = self.get_condition_by_id(matched_id)
-                    if condition:
-                        return self._format_retrieval_result(condition)
-            except Exception as e:
-                logger.debug(f"ChromaDB query fallback triggered: {e}")
-
-        # 2. Lexical, Symptom & Multi-lingual Domain Pattern Fallback Matcher
+        # 1. Lexical, Symptom & Multi-lingual Domain Pattern Matcher
         domain_patterns = {
             "gad": r"\b(worry|worrying|worried|what if|anxious|anxiety|nervous|tense|restless|dread|ghabrahat|chinta|bechaini|tanaav|ansiedad|angst)\b",
             "burnout_fatigue": r"\b(burnout|burned out|exhausted|exhaustion|brain fog|lethargy|overworked|depleted|no energy|drained|thak gaya|thakan|agotamiento|epuisement)\b",
@@ -217,6 +201,22 @@ class PsychologyLibraryRAG:
 
         if best_match and highest_score >= 4:
             return self._format_retrieval_result(best_match)
+
+        # 2. ChromaDB Semantic Vector Search Fallback
+        if self.collection:
+            try:
+                results = self.collection.query(
+                    query_texts=[query],
+                    n_results=top_k,
+                )
+                if results and results.get("metadatas") and len(results["metadatas"][0]) > 0:
+                    matched_meta = results["metadatas"][0][0]
+                    matched_id = matched_meta.get("id")
+                    condition = self.get_condition_by_id(matched_id)
+                    if condition:
+                        return self._format_retrieval_result(condition)
+            except Exception as e:
+                logger.debug(f"ChromaDB query fallback triggered: {e}")
 
         return None
 

@@ -7,7 +7,6 @@ and neuroplastic micro-habits using local Ollama, PsychologistPartner heuristics
 
 from __future__ import annotations
 
-import asyncio
 import hashlib
 import json
 import logging
@@ -15,7 +14,7 @@ import os
 import re
 import shutil
 import time
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from typing import Any
 
 import httpx
@@ -247,8 +246,8 @@ class ClinicalExpansionEngine:
             cat = "Cognitive Restructuring & Autonomic Balance"
             distortion_name = "Catastrophizing & Anticipatory Threat Bias"
             cbt_reframe = (
-                f"Your brain is attempting to protect you by simulating worst-case scenarios, but an anxious thought is a neurological "
-                f"hypothesis, not an established factual truth. Let us create space between this feeling and your identity."
+                "Your brain is attempting to protect you by simulating worst-case scenarios, but an anxious thought is a neurological "
+                "hypothesis, not an established factual truth. Let us create space between this feeling and your identity."
             )
             micro_habit = "2-Minute Transition Ritual: Pause before switching tasks, take 3 physiological sighs, and state one objective reality."
 
@@ -305,10 +304,10 @@ class ClinicalExpansionEngine:
             "category": "Neuropsychology & Affective Dysregulation",
             "triguna_balance": "Fluctuating Rajas with Sensory Tamas",
             "core_symptoms": [
-                f"Intense cognitive exhaustion following social or professional interactions",
-                f"Heightened autonomic vulnerability to perceived criticism or exclusion",
-                f"Executive paralysis combined with sensory overstimulation",
-                f"Masking fatigue leading to sudden nervous system shutdown",
+                "Intense cognitive exhaustion following social or professional interactions",
+                "Heightened autonomic vulnerability to perceived criticism or exclusion",
+                "Executive paralysis combined with sensory overstimulation",
+                "Masking fatigue leading to sudden nervous system shutdown",
             ],
             "cognitive_distortions": [
                 "Perceived Rejection Hyper-vigilance",
@@ -317,8 +316,8 @@ class ClinicalExpansionEngine:
             ],
             "solutions": {
                 "cbt_reframing": (
-                    f"A perceived social disconnection or task bottleneck is not proof of fundamental inadequacy. "
-                    f"Your nervous system is simply experiencing acute sensory and cognitive overload; honor your processing rhythm."
+                    "A perceived social disconnection or task bottleneck is not proof of fundamental inadequacy. "
+                    "Your nervous system is simply experiencing acute sensory and cognitive overload; honor your processing rhythm."
                 ),
                 "somatic_anchor": (
                     "Bilateral Deep Pressure: Cross your arms over your chest, placing hands on opposite shoulders (Butterfly Hug). "
@@ -337,7 +336,7 @@ class ClinicalExpansionEngine:
             "name": f"{topic_clean.title()} Cognitive Trap",
             "aka": ["Rejection Sensitivity Bias", "Hyper-Vigilant Threat Projection"],
             "category": "Interpersonal & Executive Framing",
-            "description": f"Over-interpreting ambiguous social cues, delays in communication, or performance challenges as catastrophic personal rejection.",
+            "description": "Over-interpreting ambiguous social cues, delays in communication, or performance challenges as catastrophic personal rejection.",
             "clinical_mechanism": "Dorsal anterior cingulate cortex (dACC) hyper-reactivity translating social ambiguity directly into visceral physical pain signals.",
             "example_thought": "They didn't reply to my message within an hour; they must find me burdensome and are pulling away.",
             "reframing_prompt": "What are three neutral, non-evaluative reasons for this situation that have nothing to do with your worth?",

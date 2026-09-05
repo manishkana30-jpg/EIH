@@ -1,43 +1,44 @@
 """
 tests/test_cognitive_orchestrator.py
 
-Verification tests for Hidden Cognitive Orchestration and Adaptive VAD.
+Verification tests for Keyless Healer Cognitive Diagnostics and CBT Reframing.
 """
 
+import os
 import sys
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "server"))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "keyless_healer", "lib")))
 
-from cognitive_orchestrator import extract_heuristic_diagnostics
-from prompts.therapeutic_persona import SYNTHESIS_SYSTEM_PROMPT
+from cbt_library_loader import cbt_loader
+from psychologist_partner import build_healer_system_prompt, check_crisis_text
 
 
 def test_cognitive_orchestration():
-    # 1. Test Design Presentation / Rejection
-    case1 = extract_heuristic_diagnostics("My boss rejected my design presentation and I want to quit")
-    assert "boss" in case1["anchor_phrases"] or "presentation" in case1["anchor_phrases"] or "quit" in case1["anchor_phrases"], "Failed to extract situation anchors"
-    assert case1["cbt_distortion"] in ["none", "all_or_nothing", "personalization", "mind_reading", "catastrophizing"], "Invalid CBT distortion"
-    assert len(case1["top_3_cowen_emotions"]) == 3, "Should produce 3 Cowen emotions"
-    assert case1["top_3_cowen_emotions"][0]["percentage"] > 50, "Top emotion percentage should be calibrated"
+    # 1. Test Personalization / Failure
+    case2 = cbt_loader.analyze_utterance("It's all my fault that they had to go through this")
+    assert case2["primary_distortion_id"] == "personalization", f"Expected personalization, got {case2['primary_distortion_id']}"
+    assert len(case2["socratic_prompts"]) > 0, "Must produce Socratic reframing prompts"
+    assert len(case2["somatic_cue"]) > 0, "Must produce Somatic cue"
 
-    # 2. Test Personalization / Failure
-    case2 = extract_heuristic_diagnostics("I failed my driving test and I feel so stupid")
-    assert "driving test" in case2["anchor_phrases"] or "test" in case2["anchor_phrases"], "Failed to extract driving test anchor"
-    assert case2["cbt_distortion"] == "personalization", f"Expected personalization, got {case2['cbt_distortion']}"
+    # 2. Test Catastrophizing
+    case3 = cbt_loader.analyze_utterance("This is the worst thing ever, my life is over")
+    assert case3["primary_distortion_id"] == "catastrophizing", f"Expected catastrophizing, got {case3['primary_distortion_id']}"
 
-    # 3. Test Catastrophizing
-    case3 = extract_heuristic_diagnostics("This is the worst disaster, my entire life is over")
-    assert case3["cbt_distortion"] == "catastrophizing", f"Expected catastrophizing, got {case3['cbt_distortion']}"
+    # 3. Crisis Detection Safety Check
+    assert check_crisis_text("I want to end my life"), "Must detect acute crisis"
+    assert not check_crisis_text("I feel stressed about my job interview"), "Must not flag regular stress as crisis"
 
-    # 4. Anti-Canned & Clinical Mandates
-    assert "Expert Clinical Psychologist" in SYNTHESIS_SYSTEM_PROMPT
-    assert "MUST NEVER use generic greetings" in SYNTHESIS_SYSTEM_PROMPT
-    assert "DEEP VALIDATION" in SYNTHESIS_SYSTEM_PROMPT
-    assert "CBT REFRAME" in SYNTHESIS_SYSTEM_PROMPT
-    assert "CLINICAL PRESCRIPTION" in SYNTHESIS_SYSTEM_PROMPT
+    # 4. Anti-Canned & Clinical Mandates in System Prompt
+    system_prompt = build_healer_system_prompt()
+    assert "Expert Clinical Psychologist" in system_prompt
+    assert "MUST NEVER use generic greetings" in system_prompt
+    assert "Deeply validate their exact emotional and bodily state" in system_prompt
+    assert "Provide a targeted cognitive reframe" in system_prompt
+    assert "Prescribe the specific somatic anchor" in system_prompt
 
-    print("All Cognitive Orchestrator & Anti-Canned Safety Checks Passed!")
+    print("All Keyless Healer Cognitive Orchestrator & Safety Checks Passed!")
+
 
 if __name__ == "__main__":
     test_cognitive_orchestration()
+
