@@ -138,3 +138,30 @@ export async function purgeAllEncryptedData(): Promise<boolean> {
 
 export const getStoredSessionRecords = getAllSessions;
 
+let activeSessionId = `session_${Date.now()}`;
+
+/**
+ * Appends a message to the active session in IndexedDB
+ */
+export async function saveSessionMessage(role: 'user' | 'assistant', content: string): Promise<void> {
+  try {
+    const sessions = await getAllSessions();
+    let currentSession = sessions.find((s) => s.id === activeSessionId);
+    if (!currentSession) {
+      currentSession = {
+        id: activeSessionId,
+        startedAt: Date.now(),
+        messages: [],
+      };
+    }
+    currentSession.messages.push({
+      id: `msg_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      role,
+      content,
+      timestamp: Date.now(),
+    });
+    await saveSessionRecord(currentSession);
+  } catch (err) {
+    console.warn('Could not auto-save message to IndexedDB:', err);
+  }
+}

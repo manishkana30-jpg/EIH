@@ -2,12 +2,45 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  BookOpen,
+  Brain,
+  Wind,
+  History,
+  ShieldAlert,
+  Settings,
+  Sliders,
+  User,
+  Volume2,
+  VolumeX,
+  Activity,
+  PhoneOff,
+  Mic,
+  MicOff,
+  Send,
+  Sparkles,
+  RefreshCw,
+  Globe,
+  Radio,
+  CheckCircle2,
+  AlertTriangle,
+  ChevronRight,
+} from "lucide-react";
+
 import { healerClient, PsychologicalTelemetry, ClinicalSource, ChatHistoryItem } from "@/lib/api/healer-client";
 import { AudioWaveform } from "./components/AudioWaveform";
 import { CBTKnowledgeModal } from "./components/CBTKnowledgeModal";
+import { PranayamaGuide } from "./components/PranayamaGuide";
+import { EncryptedHistoryModal } from "./components/EncryptedHistoryModal";
+import { CrisisModal } from "./components/CrisisModal";
+import { SettingsModal } from "./components/SettingsModal";
 import { LanguageSelector } from "./components/LanguageSelector";
+import { BreathingVisualizerOrb } from "./components/BreathingVisualizerOrb";
+
 import { browserSpeechController } from "@/lib/audio/browser-speech";
 import { getCleanAudioStream } from "@/lib/audio/audio-manager";
+import { VoiceTier } from "@/lib/audio/voice-router";
 import {
   GLOBAL_LANGUAGE_CATALOG,
   LanguageItem,
@@ -18,7 +51,7 @@ import {
 } from "@/lib/i18n/language-catalog";
 import { saveLivePsychologyTelemetry } from "@/lib/telemetry/psychology-store";
 import { getConditionById } from "@/lib/knowledge/psychology-library-rag";
-
+import { saveSessionMessage } from "@/lib/db/indexed-db";
 
 interface Message {
   id: string;
@@ -39,6 +72,7 @@ const getFormattedTime = () => {
 };
 
 export default function SanctuarySessionPage() {
+  // ─── Core State ───
   const [currentLanguage, setCurrentLanguage] = useState<LanguageItem>(GLOBAL_LANGUAGE_CATALOG[0]);
   const [userLocale, setUserLocale] = useState<string>("en-US");
   const [messages, setMessages] = useState<Message[]>([]);
@@ -46,9 +80,17 @@ export default function SanctuarySessionPage() {
   const [inputVal, setInputVal] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isBackendHealthy, setIsBackendHealthy] = useState<boolean | null>(null);
-  const [isCBTModalOpen, setIsCBTModalOpen] = useState(false);
+  const [isAiMuted, setIsAiMuted] = useState(false);
 
-  // Live Clinical Telemetry from Backend
+  // ─── Modal Visibility States ───
+  const [isCBTModalOpen, setIsCBTModalOpen] = useState(false);
+  const [isPranayamaOpen, setIsPranayamaOpen] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [isCrisisModalOpen, setIsCrisisModalOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [currentTier, setCurrentTier] = useState<VoiceTier>(4);
+
+  // ─── Live Clinical Telemetry ───
   const [telemetry, setTelemetry] = useState<PsychologicalTelemetry>({
     dominant_emotion: "Calmness",
     polyvagal_state: "Ventral Vagal (Safe)",
@@ -57,25 +99,26 @@ export default function SanctuarySessionPage() {
     strategy: "Active reflective listening",
   });
 
-  // Voice STT, Audio Playback & VAD Echo Avoidance State
+  // ─── Voice, Audio Playback & Echo Avoidance ───
   const [isRecording, setIsRecording] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [isEchoLocked, setIsEchoLocked] = useState(false);
   const [recordingStream, setRecordingStream] = useState<MediaStream | null>(null);
 
+  // ─── Refs for Thread Safety ───
   const activeStreamRef = useRef<MediaStream | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isSendingRef = useRef(false);
   const isPlayingAudioRef = useRef(false);
   const isEchoLockedRef = useRef(false);
   const isVoiceModeActiveRef = useRef(false);
+  const isAiMutedRef = useRef(false);
   const activeAudioRef = useRef<HTMLAudioElement | null>(null);
   const hasInitializedRef = useRef(false);
   const messagesRef = useRef<Message[]>(messages);
   const currentLanguageRef = useRef<LanguageItem>(currentLanguage);
   const userLocaleRef = useRef<string>("en-US");
 
-  // Keep refs in sync for safe access inside callbacks
   useEffect(() => {
     messagesRef.current = messages;
   }, [messages]);
@@ -88,12 +131,24 @@ export default function SanctuarySessionPage() {
     userLocaleRef.current = userLocale;
   }, [userLocale]);
 
-  // Automatic Geo-Location & Language Pack Detection on Launch
+  useEffect(() => {
+    isAiMutedRef.current = isAiMuted;
+    if (isAiMuted) {
+      if (activeAudioRef.current) {
+        activeAudioRef.current.pause();
+        activeAudioRef.current = null;
+      }
+      browserSpeechController.cancelSpeech();
+      setIsPlayingAudio(false);
+      isPlayingAudioRef.current = false;
+    }
+  }, [isAiMuted]);
+
+  // ─── Geo-Location & Auto Language Detection ───
   useEffect(() => {
     if (hasInitializedRef.current) return;
     hasInitializedRef.current = true;
 
-    // Detect browser locale immediately
     const initialLocale = detectUserLocale();
     setUserLocale(initialLocale);
 
@@ -102,13 +157,13 @@ export default function SanctuarySessionPage() {
     detectLocationAndLanguage().then((loc) => {
       const { code, isAuto } = getStoredLanguage();
       const targetCode = isAuto && loc.defaultLanguageCode ? loc.defaultLanguageCode : code;
-      const matchedLang = GLOBAL_LANGUAGE_CATALOG.find((l) => l.code === targetCode) || GLOBAL_LANGUAGE_CATALOG[0];
-      
+      const matchedLang =
+        GLOBAL_LANGUAGE_CATALOG.find((l) => l.code === targetCode) || GLOBAL_LANGUAGE_CATALOG[0];
+
       setCurrentLanguage(matchedLang);
       setUserLocale(matchedLang.speechLocale);
       browserSpeechController.setLanguageLocale(matchedLang.speechLocale);
 
-      // Check if URL specifies a condition focus (e.g., ?focus=gad)
       if (typeof window !== "undefined") {
         const params = new URLSearchParams(window.location.search);
         const focusId = params.get("focus") || params.get("condition");
@@ -145,16 +200,16 @@ export default function SanctuarySessionPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading]);
 
-  // 2. VAD & ECHO AVOIDANCE: Unified, bulletproof audio playback with echo cancellation & autoplay recovery
+  // ─── Voice Playback with Echo Avoidance ───
   const playVoice = useCallback((text: string, audioBase64?: string) => {
+    if (isAiMutedRef.current) return;
+
     const cleanText = browserSpeechController.cleanTextForSpeech(text);
     if (!cleanText && !audioBase64) return;
 
-    // Pause active recognition during speech synthesis to prevent echo feedback
     browserSpeechController.stopRecognition();
     setIsRecording(false);
 
-    // Stop and clean up any previously active audio track
     if (activeAudioRef.current) {
       try {
         activeAudioRef.current.pause();
@@ -174,7 +229,6 @@ export default function SanctuarySessionPage() {
       setIsPlayingAudio(false);
       activeAudioRef.current = null;
 
-      // Re-engage continuous listening with 200ms grace period if in voice mode
       setTimeout(() => {
         isEchoLockedRef.current = false;
         setIsEchoLocked(false);
@@ -191,37 +245,31 @@ export default function SanctuarySessionPage() {
 
         audio.onended = handleAudioEnd;
         audio.onerror = (e) => {
-          console.warn("Direct base64 audio failed, using browser speech fallback:", e);
+          console.warn("Direct base64 audio failed, fallback to browser speech:", e);
           browserSpeechController.speak(cleanText || text, undefined, handleAudioEnd);
         };
 
         const playPromise = audio.play();
         if (playPromise !== undefined) {
           playPromise.catch((err) => {
-            console.warn("Audio autoplay blocked or interrupted, using browser speech fallback:", err);
+            console.warn("Audio autoplay blocked, fallback to browser speech:", err);
             browserSpeechController.speak(cleanText || text, undefined, handleAudioEnd);
           });
         }
         return;
       } catch (err) {
-        console.error("Base64 audio initialization error:", err);
+        console.error("Base64 audio init error:", err);
       }
     }
 
-    // Direct streaming fallback via browserSpeechController
     browserSpeechController.speak(cleanText || text, undefined, handleAudioEnd);
   }, []);
 
-  const playBase64Audio = useCallback((audioBase64: string, fallbackText?: string) => {
-    playVoice(fallbackText || "", audioBase64);
-  }, [playVoice]);
-
-  // Dispatch message with State Mutex & History Packaging
+  // ─── Send Message Handler ───
   const handleSendMessage = async (textToSend?: string) => {
     const messageText = (textToSend !== undefined ? textToSend : inputVal).trim();
     if (!messageText || isSendingRef.current) return;
 
-    // Stop active audio if user speaks/sends
     if (activeAudioRef.current) {
       try {
         activeAudioRef.current.pause();
@@ -246,6 +294,7 @@ export default function SanctuarySessionPage() {
     };
 
     setMessages((prev) => [...prev, userMsg]);
+    saveSessionMessage("user", messageText);
 
     const historyPayload: ChatHistoryItem[] = messagesRef.current
       .filter((m) => m.text.trim())
@@ -274,6 +323,8 @@ export default function SanctuarySessionPage() {
       };
 
       setMessages((prev) => [...prev, aiMsg]);
+      saveSessionMessage("assistant", response.reply);
+
       if (response.telemetry) {
         setTelemetry({
           ...response.telemetry,
@@ -284,7 +335,6 @@ export default function SanctuarySessionPage() {
         saveLivePsychologyTelemetry(response.telemetry, messageText);
       }
 
-      // VOICE RESPONSE PLAYBACK: High-Fidelity Edge Neural Voice
       playVoice(response.reply, response.audio_base64);
     } catch (error) {
       console.error("Chat communication notice:", error);
@@ -295,7 +345,7 @@ export default function SanctuarySessionPage() {
     }
   };
 
-  // Start continuous voice listening with intelligent long-pause completion
+  // ─── Continuous Voice Capture ───
   const startContinuousVoiceListening = async () => {
     if (isPlayingAudioRef.current || isEchoLockedRef.current) return;
 
@@ -325,15 +375,6 @@ export default function SanctuarySessionPage() {
     }
   };
 
-  // Handle language switch (manual or auto detection)
-  const handleLanguageChange = (lang: LanguageItem, isAuto: boolean) => {
-    setCurrentLanguage(lang);
-    setUserLocale(lang.speechLocale);
-    saveLanguagePreference(lang.code, isAuto);
-    browserSpeechController.setLanguageLocale(lang.speechLocale);
-  };
-
-  // Start/Stop Voice Recognition with Hands-Free Turn Taking
   const toggleRecording = async () => {
     if (isPlayingAudioRef.current || isEchoLockedRef.current) {
       return;
@@ -362,265 +403,592 @@ export default function SanctuarySessionPage() {
     await startContinuousVoiceListening();
   };
 
+  const handleLanguageChange = (lang: LanguageItem, isAuto: boolean) => {
+    setCurrentLanguage(lang);
+    setUserLocale(lang.speechLocale);
+    saveLanguagePreference(lang.code, isAuto);
+    browserSpeechController.setLanguageLocale(lang.speechLocale);
+  };
+
+  const handleEndSession = () => {
+    if (activeAudioRef.current) {
+      activeAudioRef.current.pause();
+      activeAudioRef.current = null;
+    }
+    browserSpeechController.cancelSpeech();
+    browserSpeechController.stopRecognition();
+    if (activeStreamRef.current) {
+      activeStreamRef.current.getTracks().forEach((track) => track.stop());
+      activeStreamRef.current = null;
+    }
+    setIsRecording(false);
+    setIsPlayingAudio(false);
+    isVoiceModeActiveRef.current = false;
+
+    if (messages.length > 0) {
+      if (window.confirm("End this active session and clear stage? Session is saved to your encrypted local vault.")) {
+        setMessages([]);
+      }
+    }
+  };
+
+  const isSessionActive = isRecording || isPlayingAudio || isVoiceModeActiveRef.current;
+
   return (
-    <div className="flex flex-col h-screen w-screen bg-[#0c1410] text-[#ecf3ee] font-sans overflow-hidden">
-      {/* 1. TOP HEADER */}
-      <header className="h-14 border-b border-[#283c32] px-4 flex items-center justify-between bg-[#14201a]/90 backdrop-blur-md shrink-0">
-        <div className="flex items-center gap-2.5">
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#1b2a23] border border-[#283c32] text-xs text-[#9cb5a6]">
-            <span
-              className={`w-2 h-2 rounded-full ${
-                isBackendHealthy ? "bg-[#81a890] animate-pulse" : "bg-amber-500"
-              }`}
-            />
-            <span className="font-medium">
-              {isBackendHealthy ? "Backend Connected" : "Connecting..."}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#1b2a23] border border-[#283c32] text-xs text-[#9cb5a6]">
-            <span>🍃</span>
-            <span>FastAPI Key-Free</span>
-          </div>
-
-          <Link
-            href="/library"
-            className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-950/70 hover:bg-teal-900/90 border border-teal-700/60 text-xs text-teal-300 font-medium transition-all shadow-sm"
-          >
-            <span>📚</span>
-            <span className="hidden sm:inline">Clinical Library</span>
-          </Link>
-
-          <button
-            onClick={() => setIsCBTModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/70 hover:bg-emerald-900/90 border border-emerald-700/60 text-xs text-emerald-300 font-medium transition-all shadow-sm"
-          >
-            <span>🧠</span>
-            <span className="hidden sm:inline">CBT Tools (20+)</span>
-          </button>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {/* Automatic Geo-Location Language Pack Selector */}
-          <LanguageSelector
-            currentLanguage={currentLanguage}
-            onLanguageChange={handleLanguageChange}
-          />
-
-          <span className="px-2.5 py-0.5 rounded-full bg-[#1b2a23] border border-[#283c32] text-[11px] uppercase tracking-wider text-[#81a890] font-bold">
-            EIH
-          </span>
-          <span className="text-[11px] uppercase tracking-wider text-[#647d70] font-semibold hidden sm:inline">
-            Emotional Intelligence Healer
-          </span>
-        </div>
-      </header>
-
-      {/* 2. CONVERSATION STREAM */}
-      <main className="flex-1 overflow-y-auto px-4 py-6 max-w-3xl w-full mx-auto space-y-4">
-        {messages.length === 0 && (
-          <div className="flex flex-col items-center justify-center text-center p-8 border border-[#283c32] rounded-2xl bg-[#14201a]/60 backdrop-blur-sm my-8 space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-950/80 border border-emerald-700/60 flex items-center justify-center text-2xl shadow-inner">
+    <div className="flex h-screen w-full bg-slate-950 text-slate-100 font-sans overflow-hidden select-none">
+      {/* ─────────────────────────────────────────────────────────────
+          1. LEFT COLUMN: Tools & Navigation (Flex Column)
+      ───────────────────────────────────────────────────────────── */}
+      <motion.aside
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.4 }}
+        className="w-16 sm:w-20 md:w-64 shrink-0 flex flex-col justify-between bg-slate-900/40 backdrop-blur-xl border-r border-slate-800/60 p-3 md:p-4 z-20"
+      >
+        {/* Top Header & Brand */}
+        <div className="space-y-6">
+          <div className="flex items-center gap-3 px-1">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-400 border border-emerald-400/40 flex items-center justify-center text-xl shadow-[0_0_20px_rgba(16,185,129,0.3)] shrink-0">
               🌿
             </div>
-            <h2 className="text-base font-semibold text-[#ecf3ee]">
-              Clinical Session Active
-            </h2>
-            <p className="text-xs text-[#9cb5a6] max-w-sm leading-relaxed">
-              Speak freely using the microphone or type below. Your input will be analyzed with neuropsychological and Ayurvedic grounding.
-            </p>
-          </div>
-        )}
-
-        {errorMessage && (
-          <div className="flex items-center justify-between p-3.5 rounded-xl bg-rose-950/70 border border-rose-800/80 text-rose-200 text-xs shadow-md">
-            <div className="flex items-center gap-2">
-              <span className="text-sm">⚠️</span>
-              <span>{errorMessage}</span>
-            </div>
-            <button
-              onClick={() => setErrorMessage(null)}
-              className="text-rose-400 hover:text-rose-200 font-bold px-1.5 py-0.5 rounded hover:bg-rose-900/50"
-            >
-              ✕
-            </button>
-          </div>
-        )}
-
-        {messages.map((m) => (
-          <div
-            key={m.id}
-            className={`flex flex-col ${m.sender === "user" ? "items-end" : "items-start"}`}
-          >
-            <div
-              className={`max-w-[85%] sm:max-w-md p-4 rounded-2xl text-sm leading-relaxed ${
-                m.sender === "user"
-                  ? "bg-[#22382c] border border-[#3d584a] text-[#ecf3ee] rounded-br-none"
-                  : "bg-[#17241d] border border-[#283c32] text-[#ecf3ee] rounded-bl-none shadow-lg"
-              }`}
-            >
-              <div>{m.text}</div>
-
-              {/* Render Clinical & Psychoeducational Solution Card */}
-              {m.sender === "ai" && m.sources && m.sources.length > 0 && (
-                <div className="mt-3 pt-3 border-t border-[#283c32]/80 space-y-2">
-                  {m.sources.map((src, sIdx) => {
-                    const isLibraryProtocol = src.source === "psychology_library";
-                    if (isLibraryProtocol) {
-                      return (
-                        <div
-                          key={sIdx}
-                          className="bg-[#0f1a14]/90 rounded-xl p-3 border border-teal-800/60 shadow-sm space-y-2 text-xs"
-                        >
-                          <div className="flex items-center justify-between gap-1 text-teal-300 font-semibold">
-                            <span className="flex items-center gap-1.5">
-                              <span className="text-sm">📚</span>
-                              <span>{src.title}</span>
-                            </span>
-                            <span className="px-1.5 py-0.5 rounded bg-teal-950/80 border border-teal-700/50 text-[10px] text-teal-300 uppercase tracking-wider font-mono">
-                              Verified Protocol
-                            </span>
-                          </div>
-
-                          {src.summary && (
-                            <div className="grid grid-cols-1 gap-1.5 pt-1 text-[11px] text-[#9cb5a6]">
-                              {src.summary.split(" | ").map((part, pIdx) => {
-                                const [label, ...valParts] = part.split(": ");
-                                const val = valParts.join(": ");
-                                const icon =
-                                  label.includes("CBT") ? "🧠" :
-                                  label.includes("Somatic") ? "🧘" :
-                                  label.includes("Pranayama") ? "🌬️" : "⏱️";
-                                return (
-                                  <div
-                                    key={pIdx}
-                                    className="p-1.5 rounded-lg bg-[#14221a] border border-[#23352b] flex flex-col gap-0.5"
-                                  >
-                                    <span className="font-semibold text-emerald-400 flex items-center gap-1 text-[10px] uppercase">
-                                      <span>{icon}</span> {label}
-                                    </span>
-                                    <span className="text-gray-200 leading-normal pl-4">{val}</span>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    }
-
-                    return (
-                      <div
-                        key={sIdx}
-                        className="text-[10px] text-[#647d70] flex items-center gap-1"
-                      >
-                        <span>🔬 Evidence:</span>
-                        <span className="text-[#9cb5a6] truncate">{src.title}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-            <div className="flex items-center gap-2 mt-1 px-1">
-              {m.timestamp && (
-                <span className="text-[10px] text-[#647d70]" suppressHydrationWarning>
-                  {m.timestamp}
+            <div className="hidden md:flex flex-col">
+              <span className="font-heading font-bold text-base text-slate-100 tracking-tight leading-tight">
+                EIH Sanctuary
+              </span>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span
+                  className={`w-2 h-2 rounded-full ${
+                    isBackendHealthy ? "bg-emerald-400 animate-pulse" : "bg-amber-400"
+                  }`}
+                />
+                <span className="text-[11px] text-slate-400 font-medium font-mono">
+                  {isBackendHealthy ? "Neural Engine Active" : "Connecting..."}
                 </span>
-              )}
-              {m.engine && (
-                <span className="text-[9px] text-[#81a890] font-mono">[{m.engine}]</span>
-              )}
-            </div>
-          </div>
-        ))}
-        {isLoading && (
-          <div className="flex items-center gap-2 text-xs text-[#9cb5a6] px-2 py-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#81a890] animate-ping" />
-            <span>Consulting PubMed & Synthesizing response...</span>
-          </div>
-        )}
-        <div ref={messagesEndRef} />
-      </main>
-
-      {/* 3. FLOATING TELEMETRY & INPUT DOCK */}
-      <footer className="w-full pb-4 pt-2 bg-gradient-to-t from-[#0c1410] via-[#0c1410] to-transparent shrink-0">
-        <div className="max-w-3xl mx-auto px-4 space-y-2">
-          {/* Live 27-D Emotion Percentage Bar */}
-          <div className="bg-[#14201a]/95 backdrop-blur-md border border-[#283c32] rounded-xl p-2 flex items-center justify-between gap-2 overflow-x-auto">
-            <div className="flex items-center gap-1.5 shrink-0">
-              <span className="px-2.5 py-1 rounded-lg bg-[#1b2a23] border border-[#3d584a] text-xs text-[#81a890] font-medium">
-                🌿 {telemetry.dominant_emotion} (
-                {telemetry.percentages?.[telemetry.dominant_emotion] || 70}%)
-              </span>
-              <span className="px-2 py-1 rounded-lg bg-[#1b2a23] border border-[#283c32] text-xs text-[#9cb5a6]">
-                {telemetry.polyvagal_state}
-              </span>
-              <span className="px-2 py-1 rounded-lg bg-[#1b2a23] border border-[#283c32] text-xs text-[#c48b71]">
-                CBT: {telemetry.cbt_distortion}
-              </span>
+              </div>
             </div>
           </div>
 
-          {/* 4. REAL-TIME AUDIO VOLUME WAVEFORM & ECHO INDICATOR */}
-          <AudioWaveform
-            stream={recordingStream}
-            isRecording={isRecording}
-            isPlayingAudio={isPlayingAudio}
-            isEchoLocked={isEchoLocked}
-          />
-
-          {/* Input Bar */}
-          <div className="bg-[#14201a] border border-[#283c32] focus-within:border-[#81a890] rounded-2xl p-1.5 flex items-center gap-2 shadow-2xl">
-            <button
-              onClick={toggleRecording}
-              disabled={isPlayingAudio || isEchoLocked}
-              title={
-                isPlayingAudio
-                  ? "Assistant Speaking (Mic Locked)"
-                  : isEchoLocked
-                  ? "Echo Grace Period (200ms)"
-                  : isRecording
-                  ? "Stop Recording"
-                  : "Voice Input (48kHz Noise Suppressed)"
-              }
-              className={`p-2.5 rounded-xl transition-all ${
-                isRecording
-                  ? "bg-red-900/80 text-red-200 border border-red-500 animate-pulse"
-                  : isPlayingAudio || isEchoLocked
-                  ? "bg-[#1b2a23]/50 text-[#647d70] opacity-50 cursor-not-allowed"
-                  : "bg-[#1b2a23] hover:bg-[#283c32] text-[#9cb5a6]"
-              }`}
+          {/* Navigation Action Buttons */}
+          <nav className="space-y-1.5">
+            <Link
+              href="/library"
+              className="flex items-center gap-3 w-full p-2.5 rounded-xl text-slate-400 hover:text-emerald-300 hover:bg-slate-800/80 border border-transparent hover:border-slate-700/60 transition-all duration-300 group"
+              title="Clinical Knowledge Library"
             >
-              🎙️
+              <BookOpen className="w-5 h-5 shrink-0 group-hover:scale-110 transition-transform text-teal-400" />
+              <span className="hidden md:inline text-xs font-medium tracking-wide">
+                Clinical Library
+              </span>
+            </Link>
+
+            <button
+              onClick={() => setIsCBTModalOpen(true)}
+              className="flex items-center gap-3 w-full p-2.5 rounded-xl text-slate-400 hover:text-emerald-300 hover:bg-slate-800/80 border border-transparent hover:border-slate-700/60 transition-all duration-300 group"
+              title="CBT Cognitive Restructuring Tools"
+            >
+              <Brain className="w-5 h-5 shrink-0 group-hover:scale-110 transition-transform text-emerald-400" />
+              <span className="hidden md:inline text-xs font-medium tracking-wide">
+                CBT Protocols (20+)
+              </span>
             </button>
-            <input
-              type="text"
-              value={inputVal}
-              onChange={(e) => setInputVal(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
-              placeholder={
-                isPlayingAudio
-                  ? "Healer speaking... (listening will resume shortly)"
-                  : "Speak or type what you are experiencing..."
-              }
-              className="flex-1 bg-transparent px-2 text-sm text-[#ecf3ee] placeholder-[#647d70] focus:outline-none"
+
+            <button
+              onClick={() => setIsPranayamaOpen(true)}
+              className="flex items-center gap-3 w-full p-2.5 rounded-xl text-slate-400 hover:text-emerald-300 hover:bg-slate-800/80 border border-transparent hover:border-slate-700/60 transition-all duration-300 group"
+              title="Somatic Breathwork & Vagal Brake"
+            >
+              <Wind className="w-5 h-5 shrink-0 group-hover:scale-110 transition-transform text-cyan-400" />
+              <span className="hidden md:inline text-xs font-medium tracking-wide">
+                Somatic Breathwork
+              </span>
+            </button>
+
+            <button
+              onClick={() => setIsHistoryOpen(true)}
+              className="flex items-center gap-3 w-full p-2.5 rounded-xl text-slate-400 hover:text-emerald-300 hover:bg-slate-800/80 border border-transparent hover:border-slate-700/60 transition-all duration-300 group"
+              title="Encrypted Session Vault (AES-GCM)"
+            >
+              <History className="w-5 h-5 shrink-0 group-hover:scale-110 transition-transform text-slate-300" />
+              <span className="hidden md:inline text-xs font-medium tracking-wide">
+                Encrypted History
+              </span>
+            </button>
+
+            <button
+              onClick={() => setIsCrisisModalOpen(true)}
+              className="flex items-center gap-3 w-full p-2.5 rounded-xl text-rose-400 hover:text-rose-200 hover:bg-rose-950/40 border border-rose-900/30 hover:border-rose-800/60 transition-all duration-300 group"
+              title="Emergency Crisis Support (988)"
+            >
+              <ShieldAlert className="w-5 h-5 shrink-0 group-hover:scale-110 transition-transform text-rose-400" />
+              <span className="hidden md:inline text-xs font-medium tracking-wide">
+                Crisis Helplines
+              </span>
+            </button>
+
+            <button
+              onClick={() => setIsSettingsModalOpen(true)}
+              className="flex items-center gap-3 w-full p-2.5 rounded-xl text-slate-400 hover:text-emerald-300 hover:bg-slate-800/80 border border-transparent hover:border-slate-700/60 transition-all duration-300 group"
+              title="Voice Router Tier & BYOK"
+            >
+              <Sliders className="w-5 h-5 shrink-0 group-hover:scale-110 transition-transform text-amber-400" />
+              <span className="hidden md:inline text-xs font-medium tracking-wide">
+                Tier &amp; BYOK
+              </span>
+            </button>
+          </nav>
+        </div>
+
+        {/* Bottom Section: Language & User Profile */}
+        <div className="space-y-3 pt-4 border-t border-slate-800/60">
+          <div className="flex items-center justify-center md:justify-start">
+            <LanguageSelector
+              currentLanguage={currentLanguage}
+              onLanguageChange={handleLanguageChange}
             />
-            <button
-              onClick={() => handleSendMessage()}
-              disabled={isLoading || !inputVal.trim()}
-              className="px-4 py-2 bg-[#588e73] hover:bg-[#81a890] disabled:opacity-40 text-[#0c1410] font-semibold text-xs rounded-xl transition-all"
-            >
-              Send
-            </button>
+          </div>
+
+          <div className="hidden md:flex items-center gap-2.5 p-2 rounded-xl bg-slate-900/60 border border-slate-800">
+            <div className="w-8 h-8 rounded-lg bg-emerald-950 border border-emerald-700/50 flex items-center justify-center text-emerald-400 shrink-0">
+              <User className="w-4 h-4" />
+            </div>
+            <div className="flex flex-col overflow-hidden">
+              <span className="text-xs font-semibold text-slate-200 truncate">
+                Client Session
+              </span>
+              <span className="text-[10px] text-slate-500 font-mono truncate">
+                Zero-Knowledge AES-256
+              </span>
+            </div>
           </div>
         </div>
-      </footer>
+      </motion.aside>
 
-      {/* 4. CBT CLINICAL KNOWLEDGE & AUTO-UPGRADE MODAL */}
+      {/* ─────────────────────────────────────────────────────────────
+          2. CENTER COLUMN: The Therapy Stage (Main Focus)
+      ───────────────────────────────────────────────────────────── */}
+      <motion.main
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="flex-1 flex flex-col justify-between overflow-hidden relative bg-gradient-to-b from-slate-950 via-slate-900/30 to-slate-950"
+      >
+        {/* Upper Area: Glowing Breathing Orb / Visualizer */}
+        <div className="shrink-0 pt-4 px-4 z-10">
+          <BreathingVisualizerOrb
+            isRecording={isRecording}
+            isPlayingAudio={isPlayingAudio}
+            hasMessages={messages.length > 0}
+            dominantEmotion={telemetry.dominant_emotion}
+            onOrbClick={toggleRecording}
+          />
+        </div>
+
+        {/* Middle Area: Scrollable Chat Stream with Fade Mask */}
+        <div className="flex-1 overflow-y-auto px-4 md:px-8 py-2 space-y-4 [mask-image:linear-gradient(to_bottom,transparent_0%,black_30px,black_calc(100%-30px),transparent_100%)]">
+          {/* Error Banner */}
+          {errorMessage && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center justify-between p-3.5 rounded-2xl bg-rose-950/70 border border-rose-800/80 text-rose-200 text-xs shadow-lg max-w-2xl mx-auto"
+            >
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+                <span>{errorMessage}</span>
+              </div>
+              <button
+                onClick={() => setErrorMessage(null)}
+                className="text-rose-400 hover:text-rose-200 font-bold px-2 py-1 rounded hover:bg-rose-900/50 transition-all"
+              >
+                ✕
+              </button>
+            </motion.div>
+          )}
+
+          {/* Messages List */}
+          <div className="max-w-3xl w-full mx-auto space-y-4 pt-2 pb-6">
+            {messages.map((m) => (
+              <motion.div
+                key={m.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className={`flex flex-col ${m.sender === "user" ? "items-end" : "items-start"}`}
+              >
+                <div
+                  className={`max-w-[88%] md:max-w-xl p-4 rounded-2xl text-sm leading-relaxed ${
+                    m.sender === "user"
+                      ? "bg-gradient-to-br from-emerald-900/60 to-teal-950/70 border border-emerald-500/30 text-emerald-50 rounded-br-sm shadow-[0_4px_20px_rgba(16,185,129,0.15)]"
+                      : "bg-gradient-to-br from-slate-900/90 to-slate-950/95 border border-slate-800/80 text-slate-100 rounded-bl-sm shadow-xl backdrop-blur-md"
+                  }`}
+                >
+                  <p className="whitespace-pre-wrap">{m.text}</p>
+
+                  {/* Render Clinical & Psychoeducational Solution Cards */}
+                  {m.sender === "ai" && m.sources && m.sources.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-slate-800/80 space-y-2">
+                      {m.sources.map((src, sIdx) => {
+                        const isLibraryProtocol = src.source === "psychology_library";
+                        if (isLibraryProtocol) {
+                          return (
+                            <div
+                              key={sIdx}
+                              className="bg-slate-950/80 rounded-xl p-3 border border-teal-800/50 shadow-sm space-y-2 text-xs"
+                            >
+                              <div className="flex items-center justify-between gap-1 text-teal-300 font-semibold">
+                                <span className="flex items-center gap-1.5">
+                                  <span>📚</span>
+                                  <span>{src.title}</span>
+                                </span>
+                                <span className="px-1.5 py-0.5 rounded bg-teal-950/90 border border-teal-700/60 text-[10px] text-teal-300 uppercase tracking-wider font-mono">
+                                  Verified Protocol
+                                </span>
+                              </div>
+
+                              {src.summary && (
+                                <div className="grid grid-cols-1 gap-1.5 pt-1 text-[11px] text-slate-300">
+                                  {src.summary.split(" | ").map((part, pIdx) => {
+                                    const [label, ...valParts] = part.split(": ");
+                                    const val = valParts.join(": ");
+                                    const icon = label.includes("CBT")
+                                      ? "🧠"
+                                      : label.includes("Somatic")
+                                      ? "🧘"
+                                      : label.includes("Pranayama")
+                                      ? "🌬️"
+                                      : "⏱️";
+                                    return (
+                                      <div
+                                        key={pIdx}
+                                        className="p-1.5 rounded-lg bg-slate-900/90 border border-slate-800 flex flex-col gap-0.5"
+                                      >
+                                        <span className="font-semibold text-emerald-400 flex items-center gap-1 text-[10px] uppercase">
+                                          <span>{icon}</span> {label}
+                                        </span>
+                                        <span className="text-slate-200 leading-normal pl-3">
+                                          {val}
+                                        </span>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <div
+                            key={sIdx}
+                            className="text-[10px] text-slate-400 flex items-center gap-1"
+                          >
+                            <span className="text-emerald-400">🔬 PubMed Grounding:</span>
+                            <span className="text-slate-300 truncate">{src.title}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2 mt-1 px-1">
+                  {m.timestamp && (
+                    <span className="text-[10px] text-slate-500" suppressHydrationWarning>
+                      {m.timestamp}
+                    </span>
+                  )}
+                  {m.engine && (
+                    <span className="text-[9px] text-emerald-400/70 font-mono">[{m.engine}]</span>
+                  )}
+                </div>
+              </motion.div>
+            ))}
+
+            {isLoading && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex items-center gap-2 text-xs text-slate-400 px-3 py-2 rounded-xl bg-slate-900/60 border border-slate-800 w-fit"
+              >
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                <span>Consulting PubMed &amp; Synthesizing clinical response...</span>
+              </motion.div>
+            )}
+
+            <div ref={messagesEndRef} />
+          </div>
+        </div>
+
+        {/* Bottom Area: Floating Centered Input Dock */}
+        <div className="shrink-0 p-4 z-20">
+          <div className="max-w-2xl w-full mx-auto">
+            <div className="rounded-full bg-slate-900/80 border border-slate-700/80 backdrop-blur-xl p-1.5 sm:p-2 flex items-center gap-2 shadow-[0_10px_35px_rgba(0,0,0,0.6)] focus-within:border-emerald-500/60 focus-within:shadow-[0_0_25px_rgba(16,185,129,0.2)] transition-all">
+              {/* Pulsing Mic Button */}
+              <button
+                onClick={toggleRecording}
+                disabled={isPlayingAudio || isEchoLocked}
+                title={
+                  isPlayingAudio
+                    ? "Healer speaking (listening resumes automatically)"
+                    : isEchoLocked
+                    ? "Grace period (200ms echo lock)"
+                    : isRecording
+                    ? "Stop listening"
+                    : "Continuous Voice (48kHz Noise Suppressed)"
+                }
+                className={`p-3 rounded-full transition-all shrink-0 ${
+                  isRecording
+                    ? "bg-rose-500/20 text-rose-400 border border-rose-500/60 animate-pulse shadow-[0_0_15px_rgba(244,63,94,0.4)]"
+                    : isPlayingAudio || isEchoLocked
+                    ? "bg-slate-800/40 text-slate-600 opacity-60 cursor-not-allowed"
+                    : "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                }`}
+              >
+                {isRecording ? <Mic className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+              </button>
+
+              {/* Text Input */}
+              <input
+                type="text"
+                value={inputVal}
+                onChange={(e) => setInputVal(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+                placeholder={
+                  isPlayingAudio
+                    ? "Healer speaking... (listening will resume shortly)"
+                    : isRecording
+                    ? "Listening to you in real-time..."
+                    : "Speak freely or type what you are experiencing..."
+                }
+                className="flex-1 bg-transparent px-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none"
+              />
+
+              {/* Send Button */}
+              <button
+                onClick={() => handleSendMessage()}
+                disabled={isLoading || !inputVal.trim()}
+                className="p-2.5 rounded-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 disabled:hover:bg-emerald-500 text-slate-950 font-bold transition-all shadow-md shrink-0"
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </motion.main>
+
+      {/* ─────────────────────────────────────────────────────────────
+          3. RIGHT COLUMN: Live Session Status & Telemetry (Flex Column)
+      ───────────────────────────────────────────────────────────── */}
+      <motion.aside
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.4 }}
+        className="w-16 sm:w-20 md:w-72 shrink-0 flex flex-col justify-between bg-slate-900/40 backdrop-blur-xl border-l border-slate-800/60 p-3 md:p-4 z-20 overflow-y-auto space-y-4"
+      >
+        <div className="space-y-4">
+          {/* THE "CLINIC ACTIVE SESSION" COMPACT STATUS PILL FIX */}
+          <div
+            onClick={toggleRecording}
+            className={`cursor-pointer transition-all duration-500 ${
+              isSessionActive
+                ? "relative flex items-center justify-between p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.3)] text-emerald-400"
+                : "relative flex items-center justify-between p-3 rounded-2xl bg-slate-900/60 border border-slate-800 text-slate-400 hover:border-slate-700"
+            }`}
+          >
+            <div className="flex items-center gap-2.5">
+              <div className="relative flex items-center justify-center shrink-0">
+                <div
+                  className={`w-2.5 h-2.5 rounded-full ${
+                    isSessionActive ? "bg-emerald-500" : "bg-slate-600"
+                  }`}
+                />
+                {isSessionActive && (
+                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping absolute" />
+                )}
+              </div>
+              <div className="hidden md:flex flex-col">
+                <span
+                  className={`text-xs font-bold uppercase tracking-wider ${
+                    isSessionActive ? "text-emerald-400" : "text-slate-400"
+                  }`}
+                >
+                  {isSessionActive ? "Clinic Active" : "Session Standby"}
+                </span>
+                <span className="text-[10px] text-slate-500 font-mono truncate">
+                  {isRecording
+                    ? "48kHz Live Audio"
+                    : isPlayingAudio
+                    ? "Synthesizing Speech"
+                    : "Ready for Voice"}
+                </span>
+              </div>
+            </div>
+
+            <div className="hidden md:flex items-center">
+              <span
+                className={`text-[10px] px-2 py-0.5 rounded-full font-mono uppercase font-semibold ${
+                  isSessionActive
+                    ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
+                    : "bg-slate-800 text-slate-500"
+                }`}
+              >
+                {isSessionActive ? "Live" : "Idle"}
+              </span>
+            </div>
+          </div>
+
+          {/* AI Audio Mute & Speaker Controller */}
+          <div className="hidden md:flex items-center justify-between p-3 rounded-2xl bg-slate-900/60 border border-slate-800 text-xs">
+            <div className="flex items-center gap-2">
+              {isAiMuted ? (
+                <VolumeX className="w-4 h-4 text-rose-400" />
+              ) : (
+                <Volume2 className="w-4 h-4 text-emerald-400" />
+              )}
+              <span className="text-slate-300 font-medium">AI Voice Speech</span>
+            </div>
+            <button
+              onClick={() => setIsAiMuted(!isAiMuted)}
+              className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all ${
+                isAiMuted
+                  ? "bg-rose-950/60 text-rose-300 border border-rose-800/80"
+                  : "bg-emerald-950/60 text-emerald-300 border border-emerald-800/80"
+              }`}
+            >
+              {isAiMuted ? "Muted" : "Active"}
+            </button>
+          </div>
+
+          {/* Real-Time Audio Volume Waveform */}
+          <div className="hidden md:block">
+            <AudioWaveform
+              stream={recordingStream}
+              isRecording={isRecording}
+              isPlayingAudio={isPlayingAudio}
+              isEchoLocked={isEchoLocked}
+            />
+          </div>
+
+          {/* Dominant Emotion & Diagnostic Card */}
+          <div className="hidden md:block p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-3">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-slate-400 font-medium flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Emotion Telemetry</span>
+              </span>
+              <span className="text-[11px] font-bold text-emerald-400 font-mono">
+                {telemetry.percentages?.[telemetry.dominant_emotion] || 75}%
+              </span>
+            </div>
+
+            <div className="p-2 rounded-xl bg-slate-950/70 border border-slate-800/80 flex items-center justify-between text-xs">
+              <span className="text-slate-300 font-medium">{telemetry.dominant_emotion}</span>
+              <span className="text-[10px] text-teal-400 font-mono px-2 py-0.5 rounded bg-teal-950 border border-teal-800/60">
+                Primary
+              </span>
+            </div>
+
+            <div className="space-y-1.5 pt-1 text-[11px]">
+              <div className="flex items-center justify-between text-slate-400">
+                <span>Polyvagal:</span>
+                <span className="text-emerald-300 font-medium truncate max-w-[140px]">
+                  {telemetry.polyvagal_state}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-slate-400">
+                <span>Distortion:</span>
+                <span className="text-amber-300 font-medium truncate max-w-[140px]">
+                  {telemetry.cbt_distortion}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Triguna Autonomic Balance Card */}
+          <div className="hidden md:block p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-2.5">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-slate-400 font-medium flex items-center gap-1.5">
+                <Activity className="w-3.5 h-3.5 text-teal-400" />
+                <span>Triguna Equilibrium</span>
+              </span>
+            </div>
+
+            <div className="space-y-2 text-[11px]">
+              <div>
+                <div className="flex justify-between text-slate-300 mb-1">
+                  <span>Sattva (Clarity)</span>
+                  <span className="text-emerald-400 font-mono">68%</span>
+                </div>
+                <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                  <div className="h-full bg-emerald-500 rounded-full w-[68%]" />
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between text-slate-300 mb-1">
+                  <span>Rajas (Arousal)</span>
+                  <span className="text-amber-400 font-mono">22%</span>
+                </div>
+                <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                  <div className="h-full bg-amber-500 rounded-full w-[22%]" />
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between text-slate-300 mb-1">
+                  <span>Tamas (Inertia)</span>
+                  <span className="text-slate-400 font-mono">10%</span>
+                </div>
+                <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                  <div className="h-full bg-slate-500 rounded-full w-[10%]" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Section: End Session Button */}
+        <div className="pt-2">
+          <button
+            onClick={handleEndSession}
+            className="w-full flex items-center justify-center gap-2 p-3 rounded-2xl bg-rose-950/40 hover:bg-rose-900/70 border border-rose-900/50 hover:border-rose-700 text-rose-300 hover:text-rose-100 transition-all duration-300 shadow-md text-xs font-semibold"
+            title="End Active Clinical Session"
+          >
+            <PhoneOff className="w-4 h-4 shrink-0" />
+            <span className="hidden md:inline">End Session</span>
+          </button>
+        </div>
+      </motion.aside>
+
+      {/* ─────────────────────────────────────────────────────────────
+          4. CLINICAL MODALS (ZERO ABSOLUTE OVERLAY IN FLOW)
+      ───────────────────────────────────────────────────────────── */}
       <CBTKnowledgeModal
         isOpen={isCBTModalOpen}
         onClose={() => setIsCBTModalOpen(false)}
+      />
+
+      <PranayamaGuide
+        isOpen={isPranayamaOpen}
+        onClose={() => setIsPranayamaOpen(false)}
+      />
+
+      <EncryptedHistoryModal
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
+      />
+
+      <CrisisModal
+        isOpen={isCrisisModalOpen}
+        crisisData={null}
+        onClose={() => setIsCrisisModalOpen(false)}
+      />
+
+      <SettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
+        currentTier={currentTier}
+        onSelectTier={(tier) => setCurrentTier(tier)}
       />
     </div>
   );
