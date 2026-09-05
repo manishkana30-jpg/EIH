@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { emotionClassifier, NeuroscienceDiagnosticResult } from '@/lib/knowledge/emotion-classifier';
 import { getResearchedAdviceForEmotion } from '@/lib/knowledge/authenticated-research-bank';
-import { runHiddenCognitiveDiagnostics } from '@/lib/nlp/cognitive-orchestrator';
 import type { UserCognitiveProfile } from '@/lib/memory/cbt-memory-types';
 
 export const runtime = 'edge';
@@ -139,9 +138,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 0. Execute Hidden Stage 1 Cognitive Diagnostics
-    const cognitiveDiag = runHiddenCognitiveDiagnostics(cleanPrompt);
-
+    // Construct Grounded Clinical System Prompt
     const systemPrompt = `You are an Expert Clinical Psychologist and Emotional Resilience Trainer integrating Modern Neuropsychology with Ayurvedic Sattvavajaya Chikitsa.
 
 You MUST NEVER use generic greetings, repetitive platitudes, or filler phrases. Respond directly with profound clinical insight.

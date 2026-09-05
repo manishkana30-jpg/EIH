@@ -1,8 +1,8 @@
 // lib/api/healer-client.ts
 import { emotionClassifier } from '../knowledge/emotion-classifier';
-import { runHiddenCognitiveDiagnostics } from '../nlp/cognitive-orchestrator';
 import { detectCrisis } from '../safety/crisis-detector';
-import { generateDynamicCompanionReply } from '../nlp/conversational-companion-engine';
+import { queryPsychologyLibrary } from '../knowledge/psychology-library-rag';
+import { getResearchedAdviceForEmotion } from '../knowledge/authenticated-research-bank';
 
 export interface ClinicalSource {
   title: string;
@@ -162,7 +162,9 @@ class HealerBackendClient {
         const data = await res.json();
         if (data.reply) {
           const diag = emotionClassifier.classifyText(cleanMessage);
-          const cogDiag = runHiddenCognitiveDiagnostics(cleanMessage);
+          const arousal = diag.coreAffect?.arousal || 0.5;
+          const polyvagalState = arousal > 0.6 ? 'Sympathetic (Fight/Flight)' : (diag.coreAffect?.valence && diag.coreAffect.valence < -0.4) ? 'Dorsal Vagal (Shutdown)' : 'Ventral Vagal (Safe)';
+          const distortion = cleanMessage.match(/\b(always|never|worst|idiot|ruined|hate)\b/i) ? 'Catastrophizing / All-or-Nothing' : 'None';
 
           return {
             reply: data.reply,
@@ -176,14 +178,14 @@ class HealerBackendClient {
             is_crisis: false,
             telemetry: {
               dominant_emotion: diag.dimensionName || 'Calmness',
-              polyvagal_state: cogDiag.polyvagalState,
-              cbt_distortion: cogDiag.cbtDistortion,
+              polyvagal_state: polyvagalState,
+              cbt_distortion: distortion,
               percentages: {
-                [diag.dimensionName || 'Calmness']: Math.round((diag.coreAffect?.arousal || 0.5) * 100),
+                [diag.dimensionName || 'Calmness']: Math.round(arousal * 100),
                 Relief: 60,
                 Grounding: 75,
               },
-              strategy: cogDiag.therapeuticStrategy,
+              strategy: `Regulate ${polyvagalState} and apply targeted clinical grounding for ${diag.dimensionName || 'emotional balance'}.`,
             },
           };
         }
@@ -192,46 +194,55 @@ class HealerBackendClient {
       console.warn('Edge reasoning notice:', err);
     }
 
-    // TIER 3: Unbreakable In-Browser Cognitive Companion (100% Offline & Network Resilient)
+    // TIER 3: Pure Keyless Client-Side Fallback (100% Offline & Network Resilient)
     try {
       const diag = emotionClassifier.classifyText(cleanMessage);
-      const cogDiag = runHiddenCognitiveDiagnostics(cleanMessage);
-      const companion = generateDynamicCompanionReply({
-        userText: cleanMessage,
-        targetLanguageCode: language,
-        speechLocale: locale,
-        history: (history || []).map((h) => ({
-          role: h.sender === 'ai' ? 'assistant' : 'user',
-          text: h.text,
-        })),
-        diagnostic: diag,
-      });
+      const libraryResult = queryPsychologyLibrary(cleanMessage);
+      const study = getResearchedAdviceForEmotion(diag.dimensionId || 'calmness');
+      const arousal = diag.coreAffect?.arousal || 0.5;
+      const polyvagalState = arousal > 0.6 ? 'Sympathetic (Fight/Flight)' : (diag.coreAffect?.valence && diag.coreAffect.valence < -0.4) ? 'Dorsal Vagal (Shutdown)' : 'Ventral Vagal (Safe)';
 
-      const sources: ClinicalSource[] = companion.libraryCondition
+      let fallbackReply = `I hear the emotional weight you are holding right now. Rather than letting this distress define you, remember that difficult moments are temporary physiological signals. Take a slow breath in and exhale longer than your inhale to activate your parasympathetic calming response.`;
+
+      if (libraryResult) {
+        fallbackReply = `I recognize how challenging this experience is for you. ${libraryResult.condition.solutions.cbt_reframing}. To restore calm, practice ${libraryResult.condition.solutions.somatic_anchor} and ${libraryResult.condition.solutions.pranayama}.`;
+      } else if (study) {
+        fallbackReply = `I hear the emotional strain you are carrying right now. ${study.scientificActionProtocol}. Take a moment for ${study.ayurvedicActionProtocol} to help regulate your nervous system.`;
+      }
+
+      const sources: ClinicalSource[] = libraryResult
         ? [
             {
-              title: `${companion.libraryCondition.name} (${companion.libraryCondition.triguna_balance})`,
-              summary: `CBT: ${companion.libraryCondition.solutions.cbt_reframing} | Somatic: ${companion.libraryCondition.solutions.somatic_anchor}`,
+              title: `${libraryResult.condition.name} (${libraryResult.condition.triguna_balance})`,
+              summary: `CBT: ${libraryResult.condition.solutions.cbt_reframing} | Somatic: ${libraryResult.condition.solutions.somatic_anchor}`,
               source: 'Clinical & Psychoeducational Library',
+            },
+          ]
+        : study
+        ? [
+            {
+              title: study.citation,
+              summary: study.scientificActionProtocol,
+              source: 'Authenticated Research Bank',
             },
           ]
         : [];
 
       return {
-        reply: companion.reply,
-        engine: 'Cognitive Companion Engine (Client-Side Standalone)',
+        reply: fallbackReply,
+        engine: 'Keyless Healer (Client-Side Standalone Fallback)',
         sources,
         is_crisis: false,
         telemetry: {
           dominant_emotion: diag.dimensionName || 'Calmness',
-          polyvagal_state: cogDiag.polyvagalState,
-          cbt_distortion: cogDiag.cbtDistortion,
+          polyvagal_state: polyvagalState,
+          cbt_distortion: 'None',
           percentages: {
-            [diag.dimensionName || 'Calmness']: Math.round((diag.coreAffect?.arousal || 0.5) * 100),
+            [diag.dimensionName || 'Calmness']: Math.round(arousal * 100),
             Relief: 65,
             Grounding: 80,
           },
-          strategy: cogDiag.therapeuticStrategy,
+          strategy: `Somatic stabilization and evidence-based grounding for ${diag.dimensionName || 'emotional resilience'}.`,
         },
       };
     } catch (finalErr) {

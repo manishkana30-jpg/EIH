@@ -1,9 +1,8 @@
 // lib/services/therapist-engine.ts
-import { searchMentalHealthEvidence, ClinicalSearchResult } from "./search-fallback";
-import { detectCrisis } from "../safety/crisis-detector";
-import { queryPsychologyLibrary } from "../knowledge/psychology-library-rag";
-import { generateDynamicCompanionReply } from "../nlp/conversational-companion-engine";
-import { GLOBAL_LANGUAGE_CATALOG, getLanguageByCode } from "../i18n/language-catalog";
+import { searchMentalHealthEvidence, type ClinicalSearchResult } from "./search-fallback.ts";
+import { detectCrisis } from "../safety/crisis-detector.ts";
+import { queryPsychologyLibrary } from "../knowledge/psychology-library-rag.ts";
+import { GLOBAL_LANGUAGE_CATALOG, getLanguageByCode } from "../i18n/language-catalog.ts";
 
 const THERAPIST_SYSTEM_PROMPT = `
 You are an Expert Clinical Psychologist and Emotional Resilience Trainer integrating Modern Neuropsychology with Ayurvedic Sattvavajaya Chikitsa.
@@ -289,21 +288,19 @@ Translate and explain all validation, CBT cognitive reframes, somatic grounding 
     }
   } catch {}
 
-  // 5. Infallible Tier 5: Pure Deterministic Cognitive Companion (Zero External Dependency, 100% Offline)
-  const companion = generateDynamicCompanionReply({
-    userText: userMessage,
-    targetLanguageCode: language,
-    speechLocale: locale,
-    history: (history || []).map((h) => ({
-      role: h.role === "assistant" || h.sender === "ai" ? "assistant" : "user",
-      text: h.content || h.text || "",
-    })),
-  });
+  // 5. Infallible Tier 5: Pure Deterministic Healer Synthesis (Zero External Dependency, 100% Offline)
+  let fallbackReply = "I hear the distress you are navigating right now. Remind yourself that intense thoughts are mental events, not permanent facts. Take a deep diaphragmatic breath in for 4 seconds, hold gently for 4 seconds, and exhale slowly for 6 seconds to calm your autonomic nervous system.";
+
+  if (libraryRag) {
+    fallbackReply = `I understand how challenging this experience feels in your body. ${libraryRag.condition.solutions.cbt_reframing}. To ground yourself right now, practice ${libraryRag.condition.solutions.somatic_anchor} and ${libraryRag.condition.solutions.pranayama}.`;
+  } else if (clinicalEvidence.length > 0) {
+    fallbackReply = `I hear the emotional pressure you are experiencing. ${clinicalEvidence[0].summary}. Focus on slow rhythmic breathing and releasing tension in your jaw and shoulders.`;
+  }
 
   return {
-    reply: companion.reply,
+    reply: fallbackReply,
     sources: allSources,
-    providerUsed: "Cognitive Companion Engine (Edge Fallback)",
+    providerUsed: "Keyless Healer (Clinical Library Fallback)",
     isCrisis: false,
   };
 }

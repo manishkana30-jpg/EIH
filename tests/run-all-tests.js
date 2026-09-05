@@ -21,16 +21,20 @@ console.log('================================================================');
 console.log('EMOTIONAL INTELLIGENCE HEALER (EIH) - MASTER TEST VERIFICATION');
 console.log('================================================================\n');
 
-try {
-  runSafetyTests();
-  runCryptoAndAudioTests();
-  runHybridRagTests();
-  runConversationalDiversityTests();
-  runTtsSanitizerTests();
-  console.log('================================================================');
-  console.log('🎉 ALL SYSTEM TESTS PASSED WITH 100% SUCCESS RATE');
-  console.log('================================================================');
-} catch (err) {
-  console.error('\n❌ TEST VERIFICATION FAILED:', err);
-  process.exit(1);
+async function main() {
+  try {
+    runSafetyTests();
+    runCryptoAndAudioTests();
+    runHybridRagTests();
+    await runConversationalDiversityTests();
+    runTtsSanitizerTests();
+    console.log('================================================================');
+    console.log('🎉 ALL SYSTEM TESTS PASSED WITH 100% SUCCESS RATE');
+    console.log('================================================================');
+  } catch (err) {
+    console.error('\n❌ TEST VERIFICATION FAILED:', err);
+    process.exit(1);
+  }
 }
+
+main();

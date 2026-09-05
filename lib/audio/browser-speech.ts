@@ -10,7 +10,7 @@
  */
 
 import { getBestTherapeuticVoice } from './voice-selector';
-import { detectUserSpokenLanguage } from '../nlp/conversational-companion-engine';
+import { detectUserSpokenLanguage } from '../i18n/language-catalog';
 
 export interface BrowserSpeechCallbacks {
   onUserSpeech?: (transcript: string, isFinal: boolean) => void;

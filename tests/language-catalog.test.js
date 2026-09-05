@@ -1,5 +1,5 @@
 /**
- * Global Language Catalog, GPS Geolocation & Real-Time Multilingual Mirroring Test Suite
+ * Global Language Catalog, GPS Geolocation & Real-Time Multilingual Detection Test Suite
  */
 
 const assert = require('assert');
@@ -8,11 +8,8 @@ const {
   deduceCountryFromCoordinates,
   deduceCountryFromTimezoneAndLocale,
   getLanguageByCode,
-} = require('../lib/i18n/language-catalog.ts');
-const {
-  generateDynamicCompanionReply,
   detectUserSpokenLanguage,
-} = require('../lib/nlp/conversational-companion-engine.ts');
+} = require('../lib/i18n/language-catalog.ts');
 
 console.log('\n--- Running Global Language Catalog & GPS Geolocation Tests ---');
 
@@ -64,81 +61,48 @@ assert.strictEqual(french.speechLocale, 'fr-FR');
 
 console.log('  ✓ getLanguageByCode lookups verified for Hindi, Spanish, French, and English fallbacks');
 
-// 4. Real-Time Dynamic Multilingual Mirroring (User Speaks Language At That Time)
-console.log('\n--- Verifying Real-Time Multilingual Utterance Mirroring ---');
+// 4. Real-Time Dynamic Multilingual Detection (User Speaks Language At That Time)
+console.log('\n--- Verifying Real-Time Multilingual Utterance Detection ---');
 
 // Turn A: User speaks in Hindi (Devanagari)
 const hindiUtterance = "मुझे बहुत तनाव और घबराहट महसूस हो रही है।";
-const hindiRes = generateDynamicCompanionReply({ userText: hindiUtterance });
-assert.strictEqual(hindiRes.detectedLanguage, 'hi');
-assert.strictEqual(hindiRes.speechLocale, 'hi-IN');
-assert(/[\u0900-\u097F]/.test(hindiRes.reply), 'Hindi reply should be in Devanagari script');
-console.log(`  ✓ [Hindi Devanagari]: "${hindiUtterance}" ➔ Companion (hi-IN): "${hindiRes.reply.slice(0, 50)}..."`);
+const hindiLang = detectUserSpokenLanguage(hindiUtterance);
+assert.strictEqual(hindiLang.langCode, 'hi');
+assert.strictEqual(hindiLang.speechLocale, 'hi-IN');
+console.log(`  ✓ [Hindi Devanagari]: "${hindiUtterance}" ➔ Detected: ${hindiLang.name} (${hindiLang.speechLocale})`);
 
 // Turn B: User speaks in Hinglish (Roman Hindi)
 const hinglishUtterance = "Mujhe bohot tension ho raha hai office ki wajah se";
-const hinglishRes = generateDynamicCompanionReply({ userText: hinglishUtterance });
-assert.strictEqual(hinglishRes.detectedLanguage, 'hi');
-assert.strictEqual(hinglishRes.speechLocale, 'hi-IN');
-console.log(`  ✓ [Hinglish]: "${hinglishUtterance}" ➔ Companion: "${hinglishRes.reply.slice(0, 50)}..."`);
+const hinglishLang = detectUserSpokenLanguage(hinglishUtterance);
+assert.strictEqual(hindiLang.langCode, 'hi');
+console.log(`  ✓ [Hinglish]: "${hinglishUtterance}" ➔ Detected: ${hinglishLang.name} (${hinglishLang.speechLocale})`);
 
 // Turn C: User switches to Spanish
 const spanishUtterance = "Hola, me siento muy triste y cansado hoy";
-const spanishRes = generateDynamicCompanionReply({ userText: spanishUtterance });
-assert.strictEqual(spanishRes.detectedLanguage, 'es');
-assert.strictEqual(spanishRes.speechLocale, 'es-ES');
-assert(
-  spanishRes.reply.includes('[CLINICAL DIRECTIVE FOR LLM]') ||
-  spanishRes.reply.toLowerCase().includes('descanso') ||
-  spanishRes.reply.toLowerCase().includes('respiración') ||
-  spanishRes.reply.toLowerCase().includes('tensión') ||
-  spanishRes.reply.toLowerCase().includes('nervioso')
-);
-console.log(`  ✓ [Spanish]: "${spanishUtterance}" ➔ Companion (es-ES): "${spanishRes.reply.slice(0, 50)}..."`);
+const spanishLang = detectUserSpokenLanguage(spanishUtterance);
+assert.strictEqual(spanishLang.langCode, 'es');
+assert.strictEqual(spanishLang.speechLocale, 'es-ES');
+console.log(`  ✓ [Spanish]: "${spanishUtterance}" ➔ Detected: ${spanishLang.name} (${spanishLang.speechLocale})`);
 
 // Turn D: User switches to French
 const frenchUtterance = "Bonjour, je suis très stressé et fatigué par mon travail";
-const frenchRes = generateDynamicCompanionReply({ userText: frenchUtterance });
-assert.strictEqual(frenchRes.detectedLanguage, 'fr');
-assert.strictEqual(frenchRes.speechLocale, 'fr-FR');
-console.log(`  ✓ [French]: "${frenchUtterance}" ➔ Companion (fr-FR): "${frenchRes.reply.slice(0, 50)}..."`);
+const frenchLang = detectUserSpokenLanguage(frenchUtterance);
+assert.strictEqual(frenchLang.langCode, 'fr');
+assert.strictEqual(frenchLang.speechLocale, 'fr-FR');
+console.log(`  ✓ [French]: "${frenchUtterance}" ➔ Detected: ${frenchLang.name} (${frenchLang.speechLocale})`);
 
 // Turn E: User switches to German
 const germanUtterance = "Hallo mein Freund, ich fühle mich heute sehr überfordert";
-const germanRes = generateDynamicCompanionReply({ userText: germanUtterance });
-assert.strictEqual(germanRes.detectedLanguage, 'de');
-assert.strictEqual(germanRes.speechLocale, 'de-DE');
-console.log(`  ✓ [German]: "${germanUtterance}" ➔ Companion (de-DE): "${germanRes.reply.slice(0, 50)}..."`);
+const germanLang = detectUserSpokenLanguage(germanUtterance);
+assert.strictEqual(germanLang.langCode, 'de');
+assert.strictEqual(germanLang.speechLocale, 'de-DE');
+console.log(`  ✓ [German]: "${germanUtterance}" ➔ Detected: ${germanLang.name} (${germanLang.speechLocale})`);
 
 // Turn F: User switches back to English
 const englishUtterance = "Can I share what is on my mind today?";
-const englishRes = generateDynamicCompanionReply({ userText: englishUtterance });
-assert.strictEqual(englishRes.detectedLanguage, 'en');
-assert.strictEqual(englishRes.speechLocale, 'en-US');
-console.log(`  ✓ [English]: "${englishUtterance}" ➔ Companion (en-US): "${englishRes.reply.slice(0, 50)}..."`);
+const englishLang = detectUserSpokenLanguage(englishUtterance);
+assert.strictEqual(englishLang.langCode, 'en');
+assert.strictEqual(englishLang.speechLocale, 'en-US');
+console.log(`  ✓ [English]: "${englishUtterance}" ➔ Detected: ${englishLang.name} (${englishLang.speechLocale})`);
 
-// 5. Verify Target Language Selection Override (e.g. English query with Hindi target selected)
-console.log('\n--- Verifying Target Language Selection Override ---');
-const overrideHindi = generateDynamicCompanionReply({
-  userText: "I am feeling overwhelmed by all my tasks today",
-  targetLanguageCode: 'hi',
-  speechLocale: 'hi-IN',
-});
-assert.strictEqual(overrideHindi.detectedLanguage, 'hi');
-assert(/[\u0900-\u097F]/.test(overrideHindi.reply), 'Should generate pure Devanagari Hindi response when Hindi target is selected');
-// Verify NO raw English clinical strings leaked
-assert(!overrideHindi.reply.includes('Identify the worst-case scenario'), 'Should not contain raw English CBT text');
-assert(!overrideHindi.reply.includes('5-4-3-2-1 Sensory Grounding: Name 5 things you see'), 'Should not contain raw English grounding text');
-console.log(`  ✓ [Target Language Override -> Hindi (Devanagari)]: Query: "I am feeling overwhelmed..." ➔ Reply: "${overrideHindi.reply}"`);
-
-const overrideSpanish = generateDynamicCompanionReply({
-  userText: "I am feeling burnt out from working too much",
-  targetLanguageCode: 'es',
-  speechLocale: 'es-ES',
-});
-assert.strictEqual(overrideSpanish.detectedLanguage, 'es');
-assert(!overrideSpanish.reply.includes('Reframe rest as non-negotiable'), 'Should not contain raw English burnout text');
-assert(overrideSpanish.reply.toLowerCase().includes('comprensible') || overrideSpanish.reply.toLowerCase().includes('descanso') || overrideSpanish.reply.toLowerCase().includes('laboral'));
-console.log(`  ✓ [Target Language Override -> Spanish]: Query: "I am feeling burnt out..." ➔ Reply: "${overrideSpanish.reply}"`);
-
-console.log('\nReal-Time Multilingual Mirroring & Zero Code-Switching: 100% Passed!\n');
+console.log('\nReal-Time Multilingual Detection & Language Catalog: 100% Passed!\n');

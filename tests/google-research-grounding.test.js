@@ -5,12 +5,12 @@
  * 1. Listening & Deep Emotional Attunement.
  * 2. Authenticated Psychological & Ayurvedic Research Bank Retrieval.
  * 3. Evidence-Backed Action Recommendations across all emotional states.
- * 4. Multilingual Research Grounding (English, Hindi, Hinglish).
+ * 4. Psychology Library RAG Grounding.
  */
 
 const assert = require('assert');
 const { getResearchedAdviceForEmotion, AUTHENTICATED_RESEARCH_BANK } = require('../lib/knowledge/authenticated-research-bank.ts');
-const { generateDynamicCompanionReply } = require('../lib/nlp/conversational-companion-engine.ts');
+const { queryPsychologyLibrary } = require('../lib/knowledge/psychology-library-rag.ts');
 
 console.log('\n--- Running Authenticated Research Grounding & Deep Listening Tests ---');
 
@@ -39,41 +39,18 @@ assert(freezeStudy.scientificActionProtocol.includes('micro-task') || freezeStud
 assert(freezeStudy.ayurvedicActionProtocol.includes('Surya Bhedana'));
 console.log('  ✓ [Hopelessness/Freeze]: Grounded in ' + freezeStudy.citation);
 
-// 5. Test Live Companion Advice Synthesis
-const panicAdvice = generateDynamicCompanionReply({
-  userText: "I am having severe anxiety and panic, what should I do according to research?",
-  emotionDimension: 'anxiety',
-});
-assert(panicAdvice.detectedTopic === 'advice_request', 'Must detect advice_request topic');
-const lowerReply = panicAdvice.reply.toLowerCase();
-assert(
-  lowerReply.includes('research') ||
-  lowerReply.includes('evidence') ||
-  lowerReply.includes('studies') ||
-  lowerReply.includes('clinical') ||
-  panicAdvice.reply.includes('Nadi Shodhana') ||
-  panicAdvice.reply.includes('cold water'),
-  'Must contain scientific/clinical research grounding terms'
-);
-console.log('  ✓ [Companion Advice Output]: ' + panicAdvice.reply.slice(0, 100) + '...');
+// 5. Test Psychology Library Semantic RAG Query
+const panicRag = queryPsychologyLibrary("I am having severe anxiety and panic attacks at work");
+assert(panicRag !== null, 'Must retrieve matching psychology condition');
+assert(panicRag.condition.id === 'panic_disorder' || panicRag.condition.id === 'gad' || panicRag.condition.id === 'workplace_burnout');
+assert(panicRag.condition.solutions.cbt_reframing.length > 10, 'Must have CBT reframing solution');
+assert(panicRag.condition.solutions.somatic_anchor.length > 10, 'Must have somatic anchor');
+assert(panicRag.condition.solutions.pranayama.length > 10, 'Must have pranayama prescription');
+console.log(`  ✓ [Psychology Library RAG]: Matched condition [${panicRag.condition.name}] (${panicRag.condition.triguna_balance})`);
 
-// 6. Test Hindi Advice Synthesis
-const hindiAdvice = generateDynamicCompanionReply({
-  userText: "मुझे बहुत घबराहट हो रही है, कोई वैज्ञानिक उपाय या सलाह दीजिए क्या करूं?",
-  emotionDimension: 'anxiety',
-});
-assert(hindiAdvice.detectedLanguage === 'hi');
-assert(
-  hindiAdvice.reply.includes('नाड़ी शोधन') ||
-  hindiAdvice.reply.includes('प्राणायाम') ||
-  hindiAdvice.reply.includes('इंद्रिय') ||
-  hindiAdvice.reply.includes('चिंता') ||
-  hindiAdvice.reply.includes('वास्तविक') ||
-  hindiAdvice.reply.includes('तनाव') ||
-  hindiAdvice.reply.includes('अभ्यास') ||
-  hindiAdvice.reply.includes('शरीर') ||
-  hindiAdvice.reply.includes('उपाय')
-);
-console.log('  ✓ [Hindi Advice Output]: ' + hindiAdvice.reply.slice(0, 100) + '...');
+// 6. Test Ayurvedic & Neuropsychology Cross-Grounding
+const burnoutStudy = getResearchedAdviceForEmotion('sadness');
+assert(burnoutStudy.citation && burnoutStudy.scientificActionProtocol, 'Must have valid citation and action protocol');
+console.log('  ✓ [Burnout Research Grounding]: ' + burnoutStudy.citation);
 
 console.log('\nAuthenticated Research Grounding Tests: 100% Passed!\n');

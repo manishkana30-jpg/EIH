@@ -439,3 +439,140 @@ export function saveLanguagePreference(code: string, isAuto: boolean): void {
 export function getLanguageByCode(code: string): LanguageItem {
   return GLOBAL_LANGUAGE_CATALOG.find((l) => l.code === code) || GLOBAL_LANGUAGE_CATALOG[0];
 }
+
+/**
+ * Detect language and speech locale of the user's utterance in real time.
+ */
+export function detectUserSpokenLanguage(text: string): { langCode: string; speechLocale: string; name: string } {
+  if (!text || !text.trim()) {
+    return { langCode: 'en', speechLocale: 'en-US', name: 'English' };
+  }
+
+  const raw = text.trim();
+  const lower = raw.toLowerCase();
+
+  // 1. Unicode Script Checks
+  if (/[\u0900-\u097F]/.test(raw)) {
+    return { langCode: 'hi', speechLocale: 'hi-IN', name: 'Hindi' };
+  }
+  if (/[\u0600-\u06FF]/.test(raw)) {
+    return { langCode: 'ar', speechLocale: 'ar-SA', name: 'Arabic' };
+  }
+  if (/[\u4E00-\u9FFF]/.test(raw)) {
+    return { langCode: 'zh', speechLocale: 'zh-CN', name: 'Chinese' };
+  }
+  if (/[\u3040-\u309F\u30A0-\u30FF]/.test(raw)) {
+    return { langCode: 'ja', speechLocale: 'ja-JP', name: 'Japanese' };
+  }
+  if (/[\uAC00-\uD7AF]/.test(raw)) {
+    return { langCode: 'ko', speechLocale: 'ko-KR', name: 'Korean' };
+  }
+  if (/[\u0400-\u04FF]/.test(raw)) {
+    return { langCode: 'ru', speechLocale: 'ru-RU', name: 'Russian' };
+  }
+  if (/[\u0B80-\u0BFF]/.test(raw)) {
+    return { langCode: 'ta', speechLocale: 'ta-IN', name: 'Tamil' };
+  }
+  if (/[\u0C00-\u0C7F]/.test(raw)) {
+    return { langCode: 'te', speechLocale: 'te-IN', name: 'Telugu' };
+  }
+  if (/[\u0980-\u09FF]/.test(raw)) {
+    return { langCode: 'bn', speechLocale: 'bn-IN', name: 'Bengali' };
+  }
+  if (/[\u0A80-\u0AFF]/.test(raw)) {
+    return { langCode: 'gu', speechLocale: 'gu-IN', name: 'Gujarati' };
+  }
+
+  // 2. Romanized / Latin script lexical markers scoring
+  const hinglishMarkers = [
+    'main', 'mein', 'hoon', 'aur', 'ne', 'kar', 'diya', 'par', 'se', 'ki', 'ka', 'ko', 'ke',
+    'mujhe', 'mera', 'meri', 'mere', 'hum', 'tum', 'aap', 'kaise', 'kya', 'nahi', 'nahin',
+    'kyun', 'bahut', 'bohot', 'accha', 'theek', 'tension', 'pareshan', 'yaar', 'bhai',
+    'hai', 'hain', 'ho raha', 'karna', 'kuch', 'samajh', 'dard', 'baat', 'baaton', 'dost', 'kaisa',
+    'kaisi', 'lag raha', 'lagta', 'udas', 'khush', 'pata nahi', 'kuch nahi', 'suno', 'karu', 'karein',
+    'dimag', 'soch', 'kaam', 'ghabrahat', 'chinta', 'neend', 'aati', 'aata', 'raat', 'kabhi', 'paunga',
+    'paungi', 'bhi', 'upar', 'gussa', 'jaldi', 'chhoti', 'thoda', 'tareeqa', 'aaj', 'din',
+    'liye', 'dein', 'bataiye', 'shanti', 'daanta', 'wajah', 'hoga', 'hogi', 'karo', 'karne',
+    'hota', 'hoti', 'hote', 'raha', 'rahi', 'rahe'
+  ];
+
+  const englishMarkers = [
+    'the', 'this', 'that', 'with', 'from', 'have', 'what', 'your', 'about', 'feel', 'feeling',
+    'today', 'please', 'think', 'thinking', 'getting', 'trying', 'want', 'need', 'know',
+    'would', 'could', 'should', 'more', 'much', 'very', 'here', 'when', 'where', 'which',
+    'will', 'good', 'well', 'help', 'tell', 'talk', 'someone', 'anyone', 'something', 'anything',
+    'really', 'always', 'everyone', 'everything', 'never', 'nothing', 'nobody', 'worried', 'anxious',
+    'design', 'presentation', 'interview', 'driving', 'myself', 'because', 'cannot'
+  ];
+
+  const spanishMarkers = [
+    'hola', 'estoy', 'estás', 'está', 'estamos', 'están', 'siento', 'tengo', 'gracias', 'amigo',
+    'amiga', 'muy', 'bien', 'por qué', 'porque', 'triste', 'ayuda', 'quiero', 'hacer', 'bueno',
+    'dias', 'días', 'tardes', 'noches', 'estrés', 'estres', 'miedo', 'cansado', 'cansada',
+    'como estas', 'cómo estás', 'abrumado', 'abrumada', 'trabajo', 'jefe', 'ansiedad', 'calmar',
+    'calmarme', 'mis', 'tus', 'nuestro', 'nuestra', 'para', 'pero', 'con', 'sin',
+    'los', 'las', 'unos', 'unas', 'del', 'que', 'por',
+    'les', 'nos', 'todo', 'toda', 'todos', 'todas', 'mundo', 'veces',
+    'fuerte', 'presión', 'pecho', 'siguiente', 'paso', 'aprender', 'poner', 'límites', 'saludables',
+    'respiración', 'ejercicio', 'recomiende', 'agotamiento', 'mental', 'insoportable', 'mismo',
+    'perder', 'pagar', 'alquiler', 'dormir', 'debido', 'injusto', 'oficina', 'conmigo', 'puedo', 'puedo hacer'
+  ];
+
+  const frenchMarkers = [
+    'bonjour', 'salut', 'suis', 'es', 'est', 'sommes', 'êtes', 'sont', 'triste', 'peur', 'merci',
+    'avec', 'pourquoi', 'très', 'fatigué', 'fatiguée', 'besoin', 'veux', 'ami', 'amie', 'comment',
+    'sens', 'stressé', 'stressée', 'aide', 'journée', 'seul', 'seule', 'travail', 'chef', 'boulot',
+    'anxiété', 'angoisse', 'calmer', 'mon', 'ma', 'mes', 'ton', 'ta', 'tes', 'son', 'sa', 'ses',
+    'les', 'des', 'aux', 'qui', 'dans', 'je', 'tu', 'il', 'elle', 'nous', 'vous', 'ils', 'elles',
+    'pour', 'pas', 'plus', 'cet', 'cette', 'ces', 'quel', 'quelle', 'souhaite', 'retrouver',
+    'toute', 'tous', 'toutes', 'faire', 'pouvez', 'clarté', 'esprit', 'micro', 'geste', 'poser',
+    'svp', 'plait', 'plaît', 'aujourd', 'hui', 'insomnies', 'énergie', 'solitude', 'ruminer',
+    'pensées', 'cardiaque', 'respiration', 'geste', 'poser', 'épuisé', 'incapable', 'détendre',
+    'pression', 'insupportable', 'rythme', 'accélère', 'raison', 'apparente', 'éviter', 'mêmes',
+    'pèse', 'lourdement', 'moral', 'impression', 'jamais', 'assez', 'accumulent', 'apaisant', 'enseigner'
+  ];
+
+  const germanMarkers = [
+    'hallo', 'fühle', 'mich', 'danke', 'sehr', 'warum', 'angst', 'traurig', 'überfordert',
+    'freund', 'heute', 'nicht', 'kann', 'gut', 'geht', 'hilfe', 'müde', 'einsam', 'arbeit',
+    'chef', 'stress', 'beruhigen', 'ich', 'wir', 'mein', 'meine', 'dein', 'deine', 'sein',
+    'der', 'die', 'das', 'den', 'dem', 'des', 'eine', 'einer', 'einem', 'einen',
+    'und', 'zum', 'zur', 'auf', 'für', 'mit', 'von', 'vom', 'bei', 'beim',
+    'über', 'unter', 'vor', 'nach', 'aus', 'wie', 'wer', 'wann',
+    'ihr', 'ihm', 'ihnen', 'uns', 'dich', 'dir', 'mir', 'sich',
+    'nachts', 'gedanken', 'schlaf', 'zukunft', 'lebensfreude', 'nein', 'sagen', 'brust',
+    'atemübung', 'gedankenspirale', 'schritt', 'erholung'
+  ];
+
+  let enScore = 0;
+  let hiScore = 0;
+  let esScore = 0;
+  let frScore = 0;
+  let deScore = 0;
+
+  for (const m of englishMarkers) {
+    if (new RegExp(`\\b${m}\\b`, 'i').test(lower)) enScore += 1;
+  }
+  for (const m of hinglishMarkers) {
+    if (new RegExp(`\\b${m}\\b`, 'i').test(lower)) hiScore += 1;
+  }
+  for (const m of spanishMarkers) {
+    if (new RegExp(`\\b${m}\\b`, 'i').test(lower)) esScore += 1;
+  }
+  for (const m of frenchMarkers) {
+    if (new RegExp(`\\b${m}\\b`, 'i').test(lower)) frScore += 1;
+  }
+  for (const m of germanMarkers) {
+    if (new RegExp(`\\b${m}\\b`, 'i').test(lower)) deScore += 1;
+  }
+
+  const maxScore = Math.max(enScore, hiScore, esScore, frScore, deScore);
+  if (maxScore > 0 && maxScore !== enScore) {
+    if (deScore === maxScore) return { langCode: 'de', speechLocale: 'de-DE', name: 'German' };
+    if (frScore === maxScore) return { langCode: 'fr', speechLocale: 'fr-FR', name: 'French' };
+    if (esScore === maxScore) return { langCode: 'es', speechLocale: 'es-ES', name: 'Spanish' };
+    if (hiScore === maxScore) return { langCode: 'hi', speechLocale: 'hi-IN', name: 'Hinglish / Hindi' };
+  }
+
+  return { langCode: 'en', speechLocale: 'en-US', name: 'English' };
+}
