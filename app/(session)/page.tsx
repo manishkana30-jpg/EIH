@@ -470,9 +470,21 @@ export default function SanctuarySessionPage() {
     if (isPlayingAudioRef.current || isEchoLockedRef.current) return;
 
     try {
-      const stream = await getCleanAudioStream();
-      activeStreamRef.current = stream;
-      setRecordingStream(stream);
+      const isMobile =
+        typeof navigator !== 'undefined' &&
+        /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+      let stream: MediaStream | null = null;
+      // On desktop, acquire the WebRTC stream for the visualizer.
+      // On mobile, avoid Web Audio stream lockup so the OS speech recognizer has pure exclusive mic access.
+      if (!isMobile) {
+        try {
+          stream = await getCleanAudioStream();
+          activeStreamRef.current = stream;
+          setRecordingStream(stream);
+        } catch (_) {}
+      }
+
       setIsRecording(true);
       isVoiceModeActiveRef.current = true;
 
@@ -487,8 +499,11 @@ export default function SanctuarySessionPage() {
         },
         (err) => {
           console.warn("Speech recognition notice:", err);
+          if (err && (err.includes('not-allowed') || err.includes('permission'))) {
+            setErrorMessage("Microphone access denied. Please allow microphone permission in your mobile browser settings.");
+          }
         },
-        stream
+        stream || undefined
       );
     } catch (err) {
       console.error("Voice capture start error:", err);

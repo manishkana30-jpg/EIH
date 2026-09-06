@@ -3,7 +3,7 @@
  * Caches offline shell, icons, audio-worklet-processor, and knowledge assets.
  */
 
-const CACHE_NAME = 'eih-pwa-v2';
+const CACHE_NAME = 'eih-pwa-v3';
 const PRECACHE_URLS = [
   '/',
   '/manifest.webmanifest',

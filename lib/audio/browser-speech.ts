@@ -156,11 +156,27 @@ export class BrowserSpeechController {
     this.liveInterimTranscript = '';
     this.accumulatedFinalText = '';
 
-    // 1. Initialize Microphone Audio Stream & RMS VAD Engine
-    await this.startMediaStreamAndVAD(existingStream);
+    const hasSpeechRec =
+      typeof window !== 'undefined' &&
+      !!(
+        (window as unknown as { SpeechRecognition?: any; webkitSpeechRecognition?: any }).SpeechRecognition ||
+        (window as unknown as { webkitSpeechRecognition?: any }).webkitSpeechRecognition
+      );
 
-    // 2. Initialize Web Speech Recognition in parallel
-    this.initWebSpeechRecognition();
+    const isMobile =
+      typeof navigator !== 'undefined' &&
+      /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+    if (hasSpeechRec && isMobile) {
+      // On mobile browsers, avoid Web Audio / MediaRecorder contention so the OS dictation engine has clean mic access
+      this.initWebSpeechRecognition();
+    } else {
+      // 1. Initialize Microphone Audio Stream & RMS VAD Engine
+      await this.startMediaStreamAndVAD(existingStream);
+
+      // 2. Initialize Web Speech Recognition in parallel
+      this.initWebSpeechRecognition();
+    }
 
     this.isListening = true;
     this.callbacks.onRecognitionState?.(true);
@@ -338,11 +354,19 @@ export class BrowserSpeechController {
     }
 
     try {
+      const isMobile =
+        typeof navigator !== 'undefined' &&
+        /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
       const recognition = new SpeechRec();
-      recognition.continuous = true;
+      recognition.continuous = !isMobile;
       recognition.interimResults = true;
       recognition.maxAlternatives = 1;
-      recognition.lang = this.currentLanguageLocale || (typeof navigator !== 'undefined' && navigator.language) || 'en-US';
+      const preferredLang =
+        this.currentLanguageLocale ||
+        (typeof navigator !== 'undefined' && navigator.language) ||
+        'en-US';
+      recognition.lang = preferredLang;
 
       recognition.onresult = (event: SpeechRecognitionEvent) => {
         if (this.isSpeaking) {
