@@ -782,18 +782,18 @@ export default function SanctuarySessionPage() {
             (arbitrary [mask-image:...] variants are unreliable before Tailwind v3.3).
           */}
           <div
-            className="relative w-[700px] h-[700px] rounded-full overflow-hidden opacity-50"
+            className="relative w-[700px] h-[700px] rounded-full overflow-hidden opacity-65"
             style={{
-              maskImage: 'radial-gradient(circle at center, black 55%, transparent 100%)',
-              WebkitMaskImage: 'radial-gradient(circle at center, black 55%, transparent 100%)',
+              maskImage: 'radial-gradient(circle at center, black 80%, transparent 100%)',
+              WebkitMaskImage: 'radial-gradient(circle at center, black 80%, transparent 100%)',
             }}
           >
             <img
               src="/hypnotic-circles.png"
-              alt=""
+              alt="Hypnotic Circle Anchor"
               aria-hidden="true"
-              className="w-full h-full object-cover grayscale contrast-[1.3] brightness-110"
-              style={{ animation: 'spin 45s linear infinite' }}
+              className="w-full h-full object-cover contrast-[1.15] brightness-105"
+              style={{ animation: 'spin 50s linear infinite' }}
             />
           </div>
         </div>

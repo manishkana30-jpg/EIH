@@ -805,7 +805,7 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
                         src="/hypnotic-circles.png"
                         alt=""
                         aria-hidden="true"
-                        className="w-full h-full object-cover grayscale contrast-[1.2] brightness-125"
+                        className="w-full h-full object-cover contrast-[1.15] brightness-115"
                         style={{ animation: 'spin 65s linear infinite' }}
                       />
                     </div>
