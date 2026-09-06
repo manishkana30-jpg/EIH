@@ -61,10 +61,12 @@ console.log('  ✓ PWA Installation trigger and modal integration verified');
 assert(pageSource.includes('Clinical Trataka (Gazing) Focus Module Card - Left Side Column'), 'Trataka card must be placed in Left Side Column');
 console.log('  ✓ Clinical Trataka card confirmed in Left Side Column');
 
-// Check End Session button near mic
+// Check End Session button near mic and removed from right column
 const micToDockRegex = /toggleRecording[\s\S]*?handleEndSession/;
 assert(micToDockRegex.test(pageSource), 'End Session button must be placed near the mic button in the input dock');
-console.log('  ✓ End Session button confirmed adjacent to Mic button in input dock');
+const handleEndSessionMatches = (pageSource.match(/onClick=\{handleEndSession\}/g) || []).length;
+assert.strictEqual(handleEndSessionMatches, 1, 'handleEndSession should only be triggered once (in the central dock near mic), removed from right column');
+console.log('  ✓ End Session button confirmed adjacent to Mic button in input dock and removed from right column');
 
 // 3. Simulated Share & PWA Lifecycle Test
 console.log('\n--- 3. Testing Simulated Execution Logic ---');

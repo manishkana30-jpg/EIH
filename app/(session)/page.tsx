@@ -946,7 +946,7 @@ export default function SanctuarySessionPage() {
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.4 }}
-        className="w-16 sm:w-20 md:w-72 shrink-0 flex flex-col justify-between bg-slate-900/40 backdrop-blur-xl border-l border-slate-800/60 p-3 md:p-4 z-20 overflow-y-auto space-y-4"
+        className="w-16 sm:w-20 md:w-72 shrink-0 flex flex-col bg-slate-900/40 backdrop-blur-xl border-l border-slate-800/60 p-3 md:p-4 z-20 overflow-y-auto space-y-4"
       >
         <div className="space-y-4">
           {/* THE "CLINIC ACTIVE SESSION" COMPACT STATUS PILL FIX */}
@@ -1108,18 +1108,6 @@ export default function SanctuarySessionPage() {
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Bottom Section: End Session Button */}
-        <div className="pt-2">
-          <button
-            onClick={handleEndSession}
-            className="w-full flex items-center justify-center gap-2 p-3 rounded-2xl bg-rose-950/40 hover:bg-rose-900/70 border border-rose-900/50 hover:border-rose-700 text-rose-300 hover:text-rose-100 transition-all duration-300 shadow-md text-xs font-semibold"
-            title="End Active Clinical Session"
-          >
-            <PhoneOff className="w-4 h-4 shrink-0" />
-            <span className="hidden md:inline">End Session</span>
-          </button>
         </div>
       </motion.aside>
 
