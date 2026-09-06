@@ -24,6 +24,15 @@ export interface PsychologicalTelemetry {
   strategy: string;
 }
 
+export interface TrigunaAnalysis {
+  sattva: number;
+  rajas: number;
+  tamas: number;
+  state: string;
+  recommendation: string;
+  raw_balance?: string;
+}
+
 export interface ChatResponse {
   reply: string;
   audio_base64?: string;
@@ -31,6 +40,8 @@ export interface ChatResponse {
   sources: ClinicalSource[];
   engine: string;
   is_crisis: boolean;
+  recommended_trataka?: string;
+  triguna_analysis?: TrigunaAnalysis;
 }
 
 export interface ChatHistoryItem {
@@ -40,6 +51,56 @@ export interface ChatHistoryItem {
 
 export interface STTResponse {
   transcript: string;
+}
+
+export function parseClientTriguna(balanceStr?: string): TrigunaAnalysis {
+  const b = (balanceStr || '').toLowerCase();
+  let sattva = 30;
+  let rajas = 35;
+  let tamas = 35;
+  let state = 'Mixed Imbalance';
+  let recommendation = 'Restore Sattva through conscious breathwork and focused visual gazing.';
+
+  if (b.includes('dominant tamas') || (b.includes('tamas') && b.includes('rajas') && b.includes('suppressed'))) {
+    tamas = 60;
+    rajas = 25;
+    sattva = 15;
+    state = 'Dominant Tamas (Hypoarousal / Inertia)';
+    recommendation = 'Stimulate Rajas through activating breath and focused gazing to pierce inertia.';
+  } else if (b.includes('acute rajas') || (b.includes('rajas') && (b.includes('depleted') || b.includes('elevated') || b.includes('hyper')))) {
+    rajas = 65;
+    tamas = 15;
+    sattva = 20;
+    state = 'Acute Rajas (Hyperarousal / Agitation)';
+    recommendation = 'Cultivate grounding Sattva to settle agitated autonomic firing.';
+  } else if (b.includes('sattva') && b.includes('depleted')) {
+    rajas = 50;
+    tamas = 35;
+    sattva = 15;
+    state = 'Depleted Sattva (Cognitive Fatigue)';
+    recommendation = 'Quiet the Default Mode Network with single-point gazing to replenish mental clarity.';
+  } else if (b.includes('rajas')) {
+    rajas = 55;
+    sattva = 25;
+    tamas = 20;
+    state = 'Elevated Rajas';
+    recommendation = 'Calm sympathetic agitation with steady visual gazing.';
+  } else if (b.includes('tamas')) {
+    tamas = 55;
+    sattva = 25;
+    rajas = 20;
+    state = 'Elevated Tamas';
+    recommendation = 'Dissolve lethargy and stagnation through illuminating flame or mirror focus.';
+  }
+
+  return {
+    sattva,
+    rajas,
+    tamas,
+    state,
+    recommendation,
+    raw_balance: balanceStr || 'Equilibrium',
+  };
 }
 
 class HealerBackendClient {
@@ -130,13 +191,18 @@ class HealerBackendClient {
           signal: controller.signal,
         });
         clearTimeout(timeoutId);
-
         if (res.ok) {
-          const data = (await res.json()) as ChatResponse;
+          const data = (await res.json()) as any;
           if (data && data.reply) {
+            const poly = data.telemetry?.polyvagal_state || '';
+            const recTrataka =
+              data.recommended_trataka ||
+              (poly.includes('Sympathetic') ? 'bindu' : poly.includes('Dorsal') ? 'pratibimb' : 'shoonya');
             return {
               ...data,
-              engine: data.engine || 'Keyless Healer (Local Python Daemon)',
+              engine: data.engine || data.engine_used || 'Keyless Healer (Local Python Daemon)',
+              recommended_trataka: recTrataka,
+              triguna_analysis: data.triguna_analysis || parseClientTriguna(),
             };
           }
         }
@@ -167,9 +233,12 @@ class HealerBackendClient {
         const data = await res.json();
         if (data.reply) {
           const diag = emotionClassifier.classifyText(cleanMessage);
+          const libRes = queryPsychologyLibrary(cleanMessage);
           const arousal = diag.coreAffect?.arousal || 0.5;
           const polyvagalState = arousal > 0.6 ? 'Sympathetic (Fight/Flight)' : (diag.coreAffect?.valence && diag.coreAffect.valence < -0.4) ? 'Dorsal Vagal (Shutdown)' : 'Ventral Vagal (Safe)';
           const distortion = cleanMessage.match(/\b(always|never|worst|idiot|ruined|hate)\b/i) ? 'Catastrophizing / All-or-Nothing' : 'None';
+          const recTrataka = libRes?.condition?.recommended_trataka_mode || (polyvagalState.includes('Sympathetic') ? 'bindu' : polyvagalState.includes('Dorsal') ? 'pratibimb' : 'shoonya');
+          const trigunaAnalysis = parseClientTriguna(libRes?.condition?.triguna_balance);
 
           return {
             reply: data.reply,
@@ -181,6 +250,8 @@ class HealerBackendClient {
               source: s.source || 'PubMed',
             })),
             is_crisis: false,
+            recommended_trataka: recTrataka,
+            triguna_analysis: trigunaAnalysis,
             telemetry: {
               dominant_emotion: diag.dimensionName || 'Calmness',
               polyvagal_state: polyvagalState,
@@ -218,15 +289,11 @@ class HealerBackendClient {
         fallbackReply = getLocalizedGeneralAdvice('default', targetLang);
       }
 
-      const localizedIntervention = libraryResult
-        ? getLocalizedClinicalIntervention(libraryResult.condition.id, targetLang)
-        : null;
-
       const sources: ClinicalSource[] = libraryResult
         ? [
             {
               title: `${libraryResult.condition.name} (${libraryResult.condition.triguna_balance})`,
-              summary: `CBT: ${libraryResult.condition.solutions.cbt_reframing} | Somatic: ${libraryResult.condition.solutions.somatic_anchor}`,
+              summary: `CBT: ${libraryResult.condition.solutions.cbt_reframing} | Trataka: ${libraryResult.condition.recommended_trataka_mode || 'bindu'} | Somatic: ${libraryResult.condition.solutions.somatic_anchor}`,
               source: libraryResult.structuredCard?.isLearnedDocument
                 ? (libraryResult.structuredCard.sourcePlatform || 'NCBI PubMed & Wikipedia Clinical Knowledge')
                 : 'Clinical & Psychoeducational Library',
@@ -242,11 +309,16 @@ class HealerBackendClient {
           ]
         : [];
 
+      const recTrataka = libraryResult?.condition?.recommended_trataka_mode || (polyvagalState.includes('Sympathetic') ? 'bindu' : polyvagalState.includes('Dorsal') ? 'pratibimb' : 'shoonya');
+      const trigunaAnalysis = parseClientTriguna(libraryResult?.condition?.triguna_balance);
+
       return {
         reply: fallbackReply,
         engine: 'Keyless Healer (Client-Side Standalone Fallback)',
         sources,
         is_crisis: false,
+        recommended_trataka: recTrataka,
+        triguna_analysis: trigunaAnalysis,
         telemetry: {
           dominant_emotion: diag.dimensionName || 'Calmness',
           polyvagal_state: polyvagalState,

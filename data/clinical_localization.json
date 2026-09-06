@@ -881,6 +881,48 @@
         "pranayama": "Führen Sie 5 Runden der Bhramari-Atmung (Summen der Biene) durch, indem Sie die Ohren sanft verschließen und summend ausatmen, um den Geist durch feine Vibrationen zu klären.",
         "micro_habit": "Schaffen Sie Entlastung für das Gehirn: Schreiben Sie Termine und Gedanken sofort auf Notizzettel auf, anstatt den Arbeitsspeicher damit zu belasten."
       }
+    },
+    "emotional_dysregulation_numbness": {
+      "en": {
+        "conditionName": "Emotional Dysregulation, Numbness & Dissociation",
+        "validation": "I hear how heavy and confusing it feels when your emotions swing unpredictably or disappear entirely into a protective wall of numbness.",
+        "cbt_reframing": "Notice the belief that you must either fight your feelings or completely shut down. Numbness is not an emotional flaw; it is your autonomic nervous system's adaptive attempt to shield you from overwhelm. Remind yourself: 'My emotions are temporary weather patterns passing through the sky of my awareness; feeling nothing is just a resting pause, not my permanent identity.' Reconnect with yourself without judgment.",
+        "somatic_anchor": "Practice Pratibimb mirror gazing or gentle somatic self-touch: place your right hand firmly over your heart and your left hand across your upper arm, feeling the physical boundaries and warmth of your own body for 60 seconds.",
+        "pranayama": "Engage in Viloma Pranayama (Interrupted Inhalation: inhale 2 counts, pause, inhale 2 counts, pause, full gentle exhale) for 3 minutes to gently awaken emotional tone without flooding.",
+        "micro_habit": "Once a day, name three physical sensations you feel right now (e.g., feet touching shoes, cool air on wrists) before attaching any emotional judgment to them."
+      },
+      "hi": {
+        "conditionName": "भावनात्मक सुन्नता, अलगाव और असंतुलन",
+        "validation": "मैं समझ सकता हूँ कि जब भावनाएँ अनियंत्रित हो जाती हैं या पूरी तरह सुन्न होकर एक खालीपन सा छा जाता है, तो यह स्थिति कितनी भ्रमित करने वाली और भारी लगती है।",
+        "cbt_reframing": "इस विचार को चुनौती दें कि आपको अपनी भावनाओं से लड़ना है या पूरी तरह अलग-थलग होना है। यह सुन्नता कोई दोष नहीं है, बल्कि आपके तंत्रिका तंत्र की अत्यधिक तनाव से बचने की एक सुरक्षात्मक प्रतिक्रिया है। स्वयं को याद दिलाएँ: 'भावनाएँ केवल मौसम की तरह आती-जाती हैं; यह खालीपन केवल एक क्षणिक ठहराव है, मेरी स्थायी पहचान नहीं।' बिना किसी निर्णय के स्वयं से जुड़ें।",
+        "somatic_anchor": "प्रतिबिम्ब (दर्पण ध्यान) या सौम्य स्पर्श का सहारा लें: अपना दाहिना हाथ दिल पर रखें और बायाँ हाथ बांह पर रखें, 60 सेकंड तक अपने शरीर की गर्माहट और उपस्थिति को महसूस करें।",
+        "pranayama": "3 मिनट तक विलोम प्राणायाम (रुक-रुक कर श्वास लेना: 2 सेकंड श्वास, ठहराव, 2 सेकंड श्वास, ठहराव, फिर पूरी धीमी सांस छोड़ना) का अभ्यास करें ताकि तंत्रिका तंत्र धीरे-धीरे पुनर्जागृत हो।",
+        "micro_habit": "दिन में केवल एक बार, किसी भी भावना पर निर्णय दिए बिना केवल 3 शारीरिक संवेदनाओं को पहचानें (जैसे पैरों का जमीन पर स्पर्श, कलाई पर हवा का अहसास)।"
+      },
+      "es": {
+        "conditionName": "Desregulación Emocional, Entumecimiento y Disociación",
+        "validation": "Comprendo lo desconcertante y pesado que resulta cuando tus emociones oscilan bruscamente o se apagan bajo un muro protector de entumecimiento.",
+        "cbt_reframing": "Cuestiona la idea de que debes luchar contra lo que sientes o desconectarte por completo. El entumecimiento no es un fallo personal, sino un escudo adaptativo de tu sistema nervioso ante la sobrecarga. Recuérdate con suavidad: 'Mis emociones son patrones transitorios en el cielo de mi consciencia; no sentir nada es solo una pausa protectora, no mi identidad definitiva.' Reconéctate contigo sin juzgarte.",
+        "somatic_anchor": "Practica el anclaje del espejo Pratibimb o el contacto somático consciente: coloca tu mano derecha sobre el corazón y la izquierda sobre el brazo, sintiendo la calidez y el contorno de tu cuerpo durante 60 segundos.",
+        "pranayama": "Realiza Viloma Pranayama (inhalación escalonada: inhala 2 tiempos, pausa, inhala 2 tiempos, pausa y exhala suavemente) durante 3 minutos para despertar la vitalidad emocional sin saturarte.",
+        "micro_habit": "Una vez al día, nombra tres sensaciones físicas concretas (por ejemplo, el apoyo de los pies o el aire en las muñecas) antes de ponerles cualquier etiqueta emocional."
+      },
+      "fr": {
+        "conditionName": "Dérégulation Émotionnelle, Engourdissement et Dissociation",
+        "validation": "Je comprends à quel point il est déroutant et lourd de voir ses émotions basculer ou disparaître derrière un mur protecteur d'engourdissement.",
+        "cbt_reframing": "Remettez en question l'idée qu'il faut lutter contre vos émotions ou vous anesthésier totalement. Cet engourdissement n'est pas une faiblesse, c'est un bouclier biologique de votre système nerveux face au trop-plein. Rappelez-vous : 'Mes émotions ne sont que des nuages passagers ; ce vide n'est qu'un répit temporaire, non mon identité immuable.' Reconnectez-vous à vous-même avec douceur.",
+        "somatic_anchor": "Pratiquez l'ancrage du miroir Pratibimb ou l'auto-contact somatique : posez votre main droite sur le cœur et la gauche sur votre bras, en ressentant la chaleur et la réalité de votre corps pendant 60 secondes.",
+        "pranayama": "Pratiquez le Viloma Pranayama (inhalation par paliers : inspirez 2 temps, pause, inspirez 2 temps, pause, puis expiration lente et complète) pendant 3 minutes pour réveiller la vitalité émotionnelle en douceur.",
+        "micro_habit": "Une fois par jour, identifiez trois sensations physiques précises (ex. appui des pieds, fraîcheur de l'air) avant d'y coller le moindre jugement émotionnel."
+      },
+      "de": {
+        "conditionName": "Emotionale Dysregulation, Gefühlsleere und Dissoziation",
+        "validation": "Ich verstehe, wie verwirrend und erdrückend es ist, wenn Gefühle unberechenbar schwanken oder hinter einer schützenden Taubheit ganz verstummen.",
+        "cbt_reframing": "Hinterfragen Sie die Annahme, gegen Gefühle ankämpfen oder komplett abschalten zu müssen. Gefühlsleere ist kein persönliches Versagen, sondern ein Schutzschild Ihres Nervensystems vor Überlastung. Sagen Sie sich: 'Emotionen sind vorüberziehende Wetterphänomene im Raum meines Bewusstseins; Taubheit ist nur eine Schutzpause, nicht mein bleibendes Ich.' Nähern Sie sich sich selbst urteilsfrei an.",
+        "somatic_anchor": "Nutzen Sie die Pratibimb-Spiegelbetrachtung oder sanfte somatische Selbstberührung: Legen Sie die rechte Hand auf Ihr Herz und die linke an den Oberarm, um die Wärme und Grenzen Ihres Körpers für 60 Sekunden bewusst zu spüren.",
+        "pranayama": "Üben Sie 3 Minuten lang Viloma Pranayama (stufenweise Einatmung: 2 Zählzeiten einatmen, halten, 2 Zählzeiten einatmen, halten, langsam vollständig ausatmen), um die emotionale Empfindsamkeit behutsam wiederzubeleben.",
+        "micro_habit": "Benennen Sie einmal täglich drei konkrete körperliche Empfindungen (z. B. Fußkontakt zum Boden, kühle Luft am Handgelenk), bevor Sie eine emotionale Bewertung vornehmen."
+      }
     }
   },
   "general_advice": {

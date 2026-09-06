@@ -30,6 +30,7 @@ export interface PsychologyCondition {
   cognitive_distortions: string[];
   solutions: ClinicalSolutions;
   severity_level: string;
+  recommended_trataka_mode?: string;
   requires_immediate_crisis: boolean;
 }
 
@@ -59,6 +60,7 @@ export interface LibraryRAGResult {
     sourceUrl?: string;
     sourcePlatform?: string;
     isLearnedDocument?: boolean;
+    recommendedTratakaMode?: string;
   };
 }
 
@@ -90,6 +92,7 @@ const CLINICAL_TRIGGER_PATTERNS: Record<string, RegExp> = {
   workplace_mobbing_toxic_culture: /(?:\b(toxic workplace|toxic boss|toxic manager|gaslighting boss|workplace mobbing|workplace harassment|coworker sabotage|hostile workplace|sunday dread|corporate politics|office politics)\b|ऑफिस का तनाव|बॉस की डांट|कार्यस्थल)/i,
   somatic_chronic_pain_amplification: /(?:\b(chronic pain|neuroplastic pain|back pain|fibromyalgia|pain reprocessing|tension headache|pain flare|somatic tracking|central sensitization|migraine|body ache|neck pain|muscle ache|dard)\b|दर्द|सिरदर्द|पीठ दर्द|बदन दर्द|माइग्रेन)/i,
   cognitive_memory_brain_fog: /(?:\b(memory|memories|weak memory|week memory|bad memory|poor memory|loose memory|lose memory|losing memory|forget|forgetful|forgetfulness|forgetting|forgot|cannot remember|cant remember|hard to remember|recall|short term memory|working memory|brain fog|mental fog|cloudy head|absent minded|cognitive fatigue|mental exhaustion|yaad nahi|yaaddasht|bhool|bhul gaya|bhul jata|memoria|oubli|gedachtnis|vergesslich)\b|याददाश्त|याद नहीं|भूल जाता|भूलना|कमजोर याददाश्त|दिमागी धुंध)/i,
+  emotional_dysregulation_numbness: /(?:\b(emotional|emotion|emotions|emanation|numb|numbness|emotionally numb|feeling nothing|cant feel|cannot feel|blunted|dissociat|dissociation|alexithymia|emotional flooding|emotional overwhelm|overwhelmed with emotions|emotional swing|emotional problem|mood swings|bhavna|bhavnayein|sunn|jazbaat)\b|भावना|भावनाएं|सुन्न|जज्बात|भावनाहीन)/i,
 };
 
 /**
@@ -142,7 +145,7 @@ export const CLINICAL_BREATHWORK_PACERS: Record<string, BreathCadence> = {
     hold: 4,
     exhale: 4,
     pause: 4,
-    description: 'Equalizes autonomic arousal and prevents situational speech tremors.',
+    description: 'Stabilizes anterior cingulate cortex and restores focused prefrontal working memory.',
   },
   insomnia_hyperarousal: {
     name: "Dr. Weil's 4-7-8 Somnolence Protocol",
@@ -183,6 +186,14 @@ export const CLINICAL_BREATHWORK_PACERS: Record<string, BreathCadence> = {
     exhale: 6,
     pause: 1,
     description: 'Humming sound vibrations stimulate cerebral nitric oxide production, clearing mental fog and soothing cognitive fatigue.',
+  },
+  emotional_dysregulation_numbness: {
+    name: 'Viloma Pranayama (Interrupted Inhalation)',
+    inhale: 4,
+    hold: 2,
+    exhale: 6,
+    pause: 2,
+    description: 'Steadily awakens emotional somatic tone without sympathetic flooding.',
   },
 };
 
@@ -352,7 +363,8 @@ export function queryPsychologyLibrary(userText: string): LibraryRAGResult | nul
 • Somatic Grounding Anchor: ${bestMatch.solutions.somatic_anchor}
 • Ayurvedic Pranayama Protocol: ${bestMatch.solutions.pranayama}
 • Daily Micro-Habit: ${bestMatch.solutions.micro_habit}
-• Required Clinician Delivery: Acknowledge the user's emotional state, gently weave this exact CBT reframe into your response, and guide them through the somatic anchor or pranayama breathwork.`;
+• Recommended Trataka Gazing Mode: ${bestMatch.recommended_trataka_mode || 'bindu'}
+• Required Clinician Delivery: Acknowledge the user's emotional state, gently weave this exact CBT reframe into your response, and guide them through the somatic anchor, Trataka gazing, or pranayama breathwork.`;
 
     const pacer = CLINICAL_BREATHWORK_PACERS[bestMatch.id] || {
       name: 'Coherent Diaphragmatic Breath',
@@ -383,6 +395,7 @@ export function queryPsychologyLibrary(userText: string): LibraryRAGResult | nul
         sourceUrl: learnedDoc.source_url,
         sourcePlatform: learnedDoc.source_platform,
         isLearnedDocument: isLearned,
+        recommendedTratakaMode: bestMatch.recommended_trataka_mode || 'bindu',
       },
     };
   }

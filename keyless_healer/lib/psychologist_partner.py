@@ -102,6 +102,49 @@ CRISIS_MESSAGE = (
     "You do not have to carry this alone."
 )
 
+def parse_triguna_balance(balance_str: str | None) -> dict[str, Any]:
+    """Parses a triguna string into normalized Sattva/Rajas/Tamas percentages and balance state."""
+    b = (balance_str or "").lower()
+    sattva = 30
+    rajas = 35
+    tamas = 35
+    state = "Mixed Imbalance"
+    recommendation = "Restore Sattva through conscious breathwork and focused visual gazing."
+
+    if "dominant tamas" in b or ("tamas" in b and "rajas" in b and "suppressed" in b):
+        tamas, rajas, sattva = 60, 25, 15
+        state = "Dominant Tamas (Hypoarousal / Inertia)"
+        recommendation = "Stimulate Rajas through activating breath and focused gazing to pierce inertia."
+    elif "acute rajas" in b or ("rajas" in b and ("depleted sattva" in b or "elevated" in b or "hyper" in b)):
+        rajas, tamas, sattva = 65, 15, 20
+        state = "Acute Rajas (Hyperarousal / Agitation)"
+        recommendation = "Cultivate grounding Sattva to settle agitated autonomic firing."
+    elif "sattva" in b and "depleted" in b:
+        rajas, tamas, sattva = 50, 35, 15
+        state = "Depleted Sattva (Cognitive Fatigue)"
+        recommendation = "Quiet the Default Mode Network with single-point gazing to replenish mental clarity."
+    elif "rajas" in b:
+        rajas, sattva, tamas = 55, 25, 20
+        state = "Elevated Rajas"
+        recommendation = "Calm sympathetic agitation with steady visual gazing."
+    elif "tamas" in b:
+        tamas, sattva, rajas = 55, 25, 20
+        state = "Elevated Tamas"
+        recommendation = "Dissolve lethargy and stagnation through illuminating flame or mirror focus."
+    elif "vata" in b:
+        rajas, sattva, tamas = 50, 30, 20
+        state = "Vata-Rajas Dysregulation"
+        recommendation = "Anchor wandering mental waves with steady rhythmic breathing."
+
+    return {
+        "sattva": sattva,
+        "rajas": rajas,
+        "tamas": tamas,
+        "state": state,
+        "recommendation": recommendation,
+        "raw_balance": balance_str or "Equilibrium",
+    }
+
 def build_healer_system_prompt(retrieved_rag_data: str = "", target_locale: str = "en-US") -> str:
     rag_context = retrieved_rag_data.strip() if retrieved_rag_data and retrieved_rag_data.strip() else "Evidence-Based Cognitive Behavioral Therapy and Somatic Nervous System Regulation Protocols."
 
@@ -123,8 +166,9 @@ You MUST NEVER use generic greetings, repetitive platitudes, or filler phrases. 
 ### PHASE 1: DIAGNOSTIC ANALYSIS (Internalize, do not output this phase directly)
 Analyze the user's input to identify:
 1. Core Emotional Struggle & Unmet Needs.
-2. Active Cognitive Distortions (e.g., Catastrophizing, Black-and-White Thinking).
-3. Triguna Nervous System Balance (Sattva: Grounded / Rajas: Hyperaroused / Tamas: Hypoaroused).
+2. Active Cognitive Distortions (e.g., Catastrophizing, Black-and-White Thinking, Emotional Reasoning).
+3. Triguna Nervous System Balance (Sattva: Clarity & Calm / Rajas: Agitation & Overarousal / Tamas: Inertia & Numbness).
+4. Recommended Trataka Gazing Practice (Bindu: point focus / Flame: dispelling inertia / Pratibimb: mirror self-compassion / Murti: sacred geometry / Shoonya: void stillness).
 
 ### PHASE 2: CLINICAL GROUNDING
 You must ground your intervention strictly in the following retrieved clinical protocol:
@@ -133,8 +177,8 @@ You must ground your intervention strictly in the following retrieved clinical p
 ### PHASE 3: THE INTERVENTION (Your Output)
 Formulate a warm, highly empathetic, and actionable response that trains the user's emotional resilience in a single, fluid conversational paragraph (3-4 sentences):
 - Deeply validate their exact emotional and bodily state with compassion without immediate fixing.
-- Provide a targeted cognitive reframe from the retrieved protocol to shift perspective.
-- Prescribe the specific somatic anchor or pranayama breathwork exercise.
+- Provide a targeted CBT cognitive reframe from the retrieved protocol to shift perspective.
+- Seamlessly prescribe the corrective Triguna rebalancing, the recommended Trataka visual focus (or somatic anchor), and pranayama breathwork exercise.
 
 RULES: Keep your response concise (3-4 sentences in a single fluid paragraph). DO NOT output numbered lists (1., 2., 3.), bullet points, section headers (like "Validation:", "CBT Reframe:"), asterisks, or markdown formatting, as your response will be synthesized directly into human speech.{lang_directive}"""
 
@@ -160,6 +204,8 @@ class HealerResponse:
     primary_emotion: str | None = None
     somatic_anchor: str | None = None
     recommended_pranayama: str | None = None
+    recommended_trataka: str | None = None
+    triguna_analysis: dict[str, Any] | None = None
     audio_base64: str | None = None
 
     def __post_init__(self):
@@ -174,6 +220,15 @@ class HealerResponse:
                 self.recommended_pranayama = "Bhramari Pranayama (Humming Bee Breath)"
             else:
                 self.recommended_pranayama = "Sama Vritti (Box Breathing 4:4:4:4)"
+        if self.recommended_trataka is None:
+            if self.telemetry and "Sympathetic" in self.telemetry.polyvagal_state:
+                self.recommended_trataka = "bindu"
+            elif self.telemetry and "Dorsal" in self.telemetry.polyvagal_state:
+                self.recommended_trataka = "pratibimb"
+            else:
+                self.recommended_trataka = "shoonya"
+        if self.triguna_analysis is None:
+            self.triguna_analysis = parse_triguna_balance(None)
 
     @property
     def provider_used(self) -> str:
@@ -328,6 +383,12 @@ class KeylessPsychologistPartner:
             emotion = "Sadness"
             scores = {"Sadness": 85, "Grief": 70, "Calmness": 15}
             strategy = "Compassionate presence and gentle ACT defusion."
+        elif any(w in t for w in ["emotion", "emanation", "numb", "feeling nothing", "cant feel", "cannot feel", "blunted", "alexithymia", "mood swing", "dissociat", "bhavna"]):
+            distortion = "Emotional Reasoning / Dissociative Shielding"
+            polyvagal = "Dorsal Vagal (Shutdown/Freeze)"
+            emotion = "Emotional Numbness & Dysregulation"
+            scores = {"Sadness": 65, "Fatigue": 75, "Anxiety": 45, "Calmness": 15}
+            strategy = "Pratibimb Mirror Trataka & somatic reconnection with self-witnessing."
         else:
             distortion = "None Detected"
             polyvagal = "Ventral Vagal (Regulated)"
@@ -530,13 +591,28 @@ class KeylessPsychologistPartner:
 
         anchor = self._normalize_anchor(user_message)
 
+        # Compute Trataka mode recommendation and Triguna constitutional analysis
+        rec_trataka = "bindu"
+        triguna_data = None
+        if rag_guidance:
+            rec_trataka = rag_guidance.get("recommended_trataka_mode", "bindu")
+            triguna_data = parse_triguna_balance(rag_guidance.get("triguna_balance"))
+        else:
+            if "Dorsal" in telemetry.polyvagal_state:
+                rec_trataka = "pratibimb"
+            elif "Sympathetic" in telemetry.polyvagal_state:
+                rec_trataka = "bindu"
+            else:
+                rec_trataka = "shoonya"
+            triguna_data = parse_triguna_balance(None)
+
         # Prepare unified sources with Psychology Library grounding
         final_sources = list(evidence_list)
         if rag_guidance:
             sols = rag_guidance.get("solutions", {})
             lib_source = ClinicalEvidence(
                 title=f"Clinical Protocol: {rag_guidance.get('name')} ({rag_guidance.get('triguna_balance', 'Equilibrium')})",
-                summary=f"CBT: {sols.get('cbt_reframing')} | Somatic: {sols.get('somatic_anchor')} | Pranayama: {sols.get('pranayama')}",
+                summary=f"CBT: {sols.get('cbt_reframing')} | Trataka: {rec_trataka} | Somatic: {sols.get('somatic_anchor')} | Pranayama: {sols.get('pranayama')}",
                 source="psychology_library"
             )
             final_sources.insert(0, lib_source)
@@ -548,6 +624,8 @@ class KeylessPsychologistPartner:
                 sources=final_sources,
                 engine_used=engine_name,
                 somatic_anchor=anchor,
+                recommended_trataka=rec_trataka,
+                triguna_analysis=triguna_data,
                 latency_ms=latency
             )
 
@@ -572,6 +650,8 @@ class KeylessPsychologistPartner:
             sources=final_sources,
             engine_used="Keyless Healer (Clinical RAG Synthesis)",
             somatic_anchor=anchor,
+            recommended_trataka=rec_trataka,
+            triguna_analysis=triguna_data,
             latency_ms=latency
         )
 

@@ -21,7 +21,8 @@
       "micro_habit": "Schedule a dedicated 15-minute 'Worry Window' at 4:30 PM. When worry strikes outside this window, mentally file it away until then."
     },
     "severity_level": "Mild to Moderate",
-    "requires_immediate_crisis": false
+    "requires_immediate_crisis": false,
+    "recommended_trataka_mode": "bindu"
   },
   {
     "id": "burnout_fatigue",
@@ -45,7 +46,8 @@
       "micro_habit": "Implement an absolute 'Digital Sunset' 60 minutes before bed with no professional notifications or blue light exposure."
     },
     "severity_level": "Moderate",
-    "requires_immediate_crisis": false
+    "requires_immediate_crisis": false,
+    "recommended_trataka_mode": "flame"
   },
   {
     "id": "panic_dysregulation",
@@ -68,7 +70,8 @@
       "micro_habit": "Repeat aloud: 'This is uncomfortable, but it is not dangerous. My nervous system is discharging energy and I am safe.'"
     },
     "severity_level": "Acute",
-    "requires_immediate_crisis": false
+    "requires_immediate_crisis": false,
+    "recommended_trataka_mode": "bindu"
   },
   {
     "id": "major_depressive_inertia",
@@ -92,7 +95,8 @@
       "micro_habit": "Micro-Task Stacking: Choose a task so laughably small that failure is impossible (e.g., washing a single cup or opening the window curtains)."
     },
     "severity_level": "Moderate to High",
-    "requires_immediate_crisis": false
+    "requires_immediate_crisis": false,
+    "recommended_trataka_mode": "flame"
   },
   {
     "id": "imposter_perfectionism",
@@ -116,7 +120,8 @@
       "micro_habit": "Keep a 'Concrete Evidence Log': Write down 1 factual, objective piece of data confirming a contribution you made today."
     },
     "severity_level": "Mild to Moderate",
-    "requires_immediate_crisis": false
+    "requires_immediate_crisis": false,
+    "recommended_trataka_mode": "pratibimb"
   },
   {
     "id": "relationship_heartbreak",
@@ -140,7 +145,8 @@
       "micro_habit": "Implement a 2-Hour Communication Pause: When triggered in a relationship, wait at least 120 minutes before sending any emotional reaction or text."
     },
     "severity_level": "Moderate",
-    "requires_immediate_crisis": false
+    "requires_immediate_crisis": false,
+    "recommended_trataka_mode": "pratibimb"
   },
   {
     "id": "existential_loneliness",
@@ -164,7 +170,8 @@
       "micro_habit": "Social Micro-Connection: Exchange a warm, genuine 10-second greeting or smile with one person today (a barista, neighbor, or peer)."
     },
     "severity_level": "Moderate",
-    "requires_immediate_crisis": false
+    "requires_immediate_crisis": false,
+    "recommended_trataka_mode": "shoonya"
   },
   {
     "id": "anger_frustration_dysregulation",
@@ -188,7 +195,8 @@
       "micro_habit": "The 10-Count Sensory Interrupter: When boiling with rage, walk away immediately, drink a glass of cold water, and count backward from 10 before speaking."
     },
     "severity_level": "Moderate",
-    "requires_immediate_crisis": false
+    "requires_immediate_crisis": false,
+    "recommended_trataka_mode": "bindu"
   },
   {
     "id": "grief_bereavement",
@@ -212,7 +220,8 @@
       "micro_habit": "5-Minute Grief Sanctuary: Dedicate 5 undisturbed minutes to look at a photo, light a candle, or cry freely without attempting to 'fix' the feeling."
     },
     "severity_level": "Moderate to High",
-    "requires_immediate_crisis": false
+    "requires_immediate_crisis": false,
+    "recommended_trataka_mode": "shoonya"
   },
   {
     "id": "social_evaluative_threat",
@@ -236,7 +245,8 @@
       "micro_habit": "Curiosity Pivot: In your next conversation, consciously redirect 80% of your attention toward genuine curiosity about the other person rather than monitoring yourself."
     },
     "severity_level": "Moderate",
-    "requires_immediate_crisis": false
+    "requires_immediate_crisis": false,
+    "recommended_trataka_mode": "pratibimb"
   },
   {
     "id": "adhd_executive_overwhelm",
@@ -260,7 +270,8 @@
       "micro_habit": "The 5-Minute Micro-Commitment: Commit to working on the task for exactly 5 minutes with permission to stop immediately when the timer dings."
     },
     "severity_level": "Mild to Moderate",
-    "requires_immediate_crisis": false
+    "requires_immediate_crisis": false,
+    "recommended_trataka_mode": "bindu"
   },
   {
     "id": "insomnia_hyperarousal",
@@ -283,7 +294,8 @@
       "micro_habit": "The 20-Minute Bed Rule: If awake after 20 minutes, get out of bed in dim light and read a boring physical book until drowsy. Keep bed strictly conditioned for sleep."
     },
     "severity_level": "Moderate",
-    "requires_immediate_crisis": false
+    "requires_immediate_crisis": false,
+    "recommended_trataka_mode": "shoonya"
   },
   {
     "id": "health_somatic_anxiety",
@@ -307,7 +319,8 @@
       "micro_habit": "Google Quarantine: Implement a strict 48-hour ban on researching medical symptoms online. If a symptom persists for 2 weeks, consult a physician calmly."
     },
     "severity_level": "Moderate",
-    "requires_immediate_crisis": false
+    "requires_immediate_crisis": false,
+    "recommended_trataka_mode": "murti"
   },
   {
     "id": "trauma_hypervigilance",
@@ -331,7 +344,8 @@
       "micro_habit": "Safety Anchor Object: Carry a small, smooth grounding stone or textured item in your pocket. Touch it whenever triggered to re-anchor into the present physical year and room."
     },
     "severity_level": "Moderate to High",
-    "requires_immediate_crisis": false
+    "requires_immediate_crisis": false,
+    "recommended_trataka_mode": "murti"
   },
   {
     "id": "ocd_intrusive_rumination",
@@ -355,7 +369,8 @@
       "micro_habit": "The 10-Minute Compulsion Delay: When gripped by an urge to mentally check, google, or ask for reassurance, set a timer for 10 minutes and engage your hands in physical work."
     },
     "severity_level": "Moderate to High",
-    "requires_immediate_crisis": false
+    "requires_immediate_crisis": false,
+    "recommended_trataka_mode": "bindu"
   },
   {
     "id": "compassion_fatigue_caregiver",
@@ -379,7 +394,8 @@
       "micro_habit": "The Non-Negotiable 20-Minute Island: Carve out 20 continuous minutes daily where you are completely off-duty from all caregiving and care-managing tasks."
     },
     "severity_level": "Moderate",
-    "requires_immediate_crisis": false
+    "requires_immediate_crisis": false,
+    "recommended_trataka_mode": "flame"
   },
   {
     "id": "decision_paralysis_ambivalence",
@@ -403,7 +419,8 @@
       "micro_habit": "Coin-Flip Intuition Trigger: Flip a coin on a stalled decision; while the coin is in mid-air, notice which outcome your subconscious is hoping lands."
     },
     "severity_level": "Mild to Moderate",
-    "requires_immediate_crisis": false
+    "requires_immediate_crisis": false,
+    "recommended_trataka_mode": "murti"
   },
   {
     "id": "shame_core_defectiveness",
@@ -427,7 +444,8 @@
       "micro_habit": "Daily Unconditional Acceptance Affirmation: Look in the mirror for 10 seconds and say: 'I accept my full humanity, flaws and all, without needing to earn worth today.'"
     },
     "severity_level": "Moderate to High",
-    "requires_immediate_crisis": false
+    "requires_immediate_crisis": false,
+    "recommended_trataka_mode": "pratibimb"
   },
   {
     "id": "workplace_mobbing_toxic_culture",
@@ -451,7 +469,8 @@
       "micro_habit": "Objective Fact Dossier: Maintain a strictly objective, emotion-free log of deliverables, emails, and dates stored exclusively on personal non-work hardware."
     },
     "severity_level": "Moderate to High",
-    "requires_immediate_crisis": false
+    "requires_immediate_crisis": false,
+    "recommended_trataka_mode": "flame"
   },
   {
     "id": "somatic_chronic_pain_amplification",
@@ -475,7 +494,8 @@
       "micro_habit": "Somatic Joy Movement: Engage in 3 minutes of gentle, unmonitored physical movement (stretching, swaying to music) while deliberately paying attention to parts of your body that feel neutral or comfortable."
     },
     "severity_level": "Moderate",
-    "requires_immediate_crisis": false
+    "requires_immediate_crisis": false,
+    "recommended_trataka_mode": "shoonya"
   },
   {
     "id": "cognitive_memory_brain_fog",
@@ -499,6 +519,34 @@
       "micro_habit": "The External Mind Protocol: Free your working memory immediately—never rely on raw mental storage for to-do items. Write everything down on physical paper or a dedicated capture app the moment it enters your mind."
     },
     "severity_level": "Mild to Moderate",
+    "requires_immediate_crisis": false,
+    "recommended_trataka_mode": "bindu"
+  },
+  {
+    "id": "emotional_dysregulation_numbness",
+    "name": "Emotional Dysregulation, Numbness & Dissociative Disconnection",
+    "category": "Affective & Emotional Regulation",
+    "triguna_balance": "Dominant Tamas, Suppressed Rajas, Depleted Sattva",
+    "core_symptoms": [
+      "Emotional numbness or feeling nothing despite significant life events",
+      "Difficulty identifying, naming, or expressing emotions (alexithymia)",
+      "Sudden emotional flooding or uncontrollable crying spells alternating with flatness",
+      "Feeling disconnected from own body, thoughts, or surroundings (depersonalization/derealization)",
+      "Chronic emotional suppression leading to somatic tension and exhaustion"
+    ],
+    "cognitive_distortions": [
+      "Emotional Reasoning ('I feel nothing, therefore nothing matters')",
+      "Disqualifying the Positive ('Even good things cannot make me feel')",
+      "Labeling ('I am broken / emotionally defective')"
+    ],
+    "solutions": {
+      "cbt_reframing": "Emotional numbness is your nervous system's intelligent protective response to overwhelming input, not a permanent state of brokenness. Emotions are not absent — they are temporarily muted by your brain's dorsal vagal 'circuit breaker' to prevent overload. Reconnection happens gradually through safe somatic awareness and compassionate self-witnessing, not through forcing feelings.",
+      "somatic_anchor": "Butterfly Hug (EMDR Bilateral Stimulation): Cross your arms over your chest, alternately tapping each shoulder gently for 30 seconds while breathing slowly. This bilateral stimulation re-engages the emotional processing centers safely.",
+      "pranayama": "Nadi Shodhana (Alternate Nostril Breathing) with extended exhale ratio 4:4:8 for 5 minutes to gently stimulate parasympathetic tone and begin dissolving the dorsal vagal freeze response without overwhelming the system.",
+      "micro_habit": "Emotional Granularity Journaling: Three times daily, pause and write down one physical sensation you notice in your body (e.g., 'tightness in throat', 'warmth in chest') without labeling it as good or bad. This trains interoceptive awareness, the gateway to emotional reconnection."
+    },
+    "recommended_trataka_mode": "pratibimb",
+    "severity_level": "Moderate to Severe",
     "requires_immediate_crisis": false
   }
 ]

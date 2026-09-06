@@ -192,6 +192,7 @@ class PsychologyLibraryRAG:
             "workplace_mobbing_toxic_culture": r"(?:\b(toxic workplace|toxic boss|toxic manager|gaslighting boss|workplace mobbing|workplace harassment|hostile workplace|sunday dread)\b|ऑफिस का तनाव|बॉस की डांट)",
             "somatic_chronic_pain_amplification": r"(?:\b(chronic pain|neuroplastic pain|back pain|fibromyalgia|pain reprocessing|tension headache|pain flare|somatic tracking|migraine|headache|body ache|neck pain|dard)\b|दर्द|सिरदर्द|पीठ दर्द|बदन दर्द|माइग्रेन)",
             "cognitive_memory_brain_fog": r"(?:\b(memory|memories|weak memory|week memory|bad memory|poor memory|loose memory|lose memory|losing memory|forget|forgetful|forgetfulness|forgetting|forgot|cannot remember|cant remember|hard to remember|recall|short term memory|working memory|brain fog|mental fog|cloudy head|absent minded|cognitive fatigue|mental exhaustion|yaad nahi|yaaddasht|bhool|bhul gaya|bhul jata|memoria|oubli|gedachtnis|vergesslich)\b|याददाश्त|याद नहीं|भूल जाता|भूलना|कमजोर याददाश्त|दिमागी धुंध)",
+            "emotional_dysregulation_numbness": r"(?:\b(emotional|emotion|emotions|emanation|numb|numbness|emotionally numb|feeling nothing|cant feel|cannot feel|blunted|dissociat|dissociation|alexithymia|emotional flooding|emotional overwhelm|overwhelmed with emotions|emotional swing|emotional problem|mood swings|bhavna|bhavnayein|sunn|jazbaat)\b|भावना|भावनाएं|सुन्न|जज्बात|भावनाहीन)",
         }
 
         # 2. Lexical, Symptom & Multi-lingual Weighted Scoring Matcher
@@ -283,6 +284,7 @@ class PsychologyLibraryRAG:
 
     def _format_retrieval_result(self, condition: dict[str, Any]) -> dict[str, Any]:
         solutions = condition.get("solutions", {})
+        trataka_mode = condition.get("recommended_trataka_mode", "bindu")
         prompt_block = (
             f"[CLINICAL & PSYCHOEDUCATIONAL LIBRARY RAG CONTEXT]:\n"
             f"- Matched Condition: {condition.get('name')} ({condition.get('category')})\n"
@@ -292,7 +294,8 @@ class PsychologyLibraryRAG:
             f"- Somatic Grounding Anchor: {solutions.get('somatic_anchor')}\n"
             f"- Recommended Pranayama: {solutions.get('pranayama')}\n"
             f"- Daily Micro-Habit: {solutions.get('micro_habit')}\n"
-            f"- Instruction: Weave this exact somatic anchor or pranayama into your guidance with compassionate brevity."
+            f"- Recommended Trataka Gazing Mode: {trataka_mode}\n"
+            f"- Instruction: Weave the CBT reframing, constitutional Triguna shift, and Trataka ({trataka_mode}) recommendation into your guidance with compassionate brevity."
         )
 
         return {
@@ -301,6 +304,7 @@ class PsychologyLibraryRAG:
             "name": condition.get("name"),
             "category": condition.get("category"),
             "triguna_balance": condition.get("triguna_balance"),
+            "recommended_trataka_mode": trataka_mode,
             "solutions": solutions,
             "source_url": condition.get("source_url"),
             "source_platform": condition.get("source_platform"),
@@ -353,6 +357,7 @@ class PsychologyLibraryRAG:
                     "micro_habit": "Write down one single micro-task within your direct control right now and release long-term rumination.",
                 },
                 "severity_level": "Mild to Moderate",
+                "recommended_trataka_mode": "bindu",
                 "requires_immediate_crisis": False,
                 "source_url": url_text,
                 "source_platform": "NCBI PubMed & Wikipedia Clinical Knowledge",

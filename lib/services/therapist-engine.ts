@@ -182,6 +182,8 @@ export async function generateTherapeuticResponse(
   sources: ClinicalSearchResult[];
   providerUsed: string;
   isCrisis?: boolean;
+  recommended_trataka?: string;
+  triguna_analysis?: any;
 }> {
   // 1. Instant Crisis Safety Interception (Zero-False-Negative)
   const crisis = detectCrisis(userMessage);
@@ -250,22 +252,26 @@ Translate and explain all validation, CBT cognitive reframes, somatic grounding 
       reply: localResult.reply,
       sources: finalSources,
       providerUsed: "Keyless Healer (Local Python Daemon)",
-      isCrisis: false
+      isCrisis: false,
+      recommended_trataka: (localResult as any).recommended_trataka || libraryRag?.condition.recommended_trataka_mode || "bindu",
+      triguna_analysis: (localResult as any).triguna_analysis,
     };
   } catch {
     // Fallback to cloud LLMs
   }
 
+  const defaultRecTrataka = libraryRag?.condition?.recommended_trataka_mode || "bindu";
+
   try {
     const reply = await callGroq(userMessage, systemPrompt, history);
-    return { reply, sources: allSources, providerUsed: "Groq (Llama 3.3 70B)", isCrisis: false };
+    return { reply, sources: allSources, providerUsed: "Groq (Llama 3.3 70B)", isCrisis: false, recommended_trataka: defaultRecTrataka };
   } catch {
     // Fallback to Gemini
   }
 
   try {
     const reply = await callGemini(userMessage, systemPrompt, history);
-    return { reply, sources: allSources, providerUsed: "Google Gemini 2.0 Flash", isCrisis: false };
+    return { reply, sources: allSources, providerUsed: "Google Gemini 2.0 Flash", isCrisis: false, recommended_trataka: defaultRecTrataka };
   } catch {
     // Fallback to Free Open Inference / Companion
   }
@@ -290,7 +296,7 @@ Translate and explain all validation, CBT cognitive reframes, somatic grounding 
       const text = await pollRes.text();
       const cleaned = text.trim();
       if (cleaned && cleaned.length > 25 && !cleaned.toLowerCase().startsWith("error")) {
-        return { reply: cleaned, sources: allSources, providerUsed: "Free Edge AI", isCrisis: false };
+        return { reply: cleaned, sources: allSources, providerUsed: "Free Edge AI", isCrisis: false, recommended_trataka: defaultRecTrataka };
       }
     }
   } catch {}
@@ -332,5 +338,6 @@ Translate and explain all validation, CBT cognitive reframes, somatic grounding 
     sources: allSources,
     providerUsed: "Keyless Healer (Clinical Library Fallback)",
     isCrisis: false,
+    recommended_trataka: defaultRecTrataka,
   };
 }

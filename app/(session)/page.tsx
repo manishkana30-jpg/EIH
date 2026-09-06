@@ -24,7 +24,7 @@ import {
   Check,
 } from "lucide-react";
 
-import { healerClient, PsychologicalTelemetry, ClinicalSource, ChatHistoryItem } from "@/lib/api/healer-client";
+import { healerClient, PsychologicalTelemetry, ClinicalSource, ChatHistoryItem, TrigunaAnalysis } from "@/lib/api/healer-client";
 import { AudioWaveform } from "./components/AudioWaveform";
 import { CBTKnowledgeModal } from "./components/CBTKnowledgeModal";
 import { PranayamaGuide } from "./components/PranayamaGuide";
@@ -55,6 +55,8 @@ interface Message {
   timestamp: string;
   engine?: string;
   sources?: ClinicalSource[];
+  recommended_trataka?: string;
+  triguna_analysis?: TrigunaAnalysis;
 }
 
 const getFormattedTime = () => {
@@ -96,6 +98,8 @@ export default function SanctuarySessionPage() {
     percentages: { Calmness: 74, Relief: 58, Anxiety: 18 },
     strategy: "Active reflective listening",
   });
+  const [recommendedTrataka, setRecommendedTrataka] = useState<string>("bindu");
+  const [activeTriguna, setActiveTriguna] = useState<TrigunaAnalysis | null>(null);
 
   // Dynamically resolve active CBT Reframe for Trataka Neuroplastic Phase
   const activeCbtReframe = React.useMemo(() => {
@@ -417,7 +421,16 @@ export default function SanctuarySessionPage() {
         timestamp: getFormattedTime(),
         engine: response.engine,
         sources: response.sources,
+        recommended_trataka: response.recommended_trataka,
+        triguna_analysis: response.triguna_analysis,
       };
+
+      if (response.recommended_trataka) {
+        setRecommendedTrataka(response.recommended_trataka);
+      }
+      if (response.triguna_analysis) {
+        setActiveTriguna(response.triguna_analysis);
+      }
 
       setMessages((prev) => [...prev, aiMsg]);
       saveSessionMessage("assistant", response.reply);
@@ -631,19 +644,19 @@ export default function SanctuarySessionPage() {
                     <Eye className="w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition-transform" />
                     <span>Clinical Trataka</span>
                   </span>
-                  <span className="text-[10px] font-mono font-bold text-amber-400/80 bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 rounded-full">
-                    5-Stage
+                  <span className="text-[10px] font-mono font-bold text-amber-400/90 bg-amber-500/15 border border-amber-500/40 px-1.5 py-0.5 rounded-full capitalize">
+                    {recommendedTrataka ? `${recommendedTrataka} Prescribed` : '5-Stage'}
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-400 leading-snug mb-2">
-                  Neuroplastic attention training: 2-min safe Bindu gaze, DMN quieting &amp; active CBT reframe.
+                  Neuroplastic attention training: 2-min safe gazing, DMN quieting &amp; active CBT reframe.
                 </p>
                 <button
                   onClick={() => setIsTratakaOpen(true)}
                   className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 text-amber-200 text-xs font-semibold transition-all shadow-[0_0_15px_rgba(245,158,11,0.25)] hover:shadow-[0_0_20px_rgba(245,158,11,0.4)] active:scale-[0.98]"
                 >
                   <Eye className="w-3.5 h-3.5" />
-                  <span>Begin Gazing Session</span>
+                  <span>Begin {recommendedTrataka ? `${recommendedTrataka.toUpperCase()} Gazing` : 'Gazing Session'}</span>
                 </button>
               </div>
 
@@ -651,7 +664,7 @@ export default function SanctuarySessionPage() {
               <button
                 onClick={() => setIsTratakaOpen(true)}
                 className="md:hidden flex flex-col items-center justify-center w-full p-1.5 rounded-xl text-amber-400 hover:text-amber-200 hover:bg-amber-950/40 transition-all"
-                title="Clinical Trataka (Gazing) Module"
+                title={`Clinical Trataka (${recommendedTrataka}) Module`}
               >
                 <Eye className="w-5 h-5" />
                 <span className="text-[9px] font-mono font-bold mt-1 text-amber-400/90">Trataka</span>
@@ -843,6 +856,21 @@ export default function SanctuarySessionPage() {
                 >
                   <p className="whitespace-pre-wrap">{m.text}</p>
                 </div>
+
+                {m.sender === "ai" && m.recommended_trataka && (
+                  <div className="mt-1.5 max-w-[88%] md:max-w-xl">
+                    <button
+                      onClick={() => {
+                        setRecommendedTrataka(m.recommended_trataka!);
+                        setIsTratakaOpen(true);
+                      }}
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 text-xs font-semibold transition-all shadow-[0_0_12px_rgba(245,158,11,0.15)] active:scale-[0.98]"
+                    >
+                      <Eye className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Launch Prescribed Trataka Gazing ({m.recommended_trataka.toUpperCase()})</span>
+                    </button>
+                  </div>
+                )}
 
                 <div className="flex items-center gap-2 mt-1 px-1">
                   {m.timestamp && (
@@ -1074,39 +1102,59 @@ export default function SanctuarySessionPage() {
                 <Activity className="w-3.5 h-3.5 text-teal-400" />
                 <span>Triguna Equilibrium</span>
               </span>
+              {activeTriguna?.state && (
+                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/30 truncate max-w-[130px]" title={activeTriguna.state}>
+                  {activeTriguna.state.split('(')[0].trim()}
+                </span>
+              )}
             </div>
 
             <div className="space-y-2 text-[11px]">
               <div>
                 <div className="flex justify-between text-slate-300 mb-1">
                   <span>Sattva (Clarity)</span>
-                  <span className="text-emerald-400 font-mono">68%</span>
+                  <span className="text-emerald-400 font-mono">{activeTriguna?.sattva ?? 68}%</span>
                 </div>
                 <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
-                  <div className="h-full bg-emerald-500 rounded-full w-[68%]" />
+                  <div
+                    className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                    style={{ width: `${activeTriguna?.sattva ?? 68}%` }}
+                  />
                 </div>
               </div>
 
               <div>
                 <div className="flex justify-between text-slate-300 mb-1">
                   <span>Rajas (Arousal)</span>
-                  <span className="text-amber-400 font-mono">22%</span>
+                  <span className="text-amber-400 font-mono">{activeTriguna?.rajas ?? 22}%</span>
                 </div>
                 <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
-                  <div className="h-full bg-amber-500 rounded-full w-[22%]" />
+                  <div
+                    className="h-full bg-amber-500 rounded-full transition-all duration-500"
+                    style={{ width: `${activeTriguna?.rajas ?? 22}%` }}
+                  />
                 </div>
               </div>
 
               <div>
                 <div className="flex justify-between text-slate-300 mb-1">
                   <span>Tamas (Inertia)</span>
-                  <span className="text-slate-400 font-mono">10%</span>
+                  <span className="text-slate-400 font-mono">{activeTriguna?.tamas ?? 10}%</span>
                 </div>
                 <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
-                  <div className="h-full bg-slate-500 rounded-full w-[10%]" />
+                  <div
+                    className="h-full bg-slate-500 rounded-full transition-all duration-500"
+                    style={{ width: `${activeTriguna?.tamas ?? 10}%` }}
+                  />
                 </div>
               </div>
             </div>
+
+            {activeTriguna?.recommendation && (
+              <p className="text-[10px] text-slate-400 leading-snug pt-1 border-t border-slate-800/80">
+                {activeTriguna.recommendation}
+              </p>
+            )}
           </div>
         </div>
       </motion.aside>
@@ -1142,6 +1190,7 @@ export default function SanctuarySessionPage() {
         activeCbtReframe={activeCbtReframe}
         conditionName={telemetry.dominant_emotion}
         userLocale={userLocale}
+        recommendedMode={recommendedTrataka as any}
       />
 
       {/* PWA Installation Guidance & Action Modal */}

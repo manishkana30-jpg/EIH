@@ -113,6 +113,7 @@ export interface TratakaModuleProps {
   activeCbtReframe?: string;
   conditionName?: string;
   userLocale?: string;
+  recommendedMode?: TratakaModeId;
 }
 
 export type TratakaStageId = 1 | 2 | 3 | 4 | 5 | 'complete';
@@ -236,6 +237,7 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
   activeCbtReframe,
   conditionName = 'Working Memory & Attention Restoration',
   userLocale = 'en-US',
+  recommendedMode,
 }) => {
   const [tratakaMode, setTratakaMode] = useState<TratakaModeId | null>(null);
   const [elapsedSec, setElapsedSec] = useState(0);
@@ -463,29 +465,38 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-            {TRATAKA_MODES.map((mode) => (
-              <button
-                key={mode.id}
-                onClick={() => handleSelectMode(mode.id)}
-                className={`p-5 rounded-3xl bg-slate-950/70 hover:bg-slate-900/90 border ${mode.borderAccent} text-left transition-all duration-300 flex flex-col justify-between group relative overflow-hidden shadow-lg hover:shadow-2xl hover:scale-[1.02] cursor-pointer`}
-              >
-                {/* Ambient Radial Accent */}
-                <div
-                  className={`absolute -top-10 -right-10 w-36 h-36 bg-gradient-to-bl ${mode.bgAccent} rounded-full blur-2xl pointer-events-none group-hover:scale-150 transition-transform duration-500`}
-                />
+            {TRATAKA_MODES.map((mode) => {
+              const isPrescribed = recommendedMode === mode.id;
+              return (
+                <button
+                  key={mode.id}
+                  onClick={() => handleSelectMode(mode.id)}
+                  className={`p-5 rounded-3xl bg-slate-950/70 hover:bg-slate-900/90 border ${isPrescribed ? 'border-amber-400 ring-2 ring-amber-400/50 shadow-[0_0_25px_rgba(251,191,36,0.25)]' : mode.borderAccent} text-left transition-all duration-300 flex flex-col justify-between group relative overflow-hidden shadow-lg hover:shadow-2xl hover:scale-[1.02] cursor-pointer`}
+                >
+                  {/* Ambient Radial Accent */}
+                  <div
+                    className={`absolute -top-10 -right-10 w-36 h-36 bg-gradient-to-bl ${mode.bgAccent} rounded-full blur-2xl pointer-events-none group-hover:scale-150 transition-transform duration-500`}
+                  />
 
-                <div className="space-y-3 relative z-10">
-                  {/* Top Tags */}
-                  <div className="flex items-center justify-between">
-                    <span
-                      className={`text-[10px] font-mono font-bold tracking-wider px-2 py-0.5 rounded-full bg-white/5 border border-white/10 ${mode.accentColor}`}
-                    >
-                      {mode.sanskritName}
-                    </span>
-                    <span className="text-[10px] font-mono text-slate-500">
-                      {mode.element}
-                    </span>
-                  </div>
+                  <div className="space-y-3 relative z-10">
+                    {/* Top Tags */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span
+                          className={`text-[10px] font-mono font-bold tracking-wider px-2 py-0.5 rounded-full bg-white/5 border border-white/10 ${mode.accentColor}`}
+                        >
+                          {mode.sanskritName}
+                        </span>
+                        {isPrescribed && (
+                          <span className="text-[9px] font-mono font-bold tracking-wider px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse">
+                            Prescribed
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[10px] font-mono text-slate-500">
+                        {mode.element}
+                      </span>
+                    </div>
 
                   {/* Mode Title & Tagline */}
                   <div>
@@ -540,7 +551,8 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
                   </div>
                 </div>
               </button>
-            ))}
+              );
+            })}
           </div>
         </main>
 

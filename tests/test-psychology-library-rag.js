@@ -55,10 +55,12 @@ for (const condition of libraryData) {
   assert.ok(typeof solutions.somatic_anchor === 'string' && solutions.somatic_anchor.length > 10, `${condition.id} invalid somatic_anchor`);
   assert.ok(typeof solutions.pranayama === 'string' && solutions.pranayama.length > 10, `${condition.id} invalid pranayama`);
   assert.ok(typeof solutions.micro_habit === 'string' && solutions.micro_habit.length > 10, `${condition.id} invalid micro_habit`);
+  assert.ok(['bindu', 'flame', 'pratibimb', 'murti', 'shoonya'].includes(condition.recommended_trataka_mode), `${condition.id} must have valid recommended_trataka_mode (got ${condition.recommended_trataka_mode})`);
 
-  console.log(`  ✓ [PASSED]: Validated Condition "${condition.name}" (${condition.id}) | Triguna: ${condition.triguna_balance}`);
+  console.log(`  ✓ [PASSED]: Validated Condition "${condition.name}" (${condition.id}) | Triguna: ${condition.triguna_balance} | Trataka: ${condition.recommended_trataka_mode}`);
 }
 
+requiredCoreIds.push('emotional_dysregulation_numbness');
 for (const reqId of requiredCoreIds) {
   assert.ok(conditionMap[reqId], `Required core condition missing: ${reqId}`);
 }
