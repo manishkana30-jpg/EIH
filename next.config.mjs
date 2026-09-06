@@ -13,7 +13,12 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   poweredByHeader: false,
-  images: isExport ? { unoptimized: true } : undefined,
+  images: isExport
+    ? { unoptimized: true }
+    : {
+        formats: ['image/avif', 'image/webp'],
+        minimumCacheTTL: 31536000,
+      },
   headers: isExport ? undefined : async () => [
     {
       source: '/(.*)',
@@ -49,6 +54,15 @@ const nextConfig = {
       ],
     },
     {
+      source: '/(.*).(jpg|jpeg|png|svg|webp|ico|css|js|woff|woff2)',
+      headers: [
+        {
+          key: 'Cache-Control',
+          value: 'public, max-age=31536000, immutable',
+        },
+      ],
+    },
+    {
       source: '/audio-worklet-processor.js',
       headers: [
         {
@@ -58,6 +72,15 @@ const nextConfig = {
         {
           key: 'Cache-Control',
           value: 'public, max-age=31536000, immutable',
+        },
+      ],
+    },
+    {
+      source: '/api/(.*)',
+      headers: [
+        {
+          key: 'Cache-Control',
+          value: 'no-store, max-age=0',
         },
       ],
     },

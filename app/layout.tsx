@@ -1,5 +1,20 @@
 import type { Metadata, Viewport } from 'next';
+import { Inter, Outfit } from 'next/font/google';
 import './globals.css';
+
+export const revalidate = 3600; // Cache for 1 hour at the Edge
+
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
+});
+
+const outfit = Outfit({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-outfit',
+});
 
 export const metadata: Metadata = {
   title: 'Emotional Intelligence Healer | The Modern Neuroscience of Emotion',
@@ -32,14 +47,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className={`dark ${inter.variable} ${outfit.variable}`}>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
-          rel="stylesheet"
-        />
         <link rel="manifest" href="/manifest.webmanifest" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />

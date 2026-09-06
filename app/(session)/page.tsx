@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   BookOpen,
@@ -801,10 +802,13 @@ export default function SanctuarySessionPage() {
               WebkitMaskImage: 'radial-gradient(circle at center, black 80%, transparent 100%)',
             }}
           >
-            <img
+            <Image
               src="/hypnotic-circles.png"
               alt="Hypnotic Circle Anchor"
               aria-hidden="true"
+              width={680}
+              height={680}
+              priority
               className="w-full h-full object-contain contrast-[1.15] brightness-105 select-none"
               style={{ animation: 'spin 50s linear infinite' }}
             />

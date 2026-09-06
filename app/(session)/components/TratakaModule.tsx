@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
@@ -805,10 +806,12 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
                         WebkitMaskImage: 'radial-gradient(circle at center, black 50%, transparent 85%)',
                       }}
                     >
-                      <img
+                      <Image
                         src="/hypnotic-circles.png"
-                        alt=""
+                        alt="Trataka Peripheral Anchor"
                         aria-hidden="true"
+                        width={750}
+                        height={750}
                         className="w-full h-full object-contain contrast-[1.15] brightness-115 select-none"
                         style={{ animation: 'spin 65s linear infinite' }}
                       />

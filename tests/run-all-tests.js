@@ -20,6 +20,7 @@ require('./trataka_protocol.test.js');
 require('./verify_camera_button_execution.test.js');
 require('./share_and_pwa_integration.test.js');
 require('./test-crisis-helplines-geo.js');
+require('./edge_caching_and_asset_bundle.test.js');
 
 
 console.log('================================================================');
