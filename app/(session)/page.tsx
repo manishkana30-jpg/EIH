@@ -798,25 +798,8 @@ export default function SanctuarySessionPage() {
           </div>
         </div>
 
-        {/* CHAT AREA — GLASSMORPHISM OVERLAY */}
-        <div
-          className={[
-            // Layout — do not remove any of these three
-            'flex-1 overflow-y-auto min-h-0',
-            // Scroll behaviour
-            'scroll-smooth',
-            // Spacing
-            'p-6 pb-32 space-y-6',
-            // Stacking — must be above the -z-10 spiral
-            'relative z-10',
-            // Glass card shape
-            'm-4 rounded-3xl',
-            // Glassmorphism
-            'bg-slate-950/40 backdrop-blur-[2px]',
-            // Depth cues
-            'border border-white/5 shadow-2xl',
-          ].join(' ')}
-        >
+        {/* CHAT STREAM — DIRECTLY ON MAIN STAGE LAYER */}
+        <div className="flex-1 overflow-y-auto min-h-0 scroll-smooth px-4 sm:px-6 py-4 space-y-6 relative z-10">
           {/* Error Banner */}
           {errorMessage && (
             <motion.div
