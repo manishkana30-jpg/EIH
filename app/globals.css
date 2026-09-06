@@ -298,6 +298,14 @@
   background: rgba(129, 168, 144, 0.55);
 }
 
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* ─── Therapy Nature Gradient Text ─── */
 .text-gradient-sattva {
   background: linear-gradient(135deg, #ecf3ee 0%, #81a890 50%, #588e73 100%);
