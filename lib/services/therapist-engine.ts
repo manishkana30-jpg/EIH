@@ -1,7 +1,13 @@
 // lib/services/therapist-engine.ts
 import { searchMentalHealthEvidence, formatClinicalContext, type ClinicalSearchResult } from "./search-fallback.ts";
 import { detectCrisis } from "../safety/crisis-detector.ts";
-import { queryPsychologyLibrary } from "../knowledge/psychology-library-rag.ts";
+import {
+  queryPsychologyLibrary,
+  isGreetingMessage,
+  isTestMessage,
+  GREETING_RESPONSE,
+  TEST_RESPONSE,
+} from "../knowledge/psychology-library-rag.ts";
 import { GLOBAL_LANGUAGE_CATALOG, getLanguageByCode } from "../i18n/language-catalog.ts";
 import {
   formatHumanTherapeuticMessage,
@@ -199,6 +205,25 @@ export async function generateTherapeuticResponse(
     };
   }
 
+  // 1b. Conversational Greeting & Mic Test Fast-Path (Single sentence responses, no clinical trataka)
+  if (isTestMessage(userMessage)) {
+    return {
+      reply: TEST_RESPONSE,
+      sources: [],
+      providerUsed: "Audio Verification Protocol",
+      isCrisis: false,
+    };
+  }
+
+  if (isGreetingMessage(userMessage)) {
+    return {
+      reply: GREETING_RESPONSE,
+      sources: [],
+      providerUsed: "Conversational Empathy Responder",
+      isCrisis: false,
+    };
+  }
+
   // 2. Search for verified clinical context + Psychoeducational Library RAG
   const [clinicalEvidence, libraryRag] = await Promise.all([
     searchMentalHealthEvidence(userMessage),
@@ -253,14 +278,14 @@ Translate and explain all validation, CBT cognitive reframes, somatic grounding 
       sources: finalSources,
       providerUsed: "Keyless Healer (Local Python Daemon)",
       isCrisis: false,
-      recommended_trataka: (localResult as any).recommended_trataka || libraryRag?.condition.recommended_trataka_mode || "bindu",
+      recommended_trataka: (localResult as any).recommended_trataka || libraryRag?.condition?.recommended_trataka_mode,
       triguna_analysis: (localResult as any).triguna_analysis,
     };
   } catch {
     // Fallback to cloud LLMs
   }
 
-  const defaultRecTrataka = libraryRag?.condition?.recommended_trataka_mode || "bindu";
+  const defaultRecTrataka = libraryRag?.condition?.recommended_trataka_mode;
 
   try {
     const reply = await callGroq(userMessage, systemPrompt, history);

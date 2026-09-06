@@ -198,10 +198,108 @@ export const CLINICAL_BREATHWORK_PACERS: Record<string, BreathCadence> = {
 };
 
 /**
+ * Detects if user input is a greeting message
+ */
+export function isGreetingMessage(text: string): boolean {
+  if (!text || !text.trim()) return false;
+  const clean = text.toLowerCase().replace(/[^\w\s]/g, ' ').replace(/\s+/g, ' ').trim();
+  if (!clean) return false;
+
+  const exactGreetings = new Set([
+    'hello',
+    'hi',
+    'hey',
+    'good morning',
+    'good afternoon',
+    'good evening',
+    'namaste',
+    'greetings',
+    'howdy',
+    'hola',
+    'bonjour',
+    'hallo',
+    'hi there',
+    'hello there',
+    'hey there',
+    'hello how are you',
+    'hi how are you',
+    'hey how are you',
+    'how are you',
+    'how are you doing',
+    'whats up',
+    'what s up',
+  ]);
+  if (exactGreetings.has(clean)) return true;
+
+  const words = clean.split(' ');
+  if (words.length <= 4) {
+    if (['hello', 'hi', 'hey', 'namaste', 'greetings', 'howdy', 'hola'].includes(words[0])) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Detects if user input is a microphone / audio test message
+ */
+export function isTestMessage(text: string): boolean {
+  if (!text || !text.trim()) return false;
+  const clean = text.toLowerCase().replace(/[^\w\s]/g, ' ').replace(/\s+/g, ' ').trim();
+  if (!clean) return false;
+
+  const exactTests = new Set([
+    'test',
+    'testing',
+    'mic test',
+    'test mic',
+    'testing mic',
+    'mic testing',
+    'is mic working',
+    'can you hear me',
+    'can you hear me now',
+    'audio test',
+    'sound check',
+    'mic check',
+    'test 123',
+    'test 1 2 3',
+    'testing 123',
+    'testing 1 2 3',
+    'check mic',
+    'check',
+    'microphone test',
+    'hello test',
+  ]);
+  if (exactTests.has(clean)) return true;
+
+  const words = clean.split(' ');
+  if (words.length <= 5) {
+    if (
+      (clean.includes('mic') || clean.includes('microphone') || clean.includes('sound') || clean.includes('audio')) &&
+      (clean.includes('test') || clean.includes('check') || clean.includes('working') || clean.includes('fine') || clean.includes('hear'))
+    ) {
+      return true;
+    }
+    if (words[0] === 'test' || words[0] === 'testing') {
+      return true;
+    }
+  }
+  return false;
+}
+
+export const GREETING_RESPONSE = 'Hello, how can I help you?';
+export const TEST_RESPONSE = 'Mic is running fine.';
+
+/**
  * Semantic & Keyword-Weighted Matcher for Clinical Conditions
  */
 export function queryPsychologyLibrary(userText: string): LibraryRAGResult | null {
   if (!userText || !userText.trim()) return null;
+
+  // Immediate interceptor: greetings and test messages do not warrant clinical therapy or trataka
+  if (isGreetingMessage(userText) || isTestMessage(userText)) {
+    return null;
+  }
 
   // Autonomous background self-learning: retrieve and index free clinical documents for new queries
   try {
@@ -302,8 +400,8 @@ export function queryPsychologyLibrary(userText: string): LibraryRAGResult | nul
     }
   }
 
-  // Fallback to Neuroscience Emotion Classifier when lexical/trigger threshold is not reached
-  if (!bestMatch || highestScore < 4) {
+  // Fallback to Neuroscience Emotion Classifier ONLY when there is actual emotional distress and sufficient context
+  if ((!bestMatch || highestScore < 4) && words.length >= 3) {
     try {
       const diag = emotionClassifier.classifyText(userText);
       const dimId = diag.dimensionId || '';
@@ -320,39 +418,20 @@ export function queryPsychologyLibrary(userText: string): LibraryRAGResult | nul
         confusion: 'cognitive_memory_brain_fog',
         craving: 'adhd_executive_overwhelm',
         empathic_pain: 'compassion_fatigue_caregiver',
-        entrancement: 'existential_loneliness',
-        excitement: 'panic_dysregulation',
-        interest: 'adhd_executive_overwhelm',
-        joy: 'major_depressive_inertia',
         nostalgia: 'grief_bereavement',
-        pride: 'imposter_perfectionism',
-        relief: 'burnout_fatigue',
-        romance: 'relationship_heartbreak',
-        satisfaction: 'imposter_perfectionism',
-        surprise: 'panic_dysregulation',
-        calmness: 'burnout_fatigue',
-        admiration: 'imposter_perfectionism',
-        adoration: 'relationship_heartbreak',
-        aesthetic_appreciation: 'existential_loneliness',
-        amusement: 'burnout_fatigue',
-        sexual_desire: 'relationship_heartbreak',
       };
 
-      const mappedId =
-        dimensionToConditionMap[dimId] ||
-        (rawLower.includes('memory') || rawLower.includes('fog') || rawLower.includes('recall') || rawLower.includes('forget')
-          ? 'cognitive_memory_brain_fog'
-          : 'burnout_fatigue');
-      const fallbackCondition = getConditionById(mappedId) || getConditionById('cognitive_memory_brain_fog') || PSYCHOLOGY_LIBRARY[0];
-      if (fallbackCondition) {
-        bestMatch = fallbackCondition;
-        highestScore = 4;
-        matchedTerms = [`emotion:${dimId}`];
+      const mappedId = dimensionToConditionMap[dimId];
+      if (mappedId) {
+        const fallbackCondition = getConditionById(mappedId);
+        if (fallbackCondition) {
+          bestMatch = fallbackCondition;
+          highestScore = 4;
+          matchedTerms = [`emotion:${dimId}`];
+        }
       }
     } catch {
-      bestMatch = getConditionById('cognitive_memory_brain_fog') || PSYCHOLOGY_LIBRARY[0];
-      highestScore = 4;
-      matchedTerms = ['fallback_cognitive'];
+      // Non-matching input remains null
     }
   }
 

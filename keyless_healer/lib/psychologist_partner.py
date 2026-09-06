@@ -25,12 +25,19 @@ except ImportError:
         from clinical_search import ClinicalEvidence, KeylessClinicalSearch  # type: ignore[import-not-found]
 
 try:
-    from keyless_healer.lib.psychology_library_rag import psychology_rag
+    from keyless_healer.lib.psychology_library_rag import is_greeting_text, is_test_text, psychology_rag
 except ImportError:
     try:
-        from lib.psychology_library_rag import psychology_rag  # type: ignore[import-not-found]
+        from lib.psychology_library_rag import is_greeting_text, is_test_text, psychology_rag  # type: ignore[import-not-found]
     except ImportError:
-        from psychology_library_rag import psychology_rag  # type: ignore[import-not-found]
+        try:
+            from psychology_library_rag import is_greeting_text, is_test_text, psychology_rag  # type: ignore[import-not-found]
+        except ImportError:
+            def is_greeting_text(text: str) -> bool:  # type: ignore[misc]
+                return text.lower().strip() in {"hello", "hi", "hey"}
+            def is_test_text(text: str) -> bool:  # type: ignore[misc]
+                return "test" in text.lower().strip()
+            psychology_rag = None  # type: ignore[assignment]
 
 try:
     from keyless_healer.lib.cbt_library_loader import cbt_loader
@@ -544,6 +551,32 @@ class KeylessPsychologistPartner:
                 latency_ms=int((time.perf_counter() - start_time) * 1000)
             )
 
+        if is_test_text(user_message):
+            telemetry = self._heuristic_analysis(user_message)
+            telemetry.dominant_emotion = "Calmness"
+            return HealerResponse(
+                reply="Mic is running fine.",
+                telemetry=telemetry,
+                sources=[],
+                engine_used="Audio Verification Protocol",
+                somatic_anchor="audio check",
+                recommended_trataka=None,
+                latency_ms=int((time.perf_counter() - start_time) * 1000)
+            )
+
+        if is_greeting_text(user_message):
+            telemetry = self._heuristic_analysis(user_message)
+            telemetry.dominant_emotion = "Calmness"
+            return HealerResponse(
+                reply="Hello, how can I help you?",
+                telemetry=telemetry,
+                sources=[],
+                engine_used="Conversational Empathy Responder",
+                somatic_anchor="warm reception",
+                recommended_trataka=None,
+                latency_ms=int((time.perf_counter() - start_time) * 1000)
+            )
+
         intent = self._detect_intent(user_message)
         if intent == "loop_complaint":
             telemetry = self._heuristic_analysis(user_message)
@@ -592,18 +625,12 @@ class KeylessPsychologistPartner:
         anchor = self._normalize_anchor(user_message)
 
         # Compute Trataka mode recommendation and Triguna constitutional analysis
-        rec_trataka = "bindu"
+        rec_trataka = None
         triguna_data = None
         if rag_guidance:
-            rec_trataka = rag_guidance.get("recommended_trataka_mode", "bindu")
+            rec_trataka = rag_guidance.get("recommended_trataka_mode")
             triguna_data = parse_triguna_balance(rag_guidance.get("triguna_balance"))
         else:
-            if "Dorsal" in telemetry.polyvagal_state:
-                rec_trataka = "pratibimb"
-            elif "Sympathetic" in telemetry.polyvagal_state:
-                rec_trataka = "bindu"
-            else:
-                rec_trataka = "shoonya"
             triguna_data = parse_triguna_balance(None)
 
         # Prepare unified sources with Psychology Library grounding

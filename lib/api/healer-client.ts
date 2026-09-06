@@ -1,7 +1,13 @@
 // lib/api/healer-client.ts
 import { emotionClassifier } from '../knowledge/emotion-classifier';
 import { detectCrisis } from '../safety/crisis-detector';
-import { queryPsychologyLibrary } from '../knowledge/psychology-library-rag';
+import {
+  queryPsychologyLibrary,
+  isGreetingMessage,
+  isTestMessage,
+  GREETING_RESPONSE,
+  TEST_RESPONSE,
+} from '../knowledge/psychology-library-rag';
 import { getResearchedAdviceForEmotion } from '../knowledge/authenticated-research-bank';
 import {
   formatHumanTherapeuticMessage,
@@ -173,6 +179,39 @@ class HealerBackendClient {
       };
     }
 
+    // 0.1. Immediate Greeting & Mic Test Fast-Path (Single sentence responses, no clinical trataka)
+    if (isTestMessage(cleanMessage)) {
+      return {
+        reply: TEST_RESPONSE,
+        sources: [],
+        engine: 'Audio Verification Protocol',
+        is_crisis: false,
+        telemetry: {
+          dominant_emotion: 'Calmness',
+          polyvagal_state: 'Ventral Vagal (Safe)',
+          cbt_distortion: 'None',
+          percentages: { Calmness: 100 },
+          strategy: 'Audio hardware validated successfully.',
+        },
+      };
+    }
+
+    if (isGreetingMessage(cleanMessage)) {
+      return {
+        reply: GREETING_RESPONSE,
+        sources: [],
+        engine: 'Conversational Empathy Responder',
+        is_crisis: false,
+        telemetry: {
+          dominant_emotion: 'Calmness',
+          polyvagal_state: 'Ventral Vagal (Safe)',
+          cbt_distortion: 'None',
+          percentages: { Calmness: 90, Receptivity: 85 },
+          strategy: 'Warm compassionate reception and clinical readiness.',
+        },
+      };
+    }
+
     // TIER 1: Dedicated Hardware Python Daemon (via Tunnel or Localhost)
     const backendUrl = this.getBackendUrl();
     if (backendUrl) {
@@ -239,7 +278,7 @@ class HealerBackendClient {
           const arousal = diag.coreAffect?.arousal || 0.5;
           const polyvagalState = arousal > 0.6 ? 'Sympathetic (Fight/Flight)' : (diag.coreAffect?.valence && diag.coreAffect.valence < -0.4) ? 'Dorsal Vagal (Shutdown)' : 'Ventral Vagal (Safe)';
           const distortion = cleanMessage.match(/\b(always|never|worst|idiot|ruined|hate)\b/i) ? 'Catastrophizing / All-or-Nothing' : 'None';
-          const recTrataka = libRes?.condition?.recommended_trataka_mode || (polyvagalState.includes('Sympathetic') ? 'bindu' : polyvagalState.includes('Dorsal') ? 'pratibimb' : 'shoonya');
+          const recTrataka = libRes?.condition?.recommended_trataka_mode;
           const trigunaAnalysis = parseClientTriguna(libRes?.condition?.triguna_balance);
 
           return {
@@ -311,7 +350,7 @@ class HealerBackendClient {
           ]
         : [];
 
-      const recTrataka = libraryResult?.condition?.recommended_trataka_mode || (polyvagalState.includes('Sympathetic') ? 'bindu' : polyvagalState.includes('Dorsal') ? 'pratibimb' : 'shoonya');
+      const recTrataka = libraryResult?.condition?.recommended_trataka_mode;
       const trigunaAnalysis = parseClientTriguna(libraryResult?.condition?.triguna_balance);
 
       return {

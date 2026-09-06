@@ -35,6 +35,7 @@ async function main() {
     await runConversationalDiversityTests();
     runTtsSanitizerTests();
     await runSelfLearningTests();
+    await import('./test-greeting-and-mic-test.js');
     console.log('================================================================');
     console.log('🎉 ALL SYSTEM TESTS PASSED WITH 100% SUCCESS RATE');
     console.log('================================================================');

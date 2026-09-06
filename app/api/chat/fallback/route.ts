@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { emotionClassifier, NeuroscienceDiagnosticResult } from '@/lib/knowledge/emotion-classifier';
 import { getResearchedAdviceForEmotion } from '@/lib/knowledge/authenticated-research-bank';
+import {
+  isGreetingMessage,
+  isTestMessage,
+  GREETING_RESPONSE,
+  TEST_RESPONSE,
+} from '@/lib/knowledge/psychology-library-rag';
 import type { UserCognitiveProfile } from '@/lib/memory/cbt-memory-types';
 
 export const runtime = 'edge';
@@ -123,6 +129,21 @@ export async function POST(req: NextRequest) {
 
     rawUserPrompt = (prompt || '').trim();
     const cleanPrompt = rawUserPrompt;
+
+    if (isTestMessage(cleanPrompt)) {
+      return NextResponse.json({
+        reply: TEST_RESPONSE,
+        provider: 'audio_verification',
+      });
+    }
+
+    if (isGreetingMessage(cleanPrompt)) {
+      return NextResponse.json({
+        reply: GREETING_RESPONSE,
+        provider: 'conversational_empathy',
+      });
+    }
+
     const effectiveDiag: NeuroscienceDiagnosticResult = (diagnostic as any) || emotionClassifier.classifyText(cleanPrompt);
     const researchStudy = getResearchedAdviceForEmotion(effectiveDiag?.dimensionId || 'calmness');
 

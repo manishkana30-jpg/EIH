@@ -19,6 +19,54 @@ except ImportError:
     chromadb = None
 
 
+def is_greeting_text(text: str) -> bool:
+    if not text or not text.strip():
+        return False
+    import re
+    clean = re.sub(r"[^\w\s]", " ", text.lower()).strip()
+    clean = re.sub(r"\s+", " ", clean)
+    if not clean:
+        return False
+    exact_greetings = {
+        "hello", "hi", "hey", "good morning", "good afternoon", "good evening",
+        "namaste", "greetings", "howdy", "hola", "bonjour", "hallo",
+        "hi there", "hello there", "hey there", "hello how are you",
+        "hi how are you", "hey how are you", "how are you", "how are you doing",
+        "whats up", "what s up"
+    }
+    if clean in exact_greetings:
+        return True
+    words = clean.split()
+    if len(words) <= 4 and words[0] in {"hello", "hi", "hey", "namaste", "greetings", "howdy", "hola"}:
+        return True
+    return False
+
+
+def is_test_text(text: str) -> bool:
+    if not text or not text.strip():
+        return False
+    import re
+    clean = re.sub(r"[^\w\s]", " ", text.lower()).strip()
+    clean = re.sub(r"\s+", " ", clean)
+    if not clean:
+        return False
+    exact_tests = {
+        "test", "testing", "mic test", "test mic", "testing mic", "mic testing",
+        "is mic working", "can you hear me", "can you hear me now", "audio test",
+        "sound check", "mic check", "test 123", "test 1 2 3", "testing 123",
+        "testing 1 2 3", "check mic", "check", "microphone test", "hello test"
+    }
+    if clean in exact_tests:
+        return True
+    words = clean.split()
+    if len(words) <= 5:
+        if any(w in clean for w in ["mic", "microphone", "sound", "audio"]) and any(w in clean for w in ["test", "check", "working", "fine", "hear"]):
+            return True
+        if words[0] in {"test", "testing"}:
+            return True
+    return False
+
+
 class PsychologyLibraryRAG:
     """Manages vector indexing and retrieval for clinical psychology conditions."""
 
@@ -160,6 +208,10 @@ class PsychologyLibraryRAG:
         if not query or not query.strip():
             return None
 
+        # Immediate interceptor: greetings and test messages do not warrant clinical therapy or trataka
+        if is_greeting_text(query) or is_test_text(query):
+            return None
+
         import re
         clean_query = query.strip().lower()
         clean_query = re.sub(r"\bweek\s+memory\b", "weak memory", clean_query)
@@ -275,10 +327,6 @@ class PsychologyLibraryRAG:
                         return self._format_retrieval_result(condition)
             except Exception as e:
                 logger.debug(f"ChromaDB query fallback triggered: {e}")
-
-        # 3. Heuristic Fallback to Default Condition if available
-        if self.library_data:
-            return self._format_retrieval_result(self.library_data[0])
 
         return None
 
