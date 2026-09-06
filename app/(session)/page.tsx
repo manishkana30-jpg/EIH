@@ -19,6 +19,9 @@ import {
   Sparkles,
   AlertTriangle,
   Eye,
+  Share2,
+  Download,
+  Check,
 } from "lucide-react";
 
 import { healerClient, PsychologicalTelemetry, ClinicalSource, ChatHistoryItem } from "@/lib/api/healer-client";
@@ -29,6 +32,7 @@ import { EncryptedHistoryModal } from "./components/EncryptedHistoryModal";
 import { CrisisModal } from "./components/CrisisModal";
 import { LanguageSelector } from "./components/LanguageSelector";
 import { TratakaModule } from "./components/TratakaModule";
+import { PwaInstallModal } from "./components/PwaInstallModal";
 
 import { browserSpeechController } from "@/lib/audio/browser-speech";
 import { getCleanAudioStream } from "@/lib/audio/audio-manager";
@@ -79,6 +83,10 @@ export default function SanctuarySessionPage() {
   const [isTratakaOpen, setIsTratakaOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isCrisisModalOpen, setIsCrisisModalOpen] = useState(false);
+  const [isPwaModalOpen, setIsPwaModalOpen] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isAppInstalled, setIsAppInstalled] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
 
   // ─── Live Clinical Telemetry ───
   const [telemetry, setTelemetry] = useState<PsychologicalTelemetry>({
@@ -108,6 +116,85 @@ export default function SanctuarySessionPage() {
     }
     return undefined;
   }, [messages, telemetry]);
+
+  // ─── PWA Lifecycle & Installation Detection ───
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    // Check if app is running in standalone PWA window
+    const isStandalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      (window.navigator as any).standalone === true;
+    if (isStandalone) {
+      setIsAppInstalled(true);
+    }
+
+    const handleBeforeInstall = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    const handleAppInstalled = () => {
+      setIsAppInstalled(true);
+      setDeferredPrompt(null);
+    };
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstall);
+    window.addEventListener("appinstalled", handleAppInstalled);
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstall);
+      window.removeEventListener("appinstalled", handleAppInstalled);
+    };
+  }, []);
+
+  // ─── Share Sanctuary Handler ───
+  const handleShareApp = useCallback(async () => {
+    if (typeof window === "undefined") return;
+    const shareUrl = window.location.origin;
+    const shareData = {
+      title: "EIH - Emotional Intelligence & Healing Sanctuary",
+      text: "Autonomous clinical neuropsychological companion & Ayurvedic healing sanctuary.",
+      url: shareUrl,
+    };
+
+    if (navigator.share && typeof navigator.canShare === "function" && navigator.canShare(shareData)) {
+      try {
+        await navigator.share(shareData);
+        return;
+      } catch (err: any) {
+        if (err.name === "AbortError") return;
+      }
+    }
+
+    // Fallback: Copy URL to clipboard
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2500);
+    } catch {
+      window.prompt("Copy Sanctuary URL:", shareUrl);
+    }
+  }, []);
+
+  // ─── PWA Install Trigger ───
+  const handleInstallClick = useCallback(() => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice
+        .then((choice: any) => {
+          if (choice.outcome === "accepted") {
+            setIsAppInstalled(true);
+          }
+          setDeferredPrompt(null);
+        })
+        .catch(() => {
+          setIsPwaModalOpen(true);
+        });
+    } else {
+      setIsPwaModalOpen(true);
+    }
+  }, [deferredPrompt]);
 
   // ─── Voice, Audio Playback & Echo Avoidance ───
   const [isRecording, setIsRecording] = useState(false);
@@ -453,7 +540,7 @@ export default function SanctuarySessionPage() {
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.4 }}
-        className="w-16 sm:w-20 md:w-64 shrink-0 flex flex-col justify-between bg-slate-900/40 backdrop-blur-xl border-r border-slate-800/60 p-3 md:p-4 z-20"
+        className="w-16 sm:w-20 md:w-64 shrink-0 flex flex-col justify-between bg-slate-900/40 backdrop-blur-xl border-r border-slate-800/60 p-3 md:p-4 z-20 overflow-y-auto space-y-4"
       >
         {/* Top Header & Brand */}
         <div className="space-y-6">
@@ -532,6 +619,50 @@ export default function SanctuarySessionPage() {
               <ShieldAlert className="w-5 h-5 shrink-0 group-hover:scale-110 transition-transform text-rose-400" />
               <span className="hidden md:inline text-xs font-medium tracking-wide">
                 Crisis Helplines
+              </span>
+            </button>
+
+            {/* Divider for App Access & Utilities */}
+            <div className="pt-2 pb-1">
+              <div className="h-[1px] bg-slate-800/80 w-full" />
+            </div>
+
+            {/* Share Sanctuary Link */}
+            <button
+              onClick={handleShareApp}
+              className="relative flex items-center gap-3 w-full p-2.5 rounded-xl text-slate-400 hover:text-cyan-300 hover:bg-slate-800/80 border border-transparent hover:border-cyan-500/30 transition-all duration-300 group"
+              title="Share EIH Sanctuary Link"
+            >
+              <Share2 className="w-5 h-5 shrink-0 group-hover:scale-110 transition-transform text-cyan-400" />
+              <span className="hidden md:inline text-xs font-medium tracking-wide">
+                {isCopied ? "Link Copied!" : "Share Sanctuary"}
+              </span>
+              {isCopied ? (
+                <span className="hidden md:inline text-[9px] font-mono font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-500/40 px-1.5 py-0.5 rounded ml-auto flex items-center gap-0.5">
+                  <Check className="w-2.5 h-2.5" />
+                  <span>Copied</span>
+                </span>
+              ) : null}
+            </button>
+
+            {/* PWA Installation Link */}
+            <button
+              onClick={handleInstallClick}
+              className="flex items-center gap-3 w-full p-2.5 rounded-xl text-slate-400 hover:text-emerald-300 hover:bg-slate-800/80 border border-transparent hover:border-emerald-500/30 transition-all duration-300 group"
+              title="Install EIH as Desktop / Mobile App"
+            >
+              <Download className="w-5 h-5 shrink-0 group-hover:scale-110 transition-transform text-emerald-400" />
+              <span className="hidden md:inline text-xs font-medium tracking-wide">
+                {isAppInstalled ? "App Installed" : "Install App"}
+              </span>
+              <span
+                className={`hidden md:inline text-[9px] font-mono font-bold px-1.5 py-0.5 rounded ml-auto ${
+                  isAppInstalled
+                    ? "text-emerald-400/80 bg-emerald-950/40 border border-emerald-800/40"
+                    : "text-emerald-400 bg-emerald-950/80 border border-emerald-500/40 animate-pulse"
+                }`}
+              >
+                PWA
               </span>
             </button>
           </nav>
@@ -1013,6 +1144,15 @@ export default function SanctuarySessionPage() {
         activeCbtReframe={activeCbtReframe}
         conditionName={telemetry.dominant_emotion}
         userLocale={userLocale}
+      />
+
+      {/* PWA Installation Guidance & Action Modal */}
+      <PwaInstallModal
+        isOpen={isPwaModalOpen}
+        onClose={() => setIsPwaModalOpen(false)}
+        deferredPrompt={deferredPrompt}
+        isInstalled={isAppInstalled}
+        onInstallSuccess={() => setIsAppInstalled(true)}
       />
     </div>
   );
