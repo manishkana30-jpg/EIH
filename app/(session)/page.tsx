@@ -85,6 +85,7 @@ export default function SanctuarySessionPage() {
   const [isTratakaOpen, setIsTratakaOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isCrisisModalOpen, setIsCrisisModalOpen] = useState(false);
+  const [activeCrisisData, setActiveCrisisData] = useState<any>(null);
   const [isPwaModalOpen, setIsPwaModalOpen] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isAppInstalled, setIsAppInstalled] = useState(false);
@@ -431,6 +432,10 @@ export default function SanctuarySessionPage() {
       if (response.triguna_analysis) {
         setActiveTriguna(response.triguna_analysis);
       }
+      if (response.is_crisis) {
+        setActiveCrisisData(response.crisisData || null);
+        setIsCrisisModalOpen(true);
+      }
 
       setMessages((prev) => [...prev, aiMsg]);
       saveSessionMessage("assistant", response.reply);
@@ -625,9 +630,12 @@ export default function SanctuarySessionPage() {
             </button>
 
             <button
-              onClick={() => setIsCrisisModalOpen(true)}
+              onClick={() => {
+                setActiveCrisisData(null);
+                setIsCrisisModalOpen(true);
+              }}
               className="flex items-center gap-3 w-full p-2.5 rounded-xl text-rose-400 hover:text-rose-200 hover:bg-rose-950/40 border border-rose-900/30 hover:border-rose-800/60 transition-all duration-300 group"
-              title="Emergency Crisis Support (988)"
+              title="Emergency Crisis Support & Local Care Locator"
             >
               <ShieldAlert className="w-5 h-5 shrink-0 group-hover:scale-110 transition-transform text-rose-400" />
               <span className="hidden md:inline text-xs font-medium tracking-wide">
@@ -1167,8 +1175,11 @@ export default function SanctuarySessionPage() {
 
       <CrisisModal
         isOpen={isCrisisModalOpen}
-        crisisData={null}
-        onClose={() => setIsCrisisModalOpen(false)}
+        crisisData={activeCrisisData}
+        onClose={() => {
+          setIsCrisisModalOpen(false);
+          setActiveCrisisData(null);
+        }}
       />
 
       {/* 5-Stage Clinical Trataka Neuro-Cognitive Gazing Module */}

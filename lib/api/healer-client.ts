@@ -40,6 +40,7 @@ export interface ChatResponse {
   sources: ClinicalSource[];
   engine: string;
   is_crisis: boolean;
+  crisisData?: any;
   recommended_trataka?: string;
   triguna_analysis?: TrigunaAnalysis;
 }
@@ -161,6 +162,7 @@ class HealerBackendClient {
         sources: [],
         engine: 'Crisis Safety Interceptor',
         is_crisis: true,
+        crisisData: crisis,
         telemetry: {
           dominant_emotion: 'Crisis / Acute Distress',
           polyvagal_state: 'Sympathetic / Dorsal Overwhelm',

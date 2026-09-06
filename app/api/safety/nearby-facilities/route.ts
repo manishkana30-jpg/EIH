@@ -115,59 +115,111 @@ async function geocodeQuery(query: string): Promise<{ lat: number; lng: number; 
   return null;
 }
 
-export async function POST(req: NextRequest) {
+async function handleNearbyFacilities(
+  req: NextRequest,
+  params: {
+    lat?: number;
+    lng?: number;
+    radiusKm?: number;
+    searchQuery?: string;
+    timezone?: string;
+  }
+) {
   try {
-    const body = await req.json().catch(() => ({}));
-    let { lat, lng, radiusKm = 20, searchQuery, timezone } = body;
-
+    let { lat, lng, radiusKm = 20, searchQuery, timezone } = params;
     let locationDetails: LocationDetails = {};
+    let locationSource: 'gps' | 'ip' | 'manual' | 'timezone' = 'gps';
 
-    // 1. If manual search query provided (e.g. "Mumbai", "London", "Austin Texas")
+    const headers = req.headers;
+
+    // 1. Manual search query (e.g. "Mumbai", "London", "Austin Texas")
     if (searchQuery && typeof searchQuery === 'string' && searchQuery.trim()) {
       const geocoded = await geocodeQuery(searchQuery.trim());
       if (geocoded) {
         lat = geocoded.lat;
         lng = geocoded.lng;
         locationDetails = geocoded.locationDetails;
+        locationSource = 'manual';
+      }
+    } else if (typeof lat === 'number' && typeof lng === 'number' && !isNaN(lat) && !isNaN(lng)) {
+      locationSource = 'gps';
+    } else {
+      // 2. Fast Server-Side IP Geolocation Fallback (Vercel Edge Geolocation Headers)
+      const vercelLatStr = headers.get('x-vercel-ip-latitude');
+      const vercelLonStr = headers.get('x-vercel-ip-longitude');
+      const vercelCountry = headers.get('x-vercel-ip-country')?.toUpperCase();
+      const vercelCity = headers.get('x-vercel-ip-city');
+      const vercelRegion = headers.get('x-vercel-ip-country-region');
+
+      if (vercelLatStr && vercelLonStr) {
+        lat = parseFloat(vercelLatStr);
+        lng = parseFloat(vercelLonStr);
+        locationSource = 'ip';
+        locationDetails = {
+          city: vercelCity ? decodeURIComponent(vercelCity) : undefined,
+          state: vercelRegion || undefined,
+          countryCode: vercelCountry && vercelCountry !== 'XX' ? vercelCountry : undefined,
+          formattedAddress: vercelCity
+            ? `${decodeURIComponent(vercelCity)}${vercelRegion ? `, ${vercelRegion}` : ''}${vercelCountry ? `, ${vercelCountry}` : ''}`
+            : undefined,
+        };
+      } else if (vercelCountry && vercelCountry !== 'XX' && vercelCountry !== 'T1') {
+        locationSource = 'ip';
+        locationDetails = {
+          city: vercelCity ? decodeURIComponent(vercelCity) : undefined,
+          state: vercelRegion || undefined,
+          countryCode: vercelCountry,
+          formattedAddress: vercelCity ? `${decodeURIComponent(vercelCity)}, ${vercelCountry}` : vercelCountry,
+        };
       }
     }
 
-    // 2. Validate coordinates
-    if (typeof lat !== 'number' || typeof lng !== 'number' || isNaN(lat) || isNaN(lng)) {
-      // Return country profile based on timezone without facilities if coordinates unavailable
-      const fallbackCountryCode = inferCountryFromTimezone(timezone);
-      const fallbackProfile = getCrisisProfileByCountry(fallbackCountryCode);
+    // 3. Fallback to timezone if countryCode still missing
+    const detectedCountryCode =
+      locationDetails.countryCode ||
+      (headers.get('x-vercel-ip-country')?.toUpperCase() !== 'XX' ? headers.get('x-vercel-ip-country')?.toUpperCase() : undefined) ||
+      inferCountryFromTimezone(timezone);
 
-      return NextResponse.json({
-        success: true,
-        userCoordinates: null,
-        locationDetails: {
-          country: fallbackProfile.countryName,
-          countryCode: fallbackProfile.countryCode,
-          formattedAddress: `Defaulting to ${fallbackProfile.countryName} Emergency Lines`,
-        },
-        countryCrisisProfile: fallbackProfile,
-        nearbyFacilities: [],
-      });
-    }
-
-    // 3. Reverse-geocode coordinates to get country and city
-    if (!locationDetails.countryCode) {
-      locationDetails = await reverseGeocodeCoordinates(lat, lng);
-    }
-
-    // Fallback country code if reverse geocode didn't return one
-    const detectedCountryCode = locationDetails.countryCode || inferCountryFromTimezone(timezone);
-    const countryCrisisProfile: CountryCrisisProfile = getCrisisProfileByCountry(detectedCountryCode);
+    const countryCrisisProfile: CountryCrisisProfile = getCrisisProfileByCountry(detectedCountryCode || 'US');
 
     if (!locationDetails.country) {
       locationDetails.country = countryCrisisProfile.countryName;
       locationDetails.countryCode = countryCrisisProfile.countryCode;
     }
 
+    // 4. If coordinates are completely unavailable, return crisis profile without facilities
+    if (typeof lat !== 'number' || typeof lng !== 'number' || isNaN(lat) || isNaN(lng)) {
+      return NextResponse.json({
+        success: true,
+        userCoordinates: null,
+        locationSource: 'timezone',
+        locationDetails: {
+          country: countryCrisisProfile.countryName,
+          countryCode: countryCrisisProfile.countryCode,
+          formattedAddress: locationDetails.city
+            ? `${locationDetails.city}, ${countryCrisisProfile.countryName}`
+            : `Defaulting to ${countryCrisisProfile.countryName} Emergency Lines`,
+        },
+        countryCrisisProfile,
+        nearbyFacilities: [],
+      });
+    }
+
+    // 5. Reverse-geocode coordinates if city/country are missing
+    if (!locationDetails.countryCode || !locationDetails.city) {
+      const rev = await reverseGeocodeCoordinates(lat, lng);
+      locationDetails = {
+        ...locationDetails,
+        ...rev,
+        city: rev.city || locationDetails.city,
+        country: rev.country || locationDetails.country || countryCrisisProfile.countryName,
+        countryCode: rev.countryCode || locationDetails.countryCode || countryCrisisProfile.countryCode,
+      };
+    }
+
     const radiusMeters = Math.min(50000, Math.max(1000, radiusKm * 1000));
 
-    // 4. OpenStreetMap Overpass QL Query for Hospitals, Mental Health, and Clinics
+    // 6. OpenStreetMap Overpass QL Query for Hospitals, Mental Health, and Clinics
     const overpassQuery = `
       [out:json][timeout:10];
       (
@@ -200,11 +252,11 @@ export async function POST(req: NextRequest) {
         facilities = (elements as OverpassElement[])
           .filter((el: OverpassElement) => el.tags && (el.tags.name || el.tags['name:en']))
           .map((el: OverpassElement) => {
-            const itemLat = el.lat || el.center?.lat || lat;
-            const itemLng = el.lon || el.center?.lon || lng;
+            const itemLat = el.lat || el.center?.lat || lat!;
+            const itemLng = el.lon || el.center?.lon || lng!;
             const tags = el.tags || {};
             const name = tags.name || tags['name:en'] || 'Medical / Psychiatric Care Center';
-            const dist = calculateHaversineDistance(lat, lng, itemLat, itemLng);
+            const dist = calculateHaversineDistance(lat!, lng!, itemLat, itemLng);
 
             let type: NearbyFacility['type'] = 'emergency_hospital';
             const nameLower = name.toLowerCase();
@@ -246,7 +298,8 @@ export async function POST(req: NextRequest) {
               tags['addr:city'] || tags['addr:town'] || locationDetails.city,
             ].filter(Boolean);
 
-            const address = addressParts.length > 0 ? addressParts.join(', ') : `${dist.toFixed(1)} km from your location`;
+            const address =
+              addressParts.length > 0 ? addressParts.join(', ') : `${dist.toFixed(1)} km from your location`;
 
             const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
               `${name} ${itemLat},${itemLng}`
@@ -272,7 +325,8 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      userCoordinates: { lat, lng },
+      userCoordinates: { lat: lat!, lng: lng! },
+      locationSource,
       locationDetails,
       countryCrisisProfile,
       nearbyFacilities: facilities,
@@ -281,5 +335,25 @@ export async function POST(req: NextRequest) {
     const message = err instanceof Error ? err.message : 'Failed to locate nearby facilities';
     return NextResponse.json({ error: message }, { status: 500 });
   }
+}
+
+export async function POST(req: NextRequest) {
+  const body = await req.json().catch(() => ({}));
+  return handleNearbyFacilities(req, body);
+}
+
+export async function GET(req: NextRequest) {
+  const url = new URL(req.url);
+  const latStr = url.searchParams.get('lat');
+  const lngStr = url.searchParams.get('lng');
+  const radiusKmStr = url.searchParams.get('radiusKm');
+  const searchQuery = url.searchParams.get('searchQuery') || undefined;
+  const timezone = url.searchParams.get('timezone') || undefined;
+
+  const lat = latStr ? parseFloat(latStr) : undefined;
+  const lng = lngStr ? parseFloat(lngStr) : undefined;
+  const radiusKm = radiusKmStr ? parseFloat(radiusKmStr) : 20;
+
+  return handleNearbyFacilities(req, { lat, lng, radiusKm, searchQuery, timezone });
 }
 
