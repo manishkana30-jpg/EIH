@@ -82,8 +82,10 @@ export class BrowserSpeechController {
   private analyser: AnalyserNode | null = null;
   private mediaRecorder: MediaRecorder | null = null;
   private recordedChunks: Blob[] = [];
+  private mediaRecorderMimeType = '';
   private animFrameId: number | null = null;
   private isUserSpeaking = false;
+  private speechStartTime = 0;
   private speechSilenceTimer: ReturnType<typeof setTimeout> | null = null;
   private processingSafetyTimer: ReturnType<typeof setTimeout> | null = null;
   private liveInterimTranscript = '';
@@ -142,7 +144,7 @@ export class BrowserSpeechController {
   /**
    * Starts Dual-Engine Voice Capture & Recognition.
    */
-  public async startRecognition(): Promise<boolean> {
+  public async startRecognition(existingStream?: MediaStream): Promise<boolean> {
     if (typeof window === 'undefined') return false;
     this.shouldBeListening = true;
 
@@ -155,7 +157,7 @@ export class BrowserSpeechController {
     this.accumulatedFinalText = '';
 
     // 1. Initialize Microphone Audio Stream & RMS VAD Engine
-    await this.startMediaStreamAndVAD();
+    await this.startMediaStreamAndVAD(existingStream);
 
     // 2. Initialize Web Speech Recognition in parallel
     this.initWebSpeechRecognition();
@@ -180,11 +182,14 @@ export class BrowserSpeechController {
     }, 2500);
   }
 
-  private async startMediaStreamAndVAD(): Promise<void> {
-    if (typeof window === 'undefined' || !navigator.mediaDevices?.getUserMedia) return;
+  private async startMediaStreamAndVAD(existingStream?: MediaStream): Promise<void> {
+    if (typeof window === 'undefined') return;
 
     try {
-      if (!this.mediaStream || !this.mediaStream.active) {
+      if (existingStream && existingStream.active) {
+        this.mediaStream = existingStream;
+      } else if (!this.mediaStream || !this.mediaStream.active) {
+        if (!navigator.mediaDevices?.getUserMedia) return;
         this.mediaStream = await navigator.mediaDevices.getUserMedia({
           audio: {
             echoCancellation: true,
@@ -218,16 +223,27 @@ export class BrowserSpeechController {
       // Initialize MediaRecorder for fail-safe audio chunking
       if (this.mediaStream && typeof MediaRecorder !== 'undefined') {
         try {
-          const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+          const supportedType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
             ? 'audio/webm;codecs=opus'
             : MediaRecorder.isTypeSupported('audio/webm')
             ? 'audio/webm'
-            : 'audio/mp4';
+            : MediaRecorder.isTypeSupported('audio/mp4')
+            ? 'audio/mp4'
+            : '';
 
-          this.mediaRecorder = new MediaRecorder(this.mediaStream, { mimeType });
+          this.mediaRecorderMimeType = supportedType;
+          this.mediaRecorder = supportedType
+            ? new MediaRecorder(this.mediaStream, { mimeType: supportedType })
+            : new MediaRecorder(this.mediaStream);
+
+          this.recordedChunks = [];
           this.mediaRecorder.ondataavailable = (event) => {
             if (event.data && event.data.size > 0) {
               this.recordedChunks.push(event.data);
+              // Prevent unbounded memory growth if user stays silent
+              if (!this.isUserSpeaking && this.recordedChunks.length > 50) {
+                this.recordedChunks.splice(0, this.recordedChunks.length - 15);
+              }
             }
           };
           this.mediaRecorder.start(250);
@@ -265,17 +281,24 @@ export class BrowserSpeechController {
       const normalizedLevel = Math.min(1, avg / 128);
       this.callbacks.onAudioLevel?.(normalizedLevel);
 
-      // RMS VAD Threshold (> 14 indicates human voice presence)
-      if (avg > 14) {
+      // Sensitive RMS VAD Threshold (> 7 detects human voice across mobile and desktop)
+      if (avg > 7) {
         if (!this.isUserSpeaking) {
           this.isUserSpeaking = true;
-          this.recordedChunks = [];
+          this.speechStartTime = Date.now();
         }
 
         // Reset silence debouncer timer while user continues talking
         if (this.speechSilenceTimer) {
           clearTimeout(this.speechSilenceTimer);
           this.speechSilenceTimer = null;
+        }
+
+        // Max continuous utterance cutoff (8 seconds of speech automatically commits turn)
+        if (this.speechStartTime && Date.now() - this.speechStartTime > 8000) {
+          if (!this.isProcessingUtterance) {
+            this.handleEndOfUserSpeech();
+          }
         }
       } else if (this.isUserSpeaking) {
         // User stopped speaking: start adaptive silence debouncer
@@ -352,8 +375,8 @@ export class BrowserSpeechController {
           this.callbacks.onInterimTranscript?.(candidate);
         }
 
-        // INTELLIGENT LONG PAUSE / SILENCE DETECTION:
-        // When user pauses for >1400ms after speaking, commit the entire sentence/phrase/paragraph!
+        // Adaptive silence detection: If mobile finalized a phrase (isFinal), commit faster (650ms)
+        const silenceDelay = newFinalText.trim() ? 650 : this.silenceTimeoutMs;
         if (this.speechSilenceTimer) {
           clearTimeout(this.speechSilenceTimer);
         }
@@ -361,7 +384,7 @@ export class BrowserSpeechController {
           if (!this.isSpeaking && !this.isProcessingUtterance && this.liveInterimTranscript.trim().length > 0) {
             this.handleEndOfUserSpeech();
           }
-        }, this.silenceTimeoutMs);
+        }, silenceDelay);
       };
 
       recognition.onerror = (e: SpeechRecognitionErrorEvent) => {
@@ -373,11 +396,18 @@ export class BrowserSpeechController {
             if (this.shouldBeListening && !this.isSpeaking && !this.isProcessingUtterance) {
               this.initWebSpeechRecognition();
             }
-          }, 200);
+          }, 300);
         }
       };
 
       recognition.onend = () => {
+        // Critical Mobile Fix: On iOS and Android, the browser engine terminates the recognition turn on pause.
+        // If we have any buffered transcript, commit and send it immediately!
+        if (!this.isSpeaking && !this.isProcessingUtterance && (this.liveInterimTranscript.trim().length > 0 || this.accumulatedFinalText.trim().length > 0)) {
+          this.handleEndOfUserSpeech();
+          return;
+        }
+
         this.isListening = false;
         if (this.shouldBeListening && !this.isSpeaking && !this.isProcessingUtterance) {
           setTimeout(() => {
@@ -386,7 +416,7 @@ export class BrowserSpeechController {
               this.isListening = true;
               this.callbacks.onRecognitionState?.(true);
             }
-          }, 150);
+          }, 250);
         }
       };
 
@@ -406,6 +436,7 @@ export class BrowserSpeechController {
     if (this.isProcessingUtterance) return;
     this.isProcessingUtterance = true;
     this.isUserSpeaking = false;
+    this.speechStartTime = 0;
 
     if (this.speechSilenceTimer) {
       clearTimeout(this.speechSilenceTimer);
@@ -418,15 +449,16 @@ export class BrowserSpeechController {
       if (this.isProcessingUtterance && !this.isSpeaking) {
         this.isProcessingUtterance = false;
         if (this.shouldBeListening) {
-          this.startRecognition();
+          this.startRecognition(this.mediaStream || undefined);
         }
       }
-    }, 4500);
+    }, 8000);
 
-    // Stop MediaRecorder and collect blob
+    // Stop MediaRecorder and allow final audio chunk to flush
     if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
       try {
         this.mediaRecorder.stop();
+        await new Promise((resolve) => setTimeout(resolve, 120));
       } catch (_) {}
     }
 
@@ -443,20 +475,24 @@ export class BrowserSpeechController {
         if (this.isProcessingUtterance && !this.isSpeaking) {
           this.isProcessingUtterance = false;
           if (this.shouldBeListening) {
-            this.startRecognition();
+            this.startRecognition(this.mediaStream || undefined);
           }
         }
       }, 1500);
       return;
     }
 
-    // 2. If Web Speech API was blank, transcribe recorded audio via /api/audio/transcribe fallback
+    // 2. If Web Speech API was blank (mobile Safari/Chrome or offline), transcribe recorded audio via /api/audio/transcribe (Faster-Whisper keyless)
     if (this.recordedChunks.length > 0) {
       try {
-        const audioBlob = new Blob(this.recordedChunks, { type: 'audio/webm' });
-        if (audioBlob.size > 2000) {
+        const mimeType = this.mediaRecorderMimeType || 'audio/webm';
+        const ext = mimeType.includes('mp4') ? 'mp4' : mimeType.includes('wav') ? 'wav' : 'webm';
+        const audioBlob = new Blob(this.recordedChunks, { type: mimeType });
+        this.recordedChunks = [];
+
+        if (audioBlob.size > 1200) {
           const formData = new FormData();
-          formData.append('file', audioBlob, 'audio.webm');
+          formData.append('file', audioBlob, `speech.${ext}`);
 
           const res = await fetch('/api/audio/transcribe', {
             method: 'POST',
@@ -467,6 +503,14 @@ export class BrowserSpeechController {
             const data = await res.json();
             if (data.text && data.text.trim()) {
               this.callbacks.onUserSpeech?.(data.text.trim(), true);
+              setTimeout(() => {
+                if (this.isProcessingUtterance && !this.isSpeaking) {
+                  this.isProcessingUtterance = false;
+                  if (this.shouldBeListening) {
+                    this.startRecognition(this.mediaStream || undefined);
+                  }
+                }
+              }, 1500);
               return;
             }
           }
@@ -479,7 +523,7 @@ export class BrowserSpeechController {
     // If nothing was detected, resume listening
     this.isProcessingUtterance = false;
     if (this.shouldBeListening && !this.isSpeaking) {
-      this.startRecognition();
+      this.startRecognition(this.mediaStream || undefined);
     }
   }
 
@@ -502,10 +546,18 @@ export class BrowserSpeechController {
     this.callbacks.onAudioLevel?.(0);
   }
 
+  public async finishCurrentUtterance(): Promise<void> {
+    if (this.isProcessingUtterance) return;
+    if (this.liveInterimTranscript.trim().length > 0 || this.recordedChunks.length > 0) {
+      await this.handleEndOfUserSpeech();
+    }
+  }
+
   public stopRecognition(): void {
     this.shouldBeListening = false;
     this.isProcessingUtterance = false;
     this.isUserSpeaking = false;
+    this.speechStartTime = 0;
     this.liveInterimTranscript = '';
     this.accumulatedFinalText = '';
     if (this.keepAliveInterval) {
@@ -527,7 +579,8 @@ export class BrowserSpeechController {
 
   public async startListening(
     onTranscript?: (transcript: string, isFinal: boolean) => void,
-    onError?: (err: string) => void
+    onError?: (err: string) => void,
+    existingStream?: MediaStream
   ): Promise<boolean> {
     if (onTranscript || onError) {
       this.callbacks = {
@@ -541,7 +594,7 @@ export class BrowserSpeechController {
         onError: onError || this.callbacks.onError,
       };
     }
-    return this.startRecognition();
+    return this.startRecognition(existingStream);
   }
 
   public cleanTextForSpeech(text: string): string {

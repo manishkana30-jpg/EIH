@@ -960,7 +960,19 @@ async def transcribe_endpoint(
         raise HTTPException(status_code=400, detail="No audio file uploaded")
     try:
         content = await target.read()
-        text = await audio_engine.transcribe(content)
+        filename = getattr(target, "filename", "") or ""
+        ext = "webm"
+        if "." in filename:
+            parsed_ext = filename.rsplit(".", 1)[-1].lower()
+            if parsed_ext in ["mp4", "m4a", "aac"]:
+                ext = "mp4"
+            elif parsed_ext in ["wav", "wave"]:
+                ext = "wav"
+            elif parsed_ext in ["ogg", "oga"]:
+                ext = "ogg"
+            elif parsed_ext in ["webm"]:
+                ext = "webm"
+        text = await audio_engine.transcribe_audio_bytes(content, file_format=ext)
         return {"transcription": text, "transcript": text}
     except HTTPException:
         raise

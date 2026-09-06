@@ -487,7 +487,8 @@ export default function SanctuarySessionPage() {
         },
         (err) => {
           console.warn("Speech recognition notice:", err);
-        }
+        },
+        stream
       );
     } catch (err) {
       console.error("Voice capture start error:", err);
@@ -510,13 +511,14 @@ export default function SanctuarySessionPage() {
 
     if (isRecording) {
       isVoiceModeActiveRef.current = false;
+      setIsRecording(false);
+      await browserSpeechController.finishCurrentUtterance();
       browserSpeechController.stopRecognition();
       if (activeStreamRef.current) {
         activeStreamRef.current.getTracks().forEach((track) => track.stop());
         activeStreamRef.current = null;
       }
       setRecordingStream(null);
-      setIsRecording(false);
       return;
     }
 
