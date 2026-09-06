@@ -57,6 +57,15 @@ assert(pageSource.includes('display-mode: standalone'), 'page.tsx must detect st
 assert(pageSource.includes('<PwaInstallModal'), 'page.tsx must mount PwaInstallModal');
 console.log('  ✓ PWA Installation trigger and modal integration verified');
 
+// Check Trataka card in Left Column
+assert(pageSource.includes('Clinical Trataka (Gazing) Focus Module Card - Left Side Column'), 'Trataka card must be placed in Left Side Column');
+console.log('  ✓ Clinical Trataka card confirmed in Left Side Column');
+
+// Check End Session button near mic
+const micToDockRegex = /toggleRecording[\s\S]*?handleEndSession/;
+assert(micToDockRegex.test(pageSource), 'End Session button must be placed near the mic button in the input dock');
+console.log('  ✓ End Session button confirmed adjacent to Mic button in input dock');
+
 // 3. Simulated Share & PWA Lifecycle Test
 console.log('\n--- 3. Testing Simulated Execution Logic ---');
 let sharedData = null;
