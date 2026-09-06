@@ -774,16 +774,21 @@ export default function SanctuarySessionPage() {
           </div>
         </header>
 
-        {/* HYPNOTIC SPIRAL — CIRCULAR MASK */}
-        <div className="absolute inset-0 pointer-events-none -z-10 flex items-center justify-center">
+        {/* HYPNOTIC SPIRAL — ADAPTIVE CIRCULAR ANCHOR */}
+        <div className="absolute inset-0 pointer-events-none -z-10 flex items-center justify-center p-4 sm:p-6 md:p-8 [container-type:size]">
           {/*
-            rounded-full + overflow-hidden = hard circular clip on all four corners.
-            mask-image applied as inline style for cross-Tailwind-version safety
-            (arbitrary [mask-image:...] variants are unreliable before Tailwind v3.3).
+            Adaptive Responsive Circle:
+            Uses min(76cqmin, 76vmin, 680px) and max-w/max-h constraints so when the
+            screen gets short (laptop/mobile/landscape) or narrow, it automatically
+            scales down smoothly to fit the visible stage without any clipping or cutting.
           */}
           <div
-            className="relative w-[700px] h-[700px] rounded-full overflow-hidden opacity-65"
+            className="relative rounded-full overflow-hidden opacity-65 aspect-square shrink-0 transition-all duration-300"
             style={{
+              width: 'min(76cqmin, 76vmin, 680px)',
+              height: 'min(76cqmin, 76vmin, 680px)',
+              maxWidth: 'calc(100% - 2rem)',
+              maxHeight: 'calc(100% - 2rem)',
               maskImage: 'radial-gradient(circle at center, black 80%, transparent 100%)',
               WebkitMaskImage: 'radial-gradient(circle at center, black 80%, transparent 100%)',
             }}
@@ -792,7 +797,7 @@ export default function SanctuarySessionPage() {
               src="/hypnotic-circles.png"
               alt="Hypnotic Circle Anchor"
               aria-hidden="true"
-              className="w-full h-full object-cover contrast-[1.15] brightness-105"
+              className="w-full h-full object-contain contrast-[1.15] brightness-105 select-none"
               style={{ animation: 'spin 50s linear infinite' }}
             />
           </div>

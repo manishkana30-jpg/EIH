@@ -792,20 +792,24 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
                     animate={{ opacity: 0.1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 3.0 }}
-                    className="absolute inset-0 pointer-events-none flex items-center justify-center"
+                    className="absolute inset-0 pointer-events-none flex items-center justify-center p-4 sm:p-6 [container-type:size]"
                   >
                     <div
-                      className="w-[600px] h-[600px] sm:w-[750px] sm:h-[750px] rounded-full overflow-hidden"
+                      className="rounded-full overflow-hidden aspect-square shrink-0 transition-all duration-300"
                       style={{
-                        maskImage: 'radial-gradient(circle at center, black 40%, transparent 80%)',
-                        WebkitMaskImage: 'radial-gradient(circle at center, black 40%, transparent 80%)',
+                        width: 'min(78cqmin, 78vmin, 750px)',
+                        height: 'min(78cqmin, 78vmin, 750px)',
+                        maxWidth: 'calc(100% - 2rem)',
+                        maxHeight: 'calc(100% - 2rem)',
+                        maskImage: 'radial-gradient(circle at center, black 50%, transparent 85%)',
+                        WebkitMaskImage: 'radial-gradient(circle at center, black 50%, transparent 85%)',
                       }}
                     >
                       <img
                         src="/hypnotic-circles.png"
                         alt=""
                         aria-hidden="true"
-                        className="w-full h-full object-cover contrast-[1.15] brightness-115"
+                        className="w-full h-full object-contain contrast-[1.15] brightness-115 select-none"
                         style={{ animation: 'spin 65s linear infinite' }}
                       />
                     </div>
