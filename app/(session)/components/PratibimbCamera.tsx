@@ -220,10 +220,10 @@ export default function PratibimbCamera() {
             </div>
             <div className="space-y-1 text-slate-400 leading-snug">
               <p>
-                • <strong className="text-slate-200">Installed App (PWA):</strong> Click <span className="text-cyan-300 font-mono">⋮</span> in the top-right window title bar ➔ <em>App info</em> ➔ set Camera to <span className="text-emerald-400 font-medium">Allow</span>.
+                • <strong className="text-slate-200">In Browser:</strong> Click the <strong className="text-cyan-300">lock icon (🔒)</strong> or site controls in your address bar ➔ toggle <strong>Camera</strong> to <span className="text-emerald-400 font-medium">Allow</span>, then click retry below.
               </p>
               <p>
-                • <strong className="text-slate-200">In Chrome / Edge:</strong> Click the sliders icon <span className="text-cyan-300 font-mono">🎚️</span> to the left of the URL ➔ set Camera to <span className="text-emerald-400 font-medium">Allow</span>.
+                • <strong className="text-slate-200">Installed App (PWA):</strong> Click <span className="text-cyan-300 font-mono">⋮</span> in the top-right window title bar ➔ <em>App info</em> ➔ set Camera to <span className="text-emerald-400 font-medium">Allow</span>.
               </p>
             </div>
             {siteSettingsUrl && (
@@ -269,11 +269,6 @@ export default function PratibimbCamera() {
           >
             Obsidian Fallback
           </button>
-        </div>
-
-        <div className="flex items-center gap-1 text-[9px] text-slate-500 font-mono pt-0.5">
-          <ShieldCheck className="w-3 h-3 text-emerald-400/70" />
-          <span>100% Private • Live Reflection Only • Zero Recording</span>
         </div>
       </div>
     );

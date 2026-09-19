@@ -36,6 +36,7 @@ import { CrisisModal } from "./components/CrisisModal";
 import { LanguageSelector } from "./components/LanguageSelector";
 import { TratakaModule } from "./components/TratakaModule";
 import { PwaInstallModal } from "./components/PwaInstallModal";
+import { GitaShlokaCard } from "./components/GitaShlokaCard";
 
 import { browserSpeechController } from "@/lib/audio/browser-speech";
 import { getCleanAudioStream } from "@/lib/audio/audio-manager";
@@ -1100,40 +1101,23 @@ export default function SanctuarySessionPage() {
           </button>
         </div>
 
-        {/* HYPNOTIC SPIRAL — ADAPTIVE CIRCULAR ANCHOR */}
-        <div className="absolute inset-0 pointer-events-none -z-10 flex items-center justify-center p-4 sm:p-6 md:p-8 [container-type:size]">
-          {/*
-            Adaptive Responsive Circle:
-            Uses min(76cqmin, 76vmin, 680px) and max-w/max-h constraints so when the
-            screen gets short (laptop/mobile/landscape) or narrow, it automatically
-            scales down smoothly to fit the visible stage without any clipping or cutting.
-          */}
-          <div
-            className="relative rounded-full overflow-hidden opacity-65 aspect-square shrink-0 transition-all duration-300"
-            style={{
-              width: 'min(76cqmin, 76vmin, 680px)',
-              height: 'min(76cqmin, 76vmin, 680px)',
-              maxWidth: 'calc(100% - 2rem)',
-              maxHeight: 'calc(100% - 2rem)',
-              maskImage: 'radial-gradient(circle at center, black 80%, transparent 100%)',
-              WebkitMaskImage: 'radial-gradient(circle at center, black 80%, transparent 100%)',
-            }}
-          >
+        {/* ROTATING HYPNOTIC ANCHOR */}
+        <div className="absolute inset-0 pointer-events-none -z-10 flex items-center justify-center">
+          <div className="relative w-[700px] h-[700px] rounded-full overflow-hidden opacity-45 [mask-image:radial-gradient(circle_at_center,black_50%,transparent_100%)]">
             <Image
               src="/hypnotic-circles.png"
-              alt="Hypnotic Circle Anchor"
-              aria-hidden="true"
-              width={680}
-              height={680}
+              alt="Therapeutic Anchor"
+              width={700}
+              height={700}
               priority
-              className="w-full h-full object-contain contrast-[1.15] brightness-105 select-none"
+              className="w-full h-full object-cover grayscale contrast-[1.3] brightness-110 select-none"
               style={{ animation: 'spin 50s linear infinite' }}
             />
           </div>
         </div>
 
-        {/* CHAT STREAM — DIRECTLY ON MAIN STAGE LAYER */}
-        <div className="flex-1 overflow-y-auto min-h-0 scroll-smooth px-4 sm:px-6 py-4 space-y-6 relative z-10">
+        {/* CHAT STREAM — GLASSMORPHIC CONTAINER */}
+        <div className="bg-slate-950/40 backdrop-blur-[2px] rounded-3xl m-4 border border-white/5 shadow-2xl flex-1 overflow-y-auto min-h-0 p-6 space-y-6 pb-32 z-10 relative">
           {/* Error Banner */}
           {errorMessage && (
             <motion.div
@@ -1164,15 +1148,21 @@ export default function SanctuarySessionPage() {
                 transition={{ duration: 0.3 }}
                 className={`flex flex-col ${m.sender === "user" ? "items-end" : "items-start"}`}
               >
-                <div
-                  className={`max-w-[88%] md:max-w-xl p-4 rounded-2xl text-sm leading-relaxed ${
-                    m.sender === "user"
-                      ? "bg-gradient-to-br from-emerald-900/60 to-teal-950/70 border border-emerald-500/30 text-emerald-50 rounded-br-sm shadow-[0_4px_20px_rgba(16,185,129,0.15)]"
-                      : "bg-gradient-to-br from-slate-900/90 to-slate-950/95 border border-slate-800/80 text-slate-100 rounded-bl-sm shadow-xl backdrop-blur-md"
-                  }`}
-                >
-                  <p className="whitespace-pre-wrap">{m.text}</p>
-                </div>
+                {m.text.includes('[GITA_SHLOKA]') ? (
+                  <div className="w-full max-w-[92%] md:max-w-2xl">
+                    <GitaShlokaCard rawText={m.text} />
+                  </div>
+                ) : (
+                  <div
+                    className={`max-w-[88%] md:max-w-xl p-4 rounded-2xl text-sm leading-relaxed ${
+                      m.sender === "user"
+                        ? "bg-gradient-to-br from-emerald-900/60 to-teal-950/70 border border-emerald-500/30 text-emerald-50 rounded-br-sm shadow-[0_4px_20px_rgba(16,185,129,0.15)]"
+                        : "bg-gradient-to-br from-slate-900/90 to-slate-950/95 border border-slate-800/80 text-slate-100 rounded-bl-sm shadow-xl backdrop-blur-md"
+                    }`}
+                  >
+                    <p className="whitespace-pre-wrap">{m.text}</p>
+                  </div>
+                )}
 
                 {m.sender === "ai" && m.recommended_trataka && (
                   <div className="mt-1.5 max-w-[88%] md:max-w-xl">
