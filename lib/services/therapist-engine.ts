@@ -14,28 +14,32 @@ import {
   getLocalizedGeneralAdvice,
   getLocalizedClinicalIntervention,
 } from "../i18n/clinical-localization.ts";
+import { findGitaWisdom, formatGitaShlokaBlock } from "../knowledge/gita-library.ts";
+import { resolveTratakaPrescription } from "../knowledge/trataka-recommendations.ts";
 
 const THERAPIST_SYSTEM_PROMPT = `
-You are an Expert Clinical Psychologist and Emotional Resilience Trainer integrating Modern Neuropsychology with Ayurvedic Sattvavajaya Chikitsa.
+You are an Expert Clinical Psychologist and Spiritual Master integrating Modern Neuropsychology (CBT & Polyvagal Somatic Science) with the sacred wisdom of the Bhagavad Gita (Sattvavajaya Chikitsa) and Tratak (Ocular Neuro-Meditation).
 
-You MUST NEVER use generic greetings, repetitive platitudes, or filler phrases. Respond directly with profound clinical insight.
+For ANY situation, emotional struggle, or dilemma presented by the user, you MUST formulate your response with all 3 solutions line-by-line, each deeply and specifically interlinked with the user's situation:
 
-### PHASE 1: DIAGNOSTIC ANALYSIS (Internalize, do not output this phase directly)
-Analyze the user's input to identify:
-1. Core Emotional Struggle & Unmet Needs.
-2. Active Cognitive Distortions (e.g., Catastrophizing, Black-and-White Thinking).
-3. Triguna Nervous System Balance (Sattva: Grounded / Rajas: Hyperaroused / Tamas: Hypoaroused).
+**1. BHAGAVAD GITA REFRAMING (श्रीमद्भगवद्गीता):**
+- Include the exact relevant Sanskrit Shloka wrapped inside [GITA_SHLOKA] and [/GITA_SHLOKA] tags, followed by its Roman transliteration and Chapter & Verse attribution.
+- State the profound philosophical meaning.
+- Formulate a Clinical Reflection explaining exactly how this timeless wisdom directly dissolves their current struggle or dilemma.
+- Give clear Actionable Guidance (Karma Yoga): What to do right now, and what mental trap to avoid.
 
-### PHASE 2: CLINICAL GROUNDING
-You must ground your intervention strictly in the retrieved clinical protocol and research context.
+**2. CLINICAL COGNITIVE NEUROSCIENCE (CBT & Somatic Grounding):**
+- Compassionately validate their bodily and emotional distress without judgment.
+- Identify the active cognitive distortion (e.g., Catastrophizing, All-or-Nothing, Personalization, Fortune-Telling).
+- Provide an evidence-based CBT cognitive reframe challenging that distortion.
+- Prescribe an immediate Somatic Polyvagal grounding anchor (e.g., physiological sigh, vagal brake, 5-4-3-2-1 sensory grounding) linked to their bodily symptoms.
 
-### PHASE 3: THE INTERVENTION (Your Output)
-Formulate a warm, highly empathetic, and actionable response that trains the user's emotional resilience in a single, fluid conversational paragraph:
-- Deeply validate their exact emotional and bodily state with compassion.
-- Provide a targeted cognitive reframe from the protocol.
-- Recommend the somatic anchor or pranayama breathwork exercise.
+**3. TRATAK NEURO-OCULAR PROTOCOL (त्राटक ध्यान):**
+- Prescribe the specific Sacred Gazing mode suited to their autonomic state (Bindu Trataka, Jyoti Flame, Mandala Geometry, Pratibimb Mirror, or Shoonya Void).
+- Explain the neuro-ocular mechanism (how holding still visual fixation de-escalates amygdala hyperactivity and regulates heart-rate variability).
+- Provide exact step-by-step guidance (focal target, gaze softness, duration, and warm palming eye relaxation).
 
-RULES: Keep your response concise (3-4 sentences in a single fluid paragraph). DO NOT output section titles or labels (like "Validation:", "CBT Reframe:", "Prescription:"), numbered lists, bullet points, asterisks, or markdown formatting, as your response will be synthesized directly into human speech.
+Structure your output cleanly with these 3 numbered headers, using line-by-line bullet points so the user can easily absorb and apply each solution.
 `;
 
 export interface ConversationTurn {
@@ -224,15 +228,36 @@ export async function generateTherapeuticResponse(
     };
   }
 
-  // 2. Search for verified clinical context + Psychoeducational Library RAG
+  // 2. Search for verified clinical context + Psychoeducational Library RAG + Gita & Trataka
   const [clinicalEvidence, libraryRag] = await Promise.all([
     searchMentalHealthEvidence(userMessage),
     Promise.resolve(queryPsychologyLibrary(userMessage)),
   ]);
 
-  const allSources: ClinicalSearchResult[] = [...clinicalEvidence];
+  const gitaItem = findGitaWisdom(userMessage);
+  const tratakPrescription = resolveTratakaPrescription(
+    userMessage,
+    undefined,
+    libraryRag?.condition?.triguna_balance
+  );
+  const gitaBlock = formatGitaShlokaBlock(gitaItem);
+
+  const allSources: ClinicalSearchResult[] = [
+    {
+      title: `Bhagavad Gita: Ch. ${gitaItem.chapter}, Verse ${gitaItem.verse} (${gitaItem.theme})`,
+      summary: `${gitaItem.philosophical_meaning} | Clinical Reframe: ${gitaItem.clinical_reframe}`,
+      source: "gita_library" as any,
+    },
+    {
+      title: `Tratak Neuro-Ocular: ${tratakPrescription.name}`,
+      summary: `Focus: ${tratakPrescription.focalTarget} | Neuro: ${tratakPrescription.neuroMechanism}`,
+      source: "trataka_protocol" as any,
+    },
+    ...clinicalEvidence,
+  ];
+
   if (libraryRag) {
-    allSources.unshift({
+    allSources.splice(2, 0, {
       title: `${libraryRag.condition.name} (${libraryRag.condition.triguna_balance})`,
       summary: `CBT: ${libraryRag.condition.solutions.cbt_reframing} | Somatic: ${libraryRag.condition.solutions.somatic_anchor} | Pranayama: ${libraryRag.condition.solutions.pranayama}`,
       source: libraryRag.structuredCard?.isLearnedDocument ? "pubmed_wikipedia" : "psychology_library",
@@ -241,7 +266,21 @@ export async function generateTherapeuticResponse(
   }
 
   const clinicalGroundingBlock = formatClinicalContext(clinicalEvidence);
-  const contextBlocks = [clinicalGroundingBlock];
+  const gitaGroundingBlock = `[BHAGAVAD GITA WISDOM]:
+Chapter ${gitaItem.chapter}, Verse ${gitaItem.verse} (${gitaItem.theme})
+${gitaBlock}
+Meaning: ${gitaItem.philosophical_meaning}
+Clinical Reframe: ${gitaItem.clinical_reframe}
+What To Do: ${gitaItem.actionable_guidance.what_to_do}
+What Not To Do: ${gitaItem.actionable_guidance.what_not_to_do}`;
+
+  const tratakaGroundingBlock = `[TRATAK PROTOCOL]:
+Mode: ${tratakPrescription.name} (${tratakPrescription.sanskritName})
+Focal Point: ${tratakPrescription.focalTarget}
+Neuro Mechanism: ${tratakPrescription.neuroMechanism}
+Guidance (${tratakPrescription.durationMinutes} min): ${tratakPrescription.stepByStepGuidance.join(" ")}`;
+
+  const contextBlocks = [gitaGroundingBlock, tratakaGroundingBlock, clinicalGroundingBlock];
   if (libraryRag) {
     contextBlocks.unshift(libraryRag.promptSnippet);
   }
@@ -257,10 +296,10 @@ export async function generateTherapeuticResponse(
       ? `\n\n### MANDATORY MULTILINGUAL CLINICAL DIRECTIVE:
 You MUST formulate your ENTIRE therapeutic response in ${langItem.name} (${langItem.nativeName}).
 Strictly DO NOT mix English sentences, phrases, or raw English jargon into your response.
-Translate and explain all validation, CBT cognitive reframes, somatic grounding exercises, and pranayama breathwork protocols naturally, with profound clinical empathy, purely in ${langItem.name}.`
+Keep the Sanskrit Shloka in Devanagari script, and provide all reflections, CBT reframes, and Tratak instructions purely in ${langItem.name}.`
       : "";
 
-  const systemPrompt = `${THERAPIST_SYSTEM_PROMPT}${langDirective}\n\n[CLINICAL RESEARCH]:\n${contextString}`;
+  const systemPrompt = `${THERAPIST_SYSTEM_PROMPT}${langDirective}\n\n[CLINICAL RESEARCH & RETRIEVED WISDOM]:\n${contextString}`;
 
   // 3. Cascade across LLM inference providers prioritizing Local Keyless FastAPI daemon
   try {
@@ -278,25 +317,31 @@ Translate and explain all validation, CBT cognitive reframes, somatic grounding 
       sources: finalSources,
       providerUsed: "Keyless Healer (Local Python Daemon)",
       isCrisis: false,
-      recommended_trataka: (localResult as any).recommended_trataka || libraryRag?.condition?.recommended_trataka_mode,
+      recommended_trataka: (localResult as any).recommended_trataka || tratakPrescription.mode,
       triguna_analysis: (localResult as any).triguna_analysis,
     };
   } catch {
     // Fallback to cloud LLMs
   }
 
-  const defaultRecTrataka = libraryRag?.condition?.recommended_trataka_mode;
+  const defaultRecTrataka = tratakPrescription.mode;
 
   try {
     const reply = await callGroq(userMessage, systemPrompt, history);
-    return { reply, sources: allSources, providerUsed: "Groq (Llama 3.3 70B)", isCrisis: false, recommended_trataka: defaultRecTrataka };
+    const hasGita = reply && (reply.includes("[GITA_SHLOKA]") || reply.toLowerCase().includes("gita") || reply.includes("गीता"));
+    if (reply && reply.length > 50 && hasGita) {
+      return { reply, sources: allSources, providerUsed: "Groq (Llama 3.3 70B)", isCrisis: false, recommended_trataka: defaultRecTrataka };
+    }
   } catch {
     // Fallback to Gemini
   }
 
   try {
     const reply = await callGemini(userMessage, systemPrompt, history);
-    return { reply, sources: allSources, providerUsed: "Google Gemini 2.0 Flash", isCrisis: false, recommended_trataka: defaultRecTrataka };
+    const hasGita = reply && (reply.includes("[GITA_SHLOKA]") || reply.toLowerCase().includes("gita") || reply.includes("गीता"));
+    if (reply && reply.length > 50 && hasGita) {
+      return { reply, sources: allSources, providerUsed: "Google Gemini 2.0 Flash", isCrisis: false, recommended_trataka: defaultRecTrataka };
+    }
   } catch {
     // Fallback to Free Open Inference / Companion
   }
@@ -321,15 +366,19 @@ Translate and explain all validation, CBT cognitive reframes, somatic grounding 
       const cleaned = text.trim();
       const lower = cleaned.toLowerCase();
       const isUpstreamError =
-        lower.startsWith("error") ||
+        cleaned.startsWith("{") ||
+        lower.includes("error") ||
         lower.includes("credit") ||
         lower.includes("quota") ||
         lower.includes("api key") ||
         lower.includes("top up") ||
         lower.includes("rate limit") ||
+        lower.includes("queue") ||
         lower.includes("unauthorized");
 
-      if (cleaned && cleaned.length > 25 && !isUpstreamError) {
+      const hasGita = cleaned.includes("[GITA_SHLOKA]") || lower.includes("gita") || lower.includes("गीता");
+
+      if (cleaned && cleaned.length > 50 && !isUpstreamError && hasGita) {
         return { reply: cleaned, sources: allSources, providerUsed: "Free Edge AI", isCrisis: false, recommended_trataka: defaultRecTrataka };
       }
   } catch {}
@@ -361,9 +410,9 @@ Translate and explain all validation, CBT cognitive reframes, somatic grounding 
     }
   } else if (clinicalEvidence.length > 0) {
     const primaryEvidence = clinicalEvidence[0];
-    fallbackReply = getLocalizedGeneralAdvice(primaryEvidence.title, targetLanguage);
+    fallbackReply = getLocalizedGeneralAdvice(primaryEvidence.title, targetLanguage, userMessage);
   } else {
-    fallbackReply = getLocalizedGeneralAdvice("default", targetLanguage);
+    fallbackReply = getLocalizedGeneralAdvice("default", targetLanguage, userMessage);
   }
 
   return {

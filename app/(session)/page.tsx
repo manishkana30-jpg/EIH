@@ -73,6 +73,64 @@ const getFormattedTime = () => {
   return `${hours}:${minutes} ${ampm}`;
 };
 
+function formatTherapeuticMessage(text: string) {
+  if (!text) return null;
+  const parts = text.split(/(?=\*\*[123]\.\s+)/);
+  if (parts.length <= 1) {
+    return <p className="whitespace-pre-wrap">{text}</p>;
+  }
+
+  return (
+    <div className="space-y-3.5 my-1">
+      {parts.map((part, idx) => {
+        const trimmed = part.trim();
+        if (!trimmed) return null;
+
+        const isGita = trimmed.startsWith("**1.") || trimmed.toLowerCase().includes("gita") || trimmed.includes("गीता");
+        const isClinical = trimmed.startsWith("**2.") || trimmed.toLowerCase().includes("clinical") || trimmed.includes("कॉग्निटिव");
+        const isTratak = trimmed.startsWith("**3.") || trimmed.toLowerCase().includes("tratak") || trimmed.includes("त्राटक");
+
+        const borderClass = isGita
+          ? "border-amber-500/35 bg-gradient-to-br from-amber-950/40 via-amber-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(245,158,11,0.08)]"
+          : isClinical
+          ? "border-emerald-500/35 bg-gradient-to-br from-emerald-950/40 via-emerald-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(16,185,129,0.08)]"
+          : isTratak
+          ? "border-cyan-500/35 bg-gradient-to-br from-cyan-950/40 via-cyan-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(6,182,212,0.08)]"
+          : "border-slate-800 bg-slate-900/50";
+
+        const badgeText = isGita
+          ? "🕉️ Bhagavad Gita Wisdom"
+          : isClinical
+          ? "🧠 Clinical Cognitive Neuroscience (CBT)"
+          : isTratak
+          ? "👁️ Tratak Neuro-Ocular Protocol"
+          : null;
+
+        const badgeColor = isGita
+          ? "text-amber-400 bg-amber-500/15 border-amber-500/30"
+          : isClinical
+          ? "text-emerald-400 bg-emerald-500/15 border-emerald-500/30"
+          : "text-cyan-400 bg-cyan-500/15 border-cyan-500/30";
+
+        return (
+          <div key={idx} className={`p-3.5 sm:p-4 rounded-xl border ${borderClass} backdrop-blur-md space-y-2`}>
+            {badgeText && (
+              <div className="flex items-center gap-1.5 pb-1 border-b border-white/5">
+                <span className={`text-[10px] sm:text-[11px] font-mono font-bold tracking-wide uppercase px-2 py-0.5 rounded-full border ${badgeColor}`}>
+                  {badgeText}
+                </span>
+              </div>
+            )}
+            <p className="whitespace-pre-wrap leading-relaxed text-slate-100 text-xs sm:text-sm font-sans">
+              {trimmed}
+            </p>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function SanctuarySessionPage() {
   // ─── Core State ───
   const [currentLanguage, setCurrentLanguage] = useState<LanguageItem>(GLOBAL_LANGUAGE_CATALOG[0]);
@@ -1182,7 +1240,11 @@ export default function SanctuarySessionPage() {
                       : "bg-gradient-to-br from-slate-900/90 to-slate-950/95 border border-slate-800/80 text-slate-100 rounded-bl-sm shadow-xl backdrop-blur-md"
                   }`}
                 >
-                  <p className="whitespace-pre-wrap">{gitaParsed.isGita ? gitaParsed.remainingText : m.text}</p>
+                  {m.sender === "ai" ? (
+                    formatTherapeuticMessage(gitaParsed.isGita ? gitaParsed.remainingText : m.text)
+                  ) : (
+                    <p className="whitespace-pre-wrap">{m.text}</p>
+                  )}
                 </div>
 
                 {m.sender === "ai" && m.recommended_trataka && (

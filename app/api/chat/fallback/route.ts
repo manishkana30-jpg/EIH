@@ -6,7 +6,11 @@ import {
   isTestMessage,
   GREETING_RESPONSE,
   TEST_RESPONSE,
+  queryPsychologyLibrary,
 } from '@/lib/knowledge/psychology-library-rag';
+import { findGitaWisdom, formatGitaShlokaBlock } from '@/lib/knowledge/gita-library';
+import { resolveTratakaPrescription } from '@/lib/knowledge/trataka-recommendations';
+import { formatHumanTherapeuticMessage, getLocalizedGeneralAdvice } from '@/lib/i18n/clinical-localization';
 import type { UserCognitiveProfile } from '@/lib/memory/cbt-memory-types';
 
 export const runtime = 'edge';
@@ -172,28 +176,38 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const gitaItem = findGitaWisdom(cleanPrompt);
+    const tratakItem = resolveTratakaPrescription(cleanPrompt, effectiveDiag?.dimensionName);
+    const gitaBlock = formatGitaShlokaBlock(gitaItem);
+
     // Construct Grounded Clinical System Prompt
-    const systemPrompt = `You are an Expert Clinical Psychologist and Emotional Resilience Trainer integrating Modern Neuropsychology with Ayurvedic Sattvavajaya Chikitsa.
+    const systemPrompt = `You are an Expert Clinical Psychologist and Spiritual Master integrating Modern Neuropsychology (CBT & Somatic Science) with the Bhagavad Gita and Tratak (Ocular Meditation).
 
-You MUST NEVER use generic greetings, repetitive platitudes, or filler phrases. Respond directly with profound clinical insight.
+For the user's specific situation, you MUST formulate your response with all 3 solutions line-by-line, each deeply interlinked with their exact struggle:
 
-### PHASE 1: DIAGNOSTIC ANALYSIS (Internalize, do not output this phase directly)
-Analyze the user's input to identify:
-1. Core Emotional Struggle & Unmet Needs.
-2. Active Cognitive Distortions (e.g., Catastrophizing, Black-and-White Thinking).
-3. Triguna Nervous System Balance (Sattva: Grounded / Rajas: Hyperaroused / Tamas: Hypoaroused).
+**1. BHAGAVAD GITA REFRAMING (श्रीमद्भगवद्गीता):**
+- Include the exact relevant Sanskrit Shloka wrapped inside [GITA_SHLOKA] and [/GITA_SHLOKA] tags, followed by its Roman transliteration and Chapter & Verse.
+- Explain the philosophical meaning.
+- Formulate a Clinical Reflection explaining how this applies to their exact struggle.
+- Actionable Guidance (Karma): What to do right now, and what mental trap to avoid.
 
-### PHASE 2: CLINICAL GROUNDING
-You must ground your intervention strictly in the following retrieved clinical protocol:
-[RETRIEVED_PROTOCOL]: ${researchStudy.citation} - ${researchStudy.scientificActionProtocol} | Ayurvedic: ${researchStudy.ayurvedicActionProtocol}
+**2. CLINICAL COGNITIVE NEUROSCIENCE (CBT & Somatic Grounding):**
+- Compassionately validate their distress.
+- Identify the active cognitive distortion and provide an evidence-based CBT cognitive reframe.
+- Prescribe an immediate Somatic Polyvagal grounding exercise.
 
-### PHASE 3: THE INTERVENTION (Your Output)
-Formulate a highly empathetic, actionable response that trains the user's emotional resilience based strictly on the best psychological theory. Your output must follow this exact structure:
-1. DEEP VALIDATION: In one sentence, deeply validate their exact emotion and somatic experience without trying to "fix" it immediately. 
-2. CBT REFRAME: Apply the specific cognitive reframe from the retrieved protocol to shift their perspective.
-3. CLINICAL PRESCRIPTION: Prescribe the exact somatic anchor or psychological exercise from the protocol.
+**3. TRATAK NEURO-OCULAR PROTOCOL (त्राटक ध्यान):**
+- Prescribe the specific Sacred Gazing mode suited to their state (${tratakItem.name}).
+- Explain the neuro-ocular calming mechanism and provide step-by-step gaze guidance.
 
-RULES: Keep your response concise (3-4 sentences). Do not use Markdown formatting, asterisks, or bullet points, as your response will be synthesized into human speech.`;
+[RETRIEVED WISDOM]:
+Chapter ${gitaItem.chapter}, Verse ${gitaItem.verse} (${gitaItem.theme})
+${gitaBlock}
+Meaning: ${gitaItem.philosophical_meaning}
+Clinical Reframe: ${gitaItem.clinical_reframe}
+Protocol: ${researchStudy.citation} - ${researchStudy.scientificActionProtocol}
+Tratak: ${tratakItem.focalTarget} - ${tratakItem.neuroMechanism}
+${webContextSnippet}`;
 
     // 1. If Groq Key is provided or on Tier 2, prioritize Groq Llama 3.3 70B
     if (groqKey && (userKey.startsWith('gsk_') || tier === 2)) {
@@ -321,18 +335,28 @@ RULES: Keep your response concise (3-4 sentences). Do not use Markdown formattin
         const cleanedReply = text.trim();
         const lower = cleanedReply.toLowerCase();
         const isUpstreamError =
+          cleanedReply.startsWith('{') ||
           lower.startsWith('error') ||
           lower.includes('credit') ||
           lower.includes('quota') ||
           lower.includes('api key') ||
           lower.includes('top up') ||
           lower.includes('rate limit') ||
+          lower.includes('queue') ||
           lower.includes('unauthorized');
 
-        if (cleanedReply && cleanedReply.length > 25 && !isUpstreamError) {
+        const hasGita =
+          cleanedReply.includes('[GITA_SHLOKA]') ||
+          lower.includes('gita') ||
+          lower.includes('गीता') ||
+          lower.includes('shloka') ||
+          lower.includes('श्लोक');
+
+        if (cleanedReply && cleanedReply.length > 50 && !isUpstreamError && hasGita) {
           return NextResponse.json({
             reply: cleanedReply,
             provider: 'free_edge_ai',
+            recommended_trataka: tratakItem.mode,
           });
         }
       }
@@ -340,10 +364,18 @@ RULES: Keep your response concise (3-4 sentences). Do not use Markdown formattin
       console.warn('Free Edge AI notice:', e);
     }
 
-    return NextResponse.json(
-      { error: 'Clinical inference engines unavailable.' },
-      { status: 500 }
-    );
+    // 5. Infallible Deterministic Fallback: Gita + Clinical CBT + Tratak
+    const libRes = queryPsychologyLibrary(cleanPrompt);
+    const targetLang = cleanPrompt.match(/[\u0900-\u097F]/) ? 'hi' : 'en';
+    const fallbackReply = libRes
+      ? formatHumanTherapeuticMessage(libRes.condition, targetLang, cleanPrompt)
+      : getLocalizedGeneralAdvice(effectiveDiag?.dimensionName || 'anxiety', targetLang, cleanPrompt);
+
+    return NextResponse.json({
+      reply: fallbackReply,
+      provider: 'clinical_library_fallback',
+      recommended_trataka: tratakItem.mode,
+    });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown fallback error';
     return NextResponse.json(

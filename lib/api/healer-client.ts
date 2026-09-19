@@ -14,6 +14,8 @@ import {
   getLocalizedClinicalIntervention,
   getLocalizedGeneralAdvice,
 } from '../i18n/clinical-localization';
+import { findGitaWisdom } from '../knowledge/gita-library';
+import { resolveTratakaPrescription } from '../knowledge/trataka-recommendations';
 
 export interface ClinicalSource {
   title: string;
@@ -278,7 +280,8 @@ class HealerBackendClient {
           const arousal = diag.coreAffect?.arousal || 0.5;
           const polyvagalState = arousal > 0.6 ? 'Sympathetic (Fight/Flight)' : (diag.coreAffect?.valence && diag.coreAffect.valence < -0.4) ? 'Dorsal Vagal (Shutdown)' : 'Ventral Vagal (Safe)';
           const distortion = cleanMessage.match(/\b(always|never|worst|idiot|ruined|hate)\b/i) ? 'Catastrophizing / All-or-Nothing' : 'None';
-          const recTrataka = libRes?.condition?.recommended_trataka_mode;
+          const tratakPrescription = resolveTratakaPrescription(cleanMessage, diag.dimensionName, polyvagalState);
+          const recTrataka = tratakPrescription.mode;
           const trigunaAnalysis = parseClientTriguna(libRes?.condition?.triguna_balance);
 
           return {
@@ -318,6 +321,8 @@ class HealerBackendClient {
       const study = getResearchedAdviceForEmotion(diag.dimensionId || 'calmness');
       const arousal = diag.coreAffect?.arousal || 0.5;
       const polyvagalState = arousal > 0.6 ? 'Sympathetic (Fight/Flight)' : (diag.coreAffect?.valence && diag.coreAffect.valence < -0.4) ? 'Dorsal Vagal (Shutdown)' : 'Ventral Vagal (Safe)';
+      const tratakPrescription = resolveTratakaPrescription(cleanMessage, diag.dimensionName, polyvagalState);
+      const gitaItem = findGitaWisdom(cleanMessage);
 
       const targetLang = language || locale || (cleanMessage.match(/[\u0900-\u097F]/) ? 'hi' : 'en');
       let fallbackReply = '';
@@ -325,32 +330,41 @@ class HealerBackendClient {
       if (libraryResult) {
         fallbackReply = formatHumanTherapeuticMessage(libraryResult.condition, targetLang, cleanMessage);
       } else if (study) {
-        fallbackReply = getLocalizedGeneralAdvice(diag.dimensionName || 'anxiety', targetLang);
+        fallbackReply = getLocalizedGeneralAdvice(diag.dimensionName || 'anxiety', targetLang, cleanMessage);
       } else {
-        fallbackReply = getLocalizedGeneralAdvice('default', targetLang);
+        fallbackReply = getLocalizedGeneralAdvice('default', targetLang, cleanMessage);
       }
 
-      const sources: ClinicalSource[] = libraryResult
-        ? [
-            {
-              title: `${libraryResult.condition.name} (${libraryResult.condition.triguna_balance})`,
-              summary: `CBT: ${libraryResult.condition.solutions.cbt_reframing} | Trataka: ${libraryResult.condition.recommended_trataka_mode || 'bindu'} | Somatic: ${libraryResult.condition.solutions.somatic_anchor}`,
-              source: libraryResult.structuredCard?.isLearnedDocument
-                ? (libraryResult.structuredCard.sourcePlatform || 'NCBI PubMed & Wikipedia Clinical Knowledge')
-                : 'Clinical & Psychoeducational Library',
-            },
-          ]
-        : study
-        ? [
-            {
-              title: study.citation,
-              summary: study.scientificActionProtocol,
-              source: 'Authenticated Research Bank',
-            },
-          ]
-        : [];
+      const sources: ClinicalSource[] = [
+        {
+          title: `Bhagavad Gita: Ch. ${gitaItem.chapter}, Verse ${gitaItem.verse} (${gitaItem.theme})`,
+          summary: `${gitaItem.philosophical_meaning} | Clinical Reframe: ${gitaItem.clinical_reframe}`,
+          source: 'Bhagavad Gita Library',
+        },
+        {
+          title: `Tratak Neuro-Ocular: ${tratakPrescription.name}`,
+          summary: `Focus: ${tratakPrescription.focalTarget} | Neuro: ${tratakPrescription.neuroMechanism}`,
+          source: 'Trataka Sacred Gazing Protocol',
+        },
+      ];
 
-      const recTrataka = libraryResult?.condition?.recommended_trataka_mode;
+      if (libraryResult) {
+        sources.push({
+          title: `${libraryResult.condition.name} (${libraryResult.condition.triguna_balance})`,
+          summary: `CBT: ${libraryResult.condition.solutions.cbt_reframing} | Somatic: ${libraryResult.condition.solutions.somatic_anchor}`,
+          source: libraryResult.structuredCard?.isLearnedDocument
+            ? (libraryResult.structuredCard.sourcePlatform || 'NCBI PubMed & Wikipedia Clinical Knowledge')
+            : 'Clinical & Psychoeducational Library',
+        });
+      } else if (study) {
+        sources.push({
+          title: study.citation,
+          summary: study.scientificActionProtocol,
+          source: 'Authenticated Research Bank',
+        });
+      }
+
+      const recTrataka = tratakPrescription.mode;
       const trigunaAnalysis = parseClientTriguna(libraryResult?.condition?.triguna_balance);
 
       return {

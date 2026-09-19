@@ -652,25 +652,21 @@ class KeylessPsychologistPartner:
         rag_guidance = await asyncio.to_thread(psychology_rag.retrieve_guidance, user_message) if psychology_rag else None
         rag_prompt_block = rag_guidance.get("prompt_context", "") if rag_guidance else ""
 
-        # Check for Existential Dilemma / Bhagavad Gita Cognitive Therapy
-        is_dilemma = detect_existential_dilemma(user_message)
-        gita_wisdom = None
-        gita_custom_prompt = None
-        if is_dilemma and gita_rag:
-            gita_wisdom = await asyncio.to_thread(gita_rag.query_wisdom, user_message)
-            if gita_wisdom:
-                gita_context = gita_rag.format_gita_context(gita_wisdom)
-                gita_custom_prompt = build_gita_system_prompt(gita_context, target_locale=locale)
-                telemetry.dominant_emotion = "Dilemma & Cognitive Confusion"
-                telemetry.suggested_strategy = f"Bhagavad Gita Cognitive Reframing (BG {gita_wisdom.get('chapter')}.{gita_wisdom.get('verse')}) | {gita_wisdom.get('theme')}"
+        # 3-Pillar Therapeutic Grounding: Bhagavad Gita + Clinical CBT RAG + Trataka
+        gita_wisdom = await asyncio.to_thread(gita_rag.query_wisdom, user_message) if gita_rag else None
+        gita_context = gita_rag.format_gita_context(gita_wisdom) if (gita_wisdom and gita_rag) else ""
+        tri_pillar_system_prompt = build_gita_system_prompt(gita_context, target_locale=locale, rag_context=rag_prompt_block)
 
-        if rag_guidance and not is_dilemma:
-            telemetry.suggested_strategy = f"{rag_guidance.get('name')} | {rag_guidance.get('solutions', {}).get('cbt_reframing', telemetry.suggested_strategy)}"
+        if gita_wisdom:
+            telemetry.dominant_emotion = telemetry.dominant_emotion or "Emotional Struggle"
+            telemetry.suggested_strategy = f"Bhagavad Gita Cognitive Reframing (BG {gita_wisdom.get('chapter')}.{gita_wisdom.get('verse')}) | {gita_wisdom.get('theme')}"
 
         grounded_research = self.search_engine.format_grounding_context(evidence_list)
         context_blocks = [grounded_research]
         if rag_prompt_block:
             context_blocks.insert(0, rag_prompt_block)
+        if gita_context:
+            context_blocks.insert(0, gita_context)
 
         context_str = "\n\n".join(context_blocks)
 
@@ -679,7 +675,7 @@ class KeylessPsychologistPartner:
             context_str,
             history=history,
             locale=locale,
-            custom_system_prompt=gita_custom_prompt,
+            custom_system_prompt=tri_pillar_system_prompt,
         )
         latency = int((time.perf_counter() - start_time) * 1000)
 
@@ -694,6 +690,19 @@ class KeylessPsychologistPartner:
         else:
             triguna_data = parse_triguna_balance(None)
 
+        if not rec_trataka:
+            q_low = user_message.lower()
+            if any(w in q_low for w in ["shame", "imposter", "failure", "hate myself", "defect"]):
+                rec_trataka = "pratibimb"
+            elif any(w in q_low for w in ["decide", "decision", "paralysis", "crossroads", "insomnia"]):
+                rec_trataka = "shoonya"
+            elif any(w in q_low for w in ["depress", "burnout", "exhaust", "grief", "numb"]):
+                rec_trataka = "flame"
+            elif any(w in q_low for w in ["chaos", "adhd", "relationship", "fight", "scattered"]):
+                rec_trataka = "murti"
+            else:
+                rec_trataka = "bindu"
+
         # Prepare unified sources with Psychology Library & Gita Library grounding
         final_sources = list(evidence_list)
         if gita_wisdom:
@@ -703,14 +712,14 @@ class KeylessPsychologistPartner:
                 source="gita_library"
             )
             final_sources.insert(0, gita_source)
-        elif rag_guidance:
+        if rag_guidance:
             sols = rag_guidance.get("solutions", {})
             lib_source = ClinicalEvidence(
                 title=f"Clinical Protocol: {rag_guidance.get('name')} ({rag_guidance.get('triguna_balance', 'Equilibrium')})",
                 summary=f"CBT: {sols.get('cbt_reframing')} | Trataka: {rec_trataka} | Somatic: {sols.get('somatic_anchor')} | Pranayama: {sols.get('pranayama')}",
                 source="psychology_library"
             )
-            final_sources.insert(0, lib_source)
+            final_sources.insert(1 if gita_wisdom else 0, lib_source)
 
         if llm_reply:
             return HealerResponse(
@@ -719,21 +728,27 @@ class KeylessPsychologistPartner:
                 sources=final_sources,
                 engine_used=engine_name,
                 somatic_anchor=anchor,
-                recommended_trataka=rec_trataka or ("shoonya" if is_dilemma else None),
+                recommended_trataka=rec_trataka,
                 triguna_analysis=triguna_data,
                 latency_ms=latency
             )
 
-        # Deterministic Gita Synthesis if Dilemma detected
+        # Deterministic 3-Pillar Synthesis (Gita + Clinical + Tratak)
         if gita_wisdom:
-            synth_reply = synthesize_gita_response(user_message, gita_wisdom, locale=locale)
+            synth_reply = synthesize_gita_response(
+                user_message,
+                gita_wisdom,
+                locale=locale,
+                rag_guidance=rag_guidance,
+                rec_trataka=rec_trataka
+            )
             return HealerResponse(
                 reply=synth_reply,
                 telemetry=telemetry,
                 sources=final_sources,
-                engine_used="Gita Cognitive Therapy Engine (Synthesis)",
+                engine_used="Keyless Healer (Tri-Pillar RAG Synthesis)",
                 somatic_anchor=anchor,
-                recommended_trataka=rec_trataka or "shoonya",
+                recommended_trataka=rec_trataka,
                 triguna_analysis=triguna_data,
                 latency_ms=latency
             )

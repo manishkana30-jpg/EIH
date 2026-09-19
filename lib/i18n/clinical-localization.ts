@@ -7,6 +7,9 @@
  * 4. Human-like paragraph formulation designed for direct conversational speech synthesis.
  */
 
+import { findGitaWisdom, formatGitaShlokaBlock } from "../knowledge/gita-library.ts";
+import { resolveTratakaPrescription } from "../knowledge/trataka-recommendations.ts";
+
 export interface LocalizedIntervention {
   conditionName: string;
   validation: string;
@@ -1015,7 +1018,7 @@ export function getLocalizedClinicalIntervention(
 export function formatHumanTherapeuticMessage(
   conditionIdOrObject: any,
   languageCode?: string,
-  emotionHint?: string
+  userMessage?: string
 ): string {
   const norm = normalizeLanguageCode(languageCode);
 
@@ -1027,48 +1030,155 @@ export function formatHumanTherapeuticMessage(
   }
 
   const intervention = getLocalizedClinicalIntervention(condId, norm);
+  const contextText = `${userMessage || ''} ${intervention.conditionName} ${condId}`;
+  const gitaItem = findGitaWisdom(contextText);
+  const tratakItem = resolveTratakaPrescription(contextText);
+  const gitaBlock = formatGitaShlokaBlock(gitaItem);
 
-  // Formulate a fluid, natural, human therapeutic paragraph without section headers
   if (norm === 'hi') {
-    return `${intervention.validation} ${intervention.cbt_reframing} अपने तंत्रिका तंत्र को स्थिर करने के लिए: ${intervention.somatic_anchor} इसके साथ ही ${intervention.pranayama}`;
-  }
-  if (norm === 'es') {
-    return `${intervention.validation} ${intervention.cbt_reframing} Para regular tu sistema nervioso en este instante: practica ${intervention.somatic_anchor} y ${intervention.pranayama}`;
-  }
-  if (norm === 'fr') {
-    return `${intervention.validation} ${intervention.cbt_reframing} Pour apaiser votre système nerveux dès maintenant : appliquez ${intervention.somatic_anchor} ainsi que ${intervention.pranayama}`;
-  }
-  if (norm === 'de') {
-    return `${intervention.validation} ${intervention.cbt_reframing} Um Ihr Nervensystem jetzt zu beruhigen: Nutzen Sie ${intervention.somatic_anchor} und ${intervention.pranayama}`;
+    return `**1. श्रीमद्भगवद्गीता दर्शन एवं श्लोक (श्रीमद्भगवद्गीता):**
+${gitaBlock}
+• **श्लोक का अर्थ:** ${gitaItem.philosophical_meaning}
+• **दार्शनिक चिंतन:** ${gitaItem.clinical_reframe}
+• **मार्गदर्शन (कर्म):** ${gitaItem.actionable_guidance.what_to_do} (सावधानी: ${gitaItem.actionable_guidance.what_not_to_do})
+
+**2. क्लिनिकल कॉग्निटिव न्यूरोसाइंस (CBT एवं कायिक संतुलन):**
+• **भावना की स्वीकृति:** ${intervention.validation}
+• **संज्ञानात्मक पुनर्गठन:** ${intervention.cbt_reframing}
+• **तंत्रिका तंत्र संतुलन:** ${intervention.somatic_anchor} इसके साथ ही ${intervention.pranayama}
+
+**3. त्राटक न्यूरो-ऑक्युलर ध्यान विधि (${tratakItem.sanskritName} - ${tratakItem.name}):**
+• **एकाग्रता का केंद्र:** ${tratakItem.focalTarget}
+• **न्यूरोलॉजिकल प्रभाव:** ${tratakItem.neuroMechanism}
+• **अभ्यास विधि (${tratakItem.durationMinutes} मिनट):** ${tratakItem.stepByStepGuidance.join(' ')}`;
   }
 
-  // English Default Fallback
-  return `${intervention.validation} ${intervention.cbt_reframing} To steady your nervous system right now: engage in ${intervention.somatic_anchor} alongside ${intervention.pranayama}`;
+  if (norm === 'es') {
+    return `**1. SABIDURÍA DEL BHAGAVAD GITA (श्रीमद्भगवद्गीता):**
+${gitaBlock}
+• **Significado:** ${gitaItem.philosophical_meaning}
+• **Reflexión Filosófica:** ${gitaItem.clinical_reframe}
+• **Guía de Acción:** ${gitaItem.actionable_guidance.what_to_do}
+
+**2. NEUROCIENCIA CLÍNICA COGNITIVA (TCC y Anclaje Somático):**
+• **Validación Emocional:** ${intervention.validation}
+• **Reestructuración Cognitiva:** ${intervention.cbt_reframing}
+• **Regulación Nerviosa:** ${intervention.somatic_anchor} y ${intervention.pranayama}
+
+**3. PROTOCOLO NEURO-OCULAR TRATAK (${tratakItem.name}):**
+• **Foco de Mirada:** ${tratakItem.focalTarget}
+• **Efecto Neurológico:** ${tratakItem.neuroMechanism}
+• **Instrucciones (${tratakItem.durationMinutes} min):** ${tratakItem.stepByStepGuidance.join(' ')}`;
+  }
+
+  if (norm === 'fr') {
+    return `**1. SAGESSE DU BHAGAVAD GITA (श्रीमद्भगवद्गीता):**
+${gitaBlock}
+• **Signification:** ${gitaItem.philosophical_meaning}
+• **Réflexion Clinique:** ${gitaItem.clinical_reframe}
+• **Action Concrète:** ${gitaItem.actionable_guidance.what_to_do}
+
+**2. NEUROSCIENCE CLINIQUE COGNITIVE (TCC et Ancrage Somatique):**
+• **Validation Émotionnelle:** ${intervention.validation}
+• **Restructuration Cognitive:** ${intervention.cbt_reframing}
+• **Régulation Vagal:** ${intervention.somatic_anchor} ainsi que ${intervention.pranayama}
+
+**3. PROTOCOLE NEURO-OCULAIRE TRATAK (${tratakItem.name}):**
+• **Point Focal:** ${tratakItem.focalTarget}
+• **Mécanisme Neurologique:** ${tratakItem.neuroMechanism}
+• **Pratique (${tratakItem.durationMinutes} min):** ${tratakItem.stepByStepGuidance.join(' ')}`;
+  }
+
+  if (norm === 'de') {
+    return `**1. WEISHEIT DER BHAGAVAD GITA (श्रीमद्भगवद्गीता):**
+${gitaBlock}
+• **Bedeutung:** ${gitaItem.philosophical_meaning}
+• **Klinische Reflexion:** ${gitaItem.clinical_reframe}
+• **Handlungsimpuls:** ${gitaItem.actionable_guidance.what_to_do}
+
+**2. KLINISCHE KOGNITIVE NEUROWISSENSCHAFT (CBT & Somatische Erdung):**
+• **Emotionale Validierung:** ${intervention.validation}
+• **Kognitive Umstrukturierung:** ${intervention.cbt_reframing}
+• **Autonome Beruhigung:** ${intervention.somatic_anchor} und ${intervention.pranayama}
+
+**3. TRATAK NEURO-OKULARES PROTOKOLL (${tratakItem.name}):**
+• **Blickfokus:** ${tratakItem.focalTarget}
+• **Neurologischer Mechanismus:** ${tratakItem.neuroMechanism}
+• **Übung (${tratakItem.durationMinutes} Min):** ${tratakItem.stepByStepGuidance.join(' ')}`;
+  }
+
+  // English Universal Default
+  return `**1. BHAGAVAD GITA REFRAMING (श्रीमद्भगवद्गीता):**
+${gitaBlock}
+• **Philosophical Meaning:** ${gitaItem.philosophical_meaning}
+• **Clinical Reflection:** ${gitaItem.clinical_reframe}
+• **Actionable Guidance (Karma):** ${gitaItem.actionable_guidance.what_to_do} (Avoid: ${gitaItem.actionable_guidance.what_not_to_do})
+
+**2. CLINICAL COGNITIVE NEUROSCIENCE (CBT & Somatic Grounding):**
+• **Emotional Validation:** ${intervention.validation}
+• **Cognitive Restructuring:** ${intervention.cbt_reframing}
+• **Somatic Polyvagal Reset:** ${intervention.somatic_anchor} alongside ${intervention.pranayama}
+
+**3. TRATAK NEURO-OCULAR PROTOCOL (त्राटक ध्यान - ${tratakItem.name}):**
+• **Sacred Gazing Target:** ${tratakItem.focalTarget}
+• **Neuro-Ocular Mechanism:** ${tratakItem.neuroMechanism}
+• **Practice Guidance (${tratakItem.durationMinutes} Minutes):** ${tratakItem.stepByStepGuidance.join(' ')}`;
 }
 
 /**
- * Get general supportive advice when no specific condition is matched.
+ * Get general supportive advice with full 3-solution structure when no specific condition is matched.
  */
 export function getLocalizedGeneralAdvice(
   emotion: string,
-  languageCode?: string
+  languageCode?: string,
+  userMessage?: string
 ): string {
   const norm = normalizeLanguageCode(languageCode);
   const localeTable = GENERAL_LOCALIZED_ADVICE[norm] || GENERAL_LOCALIZED_ADVICE.en;
-  const key = emotion.toLowerCase();
+  const key = (emotion || '').toLowerCase();
 
+  let advice = localeTable.default;
   if (key.includes('anxiet') || key.includes('panic') || key.includes('fear') || key.includes('worry')) {
-    return localeTable.anxiety;
-  }
-  if (key.includes('sad') || key.includes('depress') || key.includes('grief') || key.includes('lonel')) {
-    return localeTable.sadness;
-  }
-  if (key.includes('ang') || key.includes('frustrat') || key.includes('irrit')) {
-    return localeTable.anger;
-  }
-  if (key.includes('overwhelm') || key.includes('burnout') || key.includes('fatigue')) {
-    return localeTable.overwhelm;
+    advice = localeTable.anxiety;
+  } else if (key.includes('sad') || key.includes('depress') || key.includes('grief') || key.includes('lonel')) {
+    advice = localeTable.sadness;
+  } else if (key.includes('ang') || key.includes('frustrat') || key.includes('irrit')) {
+    advice = localeTable.anger;
+  } else if (key.includes('overwhelm') || key.includes('burnout') || key.includes('fatigue')) {
+    advice = localeTable.overwhelm;
   }
 
-  return localeTable.default;
+  const contextText = `${userMessage || ''} ${emotion}`;
+  const gitaItem = findGitaWisdom(contextText);
+  const tratakItem = resolveTratakaPrescription(contextText);
+  const gitaBlock = formatGitaShlokaBlock(gitaItem);
+
+  if (norm === 'hi') {
+    return `**1. श्रीमद्भगवद्गीता दर्शन एवं श्लोक (श्रीमद्भगवद्गीता):**
+${gitaBlock}
+• **श्लोक का अर्थ:** ${gitaItem.philosophical_meaning}
+• **दार्शनिक चिंतन:** ${gitaItem.clinical_reframe}
+
+**2. क्लिनिकल कॉग्निटिव न्यूरोसाइंस (CBT एवं कायिक संतुलन):**
+• ${advice}
+
+**3. त्राटक न्यूरो-ऑक्युलर ध्यान विधि (${tratakItem.sanskritName} - ${tratakItem.name}):**
+• **एकाग्रता का केंद्र:** ${tratakItem.focalTarget}
+• **न्यूरोलॉजिकल प्रभाव:** ${tratakItem.neuroMechanism}
+• **अभ्यास विधि (${tratakItem.durationMinutes} मिनट):** ${tratakItem.stepByStepGuidance.join(' ')}`;
+  }
+
+  return `**1. BHAGAVAD GITA REFRAMING (श्रीमद्भगवद्गीता):**
+${gitaBlock}
+• **Philosophical Meaning:** ${gitaItem.philosophical_meaning}
+• **Clinical Reflection:** ${gitaItem.clinical_reframe}
+• **Actionable Guidance:** ${gitaItem.actionable_guidance.what_to_do}
+
+**2. CLINICAL COGNITIVE NEUROSCIENCE (CBT & Somatic Grounding):**
+• ${advice}
+
+**3. TRATAK NEURO-OCULAR PROTOCOL (त्राटक ध्यान - ${tratakItem.name}):**
+• **Sacred Gazing Target:** ${tratakItem.focalTarget}
+• **Neuro-Ocular Mechanism:** ${tratakItem.neuroMechanism}
+• **Practice Guidance (${tratakItem.durationMinutes} Minutes):** ${tratakItem.stepByStepGuidance.join(' ')}`;
 }

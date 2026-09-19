@@ -4,6 +4,7 @@ const { runHybridRagTests } = require('./hybrid-rag.test.js');
 const { runConversationalDiversityTests } = require('./conversational-diversity.test.js');
 const { runTtsSanitizerTests } = require('./test_tts_sanitizer.js');
 const { runSelfLearningTests } = require('./self_learning_documents.test.js');
+const { testGitaClinicalTratakTrio } = require('./test-gita-clinical-tratak-trio.js');
 require('./language-catalog.test.js');
 require('./remedies-matrix.test.js');
 require('./clinical-research-grounding.test.js');
@@ -35,6 +36,7 @@ async function main() {
     await runConversationalDiversityTests();
     runTtsSanitizerTests();
     await runSelfLearningTests();
+    await testGitaClinicalTratakTrio();
     await import('./test-greeting-and-mic-test.js');
     console.log('================================================================');
     console.log('🎉 ALL SYSTEM TESTS PASSED WITH 100% SUCCESS RATE');

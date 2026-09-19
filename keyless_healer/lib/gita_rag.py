@@ -146,30 +146,49 @@ class GitaLibraryRAG:
 gita_rag = GitaLibraryRAG()
 
 
-def build_gita_system_prompt(retrieved_gita_wisdom: str, target_locale: str = "en-US") -> str:
-    """Builds the 4-phase therapeutic prompt pipeline enforcing strict Shloka sequence."""
+def build_gita_system_prompt(retrieved_gita_wisdom: str, target_locale: str = "en-US", rag_context: str = "") -> str:
+    """Builds the 3-pillar therapeutic prompt pipeline enforcing Gita + Clinical + Tratak interlinked solutions."""
     lang_directive = ""
     loc_lower = (target_locale or "en-US").lower()
     if loc_lower.startswith("hi") or "hindi" in loc_lower or "in" in loc_lower:
-        lang_directive = "\n\nProvide the explanations (Steps 2, 3, 4) in natural, empathetic Hindi (हिंदी), while keeping the Sanskrit Shloka in Devanagari in Step 1."
+        lang_directive = "\n\nProvide the explanations in natural, empathetic Hindi (हिंदी), while keeping the Sanskrit Shloka in Devanagari script."
     elif loc_lower.startswith("es"):
-        lang_directive = "\n\nProvide the explanations (Steps 2, 3, 4) in fluent, empathetic Spanish (Español)."
+        lang_directive = "\n\nProvide the explanations in fluent, empathetic Spanish (Español)."
 
-    return f"""You are an Expert Spiritual Psychologist integrating modern CBT with the ancient wisdom of the Bhagavad Gita. The user is facing a deep dilemma or emotional confusion.
+    return f"""You are an Expert Clinical Psychologist and Spiritual Master integrating Modern Neuropsychology (CBT & Polyvagal Somatics) with the sacred wisdom of the Bhagavad Gita and Tratak (Ocular Meditation).
 
-Your goal is to shift them from paralysis to purpose-driven action using this retrieved wisdom:
-[GITA CONTEXT]: {retrieved_gita_wisdom}
+For the user's specific situation, you MUST formulate your response with all 3 solutions line-by-line, each deeply interlinked with their exact struggle:
 
-You MUST structure your response strictly in these 4 steps. Do not add introductory filler.
+**1. BHAGAVAD GITA REFRAMING (श्रीमद्भगवद्गीता):**
+- Include the exact relevant Sanskrit Shloka wrapped inside [GITA_SHLOKA] and [/GITA_SHLOKA] tags, followed by its Roman transliteration and Chapter & Verse.
+- Explain the philosophical meaning.
+- Provide a Clinical Reflection explaining how this ancient wisdom applies directly to their modern struggle.
+- Actionable Guidance (Karma): What to do right now, and what mental trap to avoid.
 
-1. THE SHLOKA: Output the retrieved Sanskrit Shloka beautifully in Devanagari, followed by its Roman transliteration. Wrap the entire Shloka block inside [GITA_SHLOKA] and [/GITA_SHLOKA] tags.
-2. THE MEANING: Provide the direct, profound meaning of the Shloka.
-3. THE CLINICAL REFLECTION: Deeply analyze the user's specific situation. Explain exactly how this ancient wisdom applies to their current modern dilemma, validating their confusion.
-4. THE KARMA (GUIDANCE): Give them clear, actionable guidance on what to do and what NOT to do right now to handle the situation perfectly and live happily. Shift their focus from the outcome to their immediate duty.{lang_directive}"""
+**2. CLINICAL COGNITIVE NEUROSCIENCE (CBT & Somatic Grounding):**
+- Compassionately validate their distress.
+- Identify the active cognitive distortion and provide an evidence-based CBT cognitive reframe.
+- Prescribe an immediate Somatic Polyvagal grounding exercise (e.g. physiological sigh or vagal brake).
+
+**3. TRATAK NEURO-OCULAR PROTOCOL (त्राटक ध्यान):**
+- Prescribe the specific Sacred Gazing mode suited to their autonomic state (Bindu, Jyoti, Mandala, Pratibimb, or Shoonya).
+- Explain the neuro-ocular calming mechanism and provide step-by-step gaze guidance.
+
+[RETRIEVED WISDOM]:
+{retrieved_gita_wisdom}
+
+{rag_context}
+{lang_directive}"""
 
 
-def synthesize_gita_response(user_query: str, wisdom: dict[str, Any], locale: str = "en-US") -> str:
-    """Deterministic fallback synthesis following the 4-phase therapeutic sequence without LLM latency."""
+def synthesize_gita_response(
+    user_query: str,
+    wisdom: dict[str, Any],
+    locale: str = "en-US",
+    rag_guidance: dict[str, Any] | None = None,
+    rec_trataka: str = "bindu"
+) -> str:
+    """Deterministic fallback synthesis generating all 3 solutions line-by-line without external latency."""
     shloka_san = wisdom.get("shloka_sanskrit", "")
     shloka_rom = wisdom.get("shloka_roman", "")
     meaning = wisdom.get("philosophical_meaning", "")
@@ -177,17 +196,35 @@ def synthesize_gita_response(user_query: str, wisdom: dict[str, Any], locale: st
     ch = wisdom.get("chapter", "2")
     vs = wisdom.get("verse", "47")
 
+    sols = rag_guidance.get("solutions", {}) if rag_guidance else {}
+    cbt_text = sols.get("cbt_reframing", "Notice how your mind catastrophizes the unknown. Shift attention to what is objectively true in front of you right now.")
+    somatic_text = sols.get("somatic_anchor", "Perform 3 deep physiological sighs (two quick inhales through the nose, long sighing exhale through the mouth).")
+    pranayama_text = sols.get("pranayama", "Nadi Shodhana (Alternate Nostril Breathing) for 3 minutes.")
+
+    trataka_name_map = {
+        "bindu": "Bindu Trataka (Sacred Golden Focal Point)",
+        "flame": "Jyoti Trataka (Candle Flame Gazing)",
+        "murti": "Mandala Trataka (Sacred Geometry Resonance)",
+        "pratibimb": "Pratibimb Trataka (Sacred Mirror Gazing)",
+        "shoonya": "Shoonya Trataka (Void & Panoramic Space Gazing)"
+    }
+    t_name = trataka_name_map.get(rec_trataka, "Bindu Trataka (Sacred Golden Focal Point)")
+
     return (
         f"[GITA_SHLOKA]\n"
         f"{shloka_san}\n\n"
         f"{shloka_rom}\n"
         f"— श्रीमद्भगवद्गीता (Chapter {ch}, Verse {vs})\n"
         f"[/GITA_SHLOKA]\n\n"
-        f"**1. THE MEANING:**\n"
-        f"{meaning}\n\n"
-        f"**2. THE CLINICAL REFLECTION:**\n"
-        f"You are experiencing understandable friction because you are trying to solve an unpredictable future from a place of uncertainty. {reframe}\n\n"
-        f"**3. THE KARMA (ACTIONABLE GUIDANCE):**\n"
-        f"• **What to do:** Focus solely on the single highest-integrity next step right in front of you today. Align with your values rather than trying to guarantee an outcome.\n"
-        f"• **What NOT to do:** Stop replaying catastrophic 'what-if' scenarios in your mind. Release attachment to results you cannot control, and take mindful action."
+        f"**1. BHAGAVAD GITA REFRAMING (श्रीमद्भगवद्गीता):**\n"
+        f"• **Philosophical Meaning:** {meaning}\n"
+        f"• **Clinical Reflection:** {reframe}\n"
+        f"• **Actionable Guidance (Karma):** Focus 100% on the single highest-integrity action you can take right now. Release attachment to results you cannot control.\n\n"
+        f"**2. CLINICAL COGNITIVE NEUROSCIENCE (CBT & Somatic Grounding):**\n"
+        f"• **Cognitive Restructuring:** {cbt_text}\n"
+        f"• **Somatic Polyvagal Reset:** {somatic_text} alongside {pranayama_text}\n\n"
+        f"**3. TRATAK NEURO-OCULAR PROTOCOL (त्राटक ध्यान - {t_name}):**\n"
+        f"• **Focal Gaze:** Hold a soft, unblinking gaze at eye level for 2 to 3 minutes.\n"
+        f"• **Neuro-Ocular Mechanism:** Motionless saccadic fixation down-regulates amygdala hyperactivity and activates the cardiac vagal brake.\n"
+        f"• **Practice Closure:** Rub your palms vigorously until warm and cup them gently over closed eyes (Palming)."
     )
