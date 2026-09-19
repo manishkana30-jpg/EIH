@@ -319,7 +319,17 @@ RULES: Keep your response concise (3-4 sentences). Do not use Markdown formattin
       if (pollinationsRes.ok) {
         const text = await pollinationsRes.text();
         const cleanedReply = text.trim();
-        if (cleanedReply && cleanedReply.length > 25 && !cleanedReply.toLowerCase().startsWith('error')) {
+        const lower = cleanedReply.toLowerCase();
+        const isUpstreamError =
+          lower.startsWith('error') ||
+          lower.includes('credit') ||
+          lower.includes('quota') ||
+          lower.includes('api key') ||
+          lower.includes('top up') ||
+          lower.includes('rate limit') ||
+          lower.includes('unauthorized');
+
+        if (cleanedReply && cleanedReply.length > 25 && !isUpstreamError) {
           return NextResponse.json({
             reply: cleanedReply,
             provider: 'free_edge_ai',

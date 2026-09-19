@@ -317,13 +317,21 @@ Translate and explain all validation, CBT cognitive reframes, somatic grounding 
       body: JSON.stringify({ messages: messagesPayload, model: "openai", seed: 42 }),
       signal: AbortSignal.timeout(3500)
     });
-    if (pollRes.ok) {
       const text = await pollRes.text();
       const cleaned = text.trim();
-      if (cleaned && cleaned.length > 25 && !cleaned.toLowerCase().startsWith("error")) {
+      const lower = cleaned.toLowerCase();
+      const isUpstreamError =
+        lower.startsWith("error") ||
+        lower.includes("credit") ||
+        lower.includes("quota") ||
+        lower.includes("api key") ||
+        lower.includes("top up") ||
+        lower.includes("rate limit") ||
+        lower.includes("unauthorized");
+
+      if (cleaned && cleaned.length > 25 && !isUpstreamError) {
         return { reply: cleaned, sources: allSources, providerUsed: "Free Edge AI", isCrisis: false, recommended_trataka: defaultRecTrataka };
       }
-    }
   } catch {}
 
   // 5. Infallible Tier 5: Pure Deterministic Healer Synthesis (Zero External Dependency, 100% Offline)

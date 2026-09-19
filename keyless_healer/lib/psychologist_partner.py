@@ -556,7 +556,17 @@ class KeylessPsychologistPartner:
             )
             if res.status_code == 200:
                 text = res.text.strip()
-                if text and len(text) > 25 and not text.lower().startswith("error"):
+                lower = text.lower()
+                is_upstream_err = (
+                    lower.startswith("error")
+                    or "credit" in lower
+                    or "quota" in lower
+                    or "api key" in lower
+                    or "top up" in lower
+                    or "rate limit" in lower
+                    or "unauthorized" in lower
+                )
+                if text and len(text) > 25 and not is_upstream_err:
                     return text, "Free Edge AI"
         except Exception:
             pass
