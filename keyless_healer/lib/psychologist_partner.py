@@ -48,6 +48,38 @@ except ImportError:
         from cbt_library_loader import cbt_loader  # type: ignore[import-not-found]
 
 try:
+    from keyless_healer.lib.gita_rag import (
+        build_gita_system_prompt,
+        detect_existential_dilemma,
+        gita_rag,
+        synthesize_gita_response,
+    )
+except ImportError:
+    try:
+        from lib.gita_rag import (  # type: ignore[import-not-found]
+            build_gita_system_prompt,
+            detect_existential_dilemma,
+            gita_rag,
+            synthesize_gita_response,
+        )
+    except ImportError:
+        try:
+            from gita_rag import (  # type: ignore[import-not-found]
+                build_gita_system_prompt,
+                detect_existential_dilemma,
+                gita_rag,
+                synthesize_gita_response,
+            )
+        except ImportError:
+            gita_rag = None  # type: ignore[assignment]
+            def detect_existential_dilemma(text: str) -> bool:  # type: ignore[misc]
+                return False
+            def build_gita_system_prompt(retrieved_gita_wisdom: str, target_locale: str = "en-US") -> str:  # type: ignore[misc]
+                return ""
+            def synthesize_gita_response(user_query: str, wisdom: dict, locale: str = "en-US") -> str:  # type: ignore[misc]
+                return ""
+
+try:
     from keyless_healer.lib.clinical_localization import (
         format_human_therapeutic_message,
         GENERAL_LOCALIZED_ADVICE,
@@ -417,9 +449,10 @@ class KeylessPsychologistPartner:
         context: str,
         history: list[dict[str, str]] | None = None,
         locale: str = "en-US",
+        custom_system_prompt: str | None = None,
     ) -> tuple[str | None, str]:
         """Calls local Ollama daemon or cascaded LLM inference with multi-turn history and 3-phase prompt."""
-        sys_prompt = build_healer_system_prompt(context, target_locale=locale)
+        sys_prompt = custom_system_prompt or build_healer_system_prompt(context, target_locale=locale)
         messages = [{"role": "system", "content": sys_prompt}]
         if history:
             for h in history[-6:]:
@@ -609,7 +642,19 @@ class KeylessPsychologistPartner:
         rag_guidance = await asyncio.to_thread(psychology_rag.retrieve_guidance, user_message) if psychology_rag else None
         rag_prompt_block = rag_guidance.get("prompt_context", "") if rag_guidance else ""
 
-        if rag_guidance:
+        # Check for Existential Dilemma / Bhagavad Gita Cognitive Therapy
+        is_dilemma = detect_existential_dilemma(user_message)
+        gita_wisdom = None
+        gita_custom_prompt = None
+        if is_dilemma and gita_rag:
+            gita_wisdom = await asyncio.to_thread(gita_rag.query_wisdom, user_message)
+            if gita_wisdom:
+                gita_context = gita_rag.format_gita_context(gita_wisdom)
+                gita_custom_prompt = build_gita_system_prompt(gita_context, target_locale=locale)
+                telemetry.dominant_emotion = "Dilemma & Cognitive Confusion"
+                telemetry.suggested_strategy = f"Bhagavad Gita Cognitive Reframing (BG {gita_wisdom.get('chapter')}.{gita_wisdom.get('verse')}) | {gita_wisdom.get('theme')}"
+
+        if rag_guidance and not is_dilemma:
             telemetry.suggested_strategy = f"{rag_guidance.get('name')} | {rag_guidance.get('solutions', {}).get('cbt_reframing', telemetry.suggested_strategy)}"
 
         grounded_research = self.search_engine.format_grounding_context(evidence_list)
@@ -619,7 +664,13 @@ class KeylessPsychologistPartner:
 
         context_str = "\n\n".join(context_blocks)
 
-        llm_reply, engine_name = await self._call_inference(user_message, context_str, history=history, locale=locale)
+        llm_reply, engine_name = await self._call_inference(
+            user_message,
+            context_str,
+            history=history,
+            locale=locale,
+            custom_system_prompt=gita_custom_prompt,
+        )
         latency = int((time.perf_counter() - start_time) * 1000)
 
         anchor = self._normalize_anchor(user_message)
@@ -633,9 +684,16 @@ class KeylessPsychologistPartner:
         else:
             triguna_data = parse_triguna_balance(None)
 
-        # Prepare unified sources with Psychology Library grounding
+        # Prepare unified sources with Psychology Library & Gita Library grounding
         final_sources = list(evidence_list)
-        if rag_guidance:
+        if gita_wisdom:
+            gita_source = ClinicalEvidence(
+                title=f"Bhagavad Gita Wisdom: BG {gita_wisdom.get('chapter')}.{gita_wisdom.get('verse')} ({gita_wisdom.get('theme')})",
+                summary=f"{gita_wisdom.get('philosophical_meaning')} | Reframe: {gita_wisdom.get('clinical_reframe')}",
+                source="gita_library"
+            )
+            final_sources.insert(0, gita_source)
+        elif rag_guidance:
             sols = rag_guidance.get("solutions", {})
             lib_source = ClinicalEvidence(
                 title=f"Clinical Protocol: {rag_guidance.get('name')} ({rag_guidance.get('triguna_balance', 'Equilibrium')})",
@@ -651,7 +709,21 @@ class KeylessPsychologistPartner:
                 sources=final_sources,
                 engine_used=engine_name,
                 somatic_anchor=anchor,
-                recommended_trataka=rec_trataka,
+                recommended_trataka=rec_trataka or ("shoonya" if is_dilemma else None),
+                triguna_analysis=triguna_data,
+                latency_ms=latency
+            )
+
+        # Deterministic Gita Synthesis if Dilemma detected
+        if gita_wisdom:
+            synth_reply = synthesize_gita_response(user_message, gita_wisdom, locale=locale)
+            return HealerResponse(
+                reply=synth_reply,
+                telemetry=telemetry,
+                sources=final_sources,
+                engine_used="Gita Cognitive Therapy Engine (Synthesis)",
+                somatic_anchor=anchor,
+                recommended_trataka=rec_trataka or "shoonya",
                 triguna_analysis=triguna_data,
                 latency_ms=latency
             )

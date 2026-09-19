@@ -36,6 +36,7 @@ import { CrisisModal } from "./components/CrisisModal";
 import { LanguageSelector } from "./components/LanguageSelector";
 import { TratakaModule } from "./components/TratakaModule";
 import { PwaInstallModal } from "./components/PwaInstallModal";
+import { GitaShlokaCard, parseGitaShloka } from "./components/GitaShlokaCard";
 
 import { browserSpeechController } from "@/lib/audio/browser-speech";
 import { getCleanAudioStream } from "@/lib/audio/audio-manager";
@@ -1156,7 +1157,9 @@ export default function SanctuarySessionPage() {
 
           {/* Messages List */}
           <div className="max-w-3xl w-full mx-auto space-y-4 pt-2 pb-6">
-            {messages.map((m) => (
+            {messages.map((m) => {
+              const gitaParsed = m.sender === "ai" ? parseGitaShloka(m.text) : { isGita: false, shlokaBlock: null, remainingText: m.text };
+              return (
               <motion.div
                 key={m.id}
                 initial={{ opacity: 0, y: 10 }}
@@ -1164,6 +1167,12 @@ export default function SanctuarySessionPage() {
                 transition={{ duration: 0.3 }}
                 className={`flex flex-col ${m.sender === "user" ? "items-end" : "items-start"}`}
               >
+                {gitaParsed.isGita && gitaParsed.shlokaBlock && (
+                  <div className="w-full max-w-[88%] md:max-w-xl">
+                    <GitaShlokaCard shlokaContent={gitaParsed.shlokaBlock} />
+                  </div>
+                )}
+
                 <div
                   className={`max-w-[88%] md:max-w-xl p-4 rounded-2xl text-sm leading-relaxed ${
                     m.sender === "user"
@@ -1171,7 +1180,7 @@ export default function SanctuarySessionPage() {
                       : "bg-gradient-to-br from-slate-900/90 to-slate-950/95 border border-slate-800/80 text-slate-100 rounded-bl-sm shadow-xl backdrop-blur-md"
                   }`}
                 >
-                  <p className="whitespace-pre-wrap">{m.text}</p>
+                  <p className="whitespace-pre-wrap">{gitaParsed.isGita ? gitaParsed.remainingText : m.text}</p>
                 </div>
 
                 {m.sender === "ai" && m.recommended_trataka && (
@@ -1200,7 +1209,7 @@ export default function SanctuarySessionPage() {
                   )}
                 </div>
               </motion.div>
-            ))}
+            ); })}
 
             {isLoading && (
               <motion.div

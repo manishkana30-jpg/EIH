@@ -55,6 +55,10 @@ try:
     from keyless_healer.lib.self_learning_therapist import (
         self_learning_therapist,
     )
+    from keyless_healer.lib.gita_rag import (
+        detect_existential_dilemma,
+        gita_rag,
+    )
 except ImportError:
     try:
         from lib.psychology_library_rag import psychology_rag  # type: ignore[import-untyped, import-not-found]
@@ -89,6 +93,12 @@ except ImportError:
         from lib.cbt_library_loader import cbt_loader  # type: ignore[import-untyped, import-not-found]
     except ImportError:
         cbt_loader = None  # type: ignore[assignment]
+    try:
+        from lib.gita_rag import detect_existential_dilemma, gita_rag  # type: ignore[import-not-found]
+    except ImportError:
+        gita_rag = None  # type: ignore[assignment]
+        def detect_existential_dilemma(text: str) -> bool:  # type: ignore[misc]
+            return False
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 logger = logging.getLogger("KeylessHealerApp")
@@ -885,6 +895,20 @@ async def query_library_condition(payload: SearchRequest, request: Request, back
         guidance = psychology_rag.retrieve_guidance(clean_q)
         return {"query": clean_q, "guidance": guidance}
     return {"query": clean_q, "guidance": None}
+
+
+@app.post("/api/gita/dilemma")
+async def gita_dilemma_endpoint(payload: SearchRequest, request: Request):
+    """Explicitly queries the Bhagavad Gita Shloka library for existential dilemmas and decision paralysis."""
+    enforce_rate_limit(request)
+    query_text = payload.query.strip()
+    is_dilemma = detect_existential_dilemma(query_text)
+    wisdom = gita_rag.query_wisdom(query_text) if gita_rag else None
+    return {
+        "query": query_text,
+        "is_dilemma": is_dilemma,
+        "wisdom": wisdom,
+    }
 
 
 
