@@ -100,6 +100,11 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.webmanifest" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        {/* Preconnect to critical third-party API origins — eliminates DNS+TLS latency */}
+        <link rel="preconnect" href="https://api.groq.com" />
+        <link rel="preconnect" href="https://generativelanguage.googleapis.com" />
+        <link rel="dns-prefetch" href="https://eutils.ncbi.nlm.nih.gov" />
+        <link rel="dns-prefetch" href="https://en.wikipedia.org" />
       </head>
       <body className="bg-[#09090b] text-[#ecf3ee] min-h-screen flex flex-col antialiased selection:bg-amber-500/30 selection:text-amber-100">
         {/* Dynamic GPS Location Crisis Safety Banner */}
@@ -215,7 +220,7 @@ export default function RootLayout({
               if ('caches' in window) {
                 caches.keys().then(function(names) {
                   for (var i = 0; i < names.length; i++) {
-                    if (names[i] !== 'eih-pwa-v2') {
+                    if (names[i] !== 'eih-pwa-v4' && names[i] !== 'eih-static-v4' && names[i] !== 'eih-fonts-v1') {
                       caches.delete(names[i]);
                     }
                   }

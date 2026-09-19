@@ -124,8 +124,8 @@ assert(
   'app/(session)/page.tsx must import Image from next/image'
 );
 assert(
-  pageContent.includes('<Image') && pageContent.includes('src="/hypnotic-circles.png"'),
-  'app/(session)/page.tsx must render hypnotic-circles.png using <Image>'
+  pageContent.includes('<Image') && pageContent.includes('src="/hypnotic-circles.webp"'),
+  'app/(session)/page.tsx must render hypnotic-circles.webp using <Image>'
 );
 assert(
   pageContent.includes('priority'),
@@ -148,8 +148,8 @@ assert(
   'TratakaModule.tsx must import Image from next/image'
 );
 assert(
-  tratakaContent.includes('<Image') && tratakaContent.includes('src="/hypnotic-circles.png"'),
-  'TratakaModule.tsx must render hypnotic-circles.png using <Image>'
+  tratakaContent.includes('<Image') && tratakaContent.includes('src="/hypnotic-circles.webp"'),
+  'TratakaModule.tsx must render hypnotic-circles.webp using <Image>'
 );
 console.log('  ✓ TratakaModule.tsx <Image> component verified');
 

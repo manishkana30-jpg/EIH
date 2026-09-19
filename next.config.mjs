@@ -12,7 +12,11 @@ const nextConfig = {
   output: isExport ? 'export' : undefined,
   reactStrictMode: true,
   swcMinify: true,
+  compress: true,
   poweredByHeader: false,
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'framer-motion'],
+  },
   images: isExport
     ? { unoptimized: true }
     : {
@@ -94,3 +98,4 @@ const nextConfig = {
 };
 
 export default nextConfig;
+

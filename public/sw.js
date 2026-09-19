@@ -1,17 +1,25 @@
 /**
  * Service Worker for Emotional Intelligence Healer PWA
- * Caches offline shell, icons, audio-worklet-processor, and knowledge assets.
+ * Tiered caching strategy for instant loads:
+ *   - Cache First: static assets, fonts, icons, images
+ *   - Stale While Revalidate: HTML pages, manifest
+ *   - Network First: API routes
  */
 
-const CACHE_NAME = 'eih-pwa-v3';
+const CACHE_NAME = 'eih-pwa-v4';
+const STATIC_CACHE = 'eih-static-v4';
+const FONT_CACHE = 'eih-fonts-v1';
+
 const PRECACHE_URLS = [
   '/',
   '/manifest.webmanifest',
   '/audio-worklet-processor.js',
+  '/hypnotic-circles.webp',
   '/icons/icon-192x192.png',
   '/icons/icon-512x512.png',
 ];
 
+/* ─── Install: Precache critical shell ─── */
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -20,56 +28,106 @@ self.addEventListener('install', (event) => {
   );
 });
 
+/* ─── Activate: Clean stale caches ─── */
 self.addEventListener('activate', (event) => {
+  const currentCaches = [CACHE_NAME, STATIC_CACHE, FONT_CACHE];
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames
-          .filter((name) => name !== CACHE_NAME)
+          .filter((name) => !currentCaches.includes(name))
           .map((name) => caches.delete(name))
       );
     }).then(() => self.clients.claim())
   );
 });
 
+/* ─── Helper: Is this a static asset? ─── */
+function isStaticAsset(url) {
+  return (
+    url.pathname.startsWith('/_next/static/') ||
+    url.pathname.match(/\.(js|css|woff|woff2|ttf|otf|png|jpg|jpeg|webp|svg|ico|avif)$/) ||
+    url.pathname.includes('/icons/')
+  );
+}
+
+/* ─── Helper: Is this a Google Font request? ─── */
+function isGoogleFont(url) {
+  return (
+    url.origin === 'https://fonts.googleapis.com' ||
+    url.origin === 'https://fonts.gstatic.com'
+  );
+}
+
+/* ─── Helper: Is this an API request? ─── */
+function isApiRequest(url) {
+  return url.pathname.startsWith('/api/');
+}
+
+/* ─── Fetch: Tiered caching strategy ─── */
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
-  // For audio worklet or static icons, use Cache First strategy
-  if (
-    event.request.url.includes('audio-worklet-processor.js') ||
-    event.request.url.includes('/icons/')
-  ) {
+  const url = new URL(event.request.url);
+
+  // 1. CACHE FIRST — Static assets & Next.js chunks (immutable, hashed filenames)
+  if (isStaticAsset(url)) {
     event.respondWith(
-      caches.match(event.request).then((cachedResponse) => {
-        if (cachedResponse) return cachedResponse;
-        return fetch(event.request).then((networkResponse) => {
-          if (networkResponse.status === 200) {
-            const responseClone = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
+      caches.match(event.request).then((cached) => {
+        if (cached) return cached;
+        return fetch(event.request).then((response) => {
+          if (response.status === 200) {
+            const clone = response.clone();
+            caches.open(STATIC_CACHE).then((cache) => cache.put(event.request, clone));
           }
-          return networkResponse;
+          return response;
         });
       })
     );
     return;
   }
 
-  // Network first with cache fallback for HTML and data
-  event.respondWith(
-    fetch(event.request)
-      .then((networkResponse) => {
-        if (networkResponse.status === 200) {
-          const responseClone = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
-        }
-        return networkResponse;
-      })
-      .catch(() => {
-        return caches.match(event.request).then((cachedResponse) => {
-          if (cachedResponse) return cachedResponse;
-          return caches.match('/');
+  // 2. CACHE FIRST — Google Fonts (rarely change)
+  if (isGoogleFont(url)) {
+    event.respondWith(
+      caches.match(event.request).then((cached) => {
+        if (cached) return cached;
+        return fetch(event.request).then((response) => {
+          if (response.status === 200) {
+            const clone = response.clone();
+            caches.open(FONT_CACHE).then((cache) => cache.put(event.request, clone));
+          }
+          return response;
         });
       })
+    );
+    return;
+  }
+
+  // 3. NETWORK ONLY — API routes (never cache therapeutic responses)
+  if (isApiRequest(url)) {
+    return; // Let the browser handle it normally
+  }
+
+  // 4. STALE WHILE REVALIDATE — HTML pages, manifest, etc.
+  event.respondWith(
+    caches.match(event.request).then((cached) => {
+      const fetchPromise = fetch(event.request)
+        .then((response) => {
+          if (response.status === 200) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          }
+          return response;
+        })
+        .catch(() => {
+          // If network fails and we have no cache, serve the offline shell
+          if (cached) return cached;
+          return caches.match('/');
+        });
+
+      // Return cached immediately, update in background
+      return cached || fetchPromise;
+    })
   );
 });

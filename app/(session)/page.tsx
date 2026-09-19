@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   BookOpen,
@@ -29,14 +30,16 @@ import {
 
 import { healerClient, PsychologicalTelemetry, ClinicalSource, ChatHistoryItem, TrigunaAnalysis } from "@/lib/api/healer-client";
 import { AudioWaveform } from "./components/AudioWaveform";
-import { CBTKnowledgeModal } from "./components/CBTKnowledgeModal";
-import { PranayamaGuide } from "./components/PranayamaGuide";
-import { EncryptedHistoryModal } from "./components/EncryptedHistoryModal";
-import { CrisisModal } from "./components/CrisisModal";
 import { LanguageSelector } from "./components/LanguageSelector";
-import { TratakaModule } from "./components/TratakaModule";
-import { PwaInstallModal } from "./components/PwaInstallModal";
 import { GitaShlokaCard, parseGitaShloka } from "./components/GitaShlokaCard";
+
+/* ─── Lazy-loaded heavy components (only fetched when user interacts) ─── */
+const CBTKnowledgeModal = dynamic(() => import("./components/CBTKnowledgeModal").then(m => m.CBTKnowledgeModal ? { default: m.CBTKnowledgeModal } : m), { ssr: false });
+const PranayamaGuide = dynamic(() => import("./components/PranayamaGuide").then(m => m.PranayamaGuide ? { default: m.PranayamaGuide } : m), { ssr: false });
+const EncryptedHistoryModal = dynamic(() => import("./components/EncryptedHistoryModal").then(m => m.EncryptedHistoryModal ? { default: m.EncryptedHistoryModal } : m), { ssr: false });
+const CrisisModal = dynamic(() => import("./components/CrisisModal").then(m => m.CrisisModal ? { default: m.CrisisModal } : m), { ssr: false });
+const TratakaModule = dynamic(() => import("./components/TratakaModule").then(m => m.TratakaModule ? { default: m.TratakaModule } : m), { ssr: false });
+const PwaInstallModal = dynamic(() => import("./components/PwaInstallModal").then(m => m.PwaInstallModal ? { default: m.PwaInstallModal } : m), { ssr: false });
 
 import { browserSpeechController } from "@/lib/audio/browser-speech";
 import { getCleanAudioStream } from "@/lib/audio/audio-manager";
@@ -1180,7 +1183,7 @@ export default function SanctuarySessionPage() {
             }}
           >
             <Image
-              src="/hypnotic-circles.png"
+              src="/hypnotic-circles.webp"
               alt="Hypnotic Circle Anchor"
               aria-hidden="true"
               width={680}

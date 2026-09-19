@@ -807,7 +807,7 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
                       }}
                     >
                       <Image
-                        src="/hypnotic-circles.png"
+                        src="/hypnotic-circles.webp"
                         alt="Trataka Peripheral Anchor"
                         aria-hidden="true"
                         width={750}

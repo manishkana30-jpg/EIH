@@ -89,7 +89,7 @@ assert(tratakaSource.includes('shadow-[0_0_40px_10px_rgba(251,191,36,0.8)]'), 'B
 assert(tratakaSource.includes('rounded-full'), 'Bindu must be circular');
 assert(tratakaSource.includes('w-4 h-4'), 'Bindu must have w-4 h-4 dimensions');
 assert(!tratakaSource.includes('<img src="/bindu'), 'Must NOT use external image file for Bindu');
-assert(tratakaSource.includes('/hypnotic-circles.png'), 'Must reference hypnotic circles for peripheral anchor');
+assert(tratakaSource.includes('/hypnotic-circles.webp'), 'Must reference hypnotic circles (WebP optimized) for peripheral anchor');
 assert(tratakaSource.includes('isHypnoticPeripheralActive'), 'Hypnotic peripheral circle must only activate after 1 min of gazing');
 console.log('  ✓ Pure CSS Digital Bindu verified (w-4 h-4, bg-amber-400, radiant glow, 0 external image dependencies)');
 console.log('  ✓ Hypnotic peripheral circles verified at 10% opacity spinning anchor');
@@ -108,7 +108,7 @@ const pageFilePath = path.join(__dirname, '../app/(session)/page.tsx');
 assert(fs.existsSync(pageFilePath), 'app/(session)/page.tsx must exist');
 const pageSource = fs.readFileSync(pageFilePath, 'utf8');
 
-assert(pageSource.includes('import { TratakaModule } from "./components/TratakaModule"'), 'Must import TratakaModule');
+assert(pageSource.includes('import { TratakaModule } from "./components/TratakaModule"') || pageSource.includes('import("./components/TratakaModule")'), 'Must import TratakaModule (static or dynamic)');
 assert(pageSource.includes('isTratakaOpen'), 'Must manage isTratakaOpen state');
 assert(pageSource.includes('setIsTratakaOpen(true)'), 'Must have trigger button opening TratakaModule');
 assert(pageSource.includes('<TratakaModule'), 'Must mount TratakaModule overlay component');

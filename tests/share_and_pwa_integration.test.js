@@ -37,7 +37,7 @@ const pageSource = fs.readFileSync(pagePath, 'utf8');
 // Check Icons imported
 assert(pageSource.includes('Share2'), 'page.tsx must import Share2 icon');
 assert(pageSource.includes('Download'), 'page.tsx must import Download icon');
-assert(pageSource.includes('import { PwaInstallModal }'), 'page.tsx must import PwaInstallModal');
+assert(pageSource.includes('import { PwaInstallModal }') || pageSource.includes('import("./components/PwaInstallModal")'), 'page.tsx must import PwaInstallModal (static or dynamic)');
 console.log('  ✓ Share2, Download, and PwaInstallModal imports verified');
 
 // Check Left Column Aside
