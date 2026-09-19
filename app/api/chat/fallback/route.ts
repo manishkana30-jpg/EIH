@@ -176,8 +176,9 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const gitaItem = findGitaWisdom(cleanPrompt);
-    const tratakItem = resolveTratakaPrescription(cleanPrompt, effectiveDiag?.dimensionName);
+    const libRes = queryPsychologyLibrary(cleanPrompt);
+    const gitaItem = findGitaWisdom(cleanPrompt, effectiveDiag?.dimensionId, libRes?.condition?.id);
+    const tratakItem = resolveTratakaPrescription(cleanPrompt, effectiveDiag?.dimensionId, effectiveDiag?.polyvagalState);
     const gitaBlock = formatGitaShlokaBlock(gitaItem);
 
     // Construct Grounded Clinical System Prompt
@@ -365,11 +366,10 @@ ${webContextSnippet}`;
     }
 
     // 5. Infallible Deterministic Fallback: Gita + Clinical CBT + Tratak
-    const libRes = queryPsychologyLibrary(cleanPrompt);
     const targetLang = cleanPrompt.match(/[\u0900-\u097F]/) ? 'hi' : 'en';
     const fallbackReply = libRes
       ? formatHumanTherapeuticMessage(libRes.condition, targetLang, cleanPrompt)
-      : getLocalizedGeneralAdvice(effectiveDiag?.dimensionName || 'anxiety', targetLang, cleanPrompt);
+      : getLocalizedGeneralAdvice(effectiveDiag?.dimensionId || 'anxiety', targetLang, cleanPrompt);
 
     return NextResponse.json({
       reply: fallbackReply,

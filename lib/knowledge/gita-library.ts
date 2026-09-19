@@ -4,7 +4,13 @@
  * Bhagavad Gita Cognitive Therapy & Psychological Wisdom Library.
  * Provides authentic Sanskrit Shlokas, transliteration, philosophical meanings,
  * and situational cognitive reframings across all clinical emotional states.
+ * 
+ * Accurately analyzes the user's emotional distress and mental problem,
+ * selecting the exact Shloka matching their dilemma, grief, anger, shame,
+ * panic, rumination, burnout, or existential crisis.
  */
+
+import { emotionClassifier } from './emotion-classifier.ts';
 
 export interface GitaShlokaItem {
   id: string;
@@ -12,6 +18,8 @@ export interface GitaShlokaItem {
   verse: string;
   theme: string;
   keywords: string[];
+  associated_emotions: string[];
+  associated_conditions: string[];
   shloka_sanskrit: string;
   shloka_roman: string;
   philosophical_meaning: string;
@@ -28,11 +36,15 @@ export const GITA_LIBRARY: GitaShlokaItem[] = [
     chapter: 2,
     verse: "47",
     theme: "Outcome Detachment / Career Anxiety / Decision Paralysis",
+    associated_emotions: ["confusion", "anxiety"],
+    associated_conditions: ["gad", "career_anxiety", "perfectionism"],
     keywords: [
-      "dilemma", "confused", "cannot decide", "paralysis", "decision",
-      "what should i do", "fear of failure", "results", "outcome", "interview",
-      "exam", "career", "overwhelmed", "kya karu", "dharamsankat", "action",
-      "future", "uncertainty", "perfectionism", "worried about result"
+      "dilemma", "cannot decide", "decision", "what should i do", "fear of failure",
+      "results", "outcome", "interview", "exam", "test", "career", "job", "promotion",
+      "performance", "future", "uncertainty", "perfectionism", "worried about result",
+      "fail", "failing", "kya karu", "dharamsankat", "action", "paralysis",
+      "नौकरी", "परीक्षा", "परिणाम", "क्या करूं", "धर्मसंकट", "नतीजे", "फेल होने का डर",
+      "naukri", "pariksha", "interview"
     ],
     shloka_sanskrit: "कर्मण्येवाधिकारस्ते मा फलेषु कदाचन।\nमा कर्मफलहेतुर्भूर्मा ते सङ्गोऽस्त्वकर्मणि॥",
     shloka_roman: "karmaṇy-evādhikāras te mā phaleṣu kadācana |\nmā karma-phala-hetur bhūr mā te saṅgo 'stv akarmaṇi ||",
@@ -48,10 +60,16 @@ export const GITA_LIBRARY: GitaShlokaItem[] = [
     chapter: 2,
     verse: "14",
     theme: "Impermanence of Pain / Heartbreak / Emotional Transience",
+    associated_emotions: ["sadness", "nostalgia", "empathic_pain"],
+    associated_conditions: ["grief_bereavement", "major_depressive_inertia"],
     keywords: [
-      "pain", "grief", "sadness", "heartbreak", "loss", "suffering",
-      "crying", "unbearable", "hurting", "temporary", "dukkha", "dard",
-      "breakup", "partner", "separation", "mourning", "physical pain", "ache"
+      "heartbreak", "broke up", "breakup", "partner", "separation", "left me",
+      "divorced", "breakup pain", "chest hurts", "crying", "tears", "sobbing",
+      "weep", "loss", "grief", "died", "mourning", "aching", "emotional pain",
+      "sorrow", "sad", "sadness", "unbearable pain", "dukkha", "dard", "dukh",
+      "dil toot gaya", "udas", "udasi", "rona", "ro raha", "breakup ho gaya",
+      "अकेलापन", "उदास", "उदासी", "रोना", "रो रहा", "रो रही", "दिल टूटा", "ब्रेकअप",
+      "दर्द", "दुख", "शोक", "बिछड़ना", "जुदाई"
     ],
     shloka_sanskrit: "मात्रास्पर्शास्तु कौन्तेय शीतोष्णसुखदुःखदाः।\nआगमापायिनोऽनित्यास्तांस्तितिक्षस्व भारत॥",
     shloka_roman: "mātrā-sparśās tu kaunteya śītoṣṇa-sukha-duḥkha-dāḥ |\nāgamāpāyino 'nityās tāṁs titikṣasva bhārata ||",
@@ -67,10 +85,15 @@ export const GITA_LIBRARY: GitaShlokaItem[] = [
     chapter: 2,
     verse: "62-63",
     theme: "Anger Cascade / Betrayal / Cognitive De-escalation",
+    associated_emotions: ["anger"],
+    associated_conditions: ["anger_frustration_dysregulation"],
     keywords: [
-      "anger", "furious", "rage", "irritation", "betrayal", "gaslighting",
-      "boss", "unfair", "frustrated", "screaming", "gussa", "krodh",
-      "insulted", "disrespected", "hostile", "conflict", "argument"
+      "anger", "angry", "furious", "rage", "irritation", "irritated", "mad",
+      "betrayal", "betrayed", "gaslighting", "gaslighted", "toxic boss", "yelled at me",
+      "yelling", "screaming", "shout", "unfair", "disrespected", "insulted",
+      "hostile", "fight", "fighting", "argument", "arguing", "revenge", "conflict",
+      "gussa", "krodh", "naraz", "jhagda", "dhokha", "बदला", "गुस्सा", "क्रोध",
+      "नाराज", "झगड़ा", "धोखा", "अपमान", "चिल्लाना", "बेइज्जती", "चिढ़"
     ],
     shloka_sanskrit: "ध्यायतो विषयान्पुंसः सङ्गस्तेषूपजायते।\nसङ्गात्सञ्जायते कामः कामात्क्रोधोऽभिजायते॥\nक्रोधाद्भवति सम्मोहः सम्मोहात्स्मृतिविभ्रमः।\nस्मृतिभ्रंशाद्बुद्धिनाशो बुद्धिनाशात्प्रणश्यति॥",
     shloka_roman: "dhyāyato viṣayān puṁsaḥ saṅgas teṣūpajāyate |\nsaṅgāt sañjāyate kāmaḥ kāmāt krodho 'bhijāyate ||\nkrodhād bhavati sammohaḥ sammohāt smṛti-vibhramaḥ |\nsmṛti-bhraṁśād buddhi-nāśo buddhi-nāśāt praṇaśyati ||",
@@ -86,10 +109,15 @@ export const GITA_LIBRARY: GitaShlokaItem[] = [
     chapter: 6,
     verse: "5",
     theme: "Self-Mastery / Inner Critic / Imposter Syndrome",
+    associated_emotions: ["disgust", "shame"],
+    associated_conditions: ["shame_core_defectiveness", "imposter_syndrome"],
     keywords: [
-      "self doubt", "self sabotage", "my mind is my enemy", "hopeless",
-      "helpless", "low confidence", "imposter", "inner critic", "shame",
-      "worthless", "failure", "not good enough", "flawed", "defective"
+      "hate myself", "self hate", "worthless", "fake", "failure", "failed",
+      "loser", "stupid", "ugly", "not good enough", "defective", "flawed",
+      "imposter", "shame", "ashamed", "guilty", "guilt", "self doubt",
+      "self sabotage", "self critical", "inner critic", "low self esteem",
+      "useless", "bekar", "khud se nafrat", "sharm", "galti", "नाकाम", "बेकार",
+      "खुद से नफरत", "शर्म", "गिल्ट", "हीन भावना", "किसी काम का नहीं"
     ],
     shloka_sanskrit: "उद्धरेदात्मनात्मानं नात्मानमवसादयेत्।\nआत्मैव ह्यात्मनो बन्धुरात्मैव रिपुरात्मनः॥",
     shloka_roman: "uddhared ātmanātmānaṁ nātmānam avasādayet |\nātmaiva hy ātmano bandhur ātmaiva ripur ātmanaḥ ||",
@@ -105,10 +133,14 @@ export const GITA_LIBRARY: GitaShlokaItem[] = [
     chapter: 2,
     verse: "70",
     theme: "Ocean Equanimity / Overwhelm / Sensory Chaos",
+    associated_emotions: ["confusion", "anxiety"],
+    associated_conditions: ["adhd_executive_overwhelm", "burnout_fatigue"],
     keywords: [
-      "peace", "stability", "calm", "anxiety", "overwhelmed", "chaos",
-      "storm", "pressure", "turbulent", "shanti", "sukoon", "too much",
-      "racing thoughts", "brain fog", "stressed", "workload", "burnout"
+      "overwhelmed", "too much", "sensory overload", "chaos", "hurricane", "storm",
+      "pressure", "turbulent", "head spinning", "brain fog", "drowning in tasks",
+      "suffocating", "stressed out", "stress", "can't handle this", "racing thoughts",
+      "workload", "bohot zyada", "tanav", "dabav", "pareshan", "दिमाग फट रहा है",
+      "बहुत तनाव", "दबाव", "सब कुछ बिखर रहा है", "बहुत ज्यादा काम"
     ],
     shloka_sanskrit: "आपूर्यमाणमचलप्रतिष्ठं समुद्रमापः प्रविशन्ति यद्वत्।\nतद्वत्कामा यं प्रविशन्ति सर्वे स शान्तिमाप्नोति न कामकामी॥",
     shloka_roman: "āpūryamāṇam acala-pratiṣṭhaṁ samudram āpaḥ praviśanti yadvat |\ntadvat kāmā yaṁ praviśanti sarve sa śāntim āpnoti na kāma-kāmī ||",
@@ -124,10 +156,15 @@ export const GITA_LIBRARY: GitaShlokaItem[] = [
     chapter: 6,
     verse: "26",
     theme: "Restless Mind / Intrusive Thoughts / OCD Rumination",
+    associated_emotions: ["anxiety"],
+    associated_conditions: ["ocd_rumination_loops", "insomnia_hyperarousal"],
     keywords: [
-      "restless", "intrusive", "obsessive", "rumination", "can't stop thinking",
-      "mind wandering", "distracted", "adhd", "looping thoughts", "racing",
-      "mental rituals", "compulsion", "spiral", "overthinking"
+      "overthinking", "intrusive thoughts", "cant stop thinking", "obsessive thoughts",
+      "looping thoughts", "racing thoughts", "mind wandering", "restless mind",
+      "racing mind", "mental rituals", "spiral", "spiraling", "insomnia",
+      "cant sleep", "awake at night", "sleepless", "adhd", "distracted", "chinta",
+      "neend nahi aa rahi", "bechain man", "soch", "neend", "vichar", "विचार रुक नहीं रहे", "ज्यादा सोचना",
+      "नींद नहीं आ रही", "नींद नहीं आती", "नींद", "बेचैन मन", "रात भर जागना", "रात भर", "विचार", "सोच रहा हूँ", "सोचना"
     ],
     shloka_sanskrit: "यतो यतो निश्चरति मनश्चञ्चलमस्थिरम्।\nततस्ततो नियम्यैतदात्मन्येव वशं नयेत्॥",
     shloka_roman: "yato yato niścarati manaś cañcalam asthiram |\ntatas tato niyamyaitad ātmany eva vaśaṁ nayet ||",
@@ -143,10 +180,14 @@ export const GITA_LIBRARY: GitaShlokaItem[] = [
     chapter: 18,
     verse: "63",
     theme: "Autonomy / Existential Paralysis / Free Will",
+    associated_emotions: ["confusion"],
+    associated_conditions: ["existential_dread_crisis"],
     keywords: [
-      "freedom", "choice", "paralyzed", "responsibility", "clarity",
-      "free will", "what do you think", "tell me what to do", "stuck",
-      "existential", "crossroads", "life choice", "independent"
+      "crossroads", "two paths", "which way", "life choice", "independent",
+      "what path", "should i quit", "should i leave", "freedom", "choice",
+      "autonomy", "responsibility", "clarity", "existential question", "free will",
+      "faisla", "kaun sa rasta", "nirnay", "दोराहे पर", "फैसला", "कौन सा रास्ता",
+      "क्या चुनूं", "जीवन का रास्ता"
     ],
     shloka_sanskrit: "इति ते ज्ञानमाख्यातं गुह्याद्गुह्यतरं मया।\nविमृश्यैतदशेषेण यथेच्छसि तथा कुरु॥",
     shloka_roman: "iti te jñānam ākhyātaṁ guhyād guhyataraṁ mayā |\nvimṛśyaitad aśeṣeṇa yathecchasi tathā kuru ||",
@@ -162,9 +203,13 @@ export const GITA_LIBRARY: GitaShlokaItem[] = [
     chapter: 2,
     verse: "56",
     theme: "Sthitaprajna / Emotional Stability / Freedom from Fear",
+    associated_emotions: ["fear", "horror"],
+    associated_conditions: ["panic_dysregulation", "trauma_hypervigilance"],
     keywords: [
-      "fear", "panic", "scared", "terrified", "mood swings", "emotional",
-      "unstable", "sensitive", "equanimity", "fear of future", "darr"
+      "fear", "afraid", "scared", "terrified", "terror", "panic", "panic attack",
+      "trembling", "shaking", "dread", "shuddering", "frightening", "frightened",
+      "phobia", "impending doom", "horror", "shudder", "darr", "bhay", "dahshat",
+      "kamp raha", "डर", "भय", "दहशत", "कांप रहा", "पैनिक", "भयानक", "डर लग रहा है"
     ],
     shloka_sanskrit: "दुःखेष्वनुद्विग्नमनाः सुखेषु विगतस्पृहः।\nवीतरागभयक्रोधः स्थितधीर्मुनिरुच्यते॥",
     shloka_roman: "duḥkheṣv anudvigna-manāḥ sukheṣu vigata-spṛhaḥ |\nvīta-rāga-bhaya-krodhaḥ sthita-dhīr munir ucyate ||",
@@ -180,10 +225,14 @@ export const GITA_LIBRARY: GitaShlokaItem[] = [
     chapter: 12,
     verse: "15",
     theme: "Social Anxiety / Relational Boundary / Toxic Environment",
+    associated_emotions: ["awkwardness", "disgust"],
+    associated_conditions: ["social_evaluative_threat", "compassion_fatigue_caregiver"],
     keywords: [
-      "social anxiety", "people pleasing", "criticism", "judgment", "rejected",
-      "toxic people", "gossip", "afraid of what they think", "rejection",
-      "conflict", "interpersonal", "lonely", "alienated"
+      "social anxiety", "people pleasing", "what people think", "afraid of what they think", "criticism", "criticized",
+      "judged", "judging me", "social", "social gatherings", "rejected", "rejection", "toxic people", "toxic family",
+      "toxic friend", "gossip", "isolated", "left out", "unloved", "interpersonal",
+      "log kya kahenge", "akele chhod diya", "लोग क्या कहेंगे", "समाज", "तिरस्कार",
+      "अकेला छोड़ दिया", "जज कर रहे हैं", "आलोचना"
     ],
     shloka_sanskrit: "यस्मान्नोद्विजते लोको लोकान्नोद्विजते च यः।\nहर्षामर्षभयोद्वेगैर्मुक्तो यः स च मे प्रियः॥",
     shloka_roman: "yasmān nodvijate loko lokān nodvijate ca yaḥ |\nharṣāmarṣa-bhayodvegair mukto yaḥ sa ca me priyaḥ ||",
@@ -199,9 +248,13 @@ export const GITA_LIBRARY: GitaShlokaItem[] = [
     chapter: 3,
     verse: "35",
     theme: "Comparison Fatigue / Authenticity / Svadharma",
+    associated_emotions: ["awkwardness", "disgust"],
+    associated_conditions: ["imposter_syndrome"],
     keywords: [
-      "comparison", "jealousy", "envy", "everyone is ahead of me", "behind in life",
-      "social media", "imposter", "inadequate", "failing", "svadharma"
+      "comparison", "comparing", "compare", "jealousy", "jealous", "envy",
+      "envious", "everyone is ahead", "behind in life", "peers are successful",
+      "social media", "feel inadequate", "svadharma", "tulna", "jalan",
+      "sab aage nikal gaye", "तुलना", "जलन", "ईर्ष्या", "सब आगे निकल गए", "मैं पीछे रह गया"
     ],
     shloka_sanskrit: "श्रेयान्स्वधर्मो विगुणः परधर्मात्स्वनुष्ठितात्।\nस्वधर्मे निधनं श्रेयः परधर्मो भयावहः॥",
     shloka_roman: "śreyān sva-dharmo viguṇaḥ para-dharmāt sv-anuṣṭhitāt |\nsva-dharme nidhanaṁ śreyaḥ para-dharmo bhayāvahaḥ ||",
@@ -217,9 +270,13 @@ export const GITA_LIBRARY: GitaShlokaItem[] = [
     chapter: 5,
     verse: "23",
     theme: "Urge Surfing / Impulsive Reaction / Distress Tolerance",
+    associated_emotions: ["craving"],
+    associated_conditions: ["adhd_executive_overwhelm"],
     keywords: [
-      "impulsive", "urge", "addiction", "reaction", "craving", "lost control",
-      "irritated", "can't resist", "compulsion", "emotional explosion"
+      "urge", "impulse", "impulsive", "craving", "addiction", "addict",
+      "lost control", "cant resist", "relapse", "binge", "bingeing",
+      "emotional eating", "bad habit", "compulsion", "lalach", "talab",
+      "kabu nahi", "तलब", "आदत", "लत", "काबू नहीं", "खुद पर नियंत्रण नहीं"
     ],
     shloka_sanskrit: "शक्नोतीहैव यः सोढुं प्राक्शरीरविमोक्षणात्।\nकामक्रोधोद्भवं वेगं स युक्तः स सुखी नरः॥",
     shloka_roman: "śaknotīhaiva yaḥ soḍhuṁ prāk śarīra-vimokṣaṇāt |\nkāma-krodhodbhavaṁ vegaṁ sa yuktaḥ sa sukhī naraḥ ||",
@@ -235,10 +292,15 @@ export const GITA_LIBRARY: GitaShlokaItem[] = [
     chapter: 18,
     verse: "66",
     theme: "Existential Surrender / Severe Despair / Radical Acceptance",
+    associated_emotions: ["sadness", "boredom"],
+    associated_conditions: ["major_depressive_inertia", "burnout_fatigue"],
     keywords: [
-      "despair", "exhausted", "give up", "hopeless", "cannot go on",
-      "depressed", "heavy", "surrender", "burden", "alone in the world",
-      "tired of fighting", "darkness"
+      "despair", "hopeless", "hopelessness", "give up", "giving up", "cannot go on",
+      "cant do this anymore", "depressed", "depression", "exhausted", "exhaustion",
+      "heavy burden", "alone in the world", "tired of fighting", "darkness", "empty",
+      "numbness", "no meaning", "surrender", "nirasha", "thak chuka hu",
+      "koi umeed nahi", "भारीपन", "निराशा", "डिप्रेशन", "थक चुका हूँ", "थक चुकी हूँ",
+      "कोई उम्मीद नहीं बची", "हार मान ली", "अंधकार"
     ],
     shloka_sanskrit: "सर्वधर्मान्परित्यज्य मामेकं शरणं व्रज।\nअहं त्वां सर्वपापेभ्यो मोक्षयिष्यामि मा शुचः॥",
     shloka_roman: "sarva-dharmān parityajya mām ekaṁ śaraṇaṁ vraja |\nahaṁ tvāṁ sarva-pāpebhyo mokṣayiṣyāmi mā śucaḥ ||",
@@ -251,33 +313,120 @@ export const GITA_LIBRARY: GitaShlokaItem[] = [
   }
 ];
 
+export const EMOTION_TO_GITA_MAP: Record<string, string> = {
+  sadness: 'bg_2_14',
+  nostalgia: 'bg_2_14',
+  empathic_pain: 'bg_2_14',
+  anger: 'bg_2_62_63',
+  disgust: 'bg_6_5',
+  fear: 'bg_2_56',
+  horror: 'bg_2_56',
+  anxiety: 'bg_2_70',
+  confusion: 'bg_2_47',
+  boredom: 'bg_18_66',
+  craving: 'bg_5_23',
+  awkwardness: 'bg_12_15',
+  calmness: 'bg_2_70',
+  relief: 'bg_2_70',
+};
+
+export const CONDITION_TO_GITA_MAP: Record<string, string> = {
+  grief_bereavement: 'bg_2_14',
+  major_depressive_inertia: 'bg_18_66',
+  anger_frustration_dysregulation: 'bg_2_62_63',
+  shame_core_defectiveness: 'bg_6_5',
+  imposter_syndrome: 'bg_6_5',
+  panic_dysregulation: 'bg_2_56',
+  trauma_hypervigilance: 'bg_2_56',
+  gad: 'bg_2_47',
+  ocd_rumination_loops: 'bg_6_26',
+  insomnia_hyperarousal: 'bg_6_26',
+  adhd_executive_overwhelm: 'bg_2_70',
+  burnout_fatigue: 'bg_18_66',
+  social_evaluative_threat: 'bg_12_15',
+  existential_dread_crisis: 'bg_18_63',
+  compassion_fatigue_caregiver: 'bg_12_15',
+  health_anxiety_somatization: 'bg_2_56',
+};
+
 /**
- * Deterministic Semantic & Keyword Matcher
- * Finds the most clinically applicable Bhagavad Gita Shloka for any user situation.
+ * Intelligent Multi-Factor Bhagavad Gita Matcher
+ * Understands the user's emotional distress and mental problem first,
+ * then maps it to the exact corresponding Shloka.
  */
-export function findGitaWisdom(userQuery: string): GitaShlokaItem {
+export function findGitaWisdom(
+  userQuery: string,
+  detectedEmotion?: string,
+  conditionId?: string
+): GitaShlokaItem {
   if (!userQuery || !userQuery.trim()) {
-    return GITA_LIBRARY[0]; // Default BG 2.47
+    return GITA_LIBRARY[0];
   }
 
-  const clean = userQuery.toLowerCase();
-  let bestMatch = GITA_LIBRARY[0];
-  let maxScore = -1;
+  const clean = userQuery.toLowerCase().trim();
+
+  // 1. Resolve psychological emotional affect if not provided
+  let effectiveEmotion = (detectedEmotion || '').toLowerCase().trim();
+  if (!effectiveEmotion) {
+    try {
+      const diag = emotionClassifier.classifyText(clean);
+      effectiveEmotion = (diag.dimensionId || '').toLowerCase();
+    } catch {
+      // Ignore
+    }
+  }
+
+  let bestMatch: GitaShlokaItem | null = null;
+  let maxScore = 0;
 
   for (const item of GITA_LIBRARY) {
     let score = 0;
+
+    // Direct keyword & phrase matches (higher weight for longer/exact phrases)
     for (const kw of item.keywords) {
-      if (clean.includes(kw)) {
-        score += kw.length > 6 ? 3 : 2;
+      const lkw = kw.toLowerCase();
+      if (clean.includes(lkw)) {
+        score += lkw.length > 6 ? 5 : 3;
       }
     }
+
+    // Emotion correlation (+5)
+    if (effectiveEmotion && item.associated_emotions.includes(effectiveEmotion)) {
+      score += 5;
+    }
+
+    // Clinical condition correlation (+7)
+    if (conditionId && item.associated_conditions.includes(conditionId)) {
+      score += 7;
+    }
+
     if (score > maxScore) {
       maxScore = score;
       bestMatch = item;
     }
   }
 
-  return bestMatch;
+  // If score earned, return top matched Shloka
+  if (bestMatch && maxScore > 0) {
+    return bestMatch;
+  }
+
+  // Fallback: Map directly by classified emotional distress
+  if (effectiveEmotion && EMOTION_TO_GITA_MAP[effectiveEmotion]) {
+    const targetId = EMOTION_TO_GITA_MAP[effectiveEmotion];
+    const found = GITA_LIBRARY.find((s) => s.id === targetId);
+    if (found) return found;
+  }
+
+  // Fallback: Map directly by clinical condition ID
+  if (conditionId && CONDITION_TO_GITA_MAP[conditionId]) {
+    const targetId = CONDITION_TO_GITA_MAP[conditionId];
+    const found = GITA_LIBRARY.find((s) => s.id === targetId);
+    if (found) return found;
+  }
+
+  // Final fallback
+  return GITA_LIBRARY[0];
 }
 
 /**

@@ -16,6 +16,7 @@ import {
 } from "../i18n/clinical-localization.ts";
 import { findGitaWisdom, formatGitaShlokaBlock } from "../knowledge/gita-library.ts";
 import { resolveTratakaPrescription } from "../knowledge/trataka-recommendations.ts";
+import { emotionClassifier } from "../knowledge/emotion-classifier.ts";
 
 const THERAPIST_SYSTEM_PROMPT = `
 You are an Expert Clinical Psychologist and Spiritual Master integrating Modern Neuropsychology (CBT & Polyvagal Somatic Science) with the sacred wisdom of the Bhagavad Gita (Sattvavajaya Chikitsa) and Tratak (Ocular Neuro-Meditation).
@@ -234,11 +235,15 @@ export async function generateTherapeuticResponse(
     Promise.resolve(queryPsychologyLibrary(userMessage)),
   ]);
 
-  const gitaItem = findGitaWisdom(userMessage);
+  const emotionDiagnostic = emotionClassifier.classifyText(userMessage);
+  const detectedEmotion = emotionDiagnostic.dimensionId;
+  const conditionId = libraryRag?.condition?.id;
+
+  const gitaItem = findGitaWisdom(userMessage, detectedEmotion, conditionId);
   const tratakPrescription = resolveTratakaPrescription(
     userMessage,
-    undefined,
-    libraryRag?.condition?.triguna_balance
+    detectedEmotion,
+    emotionDiagnostic.polyvagalState || libraryRag?.condition?.triguna_balance
   );
   const gitaBlock = formatGitaShlokaBlock(gitaItem);
 
@@ -408,11 +413,8 @@ Keep the Sanskrit Shloka in Devanagari script, and provide all reflections, CBT 
         source: "psychology_library",
       };
     }
-  } else if (clinicalEvidence.length > 0) {
-    const primaryEvidence = clinicalEvidence[0];
-    fallbackReply = getLocalizedGeneralAdvice(primaryEvidence.title, targetLanguage, userMessage);
   } else {
-    fallbackReply = getLocalizedGeneralAdvice("default", targetLanguage, userMessage);
+    fallbackReply = getLocalizedGeneralAdvice(detectedEmotion || "anxiety", targetLanguage, userMessage);
   }
 
   return {

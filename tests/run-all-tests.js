@@ -22,6 +22,7 @@ require('./verify_camera_button_execution.test.js');
 require('./share_and_pwa_integration.test.js');
 require('./test-crisis-helplines-geo.js');
 require('./edge_caching_and_asset_bundle.test.js');
+require('./test-diverse-shloka-selection.js');
 
 
 console.log('================================================================');

@@ -91,6 +91,8 @@ export const TRATAKA_PRESCRIPTIONS: Record<TratakaModeId, TratakaPrescription> =
   }
 };
 
+import { emotionClassifier } from './emotion-classifier.ts';
+
 /**
  * Maps any user query and psychological state to the optimal Trataka mode and instructions.
  */
@@ -100,11 +102,23 @@ export function resolveTratakaPrescription(
   polyvagalState?: string
 ): TratakaPrescription {
   const q = (query || '').toLowerCase();
-  const emo = (dominantEmotion || '').toLowerCase();
-  const poly = (polyvagalState || '').toLowerCase();
+  let emo = (dominantEmotion || '').toLowerCase();
+  let poly = (polyvagalState || '').toLowerCase();
+
+  // If emotion or polyvagal state not passed, classify dynamically
+  if ((!emo || !poly) && query && query.trim()) {
+    try {
+      const diag = emotionClassifier.classifyText(query);
+      if (!emo) emo = (diag.dimensionId || '').toLowerCase();
+      if (!poly) poly = (diag.polyvagalState || '').toLowerCase();
+    } catch {
+      // ignore
+    }
+  }
 
   // 1. Shame / Imposter / Self-Criticism -> Pratibimb (Mirror)
   if (
+    emo === 'disgust' ||
     q.includes('shame') ||
     q.includes('imposter') ||
     q.includes('failure') ||
@@ -112,13 +126,19 @@ export function resolveTratakaPrescription(
     q.includes('defect') ||
     q.includes('worthless') ||
     q.includes('ugly') ||
-    q.includes('not enough')
+    q.includes('not enough') ||
+    q.includes('शर्म') ||
+    q.includes('हीनभावना') ||
+    q.includes('खुद से नफरत') ||
+    q.includes('bekar') ||
+    q.includes('sharm')
   ) {
     return TRATAKA_PRESCRIPTIONS.pratibimb;
   }
 
-  // 2. Decision paralysis / Existential / Overthinking / Cross-roads -> Shoonya (Void)
+  // 2. Decision paralysis / Existential / Overthinking / Insomnia -> Shoonya (Void)
   if (
+    emo === 'confusion' ||
     q.includes('decide') ||
     q.includes('decision') ||
     q.includes('paralysis') ||
@@ -127,14 +147,25 @@ export function resolveTratakaPrescription(
     q.includes('crossroads') ||
     q.includes('overthinking') ||
     q.includes('insomnia') ||
-    q.includes('sleep')
+    q.includes('sleep') ||
+    q.includes('ruminat') ||
+    q.includes('awake') ||
+    q.includes('kya karu') ||
+    q.includes('soch soch kar') ||
+    q.includes('नींद') ||
+    q.includes('असमंजस') ||
+    q.includes('दुविधा') ||
+    q.includes('धर्मसंकट')
   ) {
     return TRATAKA_PRESCRIPTIONS.shoonya;
   }
 
-  // 3. Depressive Inertia / Burnout / Exhaustion / Grief -> Jyoti (Flame)
+  // 3. Depressive Inertia / Burnout / Exhaustion / Grief / Heartbreak -> Jyoti (Flame)
   if (
     poly.includes('dorsal') ||
+    emo === 'sadness' ||
+    emo === 'empathic_pain' ||
+    emo === 'boredom' ||
     q.includes('depress') ||
     q.includes('burnout') ||
     q.includes('exhaust') ||
@@ -142,25 +173,47 @@ export function resolveTratakaPrescription(
     q.includes('tired') ||
     q.includes('grief') ||
     q.includes('numb') ||
-    emo.includes('sadness')
+    q.includes('heartbreak') ||
+    q.includes('breakup') ||
+    q.includes('dil toot') ||
+    q.includes('udas') ||
+    q.includes('rona') ||
+    q.includes('dard') ||
+    q.includes('dukh') ||
+    q.includes('gam') ||
+    q.includes('रोना') ||
+    q.includes('उदासी') ||
+    q.includes('थकान') ||
+    q.includes('अकेलापन') ||
+    q.includes('दिल टूट') ||
+    q.includes('दर्द') ||
+    q.includes('दुख') ||
+    q.includes('शोक')
   ) {
     return TRATAKA_PRESCRIPTIONS.flame;
   }
 
-  // 4. Chaotic thoughts / ADHD / Sensory overwhelm / Relationship conflict -> Murti (Mandala)
+  // 4. Chaotic thoughts / ADHD / Sensory overwhelm / Relationship conflict / Anger -> Murti (Mandala)
   if (
+    emo === 'anger' ||
     q.includes('chaos') ||
     q.includes('adhd') ||
     q.includes('relationship') ||
     q.includes('fight') ||
     q.includes('conflict') ||
     q.includes('partner') ||
-    q.includes('racing') ||
-    q.includes('scattered')
+    q.includes('scattered') ||
+    q.includes('overwhelm') ||
+    q.includes('gussa') ||
+    q.includes('krodh') ||
+    q.includes('गुस्सा') ||
+    q.includes('क्रोध') ||
+    q.includes('लड़ाई')
   ) {
     return TRATAKA_PRESCRIPTIONS.murti;
   }
 
-  // 5. Default: Acute anxiety / fear / sympathetic spikes -> Bindu (Golden Dot)
+  // 5. Default / Acute anxiety / Panic / Fear / Sympathetic Spikes -> Bindu (Golden Amber Dot)
   return TRATAKA_PRESCRIPTIONS.bindu;
 }
+
