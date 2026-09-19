@@ -37,6 +37,7 @@ import { LanguageSelector } from "./components/LanguageSelector";
 import { TratakaModule } from "./components/TratakaModule";
 import { PwaInstallModal } from "./components/PwaInstallModal";
 import { GitaShlokaCard, parseGitaShloka } from "./components/GitaShlokaCard";
+import { ClinicalGuideSection } from "@/components/editorial/ClinicalGuideSection";
 
 import { browserSpeechController } from "@/lib/audio/browser-speech";
 import { getCleanAudioStream } from "@/lib/audio/audio-manager";
@@ -573,7 +574,8 @@ export default function SanctuarySessionPage() {
   const isSessionActive = isRecording || isPlayingAudio || isVoiceModeActiveRef.current;
 
   return (
-    <div className="flex h-screen w-full bg-slate-950 text-slate-100 font-sans overflow-hidden select-none">
+    <div className="flex flex-col min-h-screen w-full bg-[#09090b] text-slate-100 font-sans overflow-y-auto select-none">
+      <div className="relative flex h-[calc(100vh-65px)] min-h-[640px] w-full bg-slate-950 overflow-hidden shrink-0">
       {/* ─────────────────────────────────────────────────────────────
           MOBILE NAVIGATION DRAWER (Slide-over from left)
       ───────────────────────────────────────────────────────────── */}
@@ -1755,6 +1757,10 @@ export default function SanctuarySessionPage() {
         isInstalled={isAppInstalled}
         onInstallSuccess={() => setIsAppInstalled(true)}
       />
+      </div>
+
+      {/* Authoritative Clinical Editorial Guide & FAQ */}
+      <ClinicalGuideSection />
     </div>
   );
 }

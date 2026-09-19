@@ -1,0 +1,64 @@
+# Emotional Intelligence Healer (EIH) — Neuro-Vedantic Mind Sanctuary
+> Production URL: https://eih-chi.vercel.app/
+> Primary Keyword: AI Emotional Intelligence Healer
+> Target Audience: Global individuals seeking evidence-based emotional regulation and spiritual cognitive reframing.
+
+## 1. System Overview & Philosophical Architecture
+Emotional Intelligence Healer (EIH) is an autonomous, zero-knowledge clinical psychotherapy and emotional regulation sanctuary. It bridges Western clinical neuroscience with classical Ayurvedic and Vedantic mind sciences:
+- Western Neuroscience: Theory of Constructed Emotion (Dr. Lisa Feldman Barrett), Polyvagal Autonomic Regulation (Dr. Stephen Porges), 27-Dimensional Emotion Topology (Cowen & Keltner), and Cognitive Behavioral Therapy (CBT).
+- Eastern Vedantic Psychology: Ayurvedic Sattvavajaya Chikitsa (mind control therapy), Triguna constitutional balance (Sattva, Rajas, Tamas), 5-Stage Trataka visual ocular fixation, and Bhagavad Gita Cognitive Restructuring.
+
+## 2. Core Clinical Modules
+
+### 2.1. Bhagavad Gita Cognitive Therapy Engine
+When users present existential dilemmas, moral confusion, or decision paralysis (in English, Hindi, or Hinglish), EIH retrieves grounded Sanskrit Shlokas from ChromaDB and executes a 4-step therapeutic prompt pipeline:
+1. THE SHLOKA: Sanskrit in Devanagari followed by Roman transliteration (e.g., BG 2.47 for outcome detachment, BG 2.14 for emotional transience, BG 2.62-63 for anger cascade, BG 6.5 for self-mastery, BG 2.70 for equanimity, BG 18.63 for autonomous clarity).
+2. THE MEANING: Direct, profound philosophical translation without introductory platitudes.
+3. THE CLINICAL REFLECTION: Mapping ancient verses to modern psychological dilemmas and cognitive rumination.
+4. THE KARMA: Actionable dual-pole guidance: "What to do" (focusing on immediate duty) vs. "What NOT to do" (releasing attachment to unpredictable results).
+
+### 2.2. 5-Stage Trataka Gazing Protocol
+A sequential ocular fixation and neuro-visual stabilization practice:
+- Stage 1: Somatic Preparation (0:00 - 1:00) with 4:4:4:4 Box Breathing.
+- Stage 2: Bahiranga Trataka (1:00 - 3:00) with a mandatory 2-minute digital eye-safety limit.
+- Stage 3: Antaranga Trataka (3:00 - 4:00) internal visualization on a dark field.
+- Stage 4: Neuroplastic Reframe (4:00 - 5:00) integrating cognitive interventions.
+- Stage 5: Eye Safety & Palming (5:00 - 5:30) warm palm cupping for optic nerve recovery.
+Five Modalities: Bindu (Focus), Flame (Agni/Inertia), Murti (Geometric Balance), Pratibimb (Mirror Self-Compassion), Shoonya (Void Stillness).
+
+### 2.3. Pratibimb WebRTC Mirror Therapy
+A front-camera self-witnessing intervention for dissociation, emotional numbness, and alexithymia:
+- Video processed 100% locally in volatile browser memory using WebRTC.
+- Horizontal mirror flip (`scaleX(-1)`) with soft grayscale desaturation.
+- Automated hardware track teardown (`track.stop()`) on unmount.
+- Zero recording, zero transmission, zero biometric storage.
+
+### 2.4. Zero-Knowledge Cryptographic Vault
+- Native Web Crypto API (AES-GCM-256) with 310,000 PBKDF2 iterations.
+- Local IndexedDB storage on client device (`EIH_KeyVault`).
+- Server daemons never receive raw API keys or session transcripts.
+- 1-Click Panic Purge instantly deletes all client-side encryption keys and data.
+
+## 3. Polyvagal & Triguna Telemetry Classifications
+- Polyvagal Nervous System States:
+  - Ventral Vagal (Safe / Social / Regulated)
+  - Sympathetic (Mobilized / Fight / Flight / Anxiety)
+  - Dorsal Vagal (Immobilized / Freeze / Burnout / Numbness)
+- Triguna Balance Metrics:
+  - Sattva: Clarity, light, calm, emotional equilibrium.
+  - Rajas: Movement, agitation, passion, racing thoughts.
+  - Tamas: Inertia, darkness, heaviness, avoidance.
+
+## 4. Emergency Crisis Guardrails
+EIH is an AI-assisted psychoeducational sanctuary, not an emergency clinical medical provider. An anti-evasion crisis interceptor continuously scans for self-harm and acute distress, automatically presenting verified 24/7 national lifelines:
+- United States & Canada: 988 Suicide & Crisis Lifeline / Crisis Text Line (Text HOME to 741741)
+- India: tele-MANAS 14416 / 1800-891-4416 (24/7 Toll-Free)
+- United Kingdom: 111 (NHS) / 116 123 (Samaritans)
+
+## 5. Official Canonical Web Endpoints
+- Production Sanctuary: https://eih-chi.vercel.app/
+- Clinical Methodology: https://eih-chi.vercel.app/about
+- 24/7 Crisis Resource Directory: https://eih-chi.vercel.app/crisis
+- Zero-Knowledge Privacy Policy: https://eih-chi.vercel.app/privacy-policy
+- Terms & Psychiatric Disclaimer: https://eih-chi.vercel.app/terms
+- Clinical Library: https://eih-chi.vercel.app/library

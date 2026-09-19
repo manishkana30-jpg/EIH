@@ -2,14 +2,14 @@ import { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Emotional Intelligence Healer',
-    short_name: 'EIH Healer',
-    description: 'Autonomous 4-Tier Voice & Cognitive Emotional Companion grounded in modern neuroscience and Ayurveda.',
+    name: 'Emotional Intelligence Healer | Neuro-Vedantic Sanctuary',
+    short_name: 'EIH Sanctuary',
+    description: 'Evidence-based clinical psychotherapy bridging CBT and Polyvagal Neuroscience with Bhagavad Gita cognitive therapy and 5-stage Trataka gazing.',
     start_url: '/',
     display: 'standalone',
     orientation: 'portrait',
-    background_color: '#030712',
-    theme_color: '#0284c7',
+    background_color: '#09090b',
+    theme_color: '#f59e0b',
     icons: [
       {
         src: '/icons/icon-192x192.png',

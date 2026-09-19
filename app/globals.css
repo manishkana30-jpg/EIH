@@ -27,6 +27,15 @@
     --status-calm: #588e73;      /* Positive state indicator */
     --status-alert: #d4a94a;     /* Gentle prompt */
 
+    /* Sanctuary Theme Tokens */
+    --color-obsidian: #09090b;
+    --color-surface-zinc: #18181b;
+    --color-border-zinc: #27272a;
+    --color-amber-sacred: #f59e0b;
+    --color-ventral: #10b981;
+    --color-sympathetic: #f59e0b;
+    --color-dorsal: #6366f1;
+
     /* Legacy compatibility mappings */
     --bg-nature-base: var(--bg-base);
     --bg-nature-surface: var(--bg-surface);
@@ -37,7 +46,7 @@
     --text-nature-secondary: var(--text-secondary);
     --text-nature-muted: #647d70;
     --accent-clay: #c48b71;
-    --accent-amber: #d4a373;
+    --accent-amber: #f59e0b;
     --bubble-user: #22382c;
     --bubble-ai: #17241d;
     --color-bg: var(--bg-base);
@@ -363,5 +372,19 @@
 .animate-spin-ultra-slow {
   animation: spin-ultra-slow 120s linear infinite;
   transform-origin: center center;
+}
+
+/* ─── Zero-CLS Monetization & Partner Slots ─── */
+.ad-slot-zero-cls-large {
+  min-height: 280px;
+}
+.ad-slot-zero-cls-small {
+  min-height: 90px;
+}
+
+/* ─── Accessible Focus Ring ─── */
+.focus-ring-amber:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.5);
 }
 
