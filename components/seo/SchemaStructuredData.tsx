@@ -96,7 +96,7 @@ export const FAQAccordion: React.FC = () => {
     {
       question: "What should I do if I am experiencing an acute psychological crisis?",
       answer:
-        "EIH is an AI-assisted psychoeducational sanctuary, not an emergency clinical service. If you are experiencing thoughts of self-harm, please dial 988 (USA/Canada), 14416 (tele-MANAS India), 111 (UK), or visit our dedicated 24/7 Crisis Resource Directory.",
+        "EIH is an AI-assisted psychoeducational sanctuary, not an emergency clinical service. If you are experiencing thoughts of self-harm or acute distress, please dial your local emergency services (instantly accessible via our GPS Crisis Directory) or connect with verified 24/7 crisis hotlines.",
     },
   ];
 

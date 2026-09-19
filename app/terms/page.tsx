@@ -48,14 +48,8 @@ export default function TermsPage() {
             <span>2. Acute Crisis & Emergency Situations</span>
           </h2>
           <p className="text-zinc-400">
-            If you or someone you are supporting is experiencing thoughts of suicide, self-harm, severe psychiatric episodes, or imminent danger, <strong>do not rely on this application</strong>. Exit the sanctuary immediately and contact professional emergency responders:
+            If you or someone you are supporting is experiencing thoughts of suicide, self-harm, severe psychiatric episodes, or imminent danger, <strong>do not rely on this application</strong>. Exit the sanctuary immediately and contact professional emergency responders using our <Link href="/crisis" className="text-amber-400 underline font-semibold">24/7 GPS Emergency Crisis Directory</Link>, which dynamically resolves your exact device GPS coordinates to connect you with verified local emergency numbers, national suicide prevention hotlines, and nearby physical psychiatric facilities worldwide.
           </p>
-          <ul className="list-disc list-inside space-y-2 text-zinc-300 text-xs sm:text-sm pl-2">
-            <li><strong>United States & Canada:</strong> Dial or text <a href="tel:988" className="text-amber-400 underline font-bold">988</a> to connect with the Suicide & Crisis Lifeline, or text <code className="bg-zinc-800 px-1 py-0.5 rounded text-zinc-200 font-mono">HOME</code> to <span className="font-bold">741741</span>.</li>
-            <li><strong>India:</strong> Call the national tele-MANAS service at <a href="tel:14416" className="text-amber-400 underline font-bold">14416</a> or <a href="tel:18008914416" className="text-amber-400 underline font-bold">1800-891-4416</a> (24/7 Toll-Free).</li>
-            <li><strong>United Kingdom:</strong> Dial <a href="tel:111" className="text-amber-400 underline font-bold">111</a> for NHS mental health services or call <a href="tel:116123" className="text-amber-400 underline font-bold">116 123</a> for Samaritans.</li>
-            <li><strong>International:</strong> View our complete <Link href="/crisis" className="text-amber-400 underline font-semibold">24/7 Global Crisis Resource Directory</Link>.</li>
-          </ul>
         </section>
 
         {/* Permitted Use & Age Restrictions */}

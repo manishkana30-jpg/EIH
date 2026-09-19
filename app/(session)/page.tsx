@@ -37,7 +37,6 @@ import { LanguageSelector } from "./components/LanguageSelector";
 import { TratakaModule } from "./components/TratakaModule";
 import { PwaInstallModal } from "./components/PwaInstallModal";
 import { GitaShlokaCard, parseGitaShloka } from "./components/GitaShlokaCard";
-import { ClinicalGuideSection } from "@/components/editorial/ClinicalGuideSection";
 
 import { browserSpeechController } from "@/lib/audio/browser-speech";
 import { getCleanAudioStream } from "@/lib/audio/audio-manager";
@@ -1821,8 +1820,30 @@ export default function SanctuarySessionPage() {
       />
       </div>
 
-      {/* Authoritative Clinical Editorial Guide & FAQ */}
-      <ClinicalGuideSection />
+      {/* Link to Dedicated Authoritative Clinical Guide & Evidence Page */}
+      <section aria-label="Clinical Evidence & Research Reference" className="w-full max-w-4xl mx-auto my-10 px-4">
+        <div className="p-6 rounded-2xl bg-zinc-900/60 border border-zinc-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left hover:border-amber-500/30 transition-all shadow-md">
+          <div className="space-y-1">
+            <div className="flex items-center justify-center sm:justify-start gap-2 text-amber-400 text-xs font-mono uppercase tracking-wider">
+              <BookOpen className="w-3.5 h-3.5" />
+              <span>Scientific Foundation & Evidence</span>
+            </div>
+            <h3 className="text-base font-serif font-bold text-zinc-100">
+              The Neuro-Vedantic Synthesis & Peer-Reviewed Clinical Matrix
+            </h3>
+            <p className="text-xs text-zinc-400 max-w-xl leading-relaxed">
+              Explore how Sattvavajaya Chikitsa, Polyvagal theory, and Bhagavad Gita cognitive therapy are operationalized in our clinical architecture.
+            </p>
+          </div>
+          <Link
+            href="/clinical-guide"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 font-semibold text-xs shrink-0 transition-all group"
+          >
+            <span>Read Clinical Guide</span>
+            <span className="group-hover:translate-x-0.5 transition-transform">&rarr;</span>
+          </Link>
+        </div>
+      </section>
     </div>
   );
 }

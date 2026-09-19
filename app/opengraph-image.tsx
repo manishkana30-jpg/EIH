@@ -44,9 +44,9 @@ export default async function Image() {
             marginBottom: '24px',
           }}
         >
-          <span>ॐ</span>
+          <span>🧠</span>
           <span>Neuro-Vedantic Mind Sanctuary</span>
-          <span>ॐ</span>
+          <span>🧠</span>
         </div>
 
         {/* Main Title */}
