@@ -55,10 +55,6 @@ try:
     from keyless_healer.lib.self_learning_therapist import (
         self_learning_therapist,
     )
-    from keyless_healer.lib.gita_rag import (
-        detect_existential_dilemma,
-        gita_rag,
-    )
 except ImportError:
     try:
         from lib.psychology_library_rag import psychology_rag  # type: ignore[import-untyped, import-not-found]
@@ -200,10 +196,6 @@ class ClinicalSolutionRequest(BaseModel):
 class ClinicalExpansionRequest(BaseModel):
     topic: str | None = Field(default=None, description="Topic or condition to expand with AI")
     custom_prompt: str | None = Field(default=None, description="Optional custom guidance")
-
-
-class GitaDilemmaRequest(BaseModel):
-    text: str = Field(..., min_length=1, max_length=4000, description="User dilemma, conflict, or decision struggle")
 
 
 if hasattr(sys.stdout, "reconfigure"):
@@ -855,19 +847,6 @@ async def search_endpoint(payload: SearchRequest, request: Request):
     except Exception as e:
         logger.error(f"Search error: {e}")
         raise HTTPException(status_code=500, detail=f"Search error: {e!s}") from e
-
-
-@app.post("/api/gita/dilemma")
-async def gita_dilemma_endpoint(payload: GitaDilemmaRequest, request: Request):
-    """Detects existential dilemmas and retrieves corresponding Bhagavad Gita cognitive reframes."""
-    enforce_rate_limit(request)
-    is_dilemma = detect_existential_dilemma(payload.text) if detect_existential_dilemma else False
-    shloka = gita_rag.retrieve_shloka(payload.text) if (gita_rag and is_dilemma) else None
-    return {
-        "text": payload.text,
-        "is_dilemma": is_dilemma,
-        "shloka": shloka,
-    }
 
 
 @app.get("/api/library")

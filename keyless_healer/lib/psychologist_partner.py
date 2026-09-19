@@ -70,19 +70,6 @@ except ImportError:
         except ImportError:
             cbt_loader = None  # type: ignore[assignment]
 
-try:
-    from keyless_healer.lib.gita_rag import detect_existential_dilemma, gita_rag
-except ImportError:
-    try:
-        from lib.gita_rag import detect_existential_dilemma, gita_rag  # type: ignore[import-not-found]
-    except ImportError:
-        try:
-            from gita_rag import detect_existential_dilemma, gita_rag  # type: ignore[import-not-found]
-        except ImportError:
-            def detect_existential_dilemma(text: str) -> bool:  # type: ignore[misc]
-                return False
-            gita_rag = None  # type: ignore[assignment]
-
 logger = logging.getLogger("PsychologistPartner")
 
 CRISIS_PATTERNS = [
@@ -278,6 +265,8 @@ class KeylessPsychologistPartner:
         self.ollama_model = ollama_model
         self.search_engine = search_engine or KeylessClinicalSearch()
         self.client = httpx.AsyncClient(timeout=12.0)
+        self._turn_counter = 0
+        self._used_keys: set[str] = set()
 
     def _normalize_anchor(self, text: str) -> str:
         """Extracts clean grammatical entity anchors without broken preposition artifacts."""
@@ -623,20 +612,10 @@ class KeylessPsychologistPartner:
         if rag_guidance:
             telemetry.suggested_strategy = f"{rag_guidance.get('name')} | {rag_guidance.get('solutions', {}).get('cbt_reframing', telemetry.suggested_strategy)}"
 
-        # Existential Dilemma & Decision Paralysis Router -> Bhagavad Gita RAG
-        gita_shloka = None
-        if gita_rag and detect_existential_dilemma(user_message):
-            gita_shloka = await asyncio.to_thread(gita_rag.retrieve_shloka, user_message)
-            if gita_shloka:
-                telemetry.suggested_strategy = f"Bhagavad Gita Cognitive Therapy: {gita_shloka.get('theme')}"
-
         grounded_research = self.search_engine.format_grounding_context(evidence_list)
         context_blocks = [grounded_research]
         if rag_prompt_block:
             context_blocks.insert(0, rag_prompt_block)
-        if gita_shloka and gita_rag:
-            gita_context = gita_rag.format_gita_prompt_context(gita_shloka)
-            context_blocks.insert(0, gita_context)
 
         context_str = "\n\n".join(context_blocks)
 
@@ -654,16 +633,9 @@ class KeylessPsychologistPartner:
         else:
             triguna_data = parse_triguna_balance(None)
 
-        # Prepare unified sources with Psychology Library & Gita Library grounding
+        # Prepare unified sources with Psychology Library grounding
         final_sources = list(evidence_list)
-        if gita_shloka:
-            gita_source = ClinicalEvidence(
-                title=f"Bhagavad Gita BG {gita_shloka.get('chapter')}.{gita_shloka.get('verse')}: {gita_shloka.get('theme')}",
-                summary=f"Sanskrit: {gita_shloka.get('shloka_roman')} | Meaning: {gita_shloka.get('philosophical_meaning')} | Karma: {gita_shloka.get('karma_action')}",
-                source="gita_library"
-            )
-            final_sources.insert(0, gita_source)
-        elif rag_guidance:
+        if rag_guidance:
             sols = rag_guidance.get("solutions", {})
             lib_source = ClinicalEvidence(
                 title=f"Clinical Protocol: {rag_guidance.get('name')} ({rag_guidance.get('triguna_balance', 'Equilibrium')})",
@@ -689,14 +661,7 @@ class KeylessPsychologistPartner:
         if re.search(r"[\u0900-\u097F]", user_message):
             lang_key = "hi"
 
-        if gita_shloka:
-            synth_reply = (
-                f"[GITA_SHLOKA]\n{gita_shloka.get('shloka_sanskrit')}\n{gita_shloka.get('shloka_roman')}\n[/GITA_SHLOKA]\n\n"
-                f"Philosophical Meaning: {gita_shloka.get('philosophical_meaning')}\n\n"
-                f"Clinical Reflection: In navigating your current dilemma, notice how this timeless wisdom directly reframes your struggle. {gita_shloka.get('clinical_reframe')}\n\n"
-                f"Actionable Karma: {gita_shloka.get('karma_action')}"
-            )
-        elif rag_guidance:
+        if rag_guidance:
             cond_id = rag_guidance.get("id") or rag_guidance.get("condition_id") or "cognitive_memory_brain_fog"
             synth_reply = format_human_therapeutic_message(
                 cond_id,
@@ -710,7 +675,7 @@ class KeylessPsychologistPartner:
             reply=synth_reply,
             telemetry=telemetry,
             sources=final_sources,
-            engine_used="Keyless Healer (Gita & Clinical RAG Synthesis)",
+            engine_used="Keyless Healer (Clinical RAG Synthesis)",
             somatic_anchor=anchor,
             recommended_trataka=rec_trataka,
             triguna_analysis=triguna_data,

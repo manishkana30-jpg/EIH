@@ -598,7 +598,7 @@ export const CLINICAL_LOCALIZATION_CATALOG: Record<string, Partial<Record<Suppor
       validation: "I hear your nervous system ringing with alarms, trying fiercely to protect you from danger.",
       cbt_reframing: "Ground in time orientation: 'That was then, this is now. My body is sounding an old alarm, but right here in this physical moment, I am safe and the threat has passed.'",
       somatic_anchor: "Slowly turn your neck to scan the room, feel your feet planted firmly, and name 3 things that are stable and unmoving.",
-      pranayama: "Vocal Vagal Toning: inhale deeply and on the extended exhale make a low, steady 'Voooo' sound from your diaphragm to stimulate vagal nerve tone.",
+      pranayama: "Vocal Vagal Toning: take a deep breath in and on the exhale make a low, steady 'Voooo' sound from your belly to signal safety to your vagus nerve.",
       micro_habit: "Carry a small, textured grounding stone in your pocket and touch it whenever you feel pulled backward into past fear.",
     },
     hi: {
