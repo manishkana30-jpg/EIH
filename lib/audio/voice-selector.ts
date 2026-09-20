@@ -42,9 +42,13 @@ export const getBestTherapeuticVoice = async (targetLang = 'en'): Promise<Speech
   const voices = await getAvailableVoices();
   if (!voices.length) return null;
 
-  // 1. Filter for the target language (e.g., "en-US", "en-GB", "en-IN")
-  const langMatch = targetLang.toLowerCase();
-  const matchedVoices = voices.filter(v => v.lang.toLowerCase().startsWith(langMatch));
+  // 1. Filter for the target language (e.g., "hi-IN", "es-ES", "fr-FR", "de-DE", "en-US")
+  const cleanLang = targetLang.toLowerCase().replace('_', '-');
+  const baseLang = cleanLang.split('-')[0];
+  const matchedVoices = voices.filter(v => {
+    const vLang = v.lang.toLowerCase().replace('_', '-');
+    return vLang === cleanLang || vLang.startsWith(cleanLang) || vLang.startsWith(baseLang);
+  });
   const candidates = matchedVoices.length > 0 ? matchedVoices : voices;
 
   // 2. The Heuristic Scoring Engine
@@ -52,16 +56,21 @@ export const getBestTherapeuticVoice = async (targetLang = 'en'): Promise<Speech
     let score = 0;
     const name = voice.name.toLowerCase();
 
+    // -- REGIONAL & HIGH-FIDELITY NEURAL VOICES --
+    if (name.includes('swara') || name.includes('madhur') || name.includes('kalpana') || name.includes('hemant')) score += 100;
+    if (name.includes('elvira') || name.includes('alvaro') || name.includes('denise') || name.includes('henri') || name.includes('katja') || name.includes('conrad')) score += 100;
+    if (name.includes('हिन्दी') || name.includes('hindi')) score += 85;
+
     // -- WINDOWS & EDGE TIER --
     // Microsoft's "Natural" voices are cloud-backed neural engines (Highest Quality)
     if (name.includes('natural')) score += 100;
-    if (name.includes('aria') || name.includes('jenny') || name.includes('guy') || name.includes('sonia')) score += 50;
+    if (name.includes('aria') || name.includes('jenny') || name.includes('guy') || name.includes('sonia') || name.includes('neerja')) score += 50;
 
     // -- APPLE (iOS / macOS) TIER --
     // Apple labels their high-fidelity downloaded voices as Premium or Enhanced
     if (name.includes('siri')) score += 90; // Siri voices are natively neural
     if (name.includes('premium') || name.includes('enhanced')) score += 80;
-    if (name.includes('samantha') || name.includes('daniel') || name.includes('karen') || name.includes('rishi')) score += 40;
+    if (name.includes('samantha') || name.includes('daniel') || name.includes('karen') || name.includes('rishi') || name.includes('lekha')) score += 40;
 
     // -- ANDROID & CHROME TIER --
     // Google's network voices are vastly superior to local offline processing

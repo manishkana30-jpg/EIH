@@ -15,9 +15,33 @@ from typing import Any
 logger = logging.getLogger("GitaLibraryRAG")
 
 try:
+    from keyless_healer.lib.clinical_localization import (
+        get_localized_gita_item,
+        get_localized_trataka_item,
+        normalize_language_code,
+        CLINICAL_LOCALIZATION_CATALOG,
+    )
+except ImportError:
+    try:
+        from lib.clinical_localization import (  # type: ignore[import-not-found]
+            get_localized_gita_item,
+            get_localized_trataka_item,
+            normalize_language_code,
+            CLINICAL_LOCALIZATION_CATALOG,
+        )
+    except ImportError:
+        from clinical_localization import (  # type: ignore[import-not-found]
+            get_localized_gita_item,
+            get_localized_trataka_item,
+            normalize_language_code,
+            CLINICAL_LOCALIZATION_CATALOG,
+        )
+
+try:
     import chromadb
 except ImportError:
     chromadb = None  # type: ignore[assignment]
+
 
 DILEMMA_KEYWORDS = [
     # English
@@ -380,6 +404,14 @@ class GitaLibraryRAG:
 
     def query_wisdom(self, query_text: str, n_results: int = 1) -> dict[str, Any] | None:
         """Queries the gita_library for the most clinically applicable Shloka."""
+        # 1. First check high-confidence deterministic clinical keyword matching across all 12 Shlokas
+        matched = match_gita_wisdom(query_text)
+        if matched and query_text:
+            q_low = query_text.lower()
+            for kw in matched.get("keywords", []):
+                if len(kw) >= 5 and kw.lower() in q_low:
+                    return matched
+
         if not self.collection:
             self._init_collection()
 
@@ -391,8 +423,10 @@ class GitaLibraryRAG:
                 )
                 if results and results.get("metadatas") and len(results["metadatas"][0]) > 0:
                     meta = results["metadatas"][0][0]
+                    raw_id = results["ids"][0][0] if results.get("ids") else "bg_shloka"
+                    clean_id = raw_id.lower().replace("-", "_")
                     return {
-                        "id": results["ids"][0][0] if results.get("ids") else "bg_shloka",
+                        "id": clean_id,
                         "chapter": meta.get("chapter", "2"),
                         "verse": meta.get("verse", "47"),
                         "theme": meta.get("theme", "Spiritual Wisdom"),
@@ -408,8 +442,8 @@ class GitaLibraryRAG:
             except Exception as err:
                 logger.warning(f"Error querying ChromaDB gita_library: {err}")
 
-        # Intelligent matching across all 12 Shlokas
-        return match_gita_wisdom(query_text)
+        # Fallback to intelligent matching
+        return matched or match_gita_wisdom(query_text)
 
     def format_gita_context(self, wisdom: dict[str, Any]) -> str:
         """Formats the retrieved Shloka into a prompt context block."""
@@ -427,16 +461,88 @@ gita_rag = GitaLibraryRAG()
 
 def build_gita_system_prompt(retrieved_gita_wisdom: str, target_locale: str = "en-US", rag_context: str = "") -> str:
     """Builds the 3-pillar therapeutic prompt pipeline enforcing Gita + Clinical + Tratak interlinked solutions."""
-    lang_directive = ""
     loc_lower = (target_locale or "en-US").lower()
-    if loc_lower.startswith("hi") or "hindi" in loc_lower or "in" in loc_lower:
-        lang_directive = "\n\nProvide the explanations in natural, empathetic Hindi (हिंदी), while keeping the Sanskrit Shloka in Devanagari script."
-    elif loc_lower.startswith("es"):
-        lang_directive = "\n\nProvide the explanations in fluent, empathetic Spanish (Español)."
+    norm = normalize_language_code(loc_lower)
+
+    if norm == "hi":
+        return f"""आप आधुनिक न्यूरोसाइकोलॉजी (CBT और पॉलीवेगल सोमैटिक्स) को श्रीमद्भगवद्गीता और त्राटक ध्यान की पावन आत्मिक विद्या के साथ एकीकृत करने वाले एक विशेषज्ञ क्लिनिकल मनोवैज्ञानिक और आध्यात्मिक मार्गदर्शक हैं।
+
+उपयोगकर्ता की विशिष्ट मानसिक या भावनात्मक उलझन के लिए, आपको अपना संपूर्ण उत्तर 100% शुद्ध, अत्यंत आत्मीय, संवेदनशील एवं प्राकृतिक हिंदी (हिंदी) में प्रस्तुत करना अनिवार्य है:
+
+**1. श्रीमद्भगवद्गीता का आत्मिक मार्गदर्शन:**
+- उपयुक्त संस्कृत श्लोक को [GITA_SHLOKA] और [/GITA_SHLOKA] टैग के भीतर देवनागरी लिपि में रखें, उसके नीचे रोमन लिप्यंतरण तथा अध्याय व श्लोक संख्या दें।
+- श्लोक के गूढ़ दार्शनिक अर्थ को अत्यंत सरल, हृदयस्पर्शी एवं मानवीय भाषा में समझाएं।
+- इस प्राचीन ज्ञान को सीधे उपयोगकर्ता की आधुनिक पीड़ा या संघर्ष से जोड़ते हुए गहरा क्लिनिकल चिंतन प्रस्तुत करें।
+- कर्म मार्गदर्शन: अभी इस क्षण उन्हें क्या रचनात्मक कर्म करना चाहिए, और किस मानसिक जाल या भूल से बचना चाहिए।
+
+**2. क्लिनिकल संज्ञानात्मक विज्ञान एवं मन की शांति (CBT):**
+- उपयोगकर्ता के दर्द व घबराहट को बिना किसी जल्दबाजी के गहरी आत्मीयता से स्वीकार करें (validation)।
+- उनके मन की सक्रिय संज्ञानात्मक त्रुटि (catastrophizing, self-doubt) को पहचानें और एक तर्कसंगत, साक्ष्य-आधारित CBT रिफ्रेम प्रदान करें।
+- तंत्रिका तंत्र को शांत करने के लिए तत्काल एक सोमैटिक ग्राउंडिंग व प्राणायाम का निर्देश दें।
+
+**3. त्राटक न्यूरो-ऑक्युलर ध्यान विधि:**
+- उनकी स्वायत्त तंत्रिका प्रणाली की स्थिति के अनुकूल विशिष्ट त्राटक विधि (बिन्दु, ज्योति, मण्डल, प्रतिबिम्ब या शून्य त्राटक) निर्देशित करें।
+- इसके न्यूरो-ऑक्युलर प्रभाव (अमिग्डाला को शांत करने की विधि) को समझाते हुए चरणबद्ध अभ्यास निर्देश दें।
+
+[RETRIEVED WISDOM]:
+{retrieved_gita_wisdom}
+
+{rag_context}
+
+### अत्यंत अनिवार्य बहुभाषी निर्देश:
+संपूर्ण परामर्श केवल और केवल स्वाभाविक हिंदी में होना चाहिए। किसी भी परिस्थिति में अंग्रेजी वाक्य, बुलेट लेबल्स (जैसे Philosophical Meaning, Clinical Reflection) या अंग्रेजी शब्दावली का प्रयोग न करें।"""
+
+    elif norm == "es":
+        return f"""Eres un Psicólogo Clínico Experto y Maestro Espiritual que integra la Neuropsicología Moderna (TCC y Somática Polivagal) con la sabiduría del Bhagavad Gita y la meditación Tratak.
+
+Debes formular toda tu intervención en español fluido, cálido y profundamente empático:
+1. Sabiduría y Filosofía del Bhagavad Gita (con Shloka en [GITA_SHLOKA] y [/GITA_SHLOKA], reflexión clínica y guía de acción).
+2. Neurociencia Cognitiva Clínica y Regulación Somática (TCC) (validación emocional, reestructuración cognitiva y anclaje somático).
+3. Protocolo Neuro-Ocular Tratak (instrucciones de mirada focal y neurobiología).
+
+[RETRIEVED WISDOM]:
+{retrieved_gita_wisdom}
+
+{rag_context}
+
+### DIRECTIVA OBLIGATORIA:
+Redacta toda la respuesta enteramente en español sin mezclar términos en inglés."""
+
+    elif norm == "fr":
+        return f"""Vous êtes un Psychologue Clinicien Expert et Maître Spirituel intégrant les Neurosciences Cognitives Modernes (TCC et Somatique Polyvagale) avec la sagesse de la Bhagavad Gita et la méditation Tratak.
+
+Formulez l'intégralité de votre réponse en français fluide, chaleureux et bienveillant :
+1. Sagesse Spirituelle de la Bhagavad Gita (avec le Shloka entre balises [GITA_SHLOKA] et [/GITA_SHLOKA], réflexion clinique et orientation d'action).
+2. Neurosciences Cliniques Cognitives et Ancrage Somatique (TCC).
+3. Protocole Neuro-Oculaire Tratak (guidance du regard et apaisement du système nerveux).
+
+[RETRIEVED WISDOM]:
+{retrieved_gita_wisdom}
+
+{rag_context}
+
+### DIRECTIVE OBLIGATOIRE:
+Rédigez l'intégralité de votre réponse en français sans mélanger d'anglais."""
+
+    elif norm == "de":
+        return f"""Sie sind ein erfahrener Klinischer Psychologe und spiritueller Meister, der moderne Neuropsychologie (CBT und Polyvagal-Somatik) mit der Weisheit der Bhagavad Gita und Tratak-Blickmeditation verbindet.
+
+Formulieren Sie Ihre gesamte Antwort in fließendem, einfühlsamem und natürlichem Deutsch:
+1. Weisheit und Philosophie der Bhagavad Gita (mit Shloka in [GITA_SHLOKA] und [/GITA_SHLOKA], klinischer Reflexion und Handlungsorientierung).
+2. Klinische Kognitive Neurowissenschaft & Somatische Erdung (CBT).
+3. Tratak Neuro-Okulares Protokoll (Blickfokussierung und neurobiologische Beruhigung).
+
+[RETRIEVED WISDOM]:
+{retrieved_gita_wisdom}
+
+{rag_context}
+
+### VERPFLICHTENDE ANWEISUNG:
+Verfassen Sie die gesamte Antwort auf Deutsch ohne englische Einsprengsel."""
 
     return f"""You are an Expert Clinical Psychologist and Spiritual Master integrating Modern Neuropsychology (CBT & Polyvagal Somatics) with the sacred wisdom of the Bhagavad Gita and Tratak (Ocular Meditation).
 
-For the user's specific situation, you MUST formulate your response with all 3 solutions line-by-line, each deeply interlinked with their exact struggle:
+For the user's specific situation, formulate your response with all 3 solutions line-by-line, each deeply interlinked with their exact struggle:
 
 **1. BHAGAVAD GITA REFRAMING (श्रीमद्भगवद्गीता):**
 - Include the exact relevant Sanskrit Shloka wrapped inside [GITA_SHLOKA] and [/GITA_SHLOKA] tags, followed by its Roman transliteration and Chapter & Verse.
@@ -456,8 +562,7 @@ For the user's specific situation, you MUST formulate your response with all 3 s
 [RETRIEVED WISDOM]:
 {retrieved_gita_wisdom}
 
-{rag_context}
-{lang_directive}"""
+{rag_context}"""
 
 
 def synthesize_gita_response(
@@ -467,46 +572,136 @@ def synthesize_gita_response(
     rag_guidance: dict[str, Any] | None = None,
     rec_trataka: str = "bindu"
 ) -> str:
-    """Deterministic fallback synthesis generating all 3 solutions line-by-line without external latency."""
+    """Deterministic fallback synthesis generating all 3 solutions line-by-line without external latency in 100% target language."""
     shloka_san = wisdom.get("shloka_sanskrit", "")
     shloka_rom = wisdom.get("shloka_roman", "")
-    meaning = wisdom.get("philosophical_meaning", "")
-    reframe = wisdom.get("clinical_reframe", "")
-    guidance = wisdom.get("actionable_guidance", {})
-    what_to_do = guidance.get("what_to_do", "Focus 100% on the single highest-integrity action in front of you.")
-    what_not_to_do = guidance.get("what_not_to_do", "Release attachment to hypothetical results you cannot control.")
     ch = wisdom.get("chapter", "2")
     vs = wisdom.get("verse", "47")
 
-    sols = rag_guidance.get("solutions", {}) if rag_guidance else {}
-    cbt_text = sols.get("cbt_reframing", "Notice how your mind catastrophizes the unknown. Shift attention to what is objectively true in front of you right now.")
-    somatic_text = sols.get("somatic_anchor", "Perform 3 deep physiological sighs (two quick inhales through the nose, long sighing exhale through the mouth).")
-    pranayama_text = sols.get("pranayama", "Nadi Shodhana (Alternate Nostril Breathing) for 3 minutes.")
+    norm = normalize_language_code(locale)
+    if re.search(r"[\u0900-\u097F]", user_query):
+        norm = "hi"
 
-    trataka_name_map = {
-        "bindu": "Bindu Trataka (Sacred Golden Focal Point)",
-        "flame": "Jyoti Trataka (Candle Flame Gazing)",
-        "murti": "Mandala Trataka (Sacred Geometry Resonance)",
-        "pratibimb": "Pratibimb Trataka (Sacred Mirror Gazing)",
-        "shoonya": "Shoonya Trataka (Void & Panoramic Space Gazing)"
-    }
-    t_name = trataka_name_map.get(rec_trataka, "Bindu Trataka (Sacred Golden Focal Point)")
+    loc_gita = get_localized_gita_item(wisdom, norm)
+    loc_tratak = get_localized_trataka_item(rec_trataka, norm)
 
+    # Resolve localized CBT & Somatic protocol from library RAG or condition catalog
+    cond_id = rag_guidance.get("id") or rag_guidance.get("condition_id") if rag_guidance else "gad"
+    catalog_cond = CLINICAL_LOCALIZATION_CATALOG.get(cond_id, CLINICAL_LOCALIZATION_CATALOG.get("gad", {}))
+    loc_cond = catalog_cond.get(norm, catalog_cond.get("en", {}))
+
+    cbt_text = loc_cond.get("cbt_reframing") or (
+        rag_guidance.get("solutions", {}).get("cbt_reframing")
+        if rag_guidance else "Notice how your mind catastrophizes the unknown. Shift attention to what is objectively true in front of you right now."
+    )
+    somatic_text = loc_cond.get("somatic_anchor") or (
+        rag_guidance.get("solutions", {}).get("somatic_anchor")
+        if rag_guidance else "Perform 3 deep physiological sighs (two quick inhales through the nose, long sighing exhale through the mouth)."
+    )
+    pranayama_text = loc_cond.get("pranayama") or (
+        rag_guidance.get("solutions", {}).get("pranayama")
+        if rag_guidance else "Nadi Shodhana (Alternate Nostril Breathing) for 3 minutes."
+    )
+
+    if norm == "hi":
+        return (
+            f"[GITA_SHLOKA]\n"
+            f"{shloka_san}\n\n"
+            f"{shloka_rom}\n"
+            f"— श्रीमद्भगवद्गीता (अध्याय {ch}, श्लोक {vs})\n"
+            f"[/GITA_SHLOKA]\n\n"
+            f"**1. श्रीमद्भगवद्गीता का आत्मिक मार्गदर्शन (अध्याय {ch}, श्लोक {vs}):**\n"
+            f"भगवान श्रीकृष्ण इस पावन श्लोक में हमें समझाते हैं कि {loc_gita['meaning']}\n\n"
+            f"इस संदेश को अपने वर्तमान जीवन में उतारें: {loc_gita['reflection']}\n\n"
+            f"इस समय आपका कर्तव्य: {loc_gita['what_to_do']} और विशेष रूप से इस भूल से बचें: {loc_gita['what_not_to_do']}\n\n"
+            f"**2. क्लिनिकल संज्ञानात्मक विज्ञान एवं मन की शांति (CBT):**\n"
+            f"{cbt_text}\n\n"
+            f"अपने तंत्रिका तंत्र को इस क्षण में स्थिर करने के लिए: {somatic_text} इसके साथ ही {pranayama_text}\n\n"
+            f"**3. त्राटक न्यूरो-ऑक्युलर ध्यान विधि ({loc_tratak['name']}):**\n"
+            f"दृष्टि का केंद्र: {loc_tratak['focalTarget']}\n\n"
+            f"तंत्रिका विज्ञान का प्रभाव: {loc_tratak['neuroMechanism']}\n\n"
+            f"अभ्यास विधि: {loc_tratak['guidance']}\n\n"
+            f"अभ्यास समापन: हथेलियों को आपस में तब तक रगड़ें जब तक वे गर्म न हो जाएं, फिर उन्हें कोमलता से बंद आंखों पर रखें।"
+        )
+    elif norm == "es":
+        return (
+            f"[GITA_SHLOKA]\n"
+            f"{shloka_san}\n\n"
+            f"{shloka_rom}\n"
+            f"— Bhagavad Gita (Capítulo {ch}, Verso {vs})\n"
+            f"[/GITA_SHLOKA]\n\n"
+            f"**1. Sabiduría y Filosofía del Bhagavad Gita (Capítulo {ch}, Verso {vs}):**\n"
+            f"La enseñanza sagrada nos ilumina: {loc_gita['meaning']}\n\n"
+            f"Integración en tu vida cotidiana: {loc_gita['reflection']}\n\n"
+            f"Tu orientación de acción sabia: {loc_gita['what_to_do']} y ten la cautela de evitar: {loc_gita['what_not_to_do']}\n\n"
+            f"**2. Neurociencia Cognitiva Clínica y Regulación Somática (TCC):**\n"
+            f"{cbt_text}\n\n"
+            f"Para regular tu sistema nervioso en este instante: practica {somatic_text} junto con {pranayama_text}\n\n"
+            f"**3. Protocolo Neuro-Ocular Tratak ({loc_tratak['name']}):**\n"
+            f"Punto de fijación visual: {loc_tratak['focalTarget']}\n\n"
+            f"Mecanismo neurobiológico: {loc_tratak['neuroMechanism']}\n\n"
+            f"Instrucción de práctica: {loc_tratak['guidance']}\n\n"
+            f"Cierre de la práctica: Frota vigorosamente las palmas de tus manos hasta generar calor y cúbrete con delicadeza los ojos cerrados."
+        )
+    elif norm == "fr":
+        return (
+            f"[GITA_SHLOKA]\n"
+            f"{shloka_san}\n\n"
+            f"{shloka_rom}\n"
+            f"— Bhagavad Gita (Chapitre {ch}, Verset {vs})\n"
+            f"[/GITA_SHLOKA]\n\n"
+            f"**1. Sagesse Spirituelle de la Bhagavad Gita (Chapitre {ch}, Verset {vs}):**\n"
+            f"L'enseignement sacré nous éclaire : {loc_gita['meaning']}\n\n"
+            f"Application à votre réalité présente : {loc_gita['reflection']}\n\n"
+            f"Votre orientation d'action juste : {loc_gita['what_to_do']} et veillez à éviter : {loc_gita['what_not_to_do']}\n\n"
+            f"**2. Neurosciences Cliniques Cognitives et Ancrage Somatique (TCC):**\n"
+            f"{cbt_text}\n\n"
+            f"Pour apaiser votre système nerveux dès maintenant : appliquez {somatic_text} ainsi que {pranayama_text}\n\n"
+            f"**3. Protocole Neuro-Oculaire Tratak ({loc_tratak['name']}):**\n"
+            f"Point d'ancrage visuel : {loc_tratak['focalTarget']}\n\n"
+            f"Mécanisme neurophysiologique : {loc_tratak['neuroMechanism']}\n\n"
+            f"Consignes de pratique : {loc_tratak['guidance']}\n\n"
+            f"Clôture de la séance : Frottez vigoureusement vos paumes jusqu'à ressentir une douce tiédeur, puis déposez-les sur vos yeux clos."
+        )
+    elif norm == "de":
+        return (
+            f"[GITA_SHLOKA]\n"
+            f"{shloka_san}\n\n"
+            f"{shloka_rom}\n"
+            f"— Bhagavad Gita (Kapitel {ch}, Vers {vs})\n"
+            f"[/GITA_SHLOKA]\n\n"
+            f"**1. Weisheit und Philosophie der Bhagavad Gita (Kapitel {ch}, Vers {vs}):**\n"
+            f"Die zeitlose Lehre schenkt Ihnen Klarheit: {loc_gita['meaning']}\n\n"
+            f"Übertragung auf Ihren Alltag: {loc_gita['reflection']}\n\n"
+            f"Ihre heilsame Handlungsorientierung: {loc_gita['what_to_do']} und vermeiden Sie bewusst: {loc_gita['what_not_to_do']}\n\n"
+            f"**2. Klinische Kognitive Neurowissenschaft & Somatische Erdung (CBT):**\n"
+            f"{cbt_text}\n\n"
+            f"Um Ihr Nervensystem jetzt zu beruhigen: Nutzen Sie {somatic_text} und {pranayama_text}\n\n"
+            f"**3. Tratak Neuro-Okulares Protokoll ({loc_tratak['name']}):**\n"
+            f"Fokus der Augenfixierung: {loc_tratak['focalTarget']}\n\n"
+            f"Wirkweise im Nervensystem: {loc_tratak['neuroMechanism']}\n\n"
+            f"Praxisanleitung: {loc_tratak['guidance']}\n\n"
+            f"Abschluss der Übung: Reiben Sie die Handflächen kräftig aneinander, bis sie wohlig warm sind, und legen Sie sie behutsam über die geschlossenen Augen."
+        )
+
+    # Standard English Fallback
     return (
         f"[GITA_SHLOKA]\n"
         f"{shloka_san}\n\n"
         f"{shloka_rom}\n"
-        f"— श्रीमद्भगवद्गीता (Chapter {ch}, Verse {vs})\n"
+        f"— Bhagavad Gita (Chapter {ch}, Verse {vs})\n"
         f"[/GITA_SHLOKA]\n\n"
         f"**1. BHAGAVAD GITA REFRAMING (श्रीमद्भगवद्गीता):**\n"
-        f"• **Philosophical Meaning:** {meaning}\n"
-        f"• **Clinical Reflection:** {reframe}\n"
-        f"• **Actionable Guidance (Karma):** {what_to_do} (Avoid: {what_not_to_do})\n\n"
+        f"• **Philosophical Meaning:** {loc_gita['meaning']}\n"
+        f"• **Clinical Reflection:** {loc_gita['reflection']}\n"
+        f"• **Actionable Guidance (Karma):** {loc_gita['what_to_do']} (Avoid: {loc_gita['what_not_to_do']})\n\n"
         f"**2. CLINICAL COGNITIVE NEUROSCIENCE (CBT & Somatic Grounding):**\n"
         f"• **Cognitive Restructuring:** {cbt_text}\n"
         f"• **Somatic Polyvagal Reset:** {somatic_text} alongside {pranayama_text}\n\n"
-        f"**3. TRATAK NEURO-OCULAR PROTOCOL (त्राटक ध्यान - {t_name}):**\n"
-        f"• **Focal Gaze:** Hold a soft, unblinking gaze at eye level for 2 to 3 minutes.\n"
-        f"• **Neuro-Ocular Mechanism:** Motionless saccadic fixation down-regulates amygdala hyperactivity and activates the cardiac vagal brake.\n"
+        f"**3. TRATAK NEURO-OCULAR PROTOCOL (त्राटक ध्यान - {loc_tratak['name']}):**\n"
+        f"• **Focal Gaze:** {loc_tratak['focalTarget']}\n"
+        f"• **Neuro-Ocular Mechanism:** {loc_tratak['neuroMechanism']}\n"
+        f"• **Practice Guidance:** {loc_tratak['guidance']}\n"
         f"• **Practice Closure:** Rub your palms vigorously until warm and cup them gently over closed eyes (Palming)."
     )
+

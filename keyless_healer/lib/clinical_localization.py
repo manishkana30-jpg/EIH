@@ -298,3 +298,525 @@ def format_human_therapeutic_message(
         return f"{loc['validation']} {loc['cbt_reframing']} Um Ihr Nervensystem jetzt zu beruhigen: Nutzen Sie {loc['somatic_anchor']} und {loc['pranayama']}"
 
     return f"{loc['validation']} {loc['cbt_reframing']} To steady your autonomic nervous system right now: engage in {loc['somatic_anchor']} alongside {loc['pranayama']}"
+
+
+# =============================================================================
+# BHAGAVAD GITA & TRATAK COMPLETE LOCALIZATION CATALOGS (100% Pure Target Language)
+# =============================================================================
+
+GITA_LOCALIZATION_CATALOG: Dict[str, Dict[str, Dict[str, str]]] = {
+    "bg_2_47": {
+        "hi": {
+            "meaning": "भगवान श्रीकृष्ण अर्जुन से कहते हैं: तुम्हारा अधिकार केवल निष्काम भाव से कर्तव्य कर्म करने पर है, कर्म के फलों पर कभी नहीं। कर्म के फल की इच्छा को अपने कर्म का कारण मत बनने दो, और न ही कभी कर्म त्यागने (अकर्मण्यता) के वश में आओ।",
+            "reflection": "भविष्य के परिणामों की अनिश्चितता से मन को खींचकर इस वर्तमान क्षण के कर्म में समर्पित करें। जब आप परिणाम की चिंता छोड़ केवल अपने कर्तव्य पर एकाग्र होते हैं, तो असफलता का भय और अनिर्णय की स्थिति स्वतः विलीन हो जाती है।",
+            "what_to_do": "इस समय केवल उस एक श्रेष्ठ कार्य पर अपना पूरा ध्यान लगाएं जो वर्तमान में आपके वश में है।",
+            "what_not_to_do": "काल्पनिक भविष्य के भय से डरना और परिणामों के बारे में अधिक सोचना पूरी तरह छोड़ दें।",
+        },
+        "es": {
+            "meaning": "Tienes derecho únicamente a cumplir con tu deber, pero nunca a los frutos de tus acciones. No te consideres la causa de los resultados, ni te apegues a la inacción.",
+            "reflection": "Traslada el foco de control desde un futuro incierto hacia el proceso del presente. Al soltar el apego al resultado, la ansiedad de rendimiento se disuelve.",
+            "what_to_do": "Enfócate con devoción en la acción constructiva que puedes ejecutar aquí y ahora.",
+            "what_not_to_do": "Deja de anticipar consecuencias imaginarias o estancarte en la parálisis por análisis.",
+        },
+        "fr": {
+            "meaning": "Tu n'as de droit que sur l'action présente, jamais sur les fruits de tes actes. Ne sois pas guidé par la récompense, et ne succombe point à l'inaction.",
+            "reflection": "Ramenez votre esprit vers l'acte immédiat plutôt que vers des résultats hypothétiques. Se détacher de l'issue dissout la peur de l'échec.",
+            "what_to_do": "Consacrez votre énergie à l'étape concrète et digne qui s'offre à vous en cet instant.",
+            "what_not_to_do": "Cessez de négocier avec un futur imaginaire et de laisser l'anxiété paralyser votre élan.",
+        },
+        "de": {
+            "meaning": "Dein Recht besteht allein im Handeln, niemals in den Früchten deiner Taten. Mache die Ergebnisse nicht zum Beweggrund deines Tuns, und verfalle nicht der Untätigkeit.",
+            "reflection": "Richten Sie Ihren Fokus auf den gegenwärtigen Schritt anstatt auf ungewisse Zukünfte. Das Loslassen des Ergebnisses befreit von Leistungsdruck.",
+            "what_to_do": "Konzentrieren Sie sich voll und ganz auf die eine heilsame Handlung im gegenwärtigen Moment.",
+            "what_not_to_do": "Grübeln Sie nicht über hypothetische Folgen nach und verharren Sie nicht in Erstarrung.",
+        },
+    },
+    "bg_2_14": {
+        "hi": {
+            "meaning": "हे कुन्तीपुत्र! इन्द्रियों और उनके विषयों का संपर्क ही सुख-दुःख, सर्दी-गर्मी का अनुभव कराता है। ये सभी अनित्य और क्षणिक हैं, आते हैं और चले जाते हैं। हे भरतवंशी! तुम इन्हें धैर्य और आत्म-बल के साथ सहन करो।",
+            "reflection": "जीवन की हर शारीरिक व मानसिक वेदना, विछोह और दुःख मौसम की भांति परिवर्तनशील हैं। अपने भीतर के उस साक्षी भाव को पहचानें जो इन बदलते भावों से परे सदा शांत रहता है।",
+            "what_to_do": "दर्द को एक लहर की तरह आते और जाते हुए देखें, गहरी सांस लें और स्वयं को भावनात्मक संबल दें।",
+            "what_not_to_do": "इस क्षणिक दुःख को अपना स्थायी भाग्य मानकर मन को गहरे विषाद में न डूबने दें।",
+        },
+        "es": {
+            "meaning": "El contacto de los sentidos con los objetos engendra frío y calor, placer y dolor. Son transitorios, van y vienen. Sopórtalos con paciencia, oh Bharata.",
+            "reflection": "El sufrimiento emocional y la aflicción son impermanentes como las estaciones. Reconoce tu conciencia profunda, inmutable ante las tormentas.",
+            "what_to_do": "Respira hondo y observa la ola de dolor sin resistirte, sabiendo que pasará.",
+            "what_not_to_do": "No te identifiques con la pena pasajera ni la conviertas en tu identidad permanente.",
+        },
+        "fr": {
+            "meaning": "Le contact des sens avec leurs objets fait naître le chaud et le froid, la joie et la peine. Éphémères, ils apparaissent et disparaissent. Accueille-les avec sérénité.",
+            "reflection": "Toute douleur émotionnelle ressemble aux saisons : elle naît, culmine puis s'efface. Votre être véritable demeure intact derrière ces vagues.",
+            "what_to_do": "Observez ce ressenti douloureux avec compassion, sans crispation, en respirant posément.",
+            "what_not_to_do": "Ne confondez pas un chagrin temporaire avec la réalité définitive de votre existence.",
+        },
+        "de": {
+            "meaning": "Die Berührung der Sinne mit den Dingen erzeugt Kälte und Hitze, Freude und Leid. Sie sind vergänglich, kommen und gehen. Ertrage sie mit innerer Festigkeit.",
+            "reflection": "Seelischer Schmerz und Trauer sind wie wechselnde Jahreszeiten. Ihr innerster Wesenskern bleibt unberührt von den stürmischen Wogen der Gefühle.",
+            "what_to_do": "Beobachten Sie den Schmerz mit Sanftmut als Welle, die von selbst wieder abebbt.",
+            "what_not_to_do": "Verharren Sie nicht im Gedanken, dieser Schmerz würde ewig andauern.",
+        },
+    },
+    "bg_2_62_63": {
+        "hi": {
+            "meaning": "विषयों का निरंतर चिंतन करने से उनमें आसक्ति उत्पन्न होती है; आसक्ति से कामना और कामना में बाधा आने पर क्रोध उत्पन्न होता है। क्रोध से विवेक का नाश, भ्रम से स्मृति-भ्रंश, और स्मृति-भ्रंश से बुद्धि नष्ट हो जाती है, जिससे मनुष्य स्वयं का पतन कर बैठता है।",
+            "reflection": "जब आपके साथ अन्याय या आघात होता है, तो मन उस बात को बार-बार दोहराकर क्रोध की अग्नि को भड़काता है। क्रोध सबसे पहले आपके अपने ही विवेक और शांति को जलाता है।",
+            "what_to_do": "क्रोध की तीव्र लहर आते ही मौन हो जाएं, तुरंत प्रतिक्रिया देने से बचें और खुली हवा में धीमी व गहरी सांसें लें।",
+            "what_not_to_do": "आवेश में आकर कोई कटु शब्द न कहें और न ही किसी प्रतिशोध की कल्पना में उलझें।",
+        },
+        "es": {
+            "meaning": "Pensar en los objetos engendra apego; del apego nace el deseo, y del deseo frustrado brota la ira. De la ira nace el engaño, que destruye la memoria y el discernimiento.",
+            "reflection": "Rumiar la ofensa alimenta el fuego de la rabia. El enfado daña primero a quien lo alberga, nublando tu paz y tu capacidad de respuesta serena.",
+            "what_to_do": "Guarda silencio unos minutos ante la provocación y oxigena tu cuerpo con calma.",
+            "what_not_to_do": "No reacciones impulsivamente ni busques desquitarte en momentos de turbulencia emocional.",
+        },
+        "fr": {
+            "meaning": "Ressasser les griefs nourrit l'attachement ; de l'attachement naît le désir contrarié, puis la colère. La colère aveugle l'esprit et détruit le discernement.",
+            "reflection": "La colère est un feu qui consume d'abord celui qui la porte. Prendre du recul permet à la clarté mentale de reprendre ses droits.",
+            "what_to_do": "Faites une pause immédiate, respirez profondément et reportez toute réponse.",
+            "what_not_to_do": "Ne laissez pas la rancœur dicter vos paroles ou vos décisions impulsives.",
+        },
+        "de": {
+            "meaning": "Das Grübeln über Kränkungen erzeugt Anhaftung; daraus erwächst Groll und Wut. Wut führt zur Verblendung, verwirrt das Gedächtnis und zerstört die Vernunft.",
+            "reflection": "Groll schadet zuallererst der eigenen Seele. Wer innehält, durchbricht den Automatismus der blinden Vergeltung.",
+            "what_to_do": "Treten Sie einen Schritt zurück, atmen Sie ruhig aus und schweigen Sie im ersten Impuls.",
+            "what_not_to_do": "Handeln Sie niemals aus der Hitze des Zorns heraus.",
+        },
+    },
+    "bg_6_5": {
+        "hi": {
+            "meaning": "मनुष्य को चाहिए कि वह अपने मन के द्वारा अपना उद्धार करे, अपने आपको हीन न समझे और न गिराए। क्योंकि यह मन ही मनुष्य का सच्चा मित्र है और यदि अनियंत्रित रहे तो मन ही उसका सबसे बड़ा शत्रु है।",
+            "reflection": "हीनभावना, अपराधबोध और आत्म-संदेह से बाहर निकलने की शक्ति आपके अपने ही भीतर है। अपने मन को अपने विरुद्ध नहीं, बल्कि अपने पक्ष में खड़ा करें।",
+            "what_to_do": "अपनी छोटी-छोटी सफलताओं को पहचानें और अपने साथ एक सच्चे व दयालु मित्र जैसा प्रेमपूर्ण व्यवहार करें।",
+            "what_not_to_do": "स्वयं को अयोग्य, पाखंडी या असफल मानकर आत्म-निंदा के चक्र में न फंसें।",
+        },
+        "es": {
+            "meaning": "Que el ser humano se eleve mediante su propia mente y no se degrade a sí mismo. Pues la mente es la mejor aliada del alma, o su mayor adversaria.",
+            "reflection": "Tu mayor juez o tu mejor amigo residen en tu propia voz interior. Trátate con la compasión con la que acogerías a un ser muy querido.",
+            "what_to_do": "Reconoce tu valor intrínseco y háblate con amabilidad y respeto.",
+            "what_not_to_do": "No caigas en la trampa del síndrome del impostor ni te castigues con la autocrítica destructiva.",
+        },
+        "fr": {
+            "meaning": "Que l'homme s'élève par lui-même et ne se déprécie pas. Car l'esprit est le meilleur allié de l'âme, ou son plus redoutable ennemi.",
+            "reflection": "La bienveillance envers soi-même est la clé de la guérison. Choisissez d'être votre propre allié plutôt que votre critique le plus sévère.",
+            "what_to_do": "Accueillez vos efforts avec douceur et valorisez chaque pas franchi.",
+            "what_not_to_do": "Ne cédez pas à la voix intérieure de l'imposture et du dénigrement.",
+        },
+        "de": {
+            "meaning": "Der Mensch erhebe sich durch seinen eigenen Geist und erniedrige sich nicht selbst. Denn der Geist allein ist Freund des Selbst oder sein ärgster Widersacher.",
+            "reflection": "Selbstmitgefühl verwandelt den inneren Kritiker in eine schützende Kraft. Stehen Sie wohlwollend zu sich selbst.",
+            "what_to_do": "Begegnen Sie Ihren Unvollkommenheiten mit Geduld und tröstender Anerkennung.",
+            "what_not_to_do": "Verurteilen Sie sich nicht als Versager oder Heuchler.",
+        },
+    },
+    "bg_2_70": {
+        "hi": {
+            "meaning": "जिस प्रकार चारों ओर से जल से निरंतर भरते रहने पर भी अगाध समुद्र स्थिर और अविचल रहता है, उसी प्रकार जिस व्यक्ति के मन में सभी विचार और बाह्य उत्तेजनाएं बिना विक्षोभ पैदा किए समा जाती हैं, वही परम शांति को प्राप्त होता है।",
+            "reflection": "संसार में कितने भी तनाव, कार्यभार या उत्तेजनाएं क्यों न आएं, यदि आप अपने अंतर्मन को समुद्र की भांति गहरा और स्थिर रखेंगे, तो कोई भी तूफान आपको विचलित नहीं कर सकेगा।",
+            "what_to_do": "एक समय में केवल एक कार्य पर ध्यान दें और अपने मन को शांत गहराई में विश्राम करने दें।",
+            "what_not_to_do": "सभी कार्यों को एक साथ करने का प्रयास करके अपने मस्तिष्क को संवेदी अधिभार में न धकेलें।",
+        },
+        "es": {
+            "meaning": "Así como el océano permanece inmutable mientras los ríos desembocan en él, quien permanece en calma ante la avalancha de pensamientos alcanza la verdadera paz.",
+            "reflection": "En medio del caos y el exceso de estímulos, tu mente puede guardar la serenidad profunda del océano, donde las olas superficiales no alteran el fondo.",
+            "what_to_do": "Ralentiza el ritmo, enfócate en una sola tarea a la vez y reposa en tu centro.",
+            "what_not_to_do": "No intentes controlarlo todo simultáneamente ni te dejes abrumar por el exceso de información.",
+        },
+        "fr": {
+            "meaning": "Tel l'océan qui demeure imperturbable tandis que s'y déversent les fleuves, celui en qui les pensées se fondent sans troubler la paix intérieure accède au repos suprême.",
+            "reflection": "Face au tumulte extérieur, cultivez la profondeur de l'océan. Les remous en surface ne sauraient altérer votre calme fondamental.",
+            "what_to_do": "Prenez les choses une par une en accordant un répit bienvenu à votre esprit.",
+            "what_not_to_do": "Évitez la dispersion et la surcharge mentale du multitâche permanent.",
+        },
+        "de": {
+            "meaning": "Wie der Ozean unbewegt ruht, während die Ströme in ihn fließen, so findet derjenige inneren Frieden, den die stürmischen Eindrücke der Welt nicht erschüttern.",
+            "reflection": "Bewahren Sie inmitten von Hektik die erhabene Tiefe des Meeres. Oberflächliche Wellen können Ihren Grund nicht trüben.",
+            "what_to_do": "Widmen Sie sich achtsam einer einzigen Sache und atmen Sie weit in den Raum.",
+            "what_not_to_do": "Überfordern Sie sich nicht mit ständigem Multitasking.",
+        },
+    },
+    "bg_6_26": {
+        "hi": {
+            "meaning": "यह चंचल और अस्थिर मन जिन-जिन विषयों की ओर भटके, उन-उन विषयों से इसे खींचकर बार-बार अपनी आत्मा के वश में लाना चाहिए।",
+            "reflection": "मन का स्वभाव ही भटकना और अनर्गल सोचना है। जब भी मन विचलित हो, तो उस पर क्रोधित हुए बिना एक छोटे बालक की तरह उसे कोमलता से वर्तमान में वापस ले आएं।",
+            "what_to_do": "जब भी ध्यान भटके, अपनी आती-जाती सांसों पर ध्यान टिकाकर मन को धीरे से वर्तमान में लौटाएं।",
+            "what_not_to_do": "मन के भटकने पर खुद को दोषी न ठहराएं और नकारात्मक विचारों के साथ बहस न करें।",
+        },
+        "es": {
+            "meaning": "Hacia dondequiera que se extravíe la mente inquieta e inestable, tráela pacientemente de vuelta bajo el control del Ser.",
+            "reflection": "La mente divaga por naturaleza. Cada vez que se distraiga, guíala de regreso a la respiración con la dulzura con la que orientarías a un niño pequeño.",
+            "what_to_do": "Usa el ancla de tu respiración para regresar con suavidad cada vez que te disperses.",
+            "what_not_to_do": "No te frustres ni luches violentamente contra tus propios pensamientos.",
+        },
+        "fr": {
+            "meaning": "D'où que l'esprit instable et vagabond s'échappe, il faut le ramener avec constance sous la guidance du Soi.",
+            "reflection": "L'esprit s'égare naturellement. Ramenez-le au souffle présent sans reproche ni irritation, avec bienveillance.",
+            "what_to_do": "Revenez simplement à la sensation de l'air entrant et sortant de vos narines.",
+            "what_not_to_do": "Ne vous blâmez pas d'avoir été distrait ; le retour au calme est l'exercice lui-même.",
+        },
+        "de": {
+            "meaning": "Wohin auch immer der unruhige und wankelmütige Geist abschweift, von dort ziehe man ihn sanft zurück und richte ihn auf das eigene Wesen.",
+            "reflection": "Das Wesen des Geistes ist Bewegung. Holen Sie ihn mit liebevoller Geduld immer wieder behutsam in die Gegenwart zurück.",
+            "what_to_do": "Verankern Sie sich sanft im Atemzug, sobald Sie das Abschweifen bemerken.",
+            "what_not_to_do": "Kämpfen Sie nicht zornig gegen die aufsteigenden Gedanken an.",
+        },
+    },
+    "bg_18_63": {
+        "hi": {
+            "meaning": "इस प्रकार मैंने तुम्हें गोपनीय से भी गोपनीय पावन ज्ञान बता दिया है। अब इस पर भली-भांति विचार करो और फिर जैसा उचित समझो, वैसा ही आचरण करो।",
+            "reflection": "ईश्वर भी आपके ऊपर कोई निर्णय नहीं थोपते, वे आपको स्वतंत्रता और विवेक देते हैं। बेबसी की भावना से बाहर निकलें; आपके जीवन की दिशा तय करने का अधिकार पूरी तरह आपके अपने हाथों में है।",
+            "what_to_do": "शांत मन से अपनी प्राथमिकताओं को तौलें और अपने सत्य के अनुसार पहला छोटा कदम उठाएं।",
+            "what_not_to_do": "दूसरों की राय के दबाव में आकर या लाचार महसूस करके अपनी इच्छाशक्ति को न खोएं।",
+        },
+        "es": {
+            "meaning": "Así te he transmitido este conocimiento supremo. Reflexiona hondamente sobre él y luego actúa según tu propia libre elección.",
+            "reflection": "Recupera tu poder y tu capacidad de agencia. Nadie más que tú tiene la llave de tu propia vida y de tus decisiones conscientes.",
+            "what_to_do": "Elige desde el sosiego de tu conciencia y da el primer paso valiente hacia adelante.",
+            "what_not_to_do": "No te sientas víctima indefensa ni permitas que el miedo decida por ti.",
+        },
+        "fr": {
+            "meaning": "Ainsi t'ai-je révélé la sagesse la plus profonde. Médite-la pleinement, puis agis en conscience selon ton libre choix.",
+            "reflection": "Retrouvez votre autonomie fondamentale. Vous possédez en vous la sagesse nécessaire pour discerner votre juste voie.",
+            "what_to_do": "Faites confiance à votre discernement intérieur pour poser un acte serein et lucide.",
+            "what_not_to_do": "Ne vous résignez pas à l'impuissance ni à la dépendance passive.",
+        },
+        "de": {
+            "meaning": "So habe ich dir diese geheime Weisheit offenbart. Erwäge sie wohl und handle dann nach deinem freien Entschluss.",
+            "reflection": "Gewinnen Sie Ihre Selbstbestimmung zurück. Sie sind der Schöpfer Ihrer inneren Haltung und Ihrer nächsten Schritte.",
+            "what_to_do": "Vertrauen Sie Ihrer inneren Einsicht und wählen Sie mutig das Heilsame.",
+            "what_not_to_do": "Fügen Sie sich nicht in ein Gefühl hilfloser Ohnmacht.",
+        },
+    },
+    "bg_2_56": {
+        "hi": {
+            "meaning": "दुःखों की प्राप्ति होने पर जिसके मन में उद्वेग नहीं होता, सुखों की प्राप्ति में जो सर्वथा निष्स्पृह है, तथा जिसके राग, भय और क्रोध नष्ट हो चुके हैं—ऐसा स्थिर बुद्धि वाला मुनि 'स्थितप्रज्ञ' कहलाता है।",
+            "reflection": "जीवन के उतार-चढ़ाव में मानसिक संतुलन बनाए रखना ही सबसे बड़ी सिद्धि है। जब आप बाह्य परिस्थितियों पर अपनी मानसिक शांति की निर्भरता समाप्त कर देते हैं, तो असीम धैर्य का जन्म होता है।",
+            "what_to_do": "वर्तमान परिस्थिति को जैसी है वैसी स्वीकार करें और भीतर की समता को बनाए रखें।",
+            "what_not_to_do": "सुख में अहंकारी न बनें और संकट में अधीर होकर अपना आपा न खोएं।",
+        },
+        "es": {
+            "meaning": "Aquel cuya mente no se turba en la desgracia, libre de anhelos en el placer, desprovisto de apego, temor e ira: es el sabio de mente firme.",
+            "reflection": "La verdadera fortaleza reside en la serenidad inquebrantable que no depende de las circunstancias externas favorables.",
+            "what_to_do": "Cultiva una mirada equilibrada que acoja la realidad con aplomo y ecuanimidad.",
+            "what_not_to_do": "No permitas que las vicisitudes del mundo arrebaten tu paz interior.",
+        },
+        "fr": {
+            "meaning": "Celui dont l'esprit n'est point ébranlé dans l'épreuve, exempt d'avidité dans la joie, affranchi de l'attachement, de la peur et de la colère : tel est le sage au discernement stable.",
+            "reflection": "L'équanimité est le plus précieux des trésors. Elle permet de traverser les tempêtes sans perdre son centre.",
+            "what_to_do": "Accueillez les événements avec un calme souverain et une profonde dignité.",
+            "what_not_to_do": "Ne laissez pas l'adversité entamer votre stabilité intérieure.",
+        },
+        "de": {
+            "meaning": "Wer im Kummer unverzagt bleibt, im Glück frei von Verlangen ist und wer Bindung, Furcht und Zorn überwunden hat: der gilt als Mensch von beständigem Geist.",
+            "reflection": "Gleichmut ist die höchste Zuflucht. Wenn Ihre Ruhe unabhängig von äußeren Bedingungen wird, erlangen Sie unzerstörbaren Frieden.",
+            "what_to_do": "Bleiben Sie fest in Ihrer inneren Mitte verwurzelt, was auch geschehen mag.",
+            "what_not_to_do": "Lassen Sie sich weder von Euphorie noch von Panik fortreißen.",
+        },
+    },
+    "bg_12_15": {
+        "hi": {
+            "meaning": "जिससे किसी प्राणी को उद्वेग या कष्ट नहीं पहुंचता, और जो स्वयं भी संसार के किसी प्राणी से उद्विग्न नहीं होता; तथा जो हर्ष, अमर्ष, भय और चिंता से मुक्त है—वह भक्त मुझे अत्यंत प्रिय है।",
+            "reflection": "दूसरों के कटु व्यवहार, आलोचना या नकारात्मकता को अपने भीतर प्रवेश न करने दें। आपकी मानसिक शांति आपकी अपनी पवित्र धरोहर है, इसे किसी और के व्यवहार से नष्ट न होने दें।",
+            "what_to_do": "लोगों की कटु बातों को व्यक्तिगत आक्षेप न मानकर करुणा व समझदारी से अपनी सीमाएं तय करें।",
+            "what_not_to_do": "दूसरों के व्यवहार को बदलने के प्रयास में अपनी ऊर्जा व्यर्थ न करें और मन में कड़वाहट न पालें।",
+        },
+        "es": {
+            "meaning": "Aquel que no perturba al mundo y a quien el mundo no perturba, libre de agitación, intolerancia, miedo y aflicción: ese me es muy querido.",
+            "reflection": "No absorbas la toxicidad ni el juicio de los demás. Tu serenidad es un templo sagrado que ningún conflicto ajeno puede profanar.",
+            "what_to_do": "Establece límites serenos y comprensivos sin albergar resentimiento.",
+            "what_not_to_do": "No te tomes las agresiones ajenas como un reflejo de tu valor personal.",
+        },
+        "fr": {
+            "meaning": "Celui qui ne trouble point autrui et que le monde ne saurait troubler, libre de l'agitation, de l'intolérance et de l'anxiété : celui-là m'est cher.",
+            "reflection": "Préservez votre espace intérieur des hostilités du monde. La paix que vous rayonnez est votre meilleur bouclier.",
+            "what_to_do": "Posez des limites calmes et refusez d'endosser la négativité d'autrui.",
+            "what_not_to_do": "Ne laissez pas l'amertume ou la rancœur s'installer dans votre cœur.",
+        },
+        "de": {
+            "meaning": "Wer die Welt nicht beunruhigt und wen die Welt nicht erschüttert, wer frei ist von Übermut, Groll, Furcht und Sorge: der ist wahrhaft geliebt.",
+            "reflection": "Lassen Sie fremde Spannungen an Ihrer inneren Gelassenheit abprallen. Ihr Friede gehört Ihnen allein.",
+            "what_to_do": "Setzen Sie klare, gütige Grenzen und wahren Sie Ihre seelische Würde.",
+            "what_not_to_do": "Verwickeln Sie sich nicht in zermürbende zwischenmenschliche Streitigkeiten.",
+        },
+    },
+    "bg_3_35": {
+        "hi": {
+            "meaning": "दूसरों के मार्ग पर निपुणता से चलने की अपेक्षा अपने स्वाभाविक कर्तव्य का त्रुटिपूर्ण पालन करना भी कहीं अधिक कल्याणकारी है। दूसरों के स्वभाव का अनुकरण भय और आत्म-विस्मृति को जन्म देता है।",
+            "reflection": "अपनी तुलना दूसरों से करके स्वयं को कमतर न आंकें। आपकी अपनी प्रकृति, आपकी यात्रा और आपके गुण अद्वितीय हैं। प्रामाणिकता ही आत्म-शांति का द्वार है।",
+            "what_to_do": "अपनी वास्तविक क्षमताओं, मूल्यों और गति के अनुसार अपने पथ पर निष्ठा से आगे बढ़ें।",
+            "what_not_to_do": "दूसरों की देखा-देखी किसी और के जीवन की नकल करने और खुद को हीन समझने की भूल न करें।",
+        },
+        "es": {
+            "meaning": "Es mucho mejor cumplir el propio deber, aunque sea de forma imperfecta, que realizar a la perfección el camino ajeno. Seguir el sendero de otro engendra miedo e inseguridad.",
+            "reflection": "Abraza tu singularidad. Compararte constantemente con el éxito aparente de otros destruye tu paz y tu auténtica vocación.",
+            "what_to_do": "Honra tu propio ritmo, tus talentos y tu camino con honestidad.",
+            "what_not_to_do": "No vivas intentando complacer expectativas ajenas ni imitar vidas que no son tuyas.",
+        },
+        "fr": {
+            "meaning": "Mieux vaut accomplir son propre devoir, fût-il imparfait, que d'exceller dans celui d'un autre. Suivre la voie d'autrui est source de péril et d'angoisse.",
+            "reflection": "Cessez la comparaison stérile. Votre valeur réside dans la fidélité à votre être véritable et à votre rythme propre.",
+            "what_to_do": "Avancez avec sincérité sur votre propre chemin sans chercher à copier autrui.",
+            "what_not_to_do": "Ne sacrifiez pas votre vérité personnelle pour correspondre aux standards des autres.",
+        },
+        "de": {
+            "meaning": "Weit besser ist es, die eigene Pflicht zu erfüllen, wenn auch unvollkommen, als eine fremde Pflicht meisterhaft zu tun. Ein fremder Weg bringt Furcht und Gefahr.",
+            "reflection": "Der ständige Vergleich mit anderen schwächt Ihre Kraft. Stehen Sie zu Ihrer eigenen Lebensreise in all ihrer Einzigartigkeit.",
+            "what_to_do": "Gehen Sie Ihren Weg in Ihrem Tempo und vertrauen Sie Ihren ureigenen Gaben.",
+            "what_not_to_do": "Messen Sie sich nicht an den Maßstäben anderer Menschen.",
+        },
+    },
+    "bg_5_23": {
+        "hi": {
+            "meaning": "जो मनुष्य इस शरीर के छूटने से पहले ही काम और क्रोध से उत्पन्न होने वाले तीव्र वेगों को यहीं सहन करने में समर्थ हो जाता है, वही वास्तव में योगी है और वही सुखी है।",
+            "reflection": "तीव्र इच्छा, उत्तेजना या व्यसन की तलब एक शारीरिक तरंग जैसी होती है। यदि आप उस आवेग में बहने के बजाय केवल कुछ मिनट तक उसका साक्षी बनकर उसे सह लें, तो वह तरंग स्वतः शांत हो जाती है।",
+            "what_to_do": "आवेग उठने पर अपनी हथेलियों और पैरों की संवेदनाओं को महसूस करें और 90 सेकंड तक शांति से सांस लें।",
+            "what_not_to_do": "क्षणिक आवेग के दबाव में आकर किसी विनाशकारी आदत या तत्काल प्रतिक्रिया के आगे न झुकें।",
+        },
+        "es": {
+            "meaning": "Aquel que antes de abandonar este cuerpo es capaz de contener aquí el ímpetu nacido del deseo y la ira: ese es un ser en armonía, ese es feliz.",
+            "reflection": "El impulso urgente de reaccionar es una ola neuroquímica que dura apenas unos minutos. Surfea la ola sin dejarte arrastrar por ella.",
+            "what_to_do": "Haz una pausa de 90 segundos, siente el contacto de tus pies en la tierra y respira.",
+            "what_not_to_do": "No cedas inmediatamente al impulso compulsivo ni a la reacción arrebatada.",
+        },
+        "fr": {
+            "meaning": "Celui qui, dès cette vie présente, parvient à maîtriser les assauts du désir et de la colère : celui-là est uni à la paix, celui-là est heureux.",
+            "reflection": "L'urgence émotionnelle n'est qu'une vague passagère dans votre corps. Apprenez à chevaucher la crête sans vous y noyer.",
+            "what_to_do": "Attendez patiemment quelques instants en ancrant votre attention dans vos sensations corporelles.",
+            "what_not_to_do": "Ne réagissez pas sous le coup de la pulsion immédiate.",
+        },
+        "de": {
+            "meaning": "Wer schon in diesem Leben fähig ist, dem Drängen von Begierde und Zorn standzuhalten: der ist wahrhaft ausgeglichen, der ist glücklich.",
+            "reflection": "Der Drang zur impulsiven Handlung ebbt ab, wenn man ihn für einen kurzen Moment achtsam aushält. Reiten Sie die Welle des Impulses mit Ruhe.",
+            "what_to_do": "Verweilen Sie kurz im Nicht-Handeln und spüren Sie den festen Boden unter Ihren Füßen.",
+            "what_not_to_do": "Geben Sie dem ersten unbedachten Drang nicht sofort nach.",
+        },
+    },
+    "bg_18_66": {
+        "hi": {
+            "meaning": "सभी चिंताओं, मनगढ़ंत दायित्वों और भयों को छोड़कर केवल मेरी शरण में आ जाओ। मैं तुम्हें सभी कष्टों, पापों और संतापों से मुक्त कर दूंगा; तुम शोक मत करो।",
+            "reflection": "जब जीवन का बोझ असहनीय लगे और सारे उपाय समाप्त प्रतीत हों, तो हर प्रकार के नियंत्रण को छोड़ना ही परम मुक्ति है। ब्रह्मांड की उस विराट शक्ति पर विश्वास रखें जो पूरे अस्तित्व का पालन-पोषण कर रही है।",
+            "what_to_do": "अपने भारीपन और नियंत्रण की व्यर्थ लालसा को समर्पित कर दें, और स्वयं से कहें: 'सब कुछ ठीक हो जाएगा, मैं सुरक्षित हूँ'।",
+            "what_not_to_do": "अकेले ही पूरी दुनिया का बोझ उठाने की व्यर्थ चेष्टा करके स्वयं को मत थकाएं।",
+        },
+        "es": {
+            "meaning": "Abandonando todo afán forzado y toda carga ilusoria, entrégate por entero a Mí. Yo te liberaré de todas las aflicciones; no te angusties.",
+            "reflection": "Cuando sientas que tus fuerzas se agotan, la rendición sabia no es debilidad, sino el supremo descanso en algo más grande que tus preocupaciones.",
+            "what_to_do": "Suelta el control férreo, abre tus manos y confía en el flujo protector de la vida.",
+            "what_not_to_do": "No cargues en solitario un peso que excede tus fuerzas humanas.",
+        },
+        "fr": {
+            "meaning": "Délaissant tout fardeau fabriqué et toute vaine angoisse, abandonne-toi avec confiance à Moi seul. Je te délivrerai de toute peine ; ne t'afflige point.",
+            "reflection": "Quand tout semble trop lourd, lâcher prise n'est pas abandonner, c'est s'en remettre à une intelligence plus vaste qui soutient toute chose.",
+            "what_to_do": "Déposez votre fardeau avec humilité et respirez dans la confiance retrouvée.",
+            "what_not_to_do": "Ne prétendez pas porter seul le poids du monde sur vos épaules.",
+        },
+        "de": {
+            "meaning": "Gib alle künstlichen Sorgen und selbstgemachten Lasten auf und vertraue dich ganz Mir an. Ich werde dich von allen Bedrängnissen befreien; sorge dich nicht.",
+            "reflection": "Hingabe im rechten Augenblick ist der Schlüssel zur Befreiung. Wenn die eigene Kraft erschöpft ist, trägt uns das Größere.",
+            "what_to_do": "Lassen Sie das krampfhafte Festhalten los und öffnen Sie sich dem tiefen Vertrauen.",
+            "what_not_to_do": "Versuchen Sie nicht verbissen, jede Einzelheit des Schicksals allein zu erzwingen.",
+        },
+    },
+}
+
+TRATAKA_LOCALIZATION_CATALOG: Dict[str, Dict[str, Dict[str, str]]] = {
+    "bindu": {
+        "hi": {
+            "name": "बिन्दु त्राटक (शांत एकाग्रता दीप)",
+            "focalTarget": "आंखों के ठीक सामने लगभग दो फीट की दूरी पर स्थित एक शांत, ज्योतिर्मय स्वर्णिम बिंदु।",
+            "neuroMechanism": "स्थिर दृष्टि मस्तिष्क के तनाव केंद्र (अमिग्डाला) को शांत करती है और अनियंत्रित विचारों के चक्रवात को रोकती है।",
+            "guidance": "स्वर्णिम बिंदु पर बिना पलक झपकाए कोमल दृष्टि टिकाएं। जब आंखें भारी होने लगें, तो उन्हें कोमलता से बंद करें और हथेलियों को रगड़कर गर्म कर आंखों पर रखें।",
+        },
+        "es": {
+            "name": "Bindu Trataka (Punto Dorado de Enfoque Sereno)",
+            "focalTarget": "Un punto dorado y luminoso a la altura de los ojos, a unos sesenta centímetros de distancia.",
+            "neuroMechanism": "Inhibe los movimientos oculares rápidos y desactiva la hiperactividad de la amígdala, frenando el pánico.",
+            "guidance": "Mantén una mirada suave y fija en el punto dorado sin forzar los párpados. Cuando sientas cansancio, cierra los ojos y cúbrelos con las palmas tibias.",
+        },
+        "fr": {
+            "name": "Bindu Trataka (Point Focal Doré)",
+            "focalTarget": "Un point doré lumineux à hauteur des yeux, à environ soixante centimètres.",
+            "neuroMechanism": "La fixation visuelle continue apaise l'amygdale cérébrale et tarit le flux des pensées anxieuses.",
+            "guidance": "Fixez doucement le point doré sans cligner excessivement. Dès que la fatigue survient, fermez les yeux et posez vos paumes chaudes dessus.",
+        },
+        "de": {
+            "name": "Bindu Trataka (Goldener Ruhepunkt)",
+            "focalTarget": "Ein leuchtender goldener Punkt auf Augenhöhe in etwa sechzig Zentimetern Entfernung.",
+            "neuroMechanism": "Die ruhige Blickfixierung dämpft die Übererregung des Mandelkerns und bringt rasende Gedanken zum Stillstand.",
+            "guidance": "Ruhen Sie mit sanftem Blick auf dem Punkt. Bei Ermüdung schließen Sie die Lider und wärmen die Augen mit den Handflächen.",
+        },
+    },
+    "flame": {
+        "hi": {
+            "name": "ज्योति त्राटक (दीपक की लौ का ध्यान)",
+            "focalTarget": "शांत और स्थिर दीपक की लौ का सबसे चमकीला ऊपरी भाग।",
+            "neuroMechanism": "लौ का सौम्य प्रकाश मन के अवसाद, उदासी और जड़ता को समाप्त कर चेतना में नई ऊर्जा और आशा का संचार करता है।",
+            "guidance": "दीपक की स्थिर लौ पर अपना ध्यान केंद्रित करें। चेहरे की मांसपेशियों को ढीला छोड़ें। 2 मिनट बाद आंखें बंद कर दोनों भौहों के बीच शेष बची लौ के बिंब का ध्यान करें।",
+        },
+        "es": {
+            "name": "Jyoti Trataka (Meditación en la Llama)",
+            "focalTarget": "La cúspide luminosa y constante de una vela encendida.",
+            "neuroMechanism": "La luz cálida reanima el tono dopaminérgico y disipa el embotamiento emocional y la inercia depresiva.",
+            "guidance": "Fija la mirada en el ápice de la llama con el rostro relajado. Tras unos instantes, cierra los párpados y contempla la huella luminosa interior.",
+        },
+        "fr": {
+            "name": "Jyoti Trataka (Contemplation de la Flamme)",
+            "focalTarget": "L'extrémité stable et rayonnante d'une flamme de bougie.",
+            "neuroMechanism": "La clarté de la flamme ravive l'élan vital et dissipe la léthargie dépressive en stimulant les photorécepteurs rétiniens.",
+            "guidance": "Posez votre regard au sommet de la flamme, le visage détendu. Fermez ensuite les yeux et observez l'image rémanente au centre du front.",
+        },
+        "de": {
+            "name": "Jyoti Trataka (Kerzenflammen-Meditation)",
+            "focalTarget": "Die ruhige, goldene Spitze einer brennenden Kerze.",
+            "neuroMechanism": "Das sanfte Licht vertreibt depressive Trägheit und regt die neuronale Vitalität behutsam an.",
+            "guidance": "Blicken Sie ruhig in die Flamme und entspannen Sie die Gesichtszüge. Schließen Sie dann die Augen und spüren Sie dem inneren Nachbild nach.",
+        },
+    },
+    "murti": {
+        "hi": {
+            "name": "मण्डल त्राटक (पवित्र सममित ज्यामिति ध्यान)",
+            "focalTarget": "एक संतुलित, सुंदर व सममित मण्डल ज्यामिति का केंद्र बिंदु।",
+            "neuroMechanism": "सममित ज्यामिति पर ध्यान केंद्रित करने से मस्तिष्क के दोनों गोलार्धों में संतुलन स्थापित होता है और विचारों का बिखराव शांत होता है।",
+            "guidance": "मण्डल के केंद्र बिंदु पर अपनी दृष्टि टिकाएं। फिर कोमलता से उसकी सममित आकृतियों को अनुभव करते हुए गहरी व सम लय में सांसें लें।",
+        },
+        "es": {
+            "name": "Mandala Trataka (Resonancia de Geometría Sagrada)",
+            "focalTarget": "El centro concéntrico de un mandala geométrico armonioso.",
+            "neuroMechanism": "La simetría visual estimula la integración hemisférica cerebral, serenando el caos mental y la rumiación.",
+            "guidance": "Focaliza el centro del mandala y luego percibe su simetría con una respiración rítmica y profunda.",
+        },
+        "fr": {
+            "name": "Mandala Trataka (Géométrie Sacrée Harmonisante)",
+            "focalTarget": "Le centre d'un mandala aux motifs harmonieux et symétriques.",
+            "neuroMechanism": "La contemplation de formes équilibrées réharmonise les hémisphères cérébraux et réduit le bruit mental.",
+            "guidance": "Concentrez-vous sur le cœur du mandala en laissant la symétrie apaiser naturellement vos pensées.",
+        },
+        "de": {
+            "name": "Mandala Trataka (Heilige Geometrie)",
+            "focalTarget": "Der Mittelpunkt eines harmonischen, symmetrischen Mandalas.",
+            "neuroMechanism": "Die visuelle Symmetrie harmonisiert beide Gehirnhälften und ordnet das Gedankenchaos.",
+            "guidance": "Richten Sie den Blick auf das Zentrum und atmen Sie gleichmäßig im Rhythmus der Formen.",
+        },
+    },
+    "pratibimb": {
+        "hi": {
+            "name": "प्रतिबिम्ब त्राटक (दर्पण आत्म-स्वीकृति ध्यान)",
+            "focalTarget": "दर्पण में अपनी ही आंखों की पुतलियों में छिपी आत्मिक चेतना।",
+            "neuroMechanism": "स्वयं की आंखों में शांत भाव से देखना आंतरिक हीनभावना, अपराधबोध और आत्म-आलोचना को समाप्त कर गहरी आत्म-करुणा जगाता है।",
+            "guidance": "दर्पण में अपनी आंखों में करुणा और मित्रता के साथ देखें। बिना किसी आत्म-आलोचना के स्वयं से कहें: 'मैं जैसा भी हूँ, स्वयं को स्वीकार करता हूँ'।",
+        },
+        "es": {
+            "name": "Pratibimb Trataka (Espejo de Autocompasión)",
+            "focalTarget": "El reflejo sereno de tus propias pupilas en el espejo.",
+            "neuroMechanism": "Mirarse a los ojos con ternura disuelve la vergüenza tóxica y fortalece el apego seguro hacia uno mismo.",
+            "guidance": "Mírate en el espejo como mirarías a un amigo muy amado. Repite con calma: 'Me acepto y me sostengo en este instante'.",
+        },
+        "fr": {
+            "name": "Pratibimb Trataka (Miroir de Bienveillance Intérieure)",
+            "focalTarget": "Le reflet de votre propre regard dans le miroir.",
+            "neuroMechanism": "Ce regard sans jugement apaise la honte intérieure et répare l'estime de soi en activant l'ocytocine.",
+            "guidance": "Plongez votre regard dans vos yeux avec une infinie douceur. Dites-vous intérieurement : 'Je m'accueille avec tendresse'.",
+        },
+        "de": {
+            "name": "Pratibimb Trataka (Spiegel der Selbstannahme)",
+            "focalTarget": "Der ruhige Blick in die eigenen Augen im Spiegel.",
+            "neuroMechanism": "Der gütige Augenkontakt mit sich selbst löst Schamgefühle auf und schenkt tiefe innere Geborgenheit.",
+            "guidance": "Blicken Sie sich freundlich in die Augen und sprechen Sie sich selbst Wohlwollen und Vergebung zu.",
+        },
+    },
+    "shoonya": {
+        "hi": {
+            "name": "शून्य त्राटक (अनंत आकाश एवं मौन ध्यान)",
+            "focalTarget": "विशाल, खुला आकाश अथवा सम्मुख फैला अंधकारमय शांत शून्य।",
+            "neuroMechanism": "अनंत खुले विस्तार को देखने से मस्तिष्क का 'डिफ़ॉल्ट मोड नेटवर्क' शांत होता है और मानसिक तनाव पूरी तरह घुल जाता है।",
+            "guidance": "दूर क्षितिज या खुले शून्य में अपनी दृष्टि को फैला दें। किसी एक वस्तु को पकड़ने के बजाय संपूर्ण विस्तार को महसूस करें और मन को मौन होने दें।",
+        },
+        "es": {
+            "name": "Shoonya Trataka (El Vacío Panorámico y Horizonte Infinito)",
+            "focalTarget": "El cielo abierto o la inmensidad vacía ante ti.",
+            "neuroMechanism": "La visión periférica abierta desconecta la red neuronal por defecto, aliviando la sobrecarga cognitiva.",
+            "guidance": "Expande tu campo visual hacia el horizonte sin fijarte en ningún objeto concreto. Deja que la mente se vuelva tan espaciosa como el cielo.",
+        },
+        "fr": {
+            "name": "Shoonya Trataka (Le Vide Méditatif et l'Horizon Vaste)",
+            "focalTarget": "Le ciel infini ou l'espace ouvert devant vous.",
+            "neuroMechanism": "Le regard panoramique éteint l'hyperactivité mentale et crée un espace de silence régénérateur.",
+            "guidance": "Élargissez votre regard vers l'immensité sans vous focaliser sur un point précis. Laissez l'esprit devenir aussi vaste que l'horizon.",
+        },
+        "de": {
+            "name": "Shoonya Trataka (Die unendliche Weite des Raumes)",
+            "focalTarget": "Der offene Himmel oder der weite Raum vor Ihnen.",
+            "neuroMechanism": "Der weite Panoramablick beruhigt das Gedankenkarussell und schenkt befreiende Weite.",
+            "guidance": "Weiten Sie Ihren Blick bis an den Horizont, ohne an Einzelheiten haften zu bleiben. Werden Sie still wie der weite Raum.",
+        },
+    },
+}
+
+def get_localized_gita_item(gita_id_or_item: Any, lang_code: Optional[str] = "en") -> Dict[str, str]:
+    """Retrieves human-translated Gita item for target language code."""
+    norm = normalize_language_code(lang_code)
+    if isinstance(gita_id_or_item, str):
+        shloka_id = gita_id_or_item.lower().strip()
+        item_dict = {}
+    elif isinstance(gita_id_or_item, dict):
+        shloka_id = str(gita_id_or_item.get("id", "")).lower().strip()
+        item_dict = gita_id_or_item
+    else:
+        shloka_id = ""
+        item_dict = {}
+
+    entry = GITA_LOCALIZATION_CATALOG.get(shloka_id, {})
+    if norm in entry:
+        return entry[norm]
+
+    guidance = item_dict.get("actionable_guidance", {}) if isinstance(item_dict.get("actionable_guidance"), dict) else {}
+    return {
+        "meaning": item_dict.get("philosophical_meaning", "Perform your dedicated action with full integrity without outcome anxiety."),
+        "reflection": item_dict.get("clinical_reframe", "Shift locus of control to present moment process execution."),
+        "what_to_do": guidance.get("what_to_do", "Focus 100% on the single highest-integrity action in front of you."),
+        "what_not_to_do": guidance.get("what_not_to_do", "Release attachment to hypothetical results you cannot control."),
+    }
+
+def get_localized_trataka_item(mode: str, lang_code: Optional[str] = "en") -> Dict[str, str]:
+    """Retrieves human-translated Trataka instructions for target language code."""
+    norm = normalize_language_code(lang_code)
+    clean_mode = (mode or "bindu").lower().strip()
+    entry = TRATAKA_LOCALIZATION_CATALOG.get(clean_mode, {})
+    if norm in entry:
+        return entry[norm]
+
+    # English Fallback
+    eng_map = {
+        "bindu": {
+            "name": "Bindu Trataka (Sacred Golden Focal Point)",
+            "focalTarget": "A luminous golden focal point at eye level, roughly two feet away.",
+            "neuroMechanism": "Motionless ocular fixation inhibits micro-saccades, down-regulating amygdala reactivity and stopping mental looping.",
+            "guidance": "Rest a steady, soft gaze upon the golden point without straining your eyelids. When tired, close your eyes and cup warm palms over them.",
+        },
+        "flame": {
+            "name": "Jyoti Trataka (Candle Flame Gazing)",
+            "focalTarget": "The brightest tip of a steady candle flame.",
+            "neuroMechanism": "Warm photon exposure activates retinal photoreceptors, stimulates dopamine, and dispels depressive lethargy.",
+            "guidance": "Fix your gaze upon the tip of the flame with facial muscles relaxed. Close your eyes after 2 minutes and observe the inner retinal afterglow.",
+        },
+        "murti": {
+            "name": "Mandala Trataka (Sacred Geometry Resonance)",
+            "focalTarget": "The concentric center of a balanced geometric mandala.",
+            "neuroMechanism": "Geometric visual symmetry stimulates interhemispheric coherence and dissolves ADHD attentional fragmentation.",
+            "guidance": "Anchor your vision at the center of the mandala, then gently take in the radial symmetry while breathing deeply.",
+        },
+        "pratibimb": {
+            "name": "Pratibimb Trataka (Sacred Mirror Self-Compassion)",
+            "focalTarget": "The gentle reflection of your own pupils in a mirror.",
+            "neuroMechanism": "Compassionate mutual gaze with oneself activates vagal social engagement and dissolves toxic shame and imposter syndrome.",
+            "guidance": "Look directly into your own eyes in the mirror with tender friendliness. Repeat silently: 'I accept and support myself in this moment.'",
+        },
+        "shoonya": {
+            "name": "Shoonya Trataka (Void & Panoramic Space Gazing)",
+            "focalTarget": "The expansive open sky or deep panoramic void ahead.",
+            "neuroMechanism": "Broad panoramic peripheral vision down-regulates the Default Mode Network, relieving mental exhaustion and overthinking.",
+            "guidance": "Expand your visual awareness to the wide horizon without locking onto any single object. Let your mind become vast like the sky.",
+        },
+    }
+    return eng_map.get(clean_mode, eng_map["bindu"])
+

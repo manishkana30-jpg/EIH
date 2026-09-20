@@ -14,6 +14,7 @@ import asyncio
 import base64
 import logging
 import os
+import re
 import sys
 import time
 from collections import defaultdict
@@ -171,7 +172,7 @@ class ChatRequest(BaseModel):
     history: list[dict[str, Any]] | None = Field(default=None, description="Recent conversation turns for anti-looping context")
     voice_mode: bool | None = Field(default=False, description="Whether to include synthesized audio_base64 in response")
     language: str | None = Field(default=None, description="Language code or speech locale e.g. hi, es, fr, de, ja, zh, en")
-    locale: str | None = Field(default="en-US", description="Regional locale code e.g. hi-IN, es-ES, en-US")
+    locale: str | None = Field(default=None, description="Regional locale code e.g. hi-IN, es-ES, en-US")
 
 # Type Aliases for /api/therapy/chat
 TherapyRequest = ChatRequest
@@ -185,7 +186,7 @@ class SearchRequest(BaseModel):
 class TTSRequest(BaseModel):
     text: str = Field(..., min_length=1, max_length=3000, description="Text to synthesize to speech")
     voice: str | None = Field(default=None, max_length=100, description="Neural voice identifier")
-    locale: str | None = Field(default="en-US", max_length=50, description="Regional locale code e.g. hi-IN, es-ES, en-US")
+    locale: str | None = Field(default=None, max_length=50, description="Regional locale code e.g. hi-IN, es-ES, en-US")
 
 
 class CBTAnalyzeRequest(BaseModel):
@@ -823,11 +824,35 @@ async def chat_endpoint(payload: TherapyRequest, request: Request, background_ta
         if psychology_rag and len(clean_user_query) >= 4:
             background_tasks.add_task(psychology_rag.learn_document_from_query, clean_user_query)
 
-        target_locale = payload.locale or payload.language or "en-US"
+        # Detect target locale from script, payload locale, or payload language
+        has_devanagari = bool(re.search(r"[\u0900-\u097F]", clean_user_query))
+        if has_devanagari:
+            target_locale = "hi-IN"
+        elif payload.locale:
+            target_locale = payload.locale
+        elif payload.language:
+            lang_norm = payload.language.lower().strip()
+            if lang_norm in ("hi", "hi-in", "hindi"):
+                target_locale = "hi-IN"
+            elif lang_norm in ("es", "es-es", "spanish"):
+                target_locale = "es-ES"
+            elif lang_norm in ("fr", "fr-fr", "french"):
+                target_locale = "fr-FR"
+            elif lang_norm in ("de", "de-de", "german"):
+                target_locale = "de-DE"
+            else:
+                target_locale = payload.language
+        else:
+            target_locale = "en-US"
+
         response = await partner.respond(clean_user_query, history=history_turns, locale=target_locale)
 
-        # Synthesize edge-tts neural voice matching user language/geo locale
-        voice_to_use = get_voice_for_locale(target_locale)
+        # Synthesize edge-tts neural voice matching target locale and detected script
+        if re.search(r"[\u0900-\u097F]", response.reply):
+            voice_to_use = "hi-IN-SwaraNeural"
+        else:
+            voice_to_use = get_voice_for_locale(target_locale)
+
         if payload.voice_mode is not False and not response.audio_base64:
             try:
                 audio_bytes = await audio_engine.synthesize(response.reply, voice=voice_to_use)
@@ -939,7 +964,10 @@ async def tts_endpoint(
             pass
 
     if not target_voice:
-        target_voice = get_voice_for_locale(target_locale or "en-US")
+        if re.search(r"[\u0900-\u097F]", target_text or ""):
+            target_voice = "hi-IN-SwaraNeural"
+        else:
+            target_voice = get_voice_for_locale(target_locale or "en-US")
 
     if not target_text:
         raise HTTPException(status_code=400, detail="Missing text parameter for speech synthesis")
@@ -1266,6 +1294,7 @@ async def stream_voice(
     request: Request,
     text: str | None = None,
     voice: str | None = None,
+    locale: str | None = None,
     rate: str = "-5%",
 ):
     """
@@ -1273,7 +1302,8 @@ async def stream_voice(
     Accepts GET query params or POST JSON/FormData payload with robust text sanitization.
     """
     target_text = text
-    target_voice = voice or "en-US-AriaNeural"
+    target_voice = voice
+    target_locale = locale
 
     if request.method == "POST":
         content_type = request.headers.get("content-type", "")
@@ -1283,6 +1313,7 @@ async def stream_voice(
                 if isinstance(body, dict):
                     target_text = body.get("text") or target_text
                     target_voice = body.get("voice") or target_voice
+                    target_locale = body.get("locale") or target_locale
             except Exception:
                 pass
         elif "form" in content_type:
@@ -1290,6 +1321,7 @@ async def stream_voice(
                 form_data = await request.form()
                 target_text = form_data.get("text", target_text)
                 target_voice = form_data.get("voice", target_voice)
+                target_locale = form_data.get("locale", target_locale)
             except Exception:
                 pass
 
@@ -1300,7 +1332,21 @@ async def stream_voice(
     if not clean_text:
         raise HTTPException(status_code=400, detail="Text contained no speakable characters after sanitization")
 
-    voice_str: str | None = str(target_voice) if target_voice and not isinstance(target_voice, UploadFile) else None
+    # Multi-layered regional neural voice resolution:
+    # 1. Direct Devanagari script detection (guarantees native Hindi voice over robot fallback)
+    # 2. Explicit non-default voice parameter
+    # 3. GPS/Geo Locale resolution
+    has_devanagari = bool(re.search(r'[\u0900-\u097F]', clean_text))
+    if has_devanagari and (not target_voice or target_voice == "en-US-AriaNeural"):
+        voice_str = "hi-IN-SwaraNeural"
+    elif target_voice and str(target_voice) != "en-US-AriaNeural" and not isinstance(target_voice, UploadFile):
+        voice_str = str(target_voice)
+    elif target_locale:
+        voice_str = get_voice_for_locale(str(target_locale))
+    elif target_voice and not isinstance(target_voice, UploadFile):
+        voice_str = str(target_voice)
+    else:
+        voice_str = "en-US-AriaNeural"
 
     try:
         audio_bytes = await audio_engine.synthesize_speech_bytes(clean_text, voice=voice_str)

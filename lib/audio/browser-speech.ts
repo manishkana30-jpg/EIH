@@ -9,8 +9,8 @@
  * 6. Continuous Keep-Alive & Auto Barge-In Interruption.
  */
 
-import { getBestTherapeuticVoice } from './voice-selector';
-import { detectUserSpokenLanguage } from '../i18n/language-catalog';
+import { getBestTherapeuticVoice } from './voice-selector.ts';
+import { detectUserSpokenLanguage } from '../i18n/language-catalog.ts';
 
 export interface BrowserSpeechCallbacks {
   onUserSpeech?: (transcript: string, isFinal: boolean) => void;
@@ -32,6 +32,35 @@ export interface SpeechRecognitionResult {
   length: number;
   [index: number]: SpeechRecognitionResultItem;
 }
+
+export const REGIONAL_NEURAL_VOICE_MAP: Record<string, string> = {
+  'hi-in': 'hi-IN-SwaraNeural',
+  'hi': 'hi-IN-SwaraNeural',
+  'es-es': 'es-ES-ElviraNeural',
+  'es': 'es-ES-ElviraNeural',
+  'fr-fr': 'fr-FR-DeniseNeural',
+  'fr': 'fr-FR-DeniseNeural',
+  'de-de': 'de-DE-KatjaNeural',
+  'de': 'de-DE-KatjaNeural',
+  'en-us': 'en-US-AriaNeural',
+  'en-gb': 'en-GB-SoniaNeural',
+  'en-in': 'en-IN-NeerjaNeural',
+  'en': 'en-US-AriaNeural',
+  'zh-cn': 'zh-CN-XiaoxiaoNeural',
+  'zh': 'zh-CN-XiaoxiaoNeural',
+  'ja-jp': 'ja-JP-NanamiNeural',
+  'ja': 'ja-JP-NanamiNeural',
+  'ar-sa': 'ar-SA-ZariyahNeural',
+  'ar': 'ar-SA-ZariyahNeural',
+  'pt-br': 'pt-BR-FranciscaNeural',
+  'pt': 'pt-BR-FranciscaNeural',
+  'it-it': 'it-IT-ElsaNeural',
+  'it': 'it-IT-ElsaNeural',
+  'ru-ru': 'ru-RU-SvetlanaNeural',
+  'ru': 'ru-RU-SvetlanaNeural',
+  'ko-kr': 'ko-KR-SunHiNeural',
+  'ko': 'ko-KR-SunHiNeural',
+};
 
 export interface SpeechRecognitionResultList {
   length: number;
@@ -666,7 +695,8 @@ export class BrowserSpeechController {
   public async speak(
     text: string,
     onStartOrEnd?: () => void,
-    onEndCallback?: () => void
+    onEndCallback?: () => void,
+    localeOverride?: string
   ): Promise<void> {
     const onStart = onEndCallback ? onStartOrEnd : undefined;
     const onEnd = onEndCallback ? onEndCallback : onStartOrEnd;
@@ -682,6 +712,13 @@ export class BrowserSpeechController {
       }
       return;
     }
+
+    // Resolve optimal regional voice based on text script, localeOverride, or currentLanguageLocale
+    const hasHindiScript = /[\u0900-\u097F]/.test(cleanText);
+    const effectiveLocale = localeOverride || (hasHindiScript ? 'hi-IN' : (this.currentLanguageLocale || 'en-US'));
+    const cleanLocaleKey = effectiveLocale.toLowerCase().replace('_', '-');
+    const baseLang = cleanLocaleKey.split('-')[0];
+    const selectedVoice = REGIONAL_NEURAL_VOICE_MAP[cleanLocaleKey] || REGIONAL_NEURAL_VOICE_MAP[baseLang] || 'en-US-AriaNeural';
 
     this.stopListeningInternals();
     this.cancelSpeech();
@@ -761,13 +798,15 @@ export class BrowserSpeechController {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             text: cleanText,
-            voice: 'en-US-AriaNeural',
+            voice: selectedVoice,
+            locale: effectiveLocale,
             rate: '-4%',
           }),
         });
       } else {
-        const voiceParam = encodeURIComponent('en-US-AriaNeural');
-        const voiceUrl = `${voiceBase}?text=${encodeURIComponent(cleanText)}&voice=${voiceParam}&rate=-4%`;
+        const voiceParam = encodeURIComponent(selectedVoice);
+        const localeParam = encodeURIComponent(effectiveLocale);
+        const voiceUrl = `${voiceBase}?text=${encodeURIComponent(cleanText)}&voice=${voiceParam}&locale=${localeParam}&rate=-4%`;
         res = await fetch(voiceUrl);
       }
 
@@ -800,7 +839,7 @@ export class BrowserSpeechController {
         audio.onerror = async () => {
           console.warn('HTMLAudioElement error on blob, trying Web Audio decoding fallback...');
           await this.playWithAudioContext(audioBlob, finishSpeech, () => {
-            this.speakWithWebSpeechSynth(cleanText, onStart, onEnd);
+            this.speakWithWebSpeechSynth(cleanText, onStart, onEnd, effectiveLocale);
           });
         };
 
@@ -810,13 +849,13 @@ export class BrowserSpeechController {
         console.warn('Audio.play() rejected (autoplay constraint), attempting Web Audio API destination...', playError);
         // Method B: Web Audio API AudioBufferSourceNode (Bypasses HTML5 Autoplay restrictions)
         await this.playWithAudioContext(audioBlob, finishSpeech, () => {
-          this.speakWithWebSpeechSynth(cleanText, onStart, onEnd);
+          this.speakWithWebSpeechSynth(cleanText, onStart, onEnd, effectiveLocale);
         });
         return;
       }
     } catch (neuralErr) {
       console.warn('Neural voice stream unreachable, falling back to Web Speech synthesis:', neuralErr);
-      this.speakWithWebSpeechSynth(cleanText, onStart, onEnd);
+      this.speakWithWebSpeechSynth(cleanText, onStart, onEnd, effectiveLocale);
     }
   }
 
@@ -872,7 +911,8 @@ export class BrowserSpeechController {
   private async speakWithWebSpeechSynth(
     cleanText: string,
     onStart?: () => void,
-    onEnd?: () => void
+    onEnd?: () => void,
+    localeOverride?: string
   ): Promise<void> {
     if (!this.speechSynth || typeof window === 'undefined') {
       this.isSpeaking = false;
@@ -896,8 +936,9 @@ export class BrowserSpeechController {
     utterance.pitch = 1.0;
     utterance.volume = 1.0;
 
+    const hasHindiScript = /[\u0900-\u097F]/.test(cleanText);
     const langInfo = detectUserSpokenLanguage(cleanText);
-    const targetLocale = langInfo.speechLocale || this.currentLanguageLocale || 'en-US';
+    const targetLocale = localeOverride || (hasHindiScript ? 'hi-IN' : (langInfo.speechLocale || this.currentLanguageLocale || 'en-US'));
     utterance.lang = targetLocale;
 
     (window as any).__activeUtterance = utterance;

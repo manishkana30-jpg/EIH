@@ -253,8 +253,9 @@ export function synthesizePsychologyDocument(
 
   const docId = `learned_${cleanSlug || 'clinical_protocol'}`;
 
-  // Capitalize query into readable title
-  const words = query.split(/\s+/).filter((w) => w.length >= 3);
+  // Capitalize query into readable title excluding generic stopwords
+  const commonStopwords = new Set(['the', 'and', 'with', 'for', 'that', 'this', 'have', 'feel', 'feeling', 'from', 'about', 'what', 'when', 'where', 'some', 'you', 'your', 'are', 'was', 'will', 'today', 'very', 'much']);
+  const words = query.split(/\s+/).filter((w) => w.length >= 4 && !commonStopwords.has(w.toLowerCase()));
   const titleTopic = words.slice(0, 4).map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
   const docName = `Learned: ${titleTopic || 'Psychological Adaptation'} Protocol`;
 

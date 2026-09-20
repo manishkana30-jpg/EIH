@@ -7,6 +7,8 @@ import {
   isTestMessage,
   GREETING_RESPONSE,
   TEST_RESPONSE,
+  getLocalizedGreetingResponse,
+  getLocalizedTestResponse,
 } from '../knowledge/psychology-library-rag';
 import { getResearchedAdviceForEmotion } from '../knowledge/authenticated-research-bank';
 import {
@@ -183,8 +185,9 @@ class HealerBackendClient {
 
     // 0.1. Immediate Greeting & Mic Test Fast-Path (Single sentence responses, no clinical trataka)
     if (isTestMessage(cleanMessage)) {
+      const testReply = getLocalizedTestResponse(cleanMessage, language, locale);
       return {
-        reply: TEST_RESPONSE,
+        reply: testReply,
         sources: [],
         engine: 'Audio Verification Protocol',
         is_crisis: false,
@@ -199,8 +202,9 @@ class HealerBackendClient {
     }
 
     if (isGreetingMessage(cleanMessage)) {
+      const greetingReply = getLocalizedGreetingResponse(cleanMessage, language, locale);
       return {
-        reply: GREETING_RESPONSE,
+        reply: greetingReply,
         sources: [],
         engine: 'Conversational Empathy Responder',
         is_crisis: false,
@@ -213,6 +217,12 @@ class HealerBackendClient {
         },
       };
     }
+
+    // Resolve accurate locale
+    const hasDevanagari = /[\u0900-\u097F]/.test(cleanMessage);
+    const resolvedLocale = hasDevanagari
+      ? 'hi-IN'
+      : locale || (language === 'hi' ? 'hi-IN' : language === 'es' ? 'es-ES' : language === 'fr' ? 'fr-FR' : language === 'de' ? 'de-DE' : undefined);
 
     // TIER 1: Dedicated Hardware Python Daemon (via Tunnel or Localhost)
     const backendUrl = this.getBackendUrl();
@@ -228,8 +238,8 @@ class HealerBackendClient {
             message: cleanMessage,
             history,
             voice_mode: voiceMode,
-            language: language || undefined,
-            locale: locale || undefined,
+            language: hasDevanagari ? 'hi' : (language || undefined),
+            locale: resolvedLocale,
           }),
           signal: controller.signal,
         });
@@ -265,8 +275,8 @@ class HealerBackendClient {
         body: JSON.stringify({
           message: cleanMessage,
           history: history?.map((h) => ({ role: h.sender === 'ai' ? 'assistant' : 'user', content: h.text })),
-          language: language || undefined,
-          locale: locale || undefined,
+          language: hasDevanagari ? 'hi' : (language || undefined),
+          locale: resolvedLocale,
         }),
         signal: controller.signal,
       });
@@ -281,7 +291,7 @@ class HealerBackendClient {
           const polyvagalState = arousal > 0.6 ? 'Sympathetic (Fight/Flight)' : (diag.coreAffect?.valence && diag.coreAffect.valence < -0.4) ? 'Dorsal Vagal (Shutdown)' : 'Ventral Vagal (Safe)';
           const distortion = cleanMessage.match(/\b(always|never|worst|idiot|ruined|hate)\b/i) ? 'Catastrophizing / All-or-Nothing' : 'None';
           const tratakPrescription = resolveTratakaPrescription(cleanMessage, diag.dimensionName, polyvagalState);
-          const recTrataka = tratakPrescription.mode;
+          const recTrataka = data.recommended_trataka || tratakPrescription.mode;
           const trigunaAnalysis = parseClientTriguna(libRes?.condition?.triguna_balance);
 
           return {
@@ -324,7 +334,7 @@ class HealerBackendClient {
       const tratakPrescription = resolveTratakaPrescription(cleanMessage, diag.dimensionName, polyvagalState);
       const gitaItem = findGitaWisdom(cleanMessage);
 
-      const targetLang = language || locale || (cleanMessage.match(/[\u0900-\u097F]/) ? 'hi' : 'en');
+      const targetLang = cleanMessage.match(/[\u0900-\u097F]/) ? 'hi' : (language || locale || 'en');
       let fallbackReply = '';
 
       if (libraryResult) {

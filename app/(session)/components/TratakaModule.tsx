@@ -248,6 +248,40 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
   const [boxBreathStep, setBoxBreathStep] = useState<'inhale' | 'hold-in' | 'exhale' | 'hold-out'>('inhale');
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const lastPlayedStageRef = useRef<number | null>(null);
+  const prevIsOpenRef = useRef(false);
+
+  // Synchronize tratakaMode with prescribed recommendedMode when modal opens
+  useEffect(() => {
+    const justOpened = isOpen && !prevIsOpenRef.current;
+    prevIsOpenRef.current = isOpen;
+
+    if (justOpened) {
+      if (recommendedMode) {
+        setTratakaMode(recommendedMode);
+        if (recommendedMode === 'pratibimb') {
+          setElapsedSec(60);
+          lastPlayedStageRef.current = 2;
+        } else {
+          setElapsedSec(0);
+          lastPlayedStageRef.current = 1;
+        }
+      } else {
+        setTratakaMode(null);
+        setElapsedSec(0);
+        lastPlayedStageRef.current = null;
+      }
+      setIsPlaying(true);
+      setHasAnnouncedStage4(false);
+    } else if (!isOpen) {
+      if (timerRef.current) clearInterval(timerRef.current);
+      setElapsedSec(0);
+      setTratakaMode(null);
+      setIsPlaying(true);
+      setHasAnnouncedStage4(false);
+      lastPlayedStageRef.current = null;
+      browserSpeechController.stop();
+    }
+  }, [isOpen, recommendedMode]);
 
   const defaultReframe =
     activeCbtReframe ||
@@ -262,8 +296,6 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
       : TRATAKA_STAGES.find((s) => elapsedSec >= s.startSec && elapsedSec < s.endSec) || TRATAKA_STAGES[0];
 
   const currentStageId = elapsedSec >= TOTAL_TRATAKA_SECONDS ? 'complete' : currentStageConfig?.id || 1;
-
-
 
   // Sound cues on stage transitions
   useEffect(() => {
@@ -281,16 +313,7 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
 
   // Main Session Timeline Timer (Only runs when a mode is selected)
   useEffect(() => {
-    if (!isOpen) {
-      if (timerRef.current) clearInterval(timerRef.current);
-      setElapsedSec(0);
-      setTratakaMode(null);
-      setIsPlaying(true);
-      setHasAnnouncedStage4(false);
-      lastPlayedStageRef.current = null;
-      browserSpeechController.stop();
-      return;
-    }
+    if (!isOpen) return;
 
     if (tratakaMode !== null && isPlaying && elapsedSec < TOTAL_TRATAKA_SECONDS) {
       timerRef.current = setInterval(() => {
@@ -322,7 +345,7 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
       if (userLocale) {
         browserSpeechController.setLanguageLocale(userLocale);
       }
-      browserSpeechController.speak(defaultReframe);
+      browserSpeechController.speak(defaultReframe, undefined, undefined, userLocale);
     }
   }, [currentStageId, isAudioEnabled, hasAnnouncedStage4, isOpen, defaultReframe, userLocale, tratakaMode]);
 
@@ -464,6 +487,33 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
               Select one of the 5 classical Trataka variations. Each mode activates a distinct autonomic and neuro-cognitive pathway, all operating within the strict 2-minute digital eye safety limit.
             </p>
           </div>
+
+          {recommendedMode && (
+            <div className="mb-6 max-w-xl mx-auto w-full p-4 rounded-2xl bg-amber-500/10 border border-amber-400/30 flex items-center justify-between gap-4 backdrop-blur-md">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300 shrink-0">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-white">Prescribed Archetype:</span>
+                    <span className="text-xs font-bold text-amber-400 font-mono">
+                      {TRATAKA_MODES.find((m) => m.id === recommendedMode)?.name || recommendedMode}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-300">
+                    Synchronized with your active emotional & autonomic state
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => handleSelectMode(recommendedMode)}
+                className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition-colors shrink-0 cursor-pointer shadow-md"
+              >
+                Launch Prescribed
+              </button>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
             {TRATAKA_MODES.map((mode) => {

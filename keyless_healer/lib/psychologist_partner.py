@@ -141,6 +141,15 @@ CRISIS_MESSAGE = (
     "You do not have to carry this alone."
 )
 
+CRISIS_MESSAGE_HINDI = (
+    "मैं समझ सकता हूँ कि आप इस समय बहुत गहरे कष्ट और दर्द से गुजर रहे हैं, और आपकी सुरक्षा हमारी सर्वोच्च प्राथमिकता है। "
+    "कृपया तुरंत इन गोपनीय, पेशेवर सहायता केंद्रों से संपर्क करें:\n\n"
+    "• भारत: 14416 या 1800-891-4416 (Tele-MANAS) / किरण हेल्पलाइन 1800-599-0019 पर कॉल करें\n"
+    "• राष्ट्रीय आपातकालीन नंबर: 112 डायल करें\n"
+    "• क्राइसिस टेक्स्ट लाइन: 741741 पर HOME लिखकर भेजें\n\n"
+    "आपको यह अकेलापन और दर्द अकेले सहने की आवश्यकता नहीं है। सहायता हमेशा उपलब्ध है।"
+)
+
 def parse_triguna_balance(balance_str: str | None) -> dict[str, Any]:
     """Parses a triguna string into normalized Sattva/Rajas/Tamas percentages and balance state."""
     b = (balance_str or "").lower()
@@ -582,11 +591,20 @@ class KeylessPsychologistPartner:
         """Processes user input through safety check, free search, and LLM inference."""
         start_time = time.perf_counter()
 
+        # Detect Devanagari script or normalize regional language
+        has_devanagari = bool(re.search(r"[\u0900-\u097F]", user_message))
+        if has_devanagari:
+            locale = "hi-IN"
+
+        loc_lower = (locale or "").lower()
+        is_hindi = loc_lower.startswith("hi") or "hindi" in loc_lower or has_devanagari
+
         if check_crisis_text(user_message):
             telemetry = self._heuristic_analysis(user_message)
             telemetry.dominant_emotion = "Crisis"
+            crisis_reply = CRISIS_MESSAGE_HINDI if is_hindi else CRISIS_MESSAGE
             return HealerResponse(
-                reply=CRISIS_MESSAGE,
+                reply=crisis_reply,
                 telemetry=telemetry,
                 sources=[],
                 engine_used="Deterministic Crisis Safety Interceptor",
@@ -597,8 +615,19 @@ class KeylessPsychologistPartner:
         if is_test_text(user_message):
             telemetry = self._heuristic_analysis(user_message)
             telemetry.dominant_emotion = "Calmness"
+            if is_hindi:
+                test_reply = "माइक्रोफ़ोन बिल्कुल सही तरीके से काम कर रहा है।"
+            elif loc_lower.startswith("es"):
+                test_reply = "El micrófono está funcionando perfectamente."
+            elif loc_lower.startswith("fr"):
+                test_reply = "Le microphone fonctionne parfaitement."
+            elif loc_lower.startswith("de"):
+                test_reply = "Das Mikrofon funktioniert einwandfrei."
+            else:
+                test_reply = "Mic is running fine."
+
             return HealerResponse(
-                reply="Mic is running fine.",
+                reply=test_reply,
                 telemetry=telemetry,
                 sources=[],
                 engine_used="Audio Verification Protocol",
@@ -610,8 +639,19 @@ class KeylessPsychologistPartner:
         if is_greeting_text(user_message):
             telemetry = self._heuristic_analysis(user_message)
             telemetry.dominant_emotion = "Calmness"
+            if is_hindi:
+                greeting_reply = "नमस्ते! मैं आपकी कैसे सहायता कर सकता हूँ?"
+            elif loc_lower.startswith("es"):
+                greeting_reply = "¡Hola! ¿Cómo puedo ayudarte hoy?"
+            elif loc_lower.startswith("fr"):
+                greeting_reply = "Bonjour ! Comment puis-je vous aider aujourd'hui ?"
+            elif loc_lower.startswith("de"):
+                greeting_reply = "Hallo! Wie kann ich Ihnen heute helfen?"
+            else:
+                greeting_reply = "Hello, how can I help you?"
+
             return HealerResponse(
-                reply="Hello, how can I help you?",
+                reply=greeting_reply,
                 telemetry=telemetry,
                 sources=[],
                 engine_used="Conversational Empathy Responder",
@@ -625,8 +665,7 @@ class KeylessPsychologistPartner:
             telemetry = self._heuristic_analysis(user_message)
             telemetry.dominant_emotion = "Loop Reset"
             loop_msg = "I apologize for repeating myself. Let us step out of any fixed patterns and reset completely: speak to me freely about whatever is on your mind right now, without any rigid steps."
-            loc_lower = (locale or "").lower()
-            if loc_lower.startswith("hi") or "hindi" in loc_lower or re.search(r"[\u0900-\u097F]", user_message):
+            if is_hindi:
                 loop_msg = "मैं अपनी बात दोहराने के लिए क्षमा चाहता हूँ। आइए किसी निश्चित पैटर्न से बाहर निकलकर बिल्कुल नए सिरे से शुरुआत करें: इस समय आपके मन में जो भी बात या उलझन चल रही है, उसे बिना किसी झिझक के सीधे मुझसे साझा करें।"
             elif loc_lower.startswith("es"):
                 loop_msg = "Me disculpo sinceramente por sonar repetitivo. Dejemos de lado cualquier respuesta estructurada y hablemos directamente: ¿qué es lo que realmente estás sintiendo o pensando en este momento?"
@@ -720,6 +759,24 @@ class KeylessPsychologistPartner:
                 source="psychology_library"
             )
             final_sources.insert(1 if gita_wisdom else 0, lib_source)
+
+        if llm_reply:
+            # Check if LLM leaked English headings or failed Devanagari generation for Hindi
+            if is_hindi:
+                has_dev_reply = bool(re.search(r"[\u0900-\u097F]", llm_reply))
+                has_forbidden_english = any(h in llm_reply for h in [
+                    "Philosophical Meaning:", "Clinical Reflection:", "Sacred Gazing Target:",
+                    "Neuro-Ocular Mechanism:", "Practice Guidance:", "down-regulate sympathetic arousal"
+                ])
+                if not has_dev_reply or has_forbidden_english:
+                    logger.warning("LLM output contained English headers or missing Devanagari; falling back to pure Hindi synthesis.")
+                    llm_reply = None
+            elif loc_lower.startswith("es") and ("Philosophical Meaning:" in llm_reply or "Clinical Reflection:" in llm_reply):
+                llm_reply = None
+            elif loc_lower.startswith("fr") and ("Philosophical Meaning:" in llm_reply or "Clinical Reflection:" in llm_reply):
+                llm_reply = None
+            elif loc_lower.startswith("de") and ("Philosophical Meaning:" in llm_reply or "Clinical Reflection:" in llm_reply):
+                llm_reply = None
 
         if llm_reply:
             return HealerResponse(

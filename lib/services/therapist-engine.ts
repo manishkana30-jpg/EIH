@@ -13,6 +13,9 @@ import {
   formatHumanTherapeuticMessage,
   getLocalizedGeneralAdvice,
   getLocalizedClinicalIntervention,
+  getLocalizedGitaItem,
+  getLocalizedTratakaItem,
+  normalizeLanguageCode,
 } from "../i18n/clinical-localization.ts";
 import { findGitaWisdom, formatGitaShlokaBlock } from "../knowledge/gita-library.ts";
 import { resolveTratakaPrescription } from "../knowledge/trataka-recommendations.ts";
@@ -270,41 +273,57 @@ export async function generateTherapeuticResponse(
     });
   }
 
+  // Determine Language Instruction for LLMs
+  const activeLangCode = language || (locale ? locale.split("-")[0].split("_")[0] : null);
+  const detectedScriptLang = /[\u0900-\u097F]/.test(userMessage) ? "hi" : "en";
+  const normLang = normalizeLanguageCode(activeLangCode || detectedScriptLang);
+  const langItem = getLanguageByCode(normLang);
+
+  const locGita = getLocalizedGitaItem(gitaItem, normLang);
+  const locTratak = getLocalizedTratakaItem(tratakPrescription, normLang);
+
   const clinicalGroundingBlock = formatClinicalContext(clinicalEvidence);
   const gitaGroundingBlock = `[BHAGAVAD GITA WISDOM]:
 Chapter ${gitaItem.chapter}, Verse ${gitaItem.verse} (${gitaItem.theme})
 ${gitaBlock}
-Meaning: ${gitaItem.philosophical_meaning}
-Clinical Reframe: ${gitaItem.clinical_reframe}
-What To Do: ${gitaItem.actionable_guidance.what_to_do}
-What Not To Do: ${gitaItem.actionable_guidance.what_not_to_do}`;
+Meaning: ${locGita.meaning}
+Clinical Reframe: ${locGita.reflection}
+What To Do: ${locGita.what_to_do}
+What Not To Do: ${locGita.what_not_to_do}`;
 
   const tratakaGroundingBlock = `[TRATAK PROTOCOL]:
-Mode: ${tratakPrescription.name} (${tratakPrescription.sanskritName})
-Focal Point: ${tratakPrescription.focalTarget}
-Neuro Mechanism: ${tratakPrescription.neuroMechanism}
-Guidance (${tratakPrescription.durationMinutes} min): ${tratakPrescription.stepByStepGuidance.join(" ")}`;
+Mode: ${locTratak.name}
+Focal Point: ${locTratak.focalTarget}
+Neuro Mechanism: ${locTratak.neuroMechanism}
+Guidance (${tratakPrescription.durationMinutes} min): ${locTratak.guidance}`;
 
   const contextBlocks = [gitaGroundingBlock, tratakaGroundingBlock, clinicalGroundingBlock];
   if (libraryRag) {
-    contextBlocks.unshift(libraryRag.promptSnippet);
+    const localizedIntervention = getLocalizedClinicalIntervention(libraryRag.condition.id, normLang, libraryRag.condition);
+    const clinicalSnippet = normLang !== 'en'
+      ? `[CLINICAL CONDITION WISDOM]:\nCondition: ${localizedIntervention.conditionName}\nValidation: ${localizedIntervention.validation}\nCBT Reframing: ${localizedIntervention.cbt_reframing}\nSomatic Anchor: ${localizedIntervention.somatic_anchor}\nPranayama: ${localizedIntervention.pranayama}`
+      : libraryRag.promptSnippet;
+    contextBlocks.unshift(clinicalSnippet);
   }
   const contextString = contextBlocks.join("\n\n");
 
-  // Determine Language Instruction for LLMs
-  const langItem = language
-    ? getLanguageByCode(language) || GLOBAL_LANGUAGE_CATALOG.find((l) => l.code === language)
-    : null;
-
   const langDirective =
-    langItem && langItem.code !== "en"
+    normLang !== "en"
       ? `\n\n### MANDATORY MULTILINGUAL CLINICAL DIRECTIVE:
 You MUST formulate your ENTIRE therapeutic response in ${langItem.name} (${langItem.nativeName}).
 Strictly DO NOT mix English sentences, phrases, or raw English jargon into your response.
-Keep the Sanskrit Shloka in Devanagari script, and provide all reflections, CBT reframes, and Tratak instructions purely in ${langItem.name}.`
+Keep the Sanskrit Shloka in Devanagari script wrapped in [GITA_SHLOKA] and [/GITA_SHLOKA], and provide all reflections, CBT reframes, and Tratak instructions purely in ${langItem.name}.`
       : "";
 
   const systemPrompt = `${THERAPIST_SYSTEM_PROMPT}${langDirective}\n\n[CLINICAL RESEARCH & RETRIEVED WISDOM]:\n${contextString}`;
+
+  // Helper to guarantee [GITA_SHLOKA] tags and authentic Sanskrit shloka formatting
+  function ensureGitaShloka(replyText: string, gitaBlockStr: string): string {
+    if (replyText.includes("[GITA_SHLOKA]") && replyText.includes("[/GITA_SHLOKA]")) {
+      return replyText;
+    }
+    return `${gitaBlockStr}\n\n${replyText}`;
+  }
 
   // 3. Cascade across LLM inference providers prioritizing Local Keyless FastAPI daemon
   try {
@@ -318,7 +337,7 @@ Keep the Sanskrit Shloka in Devanagari script, and provide all reflections, CBT 
       });
     }
     return {
-      reply: localResult.reply,
+      reply: ensureGitaShloka(localResult.reply, gitaBlock),
       sources: finalSources,
       providerUsed: "Keyless Healer (Local Python Daemon)",
       isCrisis: false,
@@ -335,7 +354,7 @@ Keep the Sanskrit Shloka in Devanagari script, and provide all reflections, CBT 
     const reply = await callGroq(userMessage, systemPrompt, history);
     const hasGita = reply && (reply.includes("[GITA_SHLOKA]") || reply.toLowerCase().includes("gita") || reply.includes("गीता"));
     if (reply && reply.length > 50 && hasGita) {
-      return { reply, sources: allSources, providerUsed: "Groq (Llama 3.3 70B)", isCrisis: false, recommended_trataka: defaultRecTrataka };
+      return { reply: ensureGitaShloka(reply, gitaBlock), sources: allSources, providerUsed: "Groq (Llama 3.3 70B)", isCrisis: false, recommended_trataka: defaultRecTrataka };
     }
   } catch {
     // Fallback to Gemini
@@ -345,13 +364,13 @@ Keep the Sanskrit Shloka in Devanagari script, and provide all reflections, CBT 
     const reply = await callGemini(userMessage, systemPrompt, history);
     const hasGita = reply && (reply.includes("[GITA_SHLOKA]") || reply.toLowerCase().includes("gita") || reply.includes("गीता"));
     if (reply && reply.length > 50 && hasGita) {
-      return { reply, sources: allSources, providerUsed: "Google Gemini 2.0 Flash", isCrisis: false, recommended_trataka: defaultRecTrataka };
+      return { reply: ensureGitaShloka(reply, gitaBlock), sources: allSources, providerUsed: "Google Gemini 2.0 Flash", isCrisis: false, recommended_trataka: defaultRecTrataka };
     }
   } catch {
     // Fallback to Free Open Inference / Companion
   }
 
-  // 4. Free Open Inference
+  // 4. Free Open Inference (Validates full tri-pillar presence before accepting)
   try {
     const messagesPayload = [
       { role: "system", content: systemPrompt },
@@ -382,17 +401,16 @@ Keep the Sanskrit Shloka in Devanagari script, and provide all reflections, CBT 
         lower.includes("unauthorized");
 
       const hasGita = cleaned.includes("[GITA_SHLOKA]") || lower.includes("gita") || lower.includes("गीता");
+      const hasClinical = lower.includes("clinical") || lower.includes("cognitive") || lower.includes("cbt") || lower.includes("क्लिनिकल");
+      const hasTratak = lower.includes("tratak") || lower.includes("gazing") || lower.includes("त्राटक");
 
-      if (cleaned && cleaned.length > 50 && !isUpstreamError && hasGita) {
-        return { reply: cleaned, sources: allSources, providerUsed: "Free Edge AI", isCrisis: false, recommended_trataka: defaultRecTrataka };
+      if (cleaned && cleaned.length > 80 && !isUpstreamError && hasGita && hasClinical && hasTratak) {
+        return { reply: ensureGitaShloka(cleaned, gitaBlock), sources: allSources, providerUsed: "Free Edge AI", isCrisis: false, recommended_trataka: defaultRecTrataka };
       }
   } catch {}
 
   // 5. Infallible Tier 5: Pure Deterministic Healer Synthesis (Zero External Dependency, 100% Offline)
-  const targetLanguage =
-    language ||
-    locale ||
-    (/[\u0900-\u097F]/.test(userMessage) ? "hi" : "en");
+  const targetLanguage = normLang;
 
   let fallbackReply = "";
 
@@ -418,7 +436,7 @@ Keep the Sanskrit Shloka in Devanagari script, and provide all reflections, CBT 
   }
 
   return {
-    reply: fallbackReply,
+    reply: ensureGitaShloka(fallbackReply, gitaBlock),
     sources: allSources,
     providerUsed: "Keyless Healer (Clinical Library Fallback)",
     isCrisis: false,

@@ -10,7 +10,14 @@ import {
 } from '@/lib/knowledge/psychology-library-rag';
 import { findGitaWisdom, formatGitaShlokaBlock } from '@/lib/knowledge/gita-library';
 import { resolveTratakaPrescription } from '@/lib/knowledge/trataka-recommendations';
-import { formatHumanTherapeuticMessage, getLocalizedGeneralAdvice } from '@/lib/i18n/clinical-localization';
+import {
+  formatHumanTherapeuticMessage,
+  getLocalizedGeneralAdvice,
+  normalizeLanguageCode,
+  getLocalizedGitaItem,
+  getLocalizedTratakaItem,
+  getLocalizedClinicalIntervention,
+} from '@/lib/i18n/clinical-localization';
 import type { UserCognitiveProfile } from '@/lib/memory/cbt-memory-types';
 
 export const runtime = 'edge';
@@ -122,13 +129,15 @@ export async function POST(req: NextRequest) {
   let rawUserPrompt = '';
   try {
     const body = await req.json();
-    const { prompt, diagnostic, apiKey, tier, history = [], cognitiveProfile } = body as {
+    const { prompt, diagnostic, apiKey, tier, history = [], cognitiveProfile, language, locale } = body as {
       prompt: string;
       diagnostic?: DiagnosticInput;
       apiKey?: string;
       tier?: number;
       history?: Array<{ role: string; text: string }>;
       cognitiveProfile?: UserCognitiveProfile;
+      language?: string;
+      locale?: string;
     };
 
     rawUserPrompt = (prompt || '').trim();
@@ -147,6 +156,26 @@ export async function POST(req: NextRequest) {
         provider: 'conversational_empathy',
       });
     }
+
+    // Determine target language from explicit selection, GPS locale, or script detection
+    const requestedLanguage = language || locale;
+    const detectedScriptLang = cleanPrompt.match(/[\u0900-\u097F]/) ? 'hi' : undefined;
+    const targetLang = normalizeLanguageCode(requestedLanguage || detectedScriptLang || 'en');
+
+    const languageNames: Record<string, string> = {
+      hi: 'Hindi (हिंदी)',
+      es: 'Spanish (Español)',
+      fr: 'French (Français)',
+      de: 'German (Deutsch)',
+      en: 'English',
+    };
+
+    const langDirective = targetLang !== 'en'
+      ? `\n\n### MANDATORY MULTILINGUAL CLINICAL DIRECTIVE:
+You MUST formulate your ENTIRE therapeutic response in ${languageNames[targetLang] || targetLang}.
+Strictly DO NOT mix English sentences, phrases, or raw English jargon into your response.
+Keep the Sanskrit Gita Shloka in Devanagari script wrapped in [GITA_SHLOKA] and [/GITA_SHLOKA], but provide all reflections, clinical CBT reframes, somatic grounding, and Tratak instructions purely in ${languageNames[targetLang] || targetLang}.`
+      : '';
 
     const effectiveDiag: NeuroscienceDiagnosticResult = (diagnostic as any) || emotionClassifier.classifyText(cleanPrompt);
     const researchStudy = getResearchedAdviceForEmotion(effectiveDiag?.dimensionId || 'calmness');
@@ -181,33 +210,51 @@ export async function POST(req: NextRequest) {
     const tratakItem = resolveTratakaPrescription(cleanPrompt, effectiveDiag?.dimensionId, effectiveDiag?.polyvagalState);
     const gitaBlock = formatGitaShlokaBlock(gitaItem);
 
+    const locGita = getLocalizedGitaItem(gitaItem, targetLang);
+    const locTratak = getLocalizedTratakaItem(tratakItem, targetLang);
+    const locIntervention = libRes?.condition ? getLocalizedClinicalIntervention(libRes.condition.id, targetLang, libRes.condition) : null;
+
+    const conditionCbtWisdom = locIntervention ? `
+Matched Clinical Condition: ${locIntervention.conditionName} (${libRes?.condition?.id})
+Compassionate Validation: ${locIntervention.validation}
+Authentic CBT Reframing: ${locIntervention.cbt_reframing}
+Somatic Anchor: ${locIntervention.somatic_anchor}
+Pranayama Breathwork: ${locIntervention.pranayama}
+Recommended Micro-Habit: ${locIntervention.micro_habit}` : '';
+
     // Construct Grounded Clinical System Prompt
-    const systemPrompt = `You are an Expert Clinical Psychologist and Spiritual Master integrating Modern Neuropsychology (CBT & Somatic Science) with the Bhagavad Gita and Tratak (Ocular Meditation).
+    const section1Header = targetLang === 'hi' ? '**1. श्रीमद्भगवद्गीता का आत्मिक मार्गदर्शन (अध्याय ' + gitaItem.chapter + ', श्लोक ' + gitaItem.verse + '):**' : '**1. BHAGAVAD GITA REFRAMING (श्रीमद्भगवद्गीता):**';
+    const section2Header = targetLang === 'hi' ? '**2. क्लिनिकल संज्ञानात्मक विज्ञान एवं मन की शांति (CBT):**' : '**2. CLINICAL COGNITIVE NEUROSCIENCE (CBT & Somatic Grounding):**';
+    const section3Header = targetLang === 'hi' ? `**3. त्राटक न्यूरो-ऑक्युलर ध्यान विधि (${locTratak.name}):**` : `**3. TRATAK NEURO-OCULAR PROTOCOL (त्राटक ध्यान):**`;
+
+    const systemPrompt = `You are an Expert Clinical Psychologist and Spiritual Master integrating Modern Neuropsychology (CBT & Somatic Science) with the Bhagavad Gita and Tratak (Ocular Meditation).${langDirective}
 
 For the user's specific situation, you MUST formulate your response with all 3 solutions line-by-line, each deeply interlinked with their exact struggle:
 
-**1. BHAGAVAD GITA REFRAMING (श्रीमद्भगवद्गीता):**
+${section1Header}
 - Include the exact relevant Sanskrit Shloka wrapped inside [GITA_SHLOKA] and [/GITA_SHLOKA] tags, followed by its Roman transliteration and Chapter & Verse.
 - Explain the philosophical meaning.
 - Formulate a Clinical Reflection explaining how this applies to their exact struggle.
 - Actionable Guidance (Karma): What to do right now, and what mental trap to avoid.
 
-**2. CLINICAL COGNITIVE NEUROSCIENCE (CBT & Somatic Grounding):**
+${section2Header}
 - Compassionately validate their distress.
 - Identify the active cognitive distortion and provide an evidence-based CBT cognitive reframe.
 - Prescribe an immediate Somatic Polyvagal grounding exercise.
 
-**3. TRATAK NEURO-OCULAR PROTOCOL (त्राटक ध्यान):**
-- Prescribe the specific Sacred Gazing mode suited to their state (${tratakItem.name}).
+${section3Header}
+- Prescribe the specific Sacred Gazing mode suited to their state (${locTratak.name}).
 - Explain the neuro-ocular calming mechanism and provide step-by-step gaze guidance.
 
-[RETRIEVED WISDOM]:
+[RETRIEVED WISDOM]:${conditionCbtWisdom}
 Chapter ${gitaItem.chapter}, Verse ${gitaItem.verse} (${gitaItem.theme})
 ${gitaBlock}
-Meaning: ${gitaItem.philosophical_meaning}
-Clinical Reframe: ${gitaItem.clinical_reframe}
+Meaning: ${locGita.meaning}
+Clinical Reframe: ${locGita.reflection}
+Action (What To Do): ${locGita.what_to_do}
+Trap (What Not To Do): ${locGita.what_not_to_do}
 Protocol: ${researchStudy.citation} - ${researchStudy.scientificActionProtocol}
-Tratak: ${tratakItem.focalTarget} - ${tratakItem.neuroMechanism}
+Tratak (${locTratak.name}): Focus: ${locTratak.focalTarget} - Effect: ${locTratak.neuroMechanism} - Guidance: ${locTratak.guidance}
 ${webContextSnippet}`;
 
     // 1. If Groq Key is provided or on Tier 2, prioritize Groq Llama 3.3 70B
@@ -228,6 +275,7 @@ ${webContextSnippet}`;
             reply,
             provider: 'groq_llama_70b',
             tier: 2,
+            recommended_trataka: tratakItem.mode,
           });
         }
       } catch (e) {
@@ -274,6 +322,7 @@ ${webContextSnippet}`;
             return NextResponse.json({
               reply,
               provider: 'gemini_flash',
+              recommended_trataka: tratakItem.mode,
             });
           }
         }
@@ -299,6 +348,7 @@ ${webContextSnippet}`;
           return NextResponse.json({
             reply,
             provider: 'groq_llama_70b',
+            recommended_trataka: tratakItem.mode,
           });
         }
       } catch (e) {
@@ -366,7 +416,6 @@ ${webContextSnippet}`;
     }
 
     // 5. Infallible Deterministic Fallback: Gita + Clinical CBT + Tratak
-    const targetLang = cleanPrompt.match(/[\u0900-\u097F]/) ? 'hi' : 'en';
     const fallbackReply = libRes
       ? formatHumanTherapeuticMessage(libRes.condition, targetLang, cleanPrompt)
       : getLocalizedGeneralAdvice(effectiveDiag?.dimensionId || 'anxiety', targetLang, cleanPrompt);
