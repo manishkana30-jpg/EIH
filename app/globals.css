@@ -75,6 +75,7 @@
     color: var(--text-nature-primary);
     font-family: var(--font-inter);
     overflow-x: hidden;
+    height: 100%;
     min-height: 100vh;
     min-height: -webkit-fill-available;
     -webkit-font-smoothing: antialiased;
@@ -354,28 +355,8 @@
   box-shadow: 0 0 20px -4px rgba(212, 163, 115, 0.3);
 }
 
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
 
-@keyframes spin-ultra-slow {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
 
-.animate-spin-ultra-slow {
-  animation: spin-ultra-slow 120s linear infinite;
-  transform-origin: center center;
-}
 
 /* ─── Zero-CLS Monetization & Partner Slots ─── */
 .ad-slot-zero-cls-large {

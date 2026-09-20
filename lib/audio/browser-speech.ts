@@ -124,8 +124,8 @@ export class BrowserSpeechController {
   private ttsResumeInterval: ReturnType<typeof setInterval> | null = null;
   private keepAliveInterval: ReturnType<typeof setInterval> | null = null;
 
-  // Adaptive silence threshold (1400ms gives user breathing room to complete paragraphs)
-  private silenceTimeoutMs = 1400;
+  // Adaptive silence threshold (2400ms gives user generous breathing room to complete thoughts)
+  private silenceTimeoutMs = 2400;
   private currentLanguageLocale = 'en-US';
 
   private constructor() {
@@ -339,8 +339,8 @@ export class BrowserSpeechController {
           this.speechSilenceTimer = null;
         }
 
-        // Max continuous utterance cutoff (8 seconds of speech automatically commits turn)
-        if (this.speechStartTime && Date.now() - this.speechStartTime > 8000) {
+        // Max continuous utterance safety cutoff (60 seconds allows full emotional paragraphs without premature cutoff)
+        if (this.speechStartTime && Date.now() - this.speechStartTime > 60000) {
           if (!this.isProcessingUtterance) {
             this.handleEndOfUserSpeech();
           }
@@ -428,8 +428,8 @@ export class BrowserSpeechController {
           this.callbacks.onInterimTranscript?.(candidate);
         }
 
-        // Adaptive silence detection: If mobile finalized a phrase (isFinal), commit faster (650ms)
-        const silenceDelay = newFinalText.trim() ? 650 : this.silenceTimeoutMs;
+        // Adaptive silence detection: Give users generous room (2200ms) to pause and breathe between phrases
+        const silenceDelay = newFinalText.trim() ? 2200 : this.silenceTimeoutMs;
         if (this.speechSilenceTimer) {
           clearTimeout(this.speechSilenceTimer);
         }
@@ -650,9 +650,24 @@ export class BrowserSpeechController {
     return this.startRecognition(existingStream);
   }
 
-  public cleanTextForSpeech(text: string): string {
+  public cleanTextForSpeech(text: string, locale?: string): string {
     if (!text) return '';
-    return text
+    let processed = text;
+
+    const hasDevanagari = /[\u0900-\u097F]/.test(processed);
+    const isEnglish = (locale && locale.startsWith('en')) || (!hasDevanagari && !locale);
+
+    // If English speech, completely strip Sanskrit shloka blocks and Devanagari characters
+    // so English TTS voices don't choke or throw synthesis errors on non-Latin unicode
+    if (isEnglish) {
+      processed = processed.replace(/\[GITA_SHLOKA\][\s\S]*?\[\/GITA_SHLOKA\]/gi, '');
+      processed = processed.replace(/[\u0900-\u097F]+/g, '');
+    } else {
+      // In Hindi mode, strip the tag wrappers but preserve the sacred Shloka and Hindi text
+      processed = processed.replace(/\[\/?GITA_SHLOKA\]/gi, '');
+    }
+
+    return processed
       // 1. Remove code blocks and inline code
       .replace(/```[\s\S]*?```/g, '')
       .replace(/`.*?`/g, '')
@@ -701,7 +716,10 @@ export class BrowserSpeechController {
     const onStart = onEndCallback ? onStartOrEnd : undefined;
     const onEnd = onEndCallback ? onEndCallback : onStartOrEnd;
 
-    const cleanText = this.cleanTextForSpeech(text);
+    const hasHindiScript = /[\u0900-\u097F]/.test(text);
+    const effectiveLocale = localeOverride || (hasHindiScript ? 'hi-IN' : (this.currentLanguageLocale || 'en-US'));
+
+    const cleanText = this.cleanTextForSpeech(text, effectiveLocale);
     if (!cleanText) {
       this.isSpeaking = false;
       this.isProcessingUtterance = false;
@@ -714,8 +732,8 @@ export class BrowserSpeechController {
     }
 
     // Resolve optimal regional voice based on text script, localeOverride, or currentLanguageLocale
-    const hasHindiScript = /[\u0900-\u097F]/.test(cleanText);
-    const effectiveLocale = localeOverride || (hasHindiScript ? 'hi-IN' : (this.currentLanguageLocale || 'en-US'));
+    const hasHindiScriptClean = /[\u0900-\u097F]/.test(cleanText);
+    const resolvedLocale = effectiveLocale || (hasHindiScriptClean ? 'hi-IN' : 'en-US');
     const cleanLocaleKey = effectiveLocale.toLowerCase().replace('_', '-');
     const baseLang = cleanLocaleKey.split('-')[0];
     const selectedVoice = REGIONAL_NEURAL_VOICE_MAP[cleanLocaleKey] || REGIONAL_NEURAL_VOICE_MAP[baseLang] || 'en-US-AriaNeural';
@@ -802,12 +820,15 @@ export class BrowserSpeechController {
             locale: effectiveLocale,
             rate: '-4%',
           }),
+          signal: AbortSignal.timeout(3000),
         });
       } else {
         const voiceParam = encodeURIComponent(selectedVoice);
         const localeParam = encodeURIComponent(effectiveLocale);
         const voiceUrl = `${voiceBase}?text=${encodeURIComponent(cleanText)}&voice=${voiceParam}&locale=${localeParam}&rate=-4%`;
-        res = await fetch(voiceUrl);
+        res = await fetch(voiceUrl, {
+          signal: AbortSignal.timeout(3000),
+        });
       }
 
       if (!res.ok) {
@@ -854,8 +875,12 @@ export class BrowserSpeechController {
         return;
       }
     } catch (neuralErr) {
+      if (this.ttsWatchdogTimer) {
+        clearTimeout(this.ttsWatchdogTimer);
+        this.ttsWatchdogTimer = null;
+      }
       console.warn('Neural voice stream unreachable, falling back to Web Speech synthesis:', neuralErr);
-      this.speakWithWebSpeechSynth(cleanText, onStart, onEnd, effectiveLocale);
+      await this.speakWithWebSpeechSynth(cleanText, onStart, onEnd, effectiveLocale);
     }
   }
 
@@ -907,6 +932,7 @@ export class BrowserSpeechController {
 
   /**
    * Fallback Web Speech Synthesis (Client-side offline fallback)
+   * Hardened against Chrome's silent cancel/pause stall on subsequent utterances.
    */
   private async speakWithWebSpeechSynth(
     cleanText: string,
@@ -925,33 +951,46 @@ export class BrowserSpeechController {
       return;
     }
 
+    // 1. Clear any stuck utterance in Chrome's speech engine
     try {
+      if (this.speechSynth.speaking || this.speechSynth.pending) {
+        this.speechSynth.cancel();
+      }
       if (this.speechSynth.paused) {
         this.speechSynth.resume();
       }
     } catch (_) {}
 
-    const utterance = new SpeechSynthesisUtterance(cleanText);
-    utterance.rate = 0.94;
-    utterance.pitch = 1.0;
-    utterance.volume = 1.0;
-
-    const hasHindiScript = /[\u0900-\u097F]/.test(cleanText);
-    const langInfo = detectUserSpokenLanguage(cleanText);
-    const targetLocale = localeOverride || (hasHindiScript ? 'hi-IN' : (langInfo.speechLocale || this.currentLanguageLocale || 'en-US'));
-    utterance.lang = targetLocale;
-
-    (window as any).__activeUtterance = utterance;
-    this.currentUtterance = utterance;
+    // 2. Micro-delay: Chrome requires a brief pause after cancel() before queueing a new utterance
+    await new Promise((resolve) => setTimeout(resolve, 80));
 
     try {
-      const matchedVoice = await getBestTherapeuticVoice(targetLocale);
-      if (matchedVoice) {
-        utterance.voice = matchedVoice;
-      } else if (this.cachedVoice) {
-        utterance.voice = this.cachedVoice;
-      }
+      this.speechSynth.resume();
     } catch (_) {}
+
+    const targetLocale = localeOverride || this.currentLanguageLocale || 'en-US';
+    let matchedVoice: SpeechSynthesisVoice | null = null;
+    try {
+      matchedVoice = await getBestTherapeuticVoice(targetLocale);
+    } catch (_) {}
+
+    // Split cleanText into manageable sentence chunks (max 160 characters each)
+    // to completely prevent Chromium's silent speech freeze/stall bug on long utterances
+    const rawSentences = cleanText.match(/[^.!?।\n]+[.!?।\n]+|[^.!?।\n]+$/g) || [cleanText];
+    const sentenceChunks: string[] = [];
+    let currentChunk = '';
+    for (const s of rawSentences) {
+      const trimmed = s.trim();
+      if (!trimmed) continue;
+      if (currentChunk.length + trimmed.length < 160) {
+        currentChunk += (currentChunk ? ' ' : '') + trimmed;
+      } else {
+        if (currentChunk) sentenceChunks.push(currentChunk);
+        currentChunk = trimmed;
+      }
+    }
+    if (currentChunk) sentenceChunks.push(currentChunk);
+    if (sentenceChunks.length === 0) sentenceChunks.push(cleanText);
 
     let isFinished = false;
     const finishSpeech = () => {
@@ -961,6 +1000,12 @@ export class BrowserSpeechController {
       if (this.ttsWatchdogTimer) {
         clearTimeout(this.ttsWatchdogTimer);
         this.ttsWatchdogTimer = null;
+      }
+
+      // Clear Chrome resume polling interval
+      if (this.ttsResumeInterval) {
+        clearInterval(this.ttsResumeInterval);
+        this.ttsResumeInterval = null;
       }
 
       this.isSpeaking = false;
@@ -980,28 +1025,94 @@ export class BrowserSpeechController {
       }
     };
 
-    utterance.onstart = () => {
-      this.isSpeaking = true;
-      this.callbacks.onAssistantStart?.();
-      onStart?.();
-    };
-
-    utterance.onend = finishSpeech;
-    utterance.onerror = () => finishSpeech();
-
     const wordCount = cleanText.split(/\s+/).length;
-    const maxEstimatedDurationMs = Math.max(3000, (wordCount / 2.0) * 1000 + 2500);
+    const maxEstimatedDurationMs = Math.max(6000, (wordCount / 1.8) * 1000 + 8000);
     this.ttsWatchdogTimer = setTimeout(() => {
-      if (!isFinished && this.isSpeaking) {
+      if (!isFinished) {
         finishSpeech();
       }
     }, maxEstimatedDurationMs);
 
-    try {
-      this.speechSynth.speak(utterance);
-    } catch (_) {
-      finishSpeech();
+    // Keep-alive heartbeat interval to defeat Chrome's 15-second silent suspension
+    if (this.ttsResumeInterval) {
+      clearInterval(this.ttsResumeInterval);
     }
+    this.ttsResumeInterval = setInterval(() => {
+      if (!isFinished && this.speechSynth) {
+        try {
+          if (this.speechSynth.paused) {
+            this.speechSynth.resume();
+          }
+          this.speechSynth.resume();
+        } catch (_) {}
+      } else if (isFinished && this.ttsResumeInterval) {
+        clearInterval(this.ttsResumeInterval);
+        this.ttsResumeInterval = null;
+      }
+    }, 2500);
+
+    let chunkIdx = 0;
+    const speakNextChunk = () => {
+      if (isFinished || !this.speechSynth) return;
+      if (chunkIdx >= sentenceChunks.length) {
+        finishSpeech();
+        return;
+      }
+
+      const chunkText = sentenceChunks[chunkIdx++];
+      const utterance = new SpeechSynthesisUtterance(chunkText);
+      utterance.rate = 0.94;
+      utterance.pitch = 1.0;
+      utterance.volume = 1.0;
+      utterance.lang = targetLocale;
+
+      if (matchedVoice) {
+        utterance.voice = matchedVoice;
+      } else if (this.cachedVoice) {
+        utterance.voice = this.cachedVoice;
+      }
+
+      (window as any).__activeUtterance = utterance;
+      this.currentUtterance = utterance;
+
+      utterance.onstart = () => {
+        if (chunkIdx === 1) {
+          this.isSpeaking = true;
+          this.callbacks.onAssistantStart?.();
+          onStart?.();
+        }
+      };
+
+      utterance.onend = () => {
+        if (chunkIdx < sentenceChunks.length) {
+          speakNextChunk();
+        } else {
+          finishSpeech();
+        }
+      };
+
+      utterance.onerror = (e) => {
+        console.warn("SpeechSynthesis chunk notice:", e);
+        if (chunkIdx < sentenceChunks.length) {
+          speakNextChunk();
+        } else {
+          finishSpeech();
+        }
+      };
+
+      try {
+        this.speechSynth.speak(utterance);
+        if (this.speechSynth.paused) {
+          this.speechSynth.resume();
+        }
+        this.speechSynth.resume();
+      } catch (err) {
+        console.warn("Speech synthesis speak error:", err);
+        finishSpeech();
+      }
+    };
+
+    speakNextChunk();
   }
 
   public cancelSpeech(): void {

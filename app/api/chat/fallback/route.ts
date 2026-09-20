@@ -17,6 +17,7 @@ import {
   getLocalizedGitaItem,
   getLocalizedTratakaItem,
   getLocalizedClinicalIntervention,
+  buildDiagnosticSufferingAssessment,
 } from '@/lib/i18n/clinical-localization';
 import type { UserCognitiveProfile } from '@/lib/memory/cbt-memory-types';
 
@@ -110,7 +111,7 @@ async function callGroqWithFallback(groqKey: string, messagesPayload: ChatPayloa
           model,
           messages: messagesPayload,
           temperature: 0.75,
-          max_tokens: 300,
+          max_tokens: 1200,
         }),
       });
       clearTimeout(timeout);
@@ -207,7 +208,12 @@ Keep the Sanskrit Gita Shloka in Devanagari script wrapped in [GITA_SHLOKA] and 
 
     const libRes = queryPsychologyLibrary(cleanPrompt);
     const gitaItem = findGitaWisdom(cleanPrompt, effectiveDiag?.dimensionId, libRes?.condition?.id);
-    const tratakItem = resolveTratakaPrescription(cleanPrompt, effectiveDiag?.dimensionId, effectiveDiag?.polyvagalState);
+    const tratakItem = resolveTratakaPrescription(
+      cleanPrompt,
+      effectiveDiag?.dimensionId,
+      effectiveDiag?.polyvagalState,
+      libRes?.condition?.recommended_trataka_mode
+    );
     const gitaBlock = formatGitaShlokaBlock(gitaItem);
 
     const locGita = getLocalizedGitaItem(gitaItem, targetLang);
@@ -222,14 +228,28 @@ Somatic Anchor: ${locIntervention.somatic_anchor}
 Pranayama Breathwork: ${locIntervention.pranayama}
 Recommended Micro-Habit: ${locIntervention.micro_habit}` : '';
 
+    const diagnosticSummary = buildDiagnosticSufferingAssessment(
+      cleanPrompt,
+      effectiveDiag?.dimensionId,
+      libRes?.condition?.name,
+      targetLang
+    );
+
     // Construct Grounded Clinical System Prompt
+    const summaryHeader = targetLang === 'hi' ? '**आपकी स्थिति का सारांश एवं मानसिक पीड़ा का मूल्यांकन:**' : '**SUMMARY & SUFFERING ASSESSMENT (आपकी स्थिति व कष्ट का विश्लेषण):**';
     const section1Header = targetLang === 'hi' ? '**1. श्रीमद्भगवद्गीता का आत्मिक मार्गदर्शन (अध्याय ' + gitaItem.chapter + ', श्लोक ' + gitaItem.verse + '):**' : '**1. BHAGAVAD GITA REFRAMING (श्रीमद्भगवद्गीता):**';
     const section2Header = targetLang === 'hi' ? '**2. क्लिनिकल संज्ञानात्मक विज्ञान एवं मन की शांति (CBT):**' : '**2. CLINICAL COGNITIVE NEUROSCIENCE (CBT & Somatic Grounding):**';
     const section3Header = targetLang === 'hi' ? `**3. त्राटक न्यूरो-ऑक्युलर ध्यान विधि (${locTratak.name}):**` : `**3. TRATAK NEURO-OCULAR PROTOCOL (त्राटक ध्यान):**`;
+    const section4Header = targetLang === 'hi' ? '**4. एकीकृत त्रिवेणी उपचार योजना (गीता + CBT + त्राटक मिलकर आपकी पीड़ा कैसे दूर करेंगे):**' : '**4. TRI-PILLAR SYNERGISTIC RESOLUTION (एकीकृत उपचार एवं समस्या समाधान योजना):**';
 
     const systemPrompt = `You are an Expert Clinical Psychologist and Spiritual Master integrating Modern Neuropsychology (CBT & Somatic Science) with the Bhagavad Gita and Tratak (Ocular Meditation).${langDirective}
 
-For the user's specific situation, you MUST formulate your response with all 3 solutions line-by-line, each deeply interlinked with their exact struggle:
+For the user's specific situation, you MUST formulate your response in a unified combination form structured into 5 distinct, deeply integrated sections:
+
+${summaryHeader}
+- Summarize the user's specific input and emotional burden with deep empathy.
+- State the identified emotion and assessed suffering severity level (e.g. Severe Distress [8/10] vs Moderate Distress).
+- State the autonomic nervous system state (Sympathetic Hyperarousal vs Dorsal Vagal Freeze) and bodily markers.
 
 ${section1Header}
 - Include the exact relevant Sanskrit Shloka wrapped inside [GITA_SHLOKA] and [/GITA_SHLOKA] tags, followed by its Roman transliteration and Chapter & Verse.
@@ -240,11 +260,25 @@ ${section1Header}
 ${section2Header}
 - Compassionately validate their distress.
 - Identify the active cognitive distortion and provide an evidence-based CBT cognitive reframe.
-- Prescribe an immediate Somatic Polyvagal grounding exercise.
+- Prescribe an immediate Somatic Polyvagal grounding exercise and pranayama breathwork.
 
 ${section3Header}
 - Prescribe the specific Sacred Gazing mode suited to their state (${locTratak.name}).
 - Explain the neuro-ocular calming mechanism and provide step-by-step gaze guidance.
+
+${section4Header}
+- Deeply and clearly explain to the user HOW all 3 resources work together in combination to heal them:
+  1. Spiritual & Existential Anchor (Gita's Sakshi Bhava / Detached Action overcoming helplessness).
+  2. Cognitive & Somatic Restructuring (CBT dismantling distortions while breathwork resets the vagus nerve).
+  3. Neuro-Ocular Stabilization (Tratak mechanical gaze fixation silencing ocular saccades and amygdala panic).
+  4. Integrated Step-by-Step Daily Recovery Sequence.
+
+[DIAGNOSTIC GROUNDING]:
+Emotion: ${diagnosticSummary.emotionName}
+Suffering Severity: ${diagnosticSummary.severityLabel} (Distress Index: ${diagnosticSummary.distressScore}/10)
+Autonomic Nervous System: ${diagnosticSummary.nervousSystem}
+Bodily Distress Symptoms: ${diagnosticSummary.bodilyMarkers}
+Empathic Summary of User Experience: ${diagnosticSummary.inputSummary}
 
 [RETRIEVED WISDOM]:${conditionCbtWisdom}
 Chapter ${gitaItem.chapter}, Verse ${gitaItem.verse} (${gitaItem.theme})
@@ -256,6 +290,25 @@ Trap (What Not To Do): ${locGita.what_not_to_do}
 Protocol: ${researchStudy.citation} - ${researchStudy.scientificActionProtocol}
 Tratak (${locTratak.name}): Focus: ${locTratak.focalTarget} - Effect: ${locTratak.neuroMechanism} - Guidance: ${locTratak.guidance}
 ${webContextSnippet}`;
+
+    const ensureDiagnosticAndGita = (replyText: string): string => {
+      let result = replyText;
+      if (!result.includes('[GITA_SHLOKA]') || !result.includes('[/GITA_SHLOKA]')) {
+        result = `${gitaBlock}\n\n${result}`;
+      }
+      const hasDiagnostic =
+        result.toLowerCase().includes('diagnostic') ||
+        result.toLowerCase().includes('summary') ||
+        result.includes('सारांश') ||
+        result.includes('मूल्यांकन') ||
+        result.includes('resumen') ||
+        result.includes('synthèse') ||
+        result.includes('zusammenfassung');
+      if (!hasDiagnostic) {
+        result = `${diagnosticSummary.markdown}\n\n${result}`;
+      }
+      return result;
+    };
 
     // 1. If Groq Key is provided or on Tier 2, prioritize Groq Llama 3.3 70B
     if (groqKey && (userKey.startsWith('gsk_') || tier === 2)) {
@@ -272,7 +325,7 @@ ${webContextSnippet}`;
         const reply = await callGroqWithFallback(groqKey, messagesPayload);
         if (reply) {
           return NextResponse.json({
-            reply,
+            reply: ensureDiagnosticAndGita(reply),
             provider: 'groq_llama_70b',
             tier: 2,
             recommended_trataka: tratakItem.mode,
@@ -307,7 +360,7 @@ ${webContextSnippet}`;
               ],
               generationConfig: {
                 temperature: 0.7,
-                maxOutputTokens: 300,
+                maxOutputTokens: 1200,
               },
             }),
           }
@@ -320,7 +373,7 @@ ${webContextSnippet}`;
           const reply = candidate?.content?.parts?.[0]?.text?.trim();
           if (reply) {
             return NextResponse.json({
-              reply,
+              reply: ensureDiagnosticAndGita(reply),
               provider: 'gemini_flash',
               recommended_trataka: tratakItem.mode,
             });
@@ -346,7 +399,7 @@ ${webContextSnippet}`;
         const reply = await callGroqWithFallback(groqKey, messagesPayload);
         if (reply) {
           return NextResponse.json({
-            reply,
+            reply: ensureDiagnosticAndGita(reply),
             provider: 'groq_llama_70b',
             recommended_trataka: tratakItem.mode,
           });
@@ -405,7 +458,7 @@ ${webContextSnippet}`;
 
         if (cleanedReply && cleanedReply.length > 50 && !isUpstreamError && hasGita) {
           return NextResponse.json({
-            reply: cleanedReply,
+            reply: ensureDiagnosticAndGita(cleanedReply),
             provider: 'free_edge_ai',
             recommended_trataka: tratakItem.mode,
           });

@@ -484,6 +484,7 @@ class KeylessPsychologistPartner:
                         "repeat_penalty": 1.25,
                         "presence_penalty": 0.6,
                         "frequency_penalty": 0.6,
+                        "num_predict": 1200,
                     },
                 },
                 timeout=8.0,
@@ -507,7 +508,7 @@ class KeylessPsychologistPartner:
                         "model": "llama-3.3-70b-versatile",
                         "messages": messages,
                         "temperature": 0.7,
-                        "max_tokens": 300,
+                        "max_tokens": 1200,
                     },
                     timeout=8.0,
                 )
@@ -538,7 +539,7 @@ class KeylessPsychologistPartner:
                     json={
                         "systemInstruction": {"parts": [{"text": sys_prompt}]},
                         "contents": gemini_contents,
-                        "generationConfig": {"temperature": 0.7, "maxOutputTokens": 300},
+                        "generationConfig": {"temperature": 0.7, "maxOutputTokens": 1200},
                     },
                     timeout=8.0,
                 )
@@ -777,6 +778,15 @@ class KeylessPsychologistPartner:
                 llm_reply = None
             elif loc_lower.startswith("de") and ("Philosophical Meaning:" in llm_reply or "Clinical Reflection:" in llm_reply):
                 llm_reply = None
+
+            # Check for completeness of the combination (Gita Shloka, CBT, and Tratak)
+            if llm_reply:
+                has_shloka = "[GITA_SHLOKA]" in llm_reply
+                has_cbt = any(w in llm_reply.lower() for w in ["cbt", "cognitive", "कॉग्निटिव", "cognitiva", "kognitive"])
+                has_tratak = any(w in llm_reply.lower() for w in ["tratak", "त्राटक", "gazing", "focal"])
+                if not (has_shloka and has_cbt and has_tratak and len(llm_reply) > 300):
+                    logger.warning("LLM output was incomplete or truncated; falling back to deterministic tri-pillar synthesis.")
+                    llm_reply = None
 
         if llm_reply:
             return HealerResponse(

@@ -16,15 +16,26 @@ import {
   getLocalizedGitaItem,
   getLocalizedTratakaItem,
   normalizeLanguageCode,
+  buildDiagnosticSufferingAssessment,
 } from "../i18n/clinical-localization.ts";
 import { findGitaWisdom, formatGitaShlokaBlock } from "../knowledge/gita-library.ts";
-import { resolveTratakaPrescription } from "../knowledge/trataka-recommendations.ts";
+import {
+  resolveTratakaPrescription,
+  detectTratakaModeFromText,
+  normalizeTratakaMode,
+} from "../knowledge/trataka-recommendations.ts";
 import { emotionClassifier } from "../knowledge/emotion-classifier.ts";
 
 const THERAPIST_SYSTEM_PROMPT = `
 You are an Expert Clinical Psychologist and Spiritual Master integrating Modern Neuropsychology (CBT & Polyvagal Somatic Science) with the sacred wisdom of the Bhagavad Gita (Sattvavajaya Chikitsa) and Tratak (Ocular Neuro-Meditation).
 
-For ANY situation, emotional struggle, or dilemma presented by the user, you MUST formulate your response with all 3 solutions line-by-line, each deeply and specifically interlinked with the user's situation:
+For ANY situation, emotional struggle, or dilemma presented by the user, you MUST formulate your response in a unified combination form structured into 5 distinct, deeply integrated sections:
+
+**SUMMARY & SUFFERING ASSESSMENT (आपकी स्थिति व कष्ट का विश्लेषण):**
+- Summarize the user's specific input and emotional burden with profound empathy.
+- State the identified emotion (e.g. Acute Anticipatory Anxiety, Grief, Core Shame, Interpersonal Betrayal).
+- State the assessed level of suffering and distress score (e.g. Severe / Acute High Distress [Distress Index 8/10] vs Moderate Distress).
+- State the autonomic nervous system state (e.g. Sympathetic Hyperarousal / Fight-or-Flight vs Dorsal Vagal Freeze/Shutdown) and somatic bodily manifestations (chest constriction, throat lump, racing heart, or mental fog).
 
 **1. BHAGAVAD GITA REFRAMING (श्रीमद्भगवद्गीता):**
 - Include the exact relevant Sanskrit Shloka wrapped inside [GITA_SHLOKA] and [/GITA_SHLOKA] tags, followed by its Roman transliteration and Chapter & Verse attribution.
@@ -36,14 +47,21 @@ For ANY situation, emotional struggle, or dilemma presented by the user, you MUS
 - Compassionately validate their bodily and emotional distress without judgment.
 - Identify the active cognitive distortion (e.g., Catastrophizing, All-or-Nothing, Personalization, Fortune-Telling).
 - Provide an evidence-based CBT cognitive reframe challenging that distortion.
-- Prescribe an immediate Somatic Polyvagal grounding anchor (e.g., physiological sigh, vagal brake, 5-4-3-2-1 sensory grounding) linked to their bodily symptoms.
+- Prescribe an immediate Somatic Polyvagal grounding anchor (e.g., physiological sigh, vagal brake, 5-4-3-2-1 sensory grounding) and pranayama breathwork linked to their bodily symptoms.
 
 **3. TRATAK NEURO-OCULAR PROTOCOL (त्राटक ध्यान):**
 - Prescribe the specific Sacred Gazing mode suited to their autonomic state (Bindu Trataka, Jyoti Flame, Mandala Geometry, Pratibimb Mirror, or Shoonya Void).
 - Explain the neuro-ocular mechanism (how holding still visual fixation de-escalates amygdala hyperactivity and regulates heart-rate variability).
 - Provide exact step-by-step guidance (focal target, gaze softness, duration, and warm palming eye relaxation).
 
-Structure your output cleanly with these 3 numbered headers, using line-by-line bullet points so the user can easily absorb and apply each solution.
+**4. TRI-PILLAR SYNERGISTIC RESOLUTION (एकीकृत उपचार एवं समस्या समाधान योजना):**
+- Explain clearly and deeply to the user HOW all 3 resources (Gita + CBT + Tratak) work together in combination to resolve their exact suffering:
+  1. Spiritual Reorientation (Gita Sakshi Bhava / Detached Witness breaking existential panic and outcome obsession).
+  2. Cognitive & Somatic Restructuring (CBT reframing catastrophic thoughts while breathwork resets the vagus nerve).
+  3. Neurological Ocular Stabilization (Tratak mechanical gaze fixation silencing ocular saccades and amygdala hyperarousal).
+  4. Integrated Step-by-Step Daily Recovery Sequence (how to apply them in tandem to recover).
+
+Structure your output cleanly with these headers, using line-by-line bullet points so the user can easily absorb and apply each solution.
 `;
 
 export interface ConversationTurn {
@@ -90,7 +108,7 @@ async function callGroq(
       model: "llama-3.3-70b-versatile",
       messages,
       temperature: 0.7,
-      max_tokens: 300,
+      max_tokens: 1200,
       frequency_penalty: 0.5,
       presence_penalty: 0.5
     })
@@ -134,7 +152,7 @@ async function callGemini(
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: systemPrompt }] },
         contents,
-        generationConfig: { maxOutputTokens: 300, temperature: 0.7, topP: 0.95 }
+        generationConfig: { maxOutputTokens: 1200, temperature: 0.7, topP: 0.95 }
       })
     }
   );
@@ -154,7 +172,7 @@ async function callLocalKeylessHealer(
   locale?: string
 ): Promise<{ reply: string; sources: ClinicalSearchResult[] }> {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 4000);
+  const timeoutId = setTimeout(() => controller.abort(), 9000);
 
   try {
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8000";
@@ -246,7 +264,8 @@ export async function generateTherapeuticResponse(
   const tratakPrescription = resolveTratakaPrescription(
     userMessage,
     detectedEmotion,
-    emotionDiagnostic.polyvagalState || libraryRag?.condition?.triguna_balance
+    emotionDiagnostic.polyvagalState || libraryRag?.condition?.triguna_balance,
+    libraryRag?.condition?.recommended_trataka_mode
   );
   const gitaBlock = formatGitaShlokaBlock(gitaItem);
 
@@ -282,6 +301,20 @@ export async function generateTherapeuticResponse(
   const locGita = getLocalizedGitaItem(gitaItem, normLang);
   const locTratak = getLocalizedTratakaItem(tratakPrescription, normLang);
 
+  const diagnosticSummary = buildDiagnosticSufferingAssessment(
+    userMessage,
+    detectedEmotion,
+    libraryRag?.condition?.name,
+    normLang
+  );
+
+  const diagnosticGroundingBlock = `[USER INPUT & SUFFERING DIAGNOSTIC]:
+Emotion: ${diagnosticSummary.emotionName}
+Suffering Severity: ${diagnosticSummary.severityLabel} (Distress Score: ${diagnosticSummary.distressScore}/10)
+Autonomic Nervous System: ${diagnosticSummary.nervousSystem}
+Bodily Distress Symptoms: ${diagnosticSummary.bodilyMarkers}
+Empathic Summary of User Situation: ${diagnosticSummary.inputSummary}`;
+
   const clinicalGroundingBlock = formatClinicalContext(clinicalEvidence);
   const gitaGroundingBlock = `[BHAGAVAD GITA WISDOM]:
 Chapter ${gitaItem.chapter}, Verse ${gitaItem.verse} (${gitaItem.theme})
@@ -297,7 +330,7 @@ Focal Point: ${locTratak.focalTarget}
 Neuro Mechanism: ${locTratak.neuroMechanism}
 Guidance (${tratakPrescription.durationMinutes} min): ${locTratak.guidance}`;
 
-  const contextBlocks = [gitaGroundingBlock, tratakaGroundingBlock, clinicalGroundingBlock];
+  const contextBlocks = [diagnosticGroundingBlock, gitaGroundingBlock, tratakaGroundingBlock, clinicalGroundingBlock];
   if (libraryRag) {
     const localizedIntervention = getLocalizedClinicalIntervention(libraryRag.condition.id, normLang, libraryRag.condition);
     const clinicalSnippet = normLang !== 'en'
@@ -317,12 +350,26 @@ Keep the Sanskrit Shloka in Devanagari script wrapped in [GITA_SHLOKA] and [/GIT
 
   const systemPrompt = `${THERAPIST_SYSTEM_PROMPT}${langDirective}\n\n[CLINICAL RESEARCH & RETRIEVED WISDOM]:\n${contextString}`;
 
-  // Helper to guarantee [GITA_SHLOKA] tags and authentic Sanskrit shloka formatting
-  function ensureGitaShloka(replyText: string, gitaBlockStr: string): string {
-    if (replyText.includes("[GITA_SHLOKA]") && replyText.includes("[/GITA_SHLOKA]")) {
-      return replyText;
+  // Helper to guarantee [GITA_SHLOKA] tags, authentic Sanskrit shloka, and diagnostic summary
+  function ensureDiagnosticAndGita(replyText: string, gitaBlockStr: string, diagnosticMarkdown?: string): string {
+    let result = replyText;
+    if (!result.includes("[GITA_SHLOKA]") || !result.includes("[/GITA_SHLOKA]")) {
+      result = `${gitaBlockStr}\n\n${result}`;
     }
-    return `${gitaBlockStr}\n\n${replyText}`;
+    const hasDiagnostic =
+      result.toLowerCase().includes("diagnostic") ||
+      result.toLowerCase().includes("summary") ||
+      result.includes("सारांश") ||
+      result.includes("मूल्यांकन") ||
+      result.includes("resumen") ||
+      result.includes("synthèse") ||
+      result.includes("zusammenfassung");
+
+    if (!hasDiagnostic) {
+      const diagMd = diagnosticMarkdown || diagnosticSummary.markdown;
+      result = `${diagMd}\n\n${result}`;
+    }
+    return result;
   }
 
   // 3. Cascade across LLM inference providers prioritizing Local Keyless FastAPI daemon
@@ -337,11 +384,13 @@ Keep the Sanskrit Shloka in Devanagari script wrapped in [GITA_SHLOKA] and [/GIT
       });
     }
     return {
-      reply: ensureGitaShloka(localResult.reply, gitaBlock),
+      reply: ensureDiagnosticAndGita(localResult.reply, gitaBlock),
       sources: finalSources,
       providerUsed: "Keyless Healer (Local Python Daemon)",
       isCrisis: false,
-      recommended_trataka: (localResult as any).recommended_trataka || tratakPrescription.mode,
+      recommended_trataka:
+        detectTratakaModeFromText(localResult.reply) ||
+        normalizeTratakaMode((localResult as any).recommended_trataka || tratakPrescription.mode),
       triguna_analysis: (localResult as any).triguna_analysis,
     };
   } catch {
@@ -350,11 +399,21 @@ Keep the Sanskrit Shloka in Devanagari script wrapped in [GITA_SHLOKA] and [/GIT
 
   const defaultRecTrataka = tratakPrescription.mode;
 
+  const syncTratakaWithReply = (replyText?: string, fallbackMode?: string): string => {
+    return detectTratakaModeFromText(replyText) || normalizeTratakaMode(fallbackMode || defaultRecTrataka);
+  };
+
   try {
     const reply = await callGroq(userMessage, systemPrompt, history);
     const hasGita = reply && (reply.includes("[GITA_SHLOKA]") || reply.toLowerCase().includes("gita") || reply.includes("गीता"));
     if (reply && reply.length > 50 && hasGita) {
-      return { reply: ensureGitaShloka(reply, gitaBlock), sources: allSources, providerUsed: "Groq (Llama 3.3 70B)", isCrisis: false, recommended_trataka: defaultRecTrataka };
+      return {
+        reply: ensureDiagnosticAndGita(reply, gitaBlock),
+        sources: allSources,
+        providerUsed: "Groq (Llama 3.3 70B)",
+        isCrisis: false,
+        recommended_trataka: syncTratakaWithReply(reply, defaultRecTrataka),
+      };
     }
   } catch {
     // Fallback to Gemini
@@ -364,7 +423,13 @@ Keep the Sanskrit Shloka in Devanagari script wrapped in [GITA_SHLOKA] and [/GIT
     const reply = await callGemini(userMessage, systemPrompt, history);
     const hasGita = reply && (reply.includes("[GITA_SHLOKA]") || reply.toLowerCase().includes("gita") || reply.includes("गीता"));
     if (reply && reply.length > 50 && hasGita) {
-      return { reply: ensureGitaShloka(reply, gitaBlock), sources: allSources, providerUsed: "Google Gemini 2.0 Flash", isCrisis: false, recommended_trataka: defaultRecTrataka };
+      return {
+        reply: ensureDiagnosticAndGita(reply, gitaBlock),
+        sources: allSources,
+        providerUsed: "Google Gemini 2.0 Flash",
+        isCrisis: false,
+        recommended_trataka: syncTratakaWithReply(reply, defaultRecTrataka),
+      };
     }
   } catch {
     // Fallback to Free Open Inference / Companion
@@ -405,7 +470,13 @@ Keep the Sanskrit Shloka in Devanagari script wrapped in [GITA_SHLOKA] and [/GIT
       const hasTratak = lower.includes("tratak") || lower.includes("gazing") || lower.includes("त्राटक");
 
       if (cleaned && cleaned.length > 80 && !isUpstreamError && hasGita && hasClinical && hasTratak) {
-        return { reply: ensureGitaShloka(cleaned, gitaBlock), sources: allSources, providerUsed: "Free Edge AI", isCrisis: false, recommended_trataka: defaultRecTrataka };
+        return {
+          reply: ensureDiagnosticAndGita(cleaned, gitaBlock),
+          sources: allSources,
+          providerUsed: "Free Edge AI",
+          isCrisis: false,
+          recommended_trataka: syncTratakaWithReply(cleaned, defaultRecTrataka),
+        };
       }
   } catch {}
 
@@ -436,10 +507,10 @@ Keep the Sanskrit Shloka in Devanagari script wrapped in [GITA_SHLOKA] and [/GIT
   }
 
   return {
-    reply: ensureGitaShloka(fallbackReply, gitaBlock),
+    reply: ensureDiagnosticAndGita(fallbackReply, gitaBlock),
     sources: allSources,
     providerUsed: "Keyless Healer (Clinical Library Fallback)",
     isCrisis: false,
-    recommended_trataka: defaultRecTrataka,
+    recommended_trataka: syncTratakaWithReply(fallbackReply, defaultRecTrataka),
   };
 }

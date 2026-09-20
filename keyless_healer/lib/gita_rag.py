@@ -20,6 +20,8 @@ try:
         get_localized_trataka_item,
         normalize_language_code,
         CLINICAL_LOCALIZATION_CATALOG,
+        build_diagnostic_suffering_assessment,
+        build_tri_pillar_synergy_resolution,
     )
 except ImportError:
     try:
@@ -28,6 +30,8 @@ except ImportError:
             get_localized_trataka_item,
             normalize_language_code,
             CLINICAL_LOCALIZATION_CATALOG,
+            build_diagnostic_suffering_assessment,
+            build_tri_pillar_synergy_resolution,
         )
     except ImportError:
         from clinical_localization import (  # type: ignore[import-not-found]
@@ -35,6 +39,8 @@ except ImportError:
             get_localized_trataka_item,
             normalize_language_code,
             CLINICAL_LOCALIZATION_CATALOG,
+            build_diagnostic_suffering_assessment,
+            build_tri_pillar_synergy_resolution,
         )
 
 try:
@@ -542,7 +548,12 @@ Verfassen Sie die gesamte Antwort auf Deutsch ohne englische Einsprengsel."""
 
     return f"""You are an Expert Clinical Psychologist and Spiritual Master integrating Modern Neuropsychology (CBT & Polyvagal Somatics) with the sacred wisdom of the Bhagavad Gita and Tratak (Ocular Meditation).
 
-For the user's specific situation, formulate your response with all 3 solutions line-by-line, each deeply interlinked with their exact struggle:
+For ANY situation, emotional struggle, or dilemma presented by the user, you MUST formulate your response in a unified combination form structured into 5 distinct, deeply integrated sections:
+
+**SUMMARY OF YOUR INPUT & EMOTIONAL SUFFERING ASSESSMENT (स्थिति व कष्ट का विश्लेषण):**
+- Summarize the user's specific input and emotional burden with profound empathy.
+- State the identified emotion and assessed level of suffering (e.g. Distress Index 1-10).
+- State the autonomic nervous system state (Sympathetic vs Dorsal Vagal) and somatic bodily manifestations.
 
 **1. BHAGAVAD GITA REFRAMING (श्रीमद्भगवद्गीता):**
 - Include the exact relevant Sanskrit Shloka wrapped inside [GITA_SHLOKA] and [/GITA_SHLOKA] tags, followed by its Roman transliteration and Chapter & Verse.
@@ -553,11 +564,15 @@ For the user's specific situation, formulate your response with all 3 solutions 
 **2. CLINICAL COGNITIVE NEUROSCIENCE (CBT & Somatic Grounding):**
 - Compassionately validate their distress.
 - Identify the active cognitive distortion and provide an evidence-based CBT cognitive reframe.
-- Prescribe an immediate Somatic Polyvagal grounding exercise (e.g. physiological sigh or vagal brake).
+- Prescribe an immediate Somatic Polyvagal grounding exercise (e.g. physiological sigh or vagal brake) and pranayama.
 
 **3. TRATAK NEURO-OCULAR PROTOCOL (त्राटक ध्यान):**
 - Prescribe the specific Sacred Gazing mode suited to their autonomic state (Bindu, Jyoti, Mandala, Pratibimb, or Shoonya).
 - Explain the neuro-ocular calming mechanism and provide step-by-step gaze guidance.
+
+**4. TRI-PILLAR SYNERGISTIC RESOLUTION (एकीकृत उपचार एवं समाधान योजना):**
+- Explain clearly and deeply HOW all 3 resources (Gita + CBT + Tratak) work together in combination to resolve their exact suffering.
+- Provide an integrated 4-phase daily recovery sequence (Phase 1: Brainstem via Tratak, Phase 2: Somatics via Breath, Phase 3: Mind via CBT, Phase 4: Action via Gita Karma Yoga).
 
 [RETRIEVED WISDOM]:
 {retrieved_gita_wisdom}
@@ -603,8 +618,12 @@ def synthesize_gita_response(
         if rag_guidance else "Nadi Shodhana (Alternate Nostril Breathing) for 3 minutes."
     )
 
+    diag_data = build_diagnostic_suffering_assessment(user_query, None, None, norm)
+    synergy = build_tri_pillar_synergy_resolution(norm, loc_tratak['name'], wisdom.get("theme", ""))
+
     if norm == "hi":
         return (
+            f"{diag_data['markdown']}\n\n"
             f"[GITA_SHLOKA]\n"
             f"{shloka_san}\n\n"
             f"{shloka_rom}\n"
@@ -621,10 +640,12 @@ def synthesize_gita_response(
             f"दृष्टि का केंद्र: {loc_tratak['focalTarget']}\n\n"
             f"तंत्रिका विज्ञान का प्रभाव: {loc_tratak['neuroMechanism']}\n\n"
             f"अभ्यास विधि: {loc_tratak['guidance']}\n\n"
-            f"अभ्यास समापन: हथेलियों को आपस में तब तक रगड़ें जब तक वे गर्म न हो जाएं, फिर उन्हें कोमलता से बंद आंखों पर रखें।"
+            f"अभ्यास समापन: हथेलियों को आपस में तब तक रगड़ें जब तक वे गर्म न हो जाएं, फिर उन्हें कोमलता से बंद आंखों पर रखें।\n\n"
+            f"{synergy}"
         )
     elif norm == "es":
         return (
+            f"{diag_data['markdown']}\n\n"
             f"[GITA_SHLOKA]\n"
             f"{shloka_san}\n\n"
             f"{shloka_rom}\n"
@@ -641,10 +662,12 @@ def synthesize_gita_response(
             f"Punto de fijación visual: {loc_tratak['focalTarget']}\n\n"
             f"Mecanismo neurobiológico: {loc_tratak['neuroMechanism']}\n\n"
             f"Instrucción de práctica: {loc_tratak['guidance']}\n\n"
-            f"Cierre de la práctica: Frota vigorosamente las palmas de tus manos hasta generar calor y cúbrete con delicadeza los ojos cerrados."
+            f"Cierre de la práctica: Frota vigorosamente las palmas de tus manos hasta generar calor y cúbrete con delicadeza los ojos cerrados.\n\n"
+            f"{synergy}"
         )
     elif norm == "fr":
         return (
+            f"{diag_data['markdown']}\n\n"
             f"[GITA_SHLOKA]\n"
             f"{shloka_san}\n\n"
             f"{shloka_rom}\n"
@@ -661,10 +684,12 @@ def synthesize_gita_response(
             f"Point d'ancrage visuel : {loc_tratak['focalTarget']}\n\n"
             f"Mécanisme neurophysiologique : {loc_tratak['neuroMechanism']}\n\n"
             f"Consignes de pratique : {loc_tratak['guidance']}\n\n"
-            f"Clôture de la séance : Frottez vigoureusement vos paumes jusqu'à ressentir une douce tiédeur, puis déposez-les sur vos yeux clos."
+            f"Clôture de la séance : Frottez vigoureusement vos paumes jusqu'à ressentir une douce tiédeur, puis déposez-les sur vos yeux clos.\n\n"
+            f"{synergy}"
         )
     elif norm == "de":
         return (
+            f"{diag_data['markdown']}\n\n"
             f"[GITA_SHLOKA]\n"
             f"{shloka_san}\n\n"
             f"{shloka_rom}\n"
@@ -681,11 +706,13 @@ def synthesize_gita_response(
             f"Fokus der Augenfixierung: {loc_tratak['focalTarget']}\n\n"
             f"Wirkweise im Nervensystem: {loc_tratak['neuroMechanism']}\n\n"
             f"Praxisanleitung: {loc_tratak['guidance']}\n\n"
-            f"Abschluss der Übung: Reiben Sie die Handflächen kräftig aneinander, bis sie wohlig warm sind, und legen Sie sie behutsam über die geschlossenen Augen."
+            f"Abschluss der Übung: Reiben Sie die Handflächen kräftig aneinander, bis sie wohlig warm sind, und legen Sie sie behutsam über die geschlossenen Augen.\n\n"
+            f"{synergy}"
         )
 
     # Standard English Fallback
     return (
+        f"{diag_data['markdown']}\n\n"
         f"[GITA_SHLOKA]\n"
         f"{shloka_san}\n\n"
         f"{shloka_rom}\n"
@@ -702,6 +729,7 @@ def synthesize_gita_response(
         f"• **Focal Gaze:** {loc_tratak['focalTarget']}\n"
         f"• **Neuro-Ocular Mechanism:** {loc_tratak['neuroMechanism']}\n"
         f"• **Practice Guidance:** {loc_tratak['guidance']}\n"
-        f"• **Practice Closure:** Rub your palms vigorously until warm and cup them gently over closed eyes (Palming)."
+        f"• **Practice Closure:** Rub your palms vigorously until warm and cup them gently over closed eyes (Palming).\n\n"
+        f"{synergy}"
     )
 

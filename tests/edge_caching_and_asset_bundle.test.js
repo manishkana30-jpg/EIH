@@ -114,28 +114,24 @@ assert(
 console.log('  ✓ app/layout.tsx self-hosted fonts and revalidate = 3600 verified');
 
 
-// 4. Verify Hypnotic Circle Optimization in app/(session)/page.tsx
-console.log('\n--- 4. Testing Next.js Image & Priority in app/(session)/page.tsx ---');
+// 4. Verify Clean Sanctuary Background (Hypnotic Wheel Removed for UI/UX Calm & Chat Window Focus)
+console.log('\n--- 4. Testing Clean Sanctuary Background in app/(session)/page.tsx ---');
 const pagePath = path.join(__dirname, '..', 'app', '(session)', 'page.tsx');
 const pageContent = fs.readFileSync(pagePath, 'utf-8');
 
 assert(
-  pageContent.includes("import Image from \"next/image\"") || pageContent.includes("import Image from 'next/image'"),
-  'app/(session)/page.tsx must import Image from next/image'
+  !pageContent.includes('src="/hypnotic-circles.webp"'),
+  'app/(session)/page.tsx must NOT render hypnotic-circles.webp in session background'
 );
 assert(
-  pageContent.includes('<Image') && pageContent.includes('src="/hypnotic-circles.webp"'),
-  'app/(session)/page.tsx must render hypnotic-circles.webp using <Image>'
+  !pageContent.includes("animation: 'spin 50s linear infinite'"),
+  'app/(session)/page.tsx must NOT retain 50s spin hypnotic background animation'
 );
 assert(
-  pageContent.includes('priority'),
-  'app/(session)/page.tsx hypnotic circle Image must have priority prop for edge preloading'
+  pageContent.includes('SERENE CLINICAL SANCTUARY BACKGROUND') || pageContent.includes('Welcome to EIH Sanctuary'),
+  'app/(session)/page.tsx must feature serene sanctuary background and welcome card'
 );
-assert(
-  pageContent.includes('animation: \'spin 50s linear infinite\''),
-  'app/(session)/page.tsx must preserve 50s spin animation'
-);
-console.log('  ✓ app/(session)/page.tsx <Image priority /> and 50s spin animation verified');
+console.log('  ✓ app/(session)/page.tsx clean, distraction-free sanctuary background verified');
 
 
 // 5. Verify TratakaModule.tsx Image Optimization

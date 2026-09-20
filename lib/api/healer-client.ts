@@ -17,7 +17,11 @@ import {
   getLocalizedGeneralAdvice,
 } from '../i18n/clinical-localization';
 import { findGitaWisdom } from '../knowledge/gita-library';
-import { resolveTratakaPrescription } from '../knowledge/trataka-recommendations';
+import {
+  resolveTratakaPrescription,
+  detectTratakaModeFromText,
+  normalizeTratakaMode,
+} from '../knowledge/trataka-recommendations';
 
 export interface ClinicalSource {
   title: string;
@@ -229,7 +233,7 @@ class HealerBackendClient {
     if (backendUrl) {
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 6000);
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
 
         const res = await fetch(`${backendUrl}/api/chat`, {
           method: 'POST',
@@ -247,14 +251,16 @@ class HealerBackendClient {
         if (res.ok) {
           const data = (await res.json()) as any;
           if (data && data.reply) {
+            const detectedMode = detectTratakaModeFromText(data.reply);
             const poly = data.telemetry?.polyvagal_state || '';
             const recTrataka =
-              data.recommended_trataka ||
-              (poly.includes('Sympathetic') ? 'bindu' : poly.includes('Dorsal') ? 'pratibimb' : 'shoonya');
+              detectedMode ||
+              (data.recommended_trataka ? normalizeTratakaMode(data.recommended_trataka) : null) ||
+              (poly.includes('Sympathetic') ? 'bindu' : poly.includes('Dorsal') ? 'flame' : 'shoonya');
             return {
               ...data,
               engine: data.engine || data.engine_used || 'Keyless Healer (Local Python Daemon)',
-              recommended_trataka: recTrataka,
+              recommended_trataka: normalizeTratakaMode(recTrataka),
               triguna_analysis: data.triguna_analysis || parseClientTriguna(),
             };
           }
@@ -267,7 +273,7 @@ class HealerBackendClient {
     // TIER 2: Next.js Edge Reasoning Engine (/api/chat)
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      const timeoutId = setTimeout(() => controller.abort(), 12000);
 
       const res = await fetch('/api/chat', {
         method: 'POST',
@@ -290,8 +296,17 @@ class HealerBackendClient {
           const arousal = diag.coreAffect?.arousal || 0.5;
           const polyvagalState = arousal > 0.6 ? 'Sympathetic (Fight/Flight)' : (diag.coreAffect?.valence && diag.coreAffect.valence < -0.4) ? 'Dorsal Vagal (Shutdown)' : 'Ventral Vagal (Safe)';
           const distortion = cleanMessage.match(/\b(always|never|worst|idiot|ruined|hate)\b/i) ? 'Catastrophizing / All-or-Nothing' : 'None';
-          const tratakPrescription = resolveTratakaPrescription(cleanMessage, diag.dimensionName, polyvagalState);
-          const recTrataka = data.recommended_trataka || tratakPrescription.mode;
+          const tratakPrescription = resolveTratakaPrescription(
+            cleanMessage,
+            diag.dimensionName,
+            polyvagalState,
+            libRes?.condition?.recommended_trataka_mode
+          );
+          const detectedFromReply = detectTratakaModeFromText(data.reply);
+          const recTrataka =
+            detectedFromReply ||
+            (data.recommended_trataka ? normalizeTratakaMode(data.recommended_trataka) : null) ||
+            tratakPrescription.mode;
           const trigunaAnalysis = parseClientTriguna(libRes?.condition?.triguna_balance);
 
           return {
@@ -331,7 +346,12 @@ class HealerBackendClient {
       const study = getResearchedAdviceForEmotion(diag.dimensionId || 'calmness');
       const arousal = diag.coreAffect?.arousal || 0.5;
       const polyvagalState = arousal > 0.6 ? 'Sympathetic (Fight/Flight)' : (diag.coreAffect?.valence && diag.coreAffect.valence < -0.4) ? 'Dorsal Vagal (Shutdown)' : 'Ventral Vagal (Safe)';
-      const tratakPrescription = resolveTratakaPrescription(cleanMessage, diag.dimensionName, polyvagalState);
+      const tratakPrescription = resolveTratakaPrescription(
+        cleanMessage,
+        diag.dimensionName,
+        polyvagalState,
+        libraryResult?.condition?.recommended_trataka_mode
+      );
       const gitaItem = findGitaWisdom(cleanMessage);
 
       const targetLang = cleanMessage.match(/[\u0900-\u097F]/) ? 'hi' : (language || locale || 'en');
@@ -374,7 +394,12 @@ class HealerBackendClient {
         });
       }
 
-      const recTrataka = tratakPrescription.mode;
+      const detectedFromReply = detectTratakaModeFromText(fallbackReply);
+      const recTrataka =
+        detectedFromReply ||
+        (libraryResult?.condition?.recommended_trataka_mode
+          ? normalizeTratakaMode(libraryResult.condition.recommended_trataka_mode)
+          : tratakPrescription.mode);
       const trigunaAnalysis = parseClientTriguna(libraryResult?.condition?.triguna_balance);
 
       return {

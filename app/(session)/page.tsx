@@ -6,6 +6,7 @@ import Image from "next/image";
 import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 import {
+  ArrowDown,
   BookOpen,
   Brain,
   Wind,
@@ -54,6 +55,11 @@ import {
 import { saveLivePsychologyTelemetry } from "@/lib/telemetry/psychology-store";
 import { getConditionById, queryPsychologyLibrary } from "@/lib/knowledge/psychology-library-rag";
 import { saveSessionMessage } from "@/lib/db/indexed-db";
+import {
+  normalizeTratakaMode,
+  detectTratakaModeFromText,
+  getTratakaModeLabel,
+} from "@/lib/knowledge/trataka-recommendations";
 
 interface Message {
   id: string;
@@ -64,6 +70,7 @@ interface Message {
   sources?: ClinicalSource[];
   recommended_trataka?: string;
   triguna_analysis?: TrigunaAnalysis;
+  cbt_distortion?: string;
 }
 
 const getFormattedTime = () => {
@@ -75,11 +82,36 @@ const getFormattedTime = () => {
   return `${hours}:${minutes} ${ampm}`;
 };
 
+function renderFormattedMarkdown(content: string) {
+  // Strip leading header line if present e.g. **1. ...** or **SUMMARY ...** or **4. ...**
+  const cleaned = content.replace(/^\*\*(?:[1234]\.\s+|SUMMARY[^*]*|आपकी स्थिति[^*]*|स्थिति व कष्ट[^*]*|TRI-PILLAR[^*]*|एकीकृत[^*]*)[^*]*\*\*\s*:?\s*/i, '');
+  const lines = cleaned.split('\n');
+  return lines.map((line, lIdx) => {
+    const trimmedLine = line.trim();
+    if (!trimmedLine) return <span key={lIdx} className="block h-2" />;
+    const segments = trimmedLine.split(/(\*\*[^*]+\*\*)/g);
+    return (
+      <span key={lIdx} className="block leading-relaxed">
+        {segments.map((seg, sIdx) => {
+          if (seg.startsWith('**') && seg.endsWith('**')) {
+            return (
+              <strong key={sIdx} className="font-semibold text-slate-50">
+                {seg.slice(2, -2)}
+              </strong>
+            );
+          }
+          return seg;
+        })}
+      </span>
+    );
+  });
+}
+
 function formatTherapeuticMessage(text: string) {
   if (!text) return null;
-  const parts = text.split(/(?=\*\*[123]\.\s+)/);
+  const parts = text.split(/(?=\*\*(?:[1234]\.\s+|SUMMARY|आपकी स्थिति|स्थिति व कष्ट|RESUMEN|SYNTHÈSE|ZUSAMMENFASSUNG|TRI-PILLAR|एकीकृत))/i);
   if (parts.length <= 1) {
-    return <p className="whitespace-pre-wrap">{text}</p>;
+    return <div className="space-y-1.5 text-slate-100">{renderFormattedMarkdown(text)}</div>;
   }
 
   return (
@@ -88,49 +120,78 @@ function formatTherapeuticMessage(text: string) {
         const trimmed = part.trim();
         if (!trimmed) return null;
 
-        const isGita = trimmed.startsWith("**1.") || trimmed.toLowerCase().includes("gita") || trimmed.includes("गीता");
-        const isClinical = trimmed.startsWith("**2.") || trimmed.toLowerCase().includes("clinical") || trimmed.includes("कॉग्निटिव");
-        const isTratak = trimmed.startsWith("**3.") || trimmed.toLowerCase().includes("tratak") || trimmed.includes("त्राटक");
+        const isDiagnostic =
+          trimmed.startsWith("**SUMMARY") ||
+          trimmed.toLowerCase().includes("suffering assessment") ||
+          trimmed.includes("स्थिति व कष्ट") ||
+          trimmed.includes("मानसिक पीड़ा") ||
+          trimmed.toLowerCase().includes("diagnostic");
 
-        const borderClass = isGita
+        const isGita = !isDiagnostic && (trimmed.startsWith("**1.") || trimmed.toLowerCase().includes("gita") || trimmed.includes("गीता"));
+        const isClinical = !isDiagnostic && (trimmed.startsWith("**2.") || trimmed.toLowerCase().includes("clinical") || trimmed.includes("कॉग्निटिव") || trimmed.toLowerCase().includes("cbt"));
+        const isTratak = !isDiagnostic && (trimmed.startsWith("**3.") || trimmed.toLowerCase().includes("tratak") || trimmed.includes("त्राटक"));
+        const isSynergy = !isDiagnostic && (trimmed.startsWith("**4.") || trimmed.toLowerCase().includes("synerg") || trimmed.toLowerCase().includes("combination") || trimmed.includes("त्रिवेणी") || trimmed.includes("समाधान"));
+
+        const borderClass = isDiagnostic
+          ? "border-purple-500/35 bg-gradient-to-br from-purple-950/40 via-purple-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(168,85,247,0.08)]"
+          : isGita
           ? "border-amber-500/35 bg-gradient-to-br from-amber-950/40 via-amber-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(245,158,11,0.08)]"
           : isClinical
           ? "border-emerald-500/35 bg-gradient-to-br from-emerald-950/40 via-emerald-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(16,185,129,0.08)]"
           : isTratak
           ? "border-cyan-500/35 bg-gradient-to-br from-cyan-950/40 via-cyan-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(6,182,212,0.08)]"
-          : "border-slate-800 bg-slate-900/50";
+          : isSynergy
+          ? "border-fuchsia-500/35 bg-gradient-to-br from-fuchsia-950/40 via-fuchsia-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(217,70,239,0.08)]"
+          : "border-slate-800/80 bg-slate-900/60";
 
         const isHindi = /[\u0900-\u097F]/.test(trimmed);
         const isSpanish = /\b(sabiduría|verso|capítulo|mente|atención|respiración)\b/i.test(trimmed);
         const isFrench = /\b(sagesse|verset|chapitre|respiration|pensée)\b/i.test(trimmed);
         const isGerman = /\b(weisheit|kapitel|nervensystem|atmung|gedanken)\b/i.test(trimmed);
 
-        const badgeText = isGita
+        const badgeText = isDiagnostic
+          ? (isHindi ? "📋 स्थिति व मानसिक पीड़ा का मूल्यांकन" : isSpanish ? "📋 Evaluación del Sufrimiento" : isFrench ? "📋 Évaluation de la Souffrance" : isGerman ? "📋 Belastungsanalyse" : "📋 Diagnostic & Suffering Assessment")
+          : isGita
           ? (isHindi ? "🕉️ श्रीमद्भगवद्गीता आत्मिक दर्शन" : isSpanish ? "🕉️ Sabiduría del Bhagavad Gita" : isFrench ? "🕉️ Sagesse de la Bhagavad Gita" : isGerman ? "🕉️ Weisheit der Bhagavad Gita" : "🕉️ Bhagavad Gita Wisdom")
           : isClinical
           ? (isHindi ? "🧠 क्लिनिकल कॉग्निटिव न्यूरोसाइंस (CBT)" : isSpanish ? "🧠 Neurociencia Clínica Cognitiva (TCC)" : isFrench ? "🧠 Neurosciences Cliniques Cognitives (TCC)" : isGerman ? "🧠 Klinische Kognitive Neurowissenschaft (CBT)" : "🧠 Clinical Cognitive Neuroscience (CBT)")
           : isTratak
           ? (isHindi ? "👁️ त्राटक न्यूरो-ऑक्युलर ध्यान विधि" : isSpanish ? "👁️ Protocolo Neuro-Ocular Tratak" : isFrench ? "👁️ Protocole Neuro-Oculaire Tratak" : isGerman ? "👁️ Tratak Neuro-Okulares Protokoll" : "👁️ Tratak Neuro-Ocular Protocol")
+          : isSynergy
+          ? (isHindi ? "✨ एकीकृत त्रिवेणी उपचार योजना (गीता + CBT + त्राटक)" : isSpanish ? "✨ Resolución Sinérgica Tri-Pilar" : isFrench ? "✨ Résolution Synergique Tri-Piliers" : isGerman ? "✨ Synergistische Dreisäulen-Lösung" : "✨ Tri-Pillar Synergistic Resolution (Gita + CBT + Tratak)")
           : null;
 
-        const badgeColor = isGita
+        const badgeColor = isDiagnostic
+          ? "text-purple-300 bg-purple-500/15 border-purple-500/30"
+          : isGita
           ? "text-amber-400 bg-amber-500/15 border-amber-500/30"
           : isClinical
           ? "text-emerald-400 bg-emerald-500/15 border-emerald-500/30"
-          : "text-cyan-400 bg-cyan-500/15 border-cyan-500/30";
+          : isTratak
+          ? "text-cyan-400 bg-cyan-500/15 border-cyan-500/30"
+          : "text-fuchsia-400 bg-fuchsia-500/15 border-fuchsia-500/30";
+
+        // Extract subheader like "(Chapter 2, Verse 70)" if present
+        const headerMatch = trimmed.match(/^\*\*(?:[1234]\.\s+)?([^:]+):\*\*/i);
+        const sectionHeader = headerMatch ? headerMatch[1].replace(/^[1234]\.\s*/, '') : null;
 
         return (
           <div key={idx} className={`p-3.5 sm:p-4 rounded-xl border ${borderClass} backdrop-blur-md space-y-2`}>
             {badgeText && (
-              <div className="flex items-center gap-1.5 pb-1 border-b border-white/5">
+              <div className="flex flex-wrap items-center justify-between gap-1.5 pb-1.5 border-b border-white/5">
                 <span className={`text-[10px] sm:text-[11px] font-mono font-bold tracking-wide uppercase px-2 py-0.5 rounded-full border ${badgeColor}`}>
                   {badgeText}
                 </span>
+                {sectionHeader && (
+                  <span className="text-[11px] font-medium text-slate-300">
+                    {sectionHeader}
+                  </span>
+                )}
               </div>
             )}
-            <p className="whitespace-pre-wrap leading-relaxed text-slate-100 text-xs sm:text-sm font-sans">
-              {trimmed}
-            </p>
+            <div className="leading-relaxed text-slate-100 text-xs sm:text-sm font-sans space-y-1">
+              {renderFormattedMarkdown(trimmed)}
+            </div>
           </div>
         );
       })}
@@ -283,6 +344,14 @@ export default function SanctuarySessionPage() {
   const activeStreamRef = useRef<MediaStream | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const [showScrollBottom, setShowScrollBottom] = useState(false);
+
+  const handleChatScroll = useCallback(() => {
+    if (!chatContainerRef.current) return;
+    const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
+    const isNearBottom = scrollHeight - scrollTop - clientHeight < 150;
+    setShowScrollBottom(!isNearBottom);
+  }, []);
   const isSendingRef = useRef(false);
   const isPlayingAudioRef = useRef(false);
   const isEchoLockedRef = useRef(false);
@@ -371,26 +440,19 @@ export default function SanctuarySessionPage() {
     };
   }, []);
 
+  // ─── Chat Auto-Scroll on Message or Loading ───
   useEffect(() => {
-    const handleWindowScroll = () => {
-      if (window.scrollY !== 0) {
-        window.scrollTo(0, 0);
+    const timer = setTimeout(() => {
+      if (chatContainerRef.current) {
+        chatContainerRef.current.scrollTo({
+          top: chatContainerRef.current.scrollHeight,
+          behavior: "smooth",
+        });
+      } else if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
       }
-    };
-    window.addEventListener("scroll", handleWindowScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleWindowScroll);
-  }, []);
-
-  useEffect(() => {
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTo({
-        top: chatContainerRef.current.scrollHeight,
-        behavior: "smooth",
-      });
-    }
-    if (typeof window !== "undefined" && window.scrollY !== 0) {
-      window.scrollTo(0, 0);
-    }
+    }, 80);
+    return () => clearTimeout(timer);
   }, [messages, isLoading]);
 
   // ─── Voice Playback with Echo Avoidance ───
@@ -415,14 +477,18 @@ export default function SanctuarySessionPage() {
       } catch (_) {}
       activeAudioRef.current = null;
     }
-    browserSpeechController.cancelSpeech();
 
     isPlayingAudioRef.current = true;
     isEchoLockedRef.current = true;
     setIsPlayingAudio(true);
     setIsEchoLocked(true);
 
+    let safetyTimer: ReturnType<typeof setTimeout> | null = null;
     const handleAudioEnd = () => {
+      if (safetyTimer) {
+        clearTimeout(safetyTimer);
+        safetyTimer = null;
+      }
       isPlayingAudioRef.current = false;
       setIsPlayingAudio(false);
       activeAudioRef.current = null;
@@ -435,6 +501,16 @@ export default function SanctuarySessionPage() {
         }
       }, 200);
     };
+
+    // Failsafe watchdog: ensure audio locks are never permanently stuck on browser glitches
+    const wordCount = (cleanText || text).split(/\s+/).length;
+    const maxSafetyMs = Math.max(6000, (wordCount / 2.0) * 1000 + 5000);
+    safetyTimer = setTimeout(() => {
+      if (isPlayingAudioRef.current) {
+        console.warn("Audio playback safety watchdog fired: unlocking audio state.");
+        handleAudioEnd();
+      }
+    }, maxSafetyMs);
 
     if (audioBase64) {
       try {
@@ -494,15 +570,16 @@ export default function SanctuarySessionPage() {
     setMessages((prev) => [...prev, userMsg]);
     saveSessionMessage("user", messageText);
 
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTo({
-        top: chatContainerRef.current.scrollHeight,
-        behavior: "smooth",
-      });
-    }
-    if (typeof window !== "undefined" && window.scrollY !== 0) {
-      window.scrollTo(0, 0);
-    }
+    setTimeout(() => {
+      if (chatContainerRef.current) {
+        chatContainerRef.current.scrollTo({
+          top: chatContainerRef.current.scrollHeight,
+          behavior: "smooth",
+        });
+      } else if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+      }
+    }, 50);
 
     const historyPayload: ChatHistoryItem[] = messagesRef.current
       .filter((m) => m.text.trim())
@@ -521,6 +598,9 @@ export default function SanctuarySessionPage() {
         userLocaleRef.current
       );
 
+      const detectedTrataka = detectTratakaModeFromText(response.reply);
+      const canonicalTrataka = detectedTrataka || (response.recommended_trataka ? normalizeTratakaMode(response.recommended_trataka) : undefined);
+
       const aiMsg: Message = {
         id: `${Date.now()}-ai`,
         sender: "ai",
@@ -528,12 +608,15 @@ export default function SanctuarySessionPage() {
         timestamp: getFormattedTime(),
         engine: response.engine,
         sources: response.sources,
-        recommended_trataka: response.recommended_trataka,
+        recommended_trataka: canonicalTrataka || response.recommended_trataka,
         triguna_analysis: response.triguna_analysis,
+        cbt_distortion: response.telemetry?.cbt_distortion && response.telemetry.cbt_distortion !== "None" ? response.telemetry.cbt_distortion : undefined,
       };
 
-      if (response.recommended_trataka) {
-        setRecommendedTrataka(response.recommended_trataka);
+      if (canonicalTrataka) {
+        setRecommendedTrataka(canonicalTrataka);
+      } else if (response.recommended_trataka) {
+        setRecommendedTrataka(normalizeTratakaMode(response.recommended_trataka));
       }
       if (response.triguna_analysis) {
         setActiveTriguna(response.triguna_analysis);
@@ -710,7 +793,7 @@ export default function SanctuarySessionPage() {
                     </div>
                     <div className="flex flex-col">
                       <span className="font-heading font-bold text-base text-slate-100 tracking-tight leading-tight">
-                        EIH Sanctuary
+                        Emotional Intelligence Healer
                       </span>
                       <div className="flex items-center gap-1.5 mt-0.5">
                         <span
@@ -807,8 +890,8 @@ export default function SanctuarySessionPage() {
                         <Eye className="w-4 h-4 text-amber-400" />
                         <span>Clinical Trataka</span>
                       </span>
-                      <span className="text-[10px] font-mono font-bold text-amber-400/90 bg-amber-500/15 border border-amber-500/40 px-1.5 py-0.5 rounded-full capitalize">
-                        {recommendedTrataka ? `${recommendedTrataka} Prescribed` : '5-Stage'}
+                      <span className="text-[10px] font-mono font-bold text-amber-400/90 bg-amber-500/15 border border-amber-500/40 px-1.5 py-0.5 rounded-full">
+                        {recommendedTrataka ? `${getTratakaModeLabel(recommendedTrataka)} Prescribed` : '5-Stage'}
                       </span>
                     </div>
                     <p className="text-xs text-slate-400 leading-snug">
@@ -822,7 +905,7 @@ export default function SanctuarySessionPage() {
                       className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 text-amber-200 text-xs font-semibold transition-all shadow-[0_0_15px_rgba(245,158,11,0.25)] active:scale-[0.98]"
                     >
                       <Eye className="w-4 h-4" />
-                      <span>Begin {recommendedTrataka ? `${recommendedTrataka.toUpperCase()} Gazing` : 'Gazing Session'}</span>
+                      <span>Begin {recommendedTrataka ? `${getTratakaModeLabel(recommendedTrataka)} Gazing` : 'Gazing Session'}</span>
                     </button>
                   </div>
 
@@ -919,7 +1002,7 @@ export default function SanctuarySessionPage() {
             </div>
             <div className="hidden md:flex flex-col">
               <span className="font-heading font-bold text-base text-slate-100 tracking-tight leading-tight">
-                EIH Sanctuary
+                Emotional Intelligence Healer
               </span>
               <div className="flex items-center gap-1.5 mt-0.5">
                 <span
@@ -1003,8 +1086,8 @@ export default function SanctuarySessionPage() {
                     <Eye className="w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition-transform" />
                     <span>Clinical Trataka</span>
                   </span>
-                  <span className="text-[10px] font-mono font-bold text-amber-400/90 bg-amber-500/15 border border-amber-500/40 px-1.5 py-0.5 rounded-full capitalize">
-                    {recommendedTrataka ? `${recommendedTrataka} Prescribed` : '5-Stage'}
+                  <span className="text-[10px] font-mono font-bold text-amber-400/90 bg-amber-500/15 border border-amber-500/40 px-1.5 py-0.5 rounded-full">
+                    {recommendedTrataka ? `${getTratakaModeLabel(recommendedTrataka)} Prescribed` : '5-Stage'}
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-400 leading-snug mb-2">
@@ -1015,7 +1098,7 @@ export default function SanctuarySessionPage() {
                   className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 text-amber-200 text-xs font-semibold transition-all shadow-[0_0_15px_rgba(245,158,11,0.25)] hover:shadow-[0_0_20px_rgba(245,158,11,0.4)] active:scale-[0.98]"
                 >
                   <Eye className="w-3.5 h-3.5" />
-                  <span>Begin {recommendedTrataka ? `${recommendedTrataka.toUpperCase()} Gazing` : 'Gazing Session'}</span>
+                  <span>Begin {recommendedTrataka ? `${getTratakaModeLabel(recommendedTrataka)} Gazing` : 'Gazing Session'}</span>
                 </button>
               </div>
 
@@ -1125,7 +1208,7 @@ export default function SanctuarySessionPage() {
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
             <div className="flex flex-col">
               <span className="text-xs sm:text-sm font-semibold text-slate-100 tracking-wide">
-                EIH Clinical Sanctuary
+                Emotional Intelligence Healer
               </span>
               <span className="text-[10px] text-slate-400 font-mono hidden sm:inline">
                 Cognitive Neuro-Psychology &amp; Somatic Resilience
@@ -1166,7 +1249,7 @@ export default function SanctuarySessionPage() {
             className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/35 text-amber-300 text-[11px] font-medium shrink-0 active:scale-95 transition-transform"
           >
             <Eye className="w-3 h-3 text-amber-400" />
-            <span>Trataka</span>
+            <span>{recommendedTrataka ? `${getTratakaModeLabel(recommendedTrataka)}` : 'Trataka'}</span>
           </button>
 
           <button
@@ -1205,40 +1288,24 @@ export default function SanctuarySessionPage() {
           </button>
         </div>
 
-        {/* HYPNOTIC SPIRAL — ADAPTIVE CIRCULAR ANCHOR */}
-        <div className="absolute inset-0 pointer-events-none -z-10 flex items-center justify-center p-4 sm:p-6 md:p-8 [container-type:size]">
-          {/*
-            Adaptive Responsive Circle:
-            Uses min(76cqmin, 76vmin, 680px) and max-w/max-h constraints so when the
-            screen gets short (laptop/mobile/landscape) or narrow, it automatically
-            scales down smoothly to fit the visible stage without any clipping or cutting.
-          */}
-          <div
-            className="relative rounded-full overflow-hidden opacity-65 aspect-square shrink-0 transition-all duration-300"
-            style={{
-              width: 'min(76cqmin, 76vmin, 680px)',
-              height: 'min(76cqmin, 76vmin, 680px)',
-              maxWidth: 'calc(100% - 2rem)',
-              maxHeight: 'calc(100% - 2rem)',
-              maskImage: 'radial-gradient(circle at center, black 80%, transparent 100%)',
-              WebkitMaskImage: 'radial-gradient(circle at center, black 80%, transparent 100%)',
-            }}
-          >
-            <Image
-              src="/hypnotic-circles.webp"
-              alt="Hypnotic Circle Anchor"
-              aria-hidden="true"
-              width={680}
-              height={680}
-              priority
-              className="w-full h-full object-contain contrast-[1.15] brightness-105 select-none"
-              style={{ animation: 'spin 50s linear infinite' }}
-            />
-          </div>
+        {/* SERENE CLINICAL SANCTUARY BACKGROUND — GENTLE AMBIENT GLOW (ZERO SPIN, DISTRACTION-FREE) */}
+        <div className="absolute inset-0 pointer-events-none -z-10 overflow-hidden select-none" aria-hidden="true">
+          {/* Subtle diffused atmospheric aura glows for depth without any rotating lines or motion sickness */}
+          <div className="absolute -top-[15%] left-1/2 -translate-x-1/2 w-[600px] sm:w-[800px] h-[350px] bg-gradient-to-b from-emerald-500/10 via-teal-600/5 to-transparent rounded-full blur-3xl opacity-60" />
+          <div className="absolute -bottom-[20%] left-1/2 -translate-x-1/2 w-[550px] sm:w-[700px] h-[350px] bg-gradient-to-t from-emerald-950/20 via-teal-900/10 to-transparent rounded-full blur-3xl opacity-40" />
+          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-amber-500/5 rounded-full blur-3xl opacity-30" />
         </div>
 
         {/* CHAT STREAM — DIRECTLY ON MAIN STAGE LAYER */}
-        <div ref={chatContainerRef} className="flex-1 overflow-y-auto min-h-0 scroll-smooth px-4 sm:px-6 py-4 space-y-6 relative z-10 overscroll-contain">
+        <div
+          ref={chatContainerRef}
+          onScroll={handleChatScroll}
+          className={`flex-1 overflow-y-auto min-h-0 px-4 sm:px-6 py-4 relative z-10 overscroll-contain ${messages.length === 0 ? 'flex flex-col items-center justify-center' : 'space-y-6'}`}
+          style={{
+            scrollbarWidth: 'thin',
+            scrollbarColor: '#334155 transparent',
+          }}
+        >
           {/* Error Banner */}
           {errorMessage && (
             <motion.div
@@ -1259,85 +1326,252 @@ export default function SanctuarySessionPage() {
             </motion.div>
           )}
 
-          {/* Messages List */}
-          <div className="max-w-3xl w-full mx-auto space-y-4 pt-2 pb-6">
-            {messages.map((m) => {
-              const gitaParsed = m.sender === "ai" ? parseGitaShloka(m.text) : { isGita: false, shlokaBlock: null, remainingText: m.text };
-              return (
-              <motion.div
-                key={m.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-                className={`flex flex-col ${m.sender === "user" ? "items-end" : "items-start"}`}
+          {/* Empty State: Clean & Interactive Sanctuary Presence */}
+          {messages.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4 }}
+              className="my-auto py-8 px-4 flex flex-col items-center text-center max-w-md mx-auto select-none"
+            >
+              {/* Interactive Pulsing Presence Orb */}
+              <button
+                onClick={toggleRecording}
+                disabled={isPlayingAudio || isEchoLocked}
+                className="relative group mb-4 p-3 rounded-full focus:outline-none transition-transform active:scale-95"
+                title={isRecording ? "Stop voice listening" : "Click to speak with EIH"}
+                aria-label="Interactive voice activator"
               >
-                {gitaParsed.isGita && gitaParsed.shlokaBlock && (
-                  <div className="w-full max-w-[88%] md:max-w-xl">
-                    <GitaShlokaCard shlokaContent={gitaParsed.shlokaBlock} />
-                  </div>
-                )}
-
-                <div
-                  className={`max-w-[88%] md:max-w-xl p-4 rounded-2xl text-sm leading-relaxed ${
-                    m.sender === "user"
-                      ? "bg-gradient-to-br from-emerald-900/60 to-teal-950/70 border border-emerald-500/30 text-emerald-50 rounded-br-sm shadow-[0_4px_20px_rgba(16,185,129,0.15)]"
-                      : "bg-gradient-to-br from-slate-900/90 to-slate-950/95 border border-slate-800/80 text-slate-100 rounded-bl-sm shadow-xl backdrop-blur-md"
-                  }`}
-                >
-                  {m.sender === "ai" ? (
-                    formatTherapeuticMessage(gitaParsed.isGita ? gitaParsed.remainingText : m.text)
+                <div className={`w-16 h-16 rounded-3xl flex items-center justify-center text-2xl transition-all duration-500 border ${
+                  isRecording
+                    ? "bg-rose-500/20 border-rose-500/60 shadow-[0_0_35px_rgba(244,63,94,0.4)] animate-pulse"
+                    : "bg-gradient-to-tr from-emerald-600/30 via-teal-500/20 to-emerald-400/20 border-emerald-500/40 shadow-[0_0_30px_rgba(16,185,129,0.25)] group-hover:border-emerald-400/70 group-hover:shadow-[0_0_40px_rgba(16,185,129,0.4)]"
+                }`}>
+                  {isRecording ? (
+                    <Mic className="w-7 h-7 text-rose-400 animate-pulse" />
                   ) : (
-                    <p className="whitespace-pre-wrap">{m.text}</p>
+                    <Sparkles className="w-7 h-7 text-emerald-300 group-hover:scale-110 transition-transform" />
                   )}
                 </div>
+                <span className={`absolute bottom-2 right-2 w-3.5 h-3.5 rounded-full border-2 border-slate-950 transition-colors duration-300 ${
+                  isRecording ? "bg-rose-500 animate-ping" : "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)]"
+                }`} />
+              </button>
 
-                {m.sender === "ai" && m.recommended_trataka && (
-                  <div className="mt-1.5 max-w-[88%] md:max-w-xl">
-                    <button
-                      onClick={() => {
-                        setRecommendedTrataka(m.recommended_trataka!);
-                        setIsTratakaOpen(true);
-                      }}
-                      className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 text-xs font-semibold transition-all shadow-[0_0_12px_rgba(245,158,11,0.15)] active:scale-[0.98]"
+              <h2 className="text-lg sm:text-xl font-semibold text-slate-100 tracking-tight mb-1.5">
+                {isRecording ? "Listening to your voice..." : "How can I support your calm today?"}
+              </h2>
+              <p className="text-xs text-slate-400 max-w-xs mb-5 leading-relaxed">
+                {isRecording
+                  ? "Speak freely. Your session is private and grounded in clinical care."
+                  : "Tap the mic, choose an interactive protocol, or type below."}
+              </p>
+
+              {/* Interactive Direct Protocol Launchers */}
+              <div className="flex flex-wrap items-center justify-center gap-2 mb-4">
+                <button
+                  onClick={() => setIsPranayamaOpen(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-teal-500/30 hover:border-teal-400/60 text-teal-300 text-xs font-medium transition-all shadow-sm active:scale-95 group"
+                >
+                  <Wind className="w-3.5 h-3.5 text-teal-400 group-hover:scale-110 transition-transform" />
+                  <span>Pranayama</span>
+                </button>
+
+                <button
+                  onClick={() => setIsTratakaOpen(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-amber-500/30 hover:border-amber-400/60 text-amber-300 text-xs font-medium transition-all shadow-sm active:scale-95 group"
+                >
+                  <Eye className="w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition-transform" />
+                  <span>Trataka Gazing</span>
+                </button>
+
+                <button
+                  onClick={() => setIsCBTModalOpen(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-emerald-500/30 hover:border-emerald-400/60 text-emerald-300 text-xs font-medium transition-all shadow-sm active:scale-95 group"
+                >
+                  <Brain className="w-3.5 h-3.5 text-emerald-400 group-hover:scale-110 transition-transform" />
+                  <span>CBT Tools</span>
+                </button>
+              </div>
+
+              {/* Compact 1-Line Interactive Prompt Chips */}
+              <div className="flex flex-wrap items-center justify-center gap-1.5">
+                {[
+                  "Ground racing thoughts",
+                  "Calm chest tightness",
+                  "Reframe self-doubt",
+                  "Gita wisdom on peace",
+                ].map((chip, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleSendMessage(chip)}
+                    className="px-3 py-1 rounded-full bg-slate-900/60 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-400 hover:text-slate-200 text-[11px] font-medium transition-all duration-200 active:scale-95"
+                  >
+                    {chip} →
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          ) : (
+            /* Messages List */
+            <div className="max-w-3xl w-full mx-auto space-y-5 pt-2 pb-16">
+              {messages.map((m, index) => {
+                const isLastMessage = index === messages.length - 1;
+                const gitaParsed = m.sender === "ai" ? parseGitaShloka(m.text) : { isGita: false, shlokaBlock: null, remainingText: m.text };
+                return (
+                  <motion.div
+                    key={m.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className={`flex flex-col ${m.sender === "user" ? "items-end" : "items-start"}`}
+                  >
+                    {/* Sender Identity Badge */}
+                    <div className="flex items-center gap-1.5 mb-1 px-1 text-[11px] font-medium">
+                      {m.sender === "user" ? (
+                        <>
+                          <span className="text-emerald-400/90">You</span>
+                          <div className="w-4 h-4 rounded-full bg-emerald-950/80 border border-emerald-500/40 flex items-center justify-center text-[9px] text-emerald-300">
+                            <User className="w-2.5 h-2.5" />
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="w-4 h-4 rounded-full bg-teal-950/80 border border-teal-500/40 flex items-center justify-center text-[10px]">
+                            🌿
+                          </div>
+                          <span className="text-teal-300 font-semibold">Sanctuary Healer</span>
+                        </>
+                      )}
+                    </div>
+
+                    {gitaParsed.isGita && gitaParsed.shlokaBlock && (
+                      <div className="w-full max-w-[88%] md:max-w-xl">
+                        <GitaShlokaCard shlokaContent={gitaParsed.shlokaBlock} />
+                      </div>
+                    )}
+
+                    <div
+                      className={`max-w-[88%] md:max-w-xl p-4 rounded-2xl text-sm leading-relaxed ${
+                        m.sender === "user"
+                          ? "bg-gradient-to-br from-emerald-900/50 to-teal-950/60 border border-emerald-500/30 text-emerald-50 rounded-tr-sm shadow-[0_4px_20px_rgba(16,185,129,0.12)] backdrop-blur-sm"
+                          : "bg-gradient-to-br from-slate-900/90 via-slate-900/80 to-slate-950/95 border border-slate-800/80 text-slate-100 rounded-tl-sm shadow-xl backdrop-blur-md"
+                      }`}
                     >
-                      <Eye className="w-3.5 h-3.5 text-amber-400" />
-                      <span>Launch Prescribed Trataka Gazing ({m.recommended_trataka.toUpperCase()})</span>
-                    </button>
-                  </div>
-                )}
+                      {m.sender === "ai" ? (
+                        formatTherapeuticMessage(gitaParsed.isGita ? gitaParsed.remainingText : m.text)
+                      ) : (
+                        <p className="whitespace-pre-wrap">{m.text}</p>
+                      )}
+                    </div>
 
-                <div className="flex items-center gap-2 mt-1 px-1">
-                  {m.timestamp && (
-                    <span className="text-[10px] text-slate-500" suppressHydrationWarning>
-                      {m.timestamp}
-                    </span>
-                  )}
-                  {m.engine && (
-                    <span className="text-[9px] text-emerald-400/70 font-mono">[{m.engine}]</span>
-                  )}
-                </div>
-              </motion.div>
-            ); })}
+                    {m.sender === "ai" && isLastMessage && (() => {
+                      const detectedTratak = detectTratakaModeFromText(m.text);
+                      const activeTratakMode =
+                        detectedTratak ||
+                        (m.recommended_trataka ? normalizeTratakaMode(m.recommended_trataka) : null) ||
+                        (recommendedTrataka ? normalizeTratakaMode(recommendedTrataka) : 'bindu');
 
-            {isLoading && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="flex items-center gap-2 text-xs text-slate-400 px-3 py-2 rounded-xl bg-slate-900/60 border border-slate-800 w-fit"
-              >
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                <span>Synthesizing response...</span>
-              </motion.div>
-            )}
+                      const hasTratakInText =
+                        Boolean(detectedTratak) ||
+                        m.text.toLowerCase().includes("tratak") ||
+                        m.text.includes("त्राटक") ||
+                        Boolean(m.recommended_trataka);
 
-            <div ref={messagesEndRef} />
-          </div>
+                      if (!hasTratakInText) return null;
+
+                      return (
+                        <div className="mt-1.5 max-w-[88%] md:max-w-xl">
+                          <button
+                            onClick={() => {
+                              setRecommendedTrataka(activeTratakMode);
+                              setIsTratakaOpen(true);
+                            }}
+                            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 text-xs font-semibold transition-all shadow-[0_0_12px_rgba(245,158,11,0.15)] active:scale-[0.98]"
+                          >
+                            <Eye className="w-3.5 h-3.5 text-amber-400" />
+                            <span>Launch Prescribed Trataka Gazing ({getTratakaModeLabel(activeTratakMode)})</span>
+                          </button>
+                        </div>
+                      );
+                    })()}
+
+                    {m.sender === "ai" && m.cbt_distortion && isLastMessage && (
+                      <div className="mt-1.5 max-w-[88%] md:max-w-xl">
+                        <button
+                          onClick={() => setIsCBTModalOpen(true)}
+                          className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-300 text-xs font-semibold transition-all shadow-[0_0_12px_rgba(16,185,129,0.12)] active:scale-[0.98]"
+                        >
+                          <Brain className="w-3.5 h-3.5 text-emerald-400" />
+                          <span>Explore CBT Reframe: {m.cbt_distortion} →</span>
+                        </button>
+                      </div>
+                    )}
+
+                    <div className="flex items-center gap-2 mt-1 px-1">
+                      {m.timestamp && (
+                        <span className="text-[10px] text-slate-500" suppressHydrationWarning>
+                          {m.timestamp}
+                        </span>
+                      )}
+                      {m.engine && (
+                        <span className="text-[9px] text-emerald-400/70 font-mono">[{m.engine}]</span>
+                      )}
+                    </div>
+                  </motion.div>
+                );
+              })}
+
+              {isLoading && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="flex items-center gap-2 text-xs text-slate-300 px-3.5 py-2.5 rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-md w-fit shadow-md"
+                >
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                  <span>Synthesizing empathetic response...</span>
+                </motion.div>
+              )}
+
+              <div ref={messagesEndRef} />
+            </div>
+          )}
         </div>
 
-        {/* Bottom Area: Floating Centered Input Dock */}
-        <div className="px-2.5 sm:px-6 pt-2 pb-3 sm:pb-4 shrink-0 flex justify-center bg-transparent relative z-20 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+        {/* Floating Scroll to Latest Messages Button */}
+        <AnimatePresence>
+          {showScrollBottom && (
+            <motion.div
+              initial={{ opacity: 0, y: 10, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.9 }}
+              className="absolute bottom-20 sm:bottom-24 right-4 sm:right-8 z-30"
+            >
+              <button
+                onClick={() => {
+                  if (chatContainerRef.current) {
+                    chatContainerRef.current.scrollTo({
+                      top: chatContainerRef.current.scrollHeight,
+                      behavior: "smooth",
+                    });
+                  } else if (messagesEndRef.current) {
+                    messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+                  }
+                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 hover:border-emerald-500/50 text-slate-200 text-xs font-medium shadow-xl backdrop-blur-md transition-all active:scale-95"
+                aria-label="Scroll to latest message"
+              >
+                <ArrowDown className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Latest messages</span>
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Bottom Area: Fixed Pinned Centered Input Dock */}
+        <div className="px-2.5 sm:px-6 py-2.5 sm:py-3.5 shrink-0 flex justify-center bg-slate-950/95 border-t border-slate-800/60 backdrop-blur-2xl relative z-30 shadow-[0_-10px_35px_rgba(0,0,0,0.6)] pb-[max(0.75rem,env(safe-area-inset-bottom))]">
           <div className="max-w-2xl w-full mx-auto">
-            <div className="rounded-full bg-slate-900/80 border border-slate-700/80 backdrop-blur-xl p-1.5 sm:p-2 flex items-center gap-1.5 sm:gap-2 shadow-[0_10px_35px_rgba(0,0,0,0.6)] focus-within:border-emerald-500/60 focus-within:shadow-[0_0_25px_rgba(16,185,129,0.2)] transition-all">
+            <div className="rounded-full bg-slate-900/90 border border-slate-700/80 backdrop-blur-xl p-1.5 sm:p-2 flex items-center gap-1.5 sm:gap-2 shadow-[0_10px_35px_rgba(0,0,0,0.6)] focus-within:border-emerald-500/60 focus-within:shadow-[0_0_25px_rgba(16,185,129,0.25)] transition-all">
               {/* Pulsing Mic Button */}
               <button
                 onClick={toggleRecording}
@@ -1353,14 +1587,14 @@ export default function SanctuarySessionPage() {
                 }
                 className={`p-2.5 sm:p-3 rounded-full transition-all shrink-0 ${
                   isRecording
-                    ? "bg-rose-500/20 text-rose-400 border border-rose-500/60 animate-pulse shadow-[0_0_15px_rgba(244,63,94,0.4)]"
+                    ? "bg-rose-500/25 text-rose-400 border border-rose-500/70 animate-pulse shadow-[0_0_15px_rgba(244,63,94,0.45)]"
                     : isPlayingAudio || isEchoLocked
                     ? "bg-slate-800/40 text-slate-600 opacity-60 cursor-not-allowed"
-                    : "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                    : "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 active:scale-95"
                 }`}
                 aria-label={isRecording ? "Stop voice listening" : "Start continuous voice"}
               >
-                {isRecording ? <Mic className="w-4 h-4 sm:w-5 sm:h-5" /> : <Mic className="w-4 h-4 sm:w-5 sm:h-5" />}
+                <Mic className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
 
               {/* End Session Button Near Mic */}
@@ -1390,7 +1624,7 @@ export default function SanctuarySessionPage() {
                     ? "Healer speaking..."
                     : isRecording
                     ? "Listening in real-time..."
-                    : "Speak freely or type..."
+                    : "Share what's on your heart or speak freely..."
                 }
                 className="flex-1 bg-transparent px-2 sm:px-3 text-base sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none min-w-0"
               />
@@ -1399,10 +1633,11 @@ export default function SanctuarySessionPage() {
               <button
                 onClick={() => handleSendMessage()}
                 disabled={isLoading || !inputVal.trim()}
-                className="p-2.5 rounded-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 disabled:hover:bg-emerald-500 text-slate-950 font-bold transition-all shadow-md shrink-0 active:scale-95"
+                className="p-2.5 sm:px-3.5 sm:py-2 rounded-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-30 disabled:hover:bg-emerald-500 text-slate-950 font-bold transition-all shadow-md shrink-0 active:scale-95 flex items-center gap-1.5"
                 aria-label="Send message"
               >
                 <Send className="w-4 h-4" />
+                <span className="hidden sm:inline text-xs font-semibold">Send</span>
               </button>
             </div>
           </div>

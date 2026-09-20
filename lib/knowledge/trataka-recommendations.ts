@@ -94,13 +94,218 @@ export const TRATAKA_PRESCRIPTIONS: Record<TratakaModeId, TratakaPrescription> =
 import { emotionClassifier } from './emotion-classifier.ts';
 
 /**
- * Maps any user query and psychological state to the optimal Trataka mode and instructions.
+ * Normalizes any variation, synonym, language, or spelling into a canonical TratakaModeId.
+ */
+export function normalizeTratakaMode(mode?: string | null): TratakaModeId {
+  if (!mode) return 'bindu';
+  const clean = mode.toLowerCase().trim();
+
+  // Jyoti / Flame / Candle / Fire
+  if (
+    clean === 'flame' ||
+    clean === 'jyoti' ||
+    clean.includes('jyoti') ||
+    clean.includes('flame') ||
+    clean.includes('candle') ||
+    clean.includes('fire') ||
+    clean.includes('tejas') ||
+    clean.includes('दीपक') ||
+    clean.includes('ज्योति') ||
+    clean.includes('अग्नि') ||
+    clean.includes('दीप')
+  ) {
+    return 'flame';
+  }
+
+  // Mandala / Murti / Sacred Geometry
+  if (
+    clean === 'murti' ||
+    clean === 'mandala' ||
+    clean.includes('mandala') ||
+    clean.includes('murti') ||
+    clean.includes('मंडल') ||
+    clean.includes('मण्डल') ||
+    clean.includes('मूर्ति') ||
+    clean.includes('geometry')
+  ) {
+    return 'murti';
+  }
+
+  // Pratibimb / Mirror / Reflection
+  if (
+    clean === 'pratibimb' ||
+    clean === 'mirror' ||
+    clean.includes('pratibimb') ||
+    clean.includes('mirror') ||
+    clean.includes('reflection') ||
+    clean.includes('प्रतिबिंब') ||
+    clean.includes('प्रतिबिम्ब') ||
+    clean.includes('दर्पण') ||
+    clean.includes('आईना')
+  ) {
+    return 'pratibimb';
+  }
+
+  // Shoonya / Void / Horizon / Space
+  if (
+    clean === 'shoonya' ||
+    clean === 'void' ||
+    clean.includes('shoonya') ||
+    clean.includes('void') ||
+    clean.includes('space') ||
+    clean.includes('horizon') ||
+    clean.includes('शून्य') ||
+    clean.includes('आकाश')
+  ) {
+    return 'shoonya';
+  }
+
+  // Bindu / Point / Focal Point
+  if (
+    clean === 'bindu' ||
+    clean === 'point' ||
+    clean.includes('bindu') ||
+    clean.includes('point') ||
+    clean.includes('dot') ||
+    clean.includes('बिंदु') ||
+    clean.includes('बिन्दु')
+  ) {
+    return 'bindu';
+  }
+
+  return 'bindu';
+}
+
+/**
+ * Accurately extracts the prescribed Trataka mode from clinical message / remedy text.
+ * Prevents UI launch buttons from mismatching the AI's actual textual prescription.
+ */
+export function detectTratakaModeFromText(text?: string | null): TratakaModeId | null {
+  if (!text || typeof text !== 'string') return null;
+  const lower = text.toLowerCase();
+
+  // 1. Jyoti / Flame
+  if (
+    lower.includes('jyoti tratak') ||
+    lower.includes('jyoti (the flame)') ||
+    lower.includes('jyoti flame') ||
+    lower.includes('candle flame') ||
+    lower.includes('flame gazing') ||
+    lower.includes('jyoti gazing') ||
+    lower.includes('ज्योति त्राटक') ||
+    lower.includes('दीपक त्राटक') ||
+    lower.includes('दीप त्राटक') ||
+    lower.includes('ज्योति ध्यान') ||
+    lower.includes('flame trataka') ||
+    lower.includes('meditación en la llama') ||
+    lower.includes('contemplation de la flamme') ||
+    lower.includes('kerzenflammen-meditation')
+  ) {
+    return 'flame';
+  }
+
+  // 2. Pratibimb / Mirror
+  if (
+    lower.includes('pratibimb tratak') ||
+    lower.includes('pratibimb (the reflection)') ||
+    lower.includes('pratibimb (sacred mirror)') ||
+    lower.includes('mirror gazing') ||
+    lower.includes('sacred mirror') ||
+    lower.includes('प्रतिबिम्ब त्राटक') ||
+    lower.includes('प्रतिबिंब त्राटक') ||
+    lower.includes('दर्पण त्राटक') ||
+    lower.includes('आईना त्राटक')
+  ) {
+    return 'pratibimb';
+  }
+
+  // 3. Shoonya / Void
+  if (
+    lower.includes('shoonya tratak') ||
+    lower.includes('shoonya (the void)') ||
+    lower.includes('void gazing') ||
+    lower.includes('space gazing') ||
+    lower.includes('panoramic space') ||
+    lower.includes('शून्य त्राटक') ||
+    lower.includes('आकाश त्राटक')
+  ) {
+    return 'shoonya';
+  }
+
+  // 4. Mandala / Murti
+  if (
+    lower.includes('mandala tratak') ||
+    lower.includes('murti tratak') ||
+    lower.includes('murti (sacred mandala)') ||
+    lower.includes('sacred geometry') ||
+    lower.includes('मण्डल त्राटक') ||
+    lower.includes('मंडल त्राटक') ||
+    lower.includes('मूर्ति त्राटक')
+  ) {
+    return 'murti';
+  }
+
+  // 5. Bindu / Point
+  if (
+    lower.includes('bindu tratak') ||
+    lower.includes('bindu (the point)') ||
+    lower.includes('single-pointed') ||
+    lower.includes('golden focal point') ||
+    lower.includes('digital bindu') ||
+    lower.includes('बिन्दु त्राटक') ||
+    lower.includes('बिंदु त्राटक')
+  ) {
+    return 'bindu';
+  }
+
+  return null;
+}
+
+/**
+ * Returns a beautifully formatted human-readable label combining sacred Sanskrit
+ * and modern clinical terminology for buttons and telemetry cards.
+ */
+export function getTratakaModeLabel(mode?: string | null): string {
+  const m = normalizeTratakaMode(mode);
+  switch (m) {
+    case 'flame':
+      return 'Jyoti (Flame)';
+    case 'bindu':
+      return 'Bindu (Point)';
+    case 'murti':
+      return 'Mandala (Murti)';
+    case 'pratibimb':
+      return 'Pratibimb (Mirror)';
+    case 'shoonya':
+      return 'Shoonya (Void)';
+    default:
+      return 'Sacred Gazing';
+  }
+}
+
+/**
+ * Maps any user query, psychological state, or matched condition to the optimal Trataka mode and instructions.
  */
 export function resolveTratakaPrescription(
   query: string,
   dominantEmotion?: string,
-  polyvagalState?: string
+  polyvagalState?: string,
+  conditionOrMode?: any
 ): TratakaPrescription {
+  // 0. If condition object or explicit mode was provided, prioritize it
+  if (conditionOrMode) {
+    const rawMode =
+      typeof conditionOrMode === 'string'
+        ? conditionOrMode
+        : conditionOrMode?.recommended_trataka_mode || conditionOrMode?.mode;
+    if (rawMode) {
+      const canonical = normalizeTratakaMode(rawMode);
+      if (TRATAKA_PRESCRIPTIONS[canonical]) {
+        return TRATAKA_PRESCRIPTIONS[canonical];
+      }
+    }
+  }
+
   const q = (query || '').toLowerCase();
   let emo = (dominantEmotion || '').toLowerCase();
   let poly = (polyvagalState || '').toLowerCase();
@@ -114,6 +319,48 @@ export function resolveTratakaPrescription(
     } catch {
       // ignore
     }
+  }
+
+  // Explicit user mentions of specific Trataka styles
+  if (
+    q.includes('jyoti') ||
+    q.includes('flame') ||
+    q.includes('candle') ||
+    q.includes('ज्योति') ||
+    q.includes('दीपक')
+  ) {
+    return TRATAKA_PRESCRIPTIONS.flame;
+  }
+  if (
+    q.includes('mirror') ||
+    q.includes('pratibimb') ||
+    q.includes('प्रतिबिम्ब') ||
+    q.includes('दर्पण')
+  ) {
+    return TRATAKA_PRESCRIPTIONS.pratibimb;
+  }
+  if (
+    q.includes('mandala') ||
+    q.includes('murti') ||
+    q.includes('मण्डल') ||
+    q.includes('मूर्ति')
+  ) {
+    return TRATAKA_PRESCRIPTIONS.murti;
+  }
+  if (
+    q.includes('shoonya') ||
+    q.includes('void') ||
+    q.includes('space') ||
+    q.includes('शून्य')
+  ) {
+    return TRATAKA_PRESCRIPTIONS.shoonya;
+  }
+  if (
+    q.includes('bindu') ||
+    q.includes('बिन्दु') ||
+    q.includes('बिंदु')
+  ) {
+    return TRATAKA_PRESCRIPTIONS.bindu;
   }
 
   // 1. Shame / Imposter / Self-Criticism -> Pratibimb (Mirror)
@@ -181,6 +428,11 @@ export function resolveTratakaPrescription(
     q.includes('dard') ||
     q.includes('dukh') ||
     q.includes('gam') ||
+    q.includes('empty') ||
+    q.includes('hopeless') ||
+    q.includes('fatigue') ||
+    q.includes('apathy') ||
+    q.includes('no energy') ||
     q.includes('रोना') ||
     q.includes('उदासी') ||
     q.includes('थकान') ||
@@ -188,7 +440,9 @@ export function resolveTratakaPrescription(
     q.includes('दिल टूट') ||
     q.includes('दर्द') ||
     q.includes('दुख') ||
-    q.includes('शोक')
+    q.includes('शोक') ||
+    q.includes('निराशा') ||
+    q.includes('आलस्य')
   ) {
     return TRATAKA_PRESCRIPTIONS.flame;
   }

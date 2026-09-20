@@ -45,7 +45,7 @@
       "Catastrophic Overgeneralization"
     ],
     "solutions": {
-      "cbt_reframing": "Action precedes motivation. Do not wait to feel energized; taking even a tiny 1% physical step begins shifting neurochemistry.\n\n[Wikipedia Context]: Emotions are physical and mental states brought on by neurophysiological and neuropsychological changes, variously associated with subjective experiences such as thoughts, feelings, behavioral responses, and a degree of pleasure or displeasure. There is no scientific consensus on a definition. Emotions are often intertwined with mood, temperament, personality, disposition, or creativity.\n[PubMed Literature]: Clinical study on emotional numbness hypoarousal polyvagal evidence based therapy: Study protocol for a randomized controlled trial of a group-adapted Somatic Experiencing® intervention for Indonesian women survivors of sexual assault with PTSD symptoms.",
+      "cbt_reframing": "Action precedes motivation. Do not wait to feel energized; taking even a tiny 1% physical step begins shifting neurochemistry.\n\n[Wikipedia Context]: Emotions are physical and mental states brought on by neurophysiological and neuropsychological changes, variously associated with subjective experiences such as thoughts, feelings, behavioral responses, and a degree of pleasure or displeasure. There is no scientific consensus on a definition. Emotions are often intertwined with mood, temperament, personality, disposition, or creativity.\n[PubMed Literature]: Clinical study on emotional numbness hypoarousal polyvagal evidence based therapy: Study protocol for a randomized controlled trial of a group-adapted Somatic Experiencing\u00ae intervention for Indonesian women survivors of sexual assault with PTSD symptoms.",
       "somatic_anchor": "Stand barefoot on the floor, feel the ground supporting you, and gently tap your sternum for 60 seconds.",
       "pranayama": "Surya Bhedana (Right Nostril Solar Breathing) for 3 minutes to disperse tamasic lethargy.",
       "micro_habit": "Commit to a 2-minute micro-task that is impossible to fail (drink water, open window curtains)."
@@ -136,5 +136,305 @@
     "source_platform": "NCBI PubMed & Wikipedia Clinical Knowledge",
     "learned_timestamp": "2026-09-05T19:22:07.198Z",
     "query_trigger": "I feel overwhelmed with work stress today"
+  },
+  {
+    "id": "learned_i_am_constantly_stressed_about",
+    "name": "Learned: I Am Constantly Stressed About My Job. M Protocol",
+    "category": "Self-Learned Clinical Knowledge",
+    "triguna_balance": "Vata-Rajas Autonomic Regulation",
+    "core_symptoms": [
+      "I am constantly stressed about my job. My chest is tight and I cannot sleep."
+    ],
+    "cognitive_distortions": [
+      "Cognitive Overwhelm",
+      "Emotional Reasoning"
+    ],
+    "solutions": {
+      "cbt_reframing": "Acknowledge this experience as a transient physiological signal. Notice thoughts without judgment.\n\n[Wikipedia Context]: Evidence-based psychological constructs and emotional regulation taxonomies.\n[PubMed Literature]: The Effectiveness of Cognitive Behavioural Therapy for Insomnia: Impact of Comorbidities and Dysfunctional Beliefs on Insomnia Severity in a Real-World Clinical Setting.: NCBI Clinical Evidence on I am constantly stressed about my job. M: The Effectiveness of Cognitive Behavioural Therapy for Insomnia: Impact of Comorbidities and Dysfunctional Beliefs on Insomnia Severity in a Real-World Clinical Setting. Digitally delivered cognitive behavioral therapy for insomnia (CBT-I) for patients with chronic pain and insomnia (The Back2Sleep Trial): study protocol for a randomized controlled trial.: NCBI Clinical Evidence on I am constantly stressed about my job. M: Digitally delivered cognitive behavioral therapy for insomnia (CBT-I) for patients with chronic pain and insomnia (The Back2Sleep Trial): study protocol for a randomized controlled trial.",
+      "somatic_anchor": "Drop shoulders away from ears, place one hand on the lower abdomen, and feel the solid floor underneath your feet for 30 seconds.",
+      "pranayama": "Practice 4-4-4-4 Box Breathing or Nadi Shodhana for 3 minutes to restore autonomic balance.",
+      "micro_habit": "Write down one single micro-task within your direct control right now and release long-term rumination."
+    },
+    "severity_level": "Mild to Moderate",
+    "recommended_trataka_mode": "bindu",
+    "requires_immediate_crisis": false,
+    "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13357959/",
+    "source_platform": "NCBI PubMed & Wikipedia Clinical Knowledge",
+    "query_trigger": "I am constantly stressed about my job. My chest is tight and I cannot sleep."
+  },
+  {
+    "id": "learned_i_have_a_major_interview_tomor",
+    "name": "Learned: I Have A Major Interview Tomorrow, I Am  Protocol",
+    "category": "Self-Learned Clinical Knowledge",
+    "triguna_balance": "Vata-Rajas Autonomic Regulation",
+    "core_symptoms": [
+      "I have a major interview tomorrow, I am terrified of failing and cannot decide what to study"
+    ],
+    "cognitive_distortions": [
+      "Cognitive Overwhelm",
+      "Emotional Reasoning"
+    ],
+    "solutions": {
+      "cbt_reframing": "Acknowledge this experience as a transient physiological signal. Notice thoughts without judgment.\n\n[Wikipedia Context]: Evidence-based psychological constructs and emotional regulation taxonomies.\n[PubMed Literature]: Efficacy of blended digital and face-to-face psychotherapy compared to enhanced psychotherapy for patients with Somatic Symptom Disorder (iSOMA+): study protocol for a multicenter randomized controlled pragmatic trial.: NCBI Clinical Evidence on I have a major interview tomorrow, I am : Efficacy of blended digital and face-to-face psychotherapy compared to enhanced psychotherapy for patients with Somatic Symptom Disorder (iSOMA+): study protocol for a multicenter randomized controlled pragmatic trial. Restraint in somatic healthcare: how should it be regulated?: NCBI Clinical Evidence on I have a major interview tomorrow, I am : Restraint in somatic healthcare: how should it be regulated?",
+      "somatic_anchor": "Drop shoulders away from ears, place one hand on the lower abdomen, and feel the solid floor underneath your feet for 30 seconds.",
+      "pranayama": "Practice 4-4-4-4 Box Breathing or Nadi Shodhana for 3 minutes to restore autonomic balance.",
+      "micro_habit": "Write down one single micro-task within your direct control right now and release long-term rumination."
+    },
+    "severity_level": "Mild to Moderate",
+    "recommended_trataka_mode": "bindu",
+    "requires_immediate_crisis": false,
+    "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13352642/",
+    "source_platform": "NCBI PubMed & Wikipedia Clinical Knowledge",
+    "query_trigger": "I have a major interview tomorrow, I am terrified of failing and cannot decide what to study"
+  },
+  {
+    "id": "learned_\u092e_\u0930__\u092c_\u0930_\u0915\u0905\u092a_\u0939__\u0917\u092f__\u0939__\u0914\u0930_\u0938_\u0928",
+    "name": "Learned: \u092e\u0947\u0930\u093e \u092c\u094d\u0930\u0947\u0915\u0905\u092a \u0939\u094b \u0917\u092f\u093e \u0939\u0948 \u0914\u0930 \u0938\u0940\u0928\u0947 \u092e\u0947\u0902 \u092c\u0939\u0941\u0924  Protocol",
+    "category": "Self-Learned Clinical Knowledge",
+    "triguna_balance": "Vata-Rajas Autonomic Regulation",
+    "core_symptoms": [
+      "\u092e\u0947\u0930\u093e \u092c\u094d\u0930\u0947\u0915\u0905\u092a \u0939\u094b \u0917\u092f\u093e \u0939\u0948 \u0914\u0930 \u0938\u0940\u0928\u0947 \u092e\u0947\u0902 \u092c\u0939\u0941\u0924 \u0926\u0930\u094d\u0926 \u0914\u0930 \u0930\u094b\u0928\u093e \u0906 \u0930\u0939\u093e \u0939\u0948, \u0915\u0941\u091b \u0938\u092e\u091d \u0928\u0939\u0940\u0902 \u0906 \u0930\u0939\u093e"
+    ],
+    "cognitive_distortions": [
+      "Cognitive Overwhelm",
+      "Emotional Reasoning"
+    ],
+    "solutions": {
+      "cbt_reframing": "Acknowledge this experience as a transient physiological signal. Notice thoughts without judgment.\n\n[Wikipedia Context]: Evidence-based psychological constructs and emotional regulation taxonomies.\n[PubMed Literature]: Efficacy of blended digital and face-to-face psychotherapy compared to enhanced psychotherapy for patients with Somatic Symptom Disorder (iSOMA+): study protocol for a multicenter randomized controlled pragmatic trial.: NCBI Clinical Evidence on \u092e\u0947\u0930\u093e \u092c\u094d\u0930\u0947\u0915\u0905\u092a \u0939\u094b \u0917\u092f\u093e \u0939\u0948 \u0914\u0930 \u0938\u0940\u0928\u0947 \u092e\u0947\u0902 \u092c\u0939\u0941\u0924 : Efficacy of blended digital and face-to-face psychotherapy compared to enhanced psychotherapy for patients with Somatic Symptom Disorder (iSOMA+): study protocol for a multicenter randomized controlled pragmatic trial. Restraint in somatic healthcare: how should it be regulated?: NCBI Clinical Evidence on \u092e\u0947\u0930\u093e \u092c\u094d\u0930\u0947\u0915\u0905\u092a \u0939\u094b \u0917\u092f\u093e \u0939\u0948 \u0914\u0930 \u0938\u0940\u0928\u0947 \u092e\u0947\u0902 \u092c\u0939\u0941\u0924 : Restraint in somatic healthcare: how should it be regulated?",
+      "somatic_anchor": "Drop shoulders away from ears, place one hand on the lower abdomen, and feel the solid floor underneath your feet for 30 seconds.",
+      "pranayama": "Practice 4-4-4-4 Box Breathing or Nadi Shodhana for 3 minutes to restore autonomic balance.",
+      "micro_habit": "Write down one single micro-task within your direct control right now and release long-term rumination."
+    },
+    "severity_level": "Mild to Moderate",
+    "recommended_trataka_mode": "bindu",
+    "requires_immediate_crisis": false,
+    "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13352642/",
+    "source_platform": "NCBI PubMed & Wikipedia Clinical Knowledge",
+    "query_trigger": "\u092e\u0947\u0930\u093e \u092c\u094d\u0930\u0947\u0915\u0905\u092a \u0939\u094b \u0917\u092f\u093e \u0939\u0948 \u0914\u0930 \u0938\u0940\u0928\u0947 \u092e\u0947\u0902 \u092c\u0939\u0941\u0924 \u0926\u0930\u094d\u0926 \u0914\u0930 \u0930\u094b\u0928\u093e \u0906 \u0930\u0939\u093e \u0939\u0948, \u0915\u0941\u091b \u0938\u092e\u091d \u0928\u0939\u0940\u0902 \u0906 \u0930\u0939\u093e"
+  },
+  {
+    "id": "learned_i_feel_like_a_complete_fake_an",
+    "name": "Learned: I Feel Like A Complete Fake And Failure, Protocol",
+    "category": "Self-Learned Clinical Knowledge",
+    "triguna_balance": "Vata-Rajas Autonomic Regulation",
+    "core_symptoms": [
+      "I feel like a complete fake and failure, everyone is better than me and I hate myself"
+    ],
+    "cognitive_distortions": [
+      "Cognitive Overwhelm",
+      "Emotional Reasoning"
+    ],
+    "solutions": {
+      "cbt_reframing": "Acknowledge this experience as a transient physiological signal. Notice thoughts without judgment.\n\n[Wikipedia Context]: Evidence-based psychological constructs and emotional regulation taxonomies.\n[PubMed Literature]: Burnout and the Brain-A Mechanistic Review of Magnetic Resonance Imaging (MRI) Studies.: NCBI Clinical Evidence on I feel like a complete fake and failure,: Burnout and the Brain-A Mechanistic Review of Magnetic Resonance Imaging (MRI) Studies. Cognitive-Behavioral Therapy for Patients with Coronary Artery Disease and Depression: A Systematic Review.: NCBI Clinical Evidence on I feel like a complete fake and failure,: Cognitive-Behavioral Therapy for Patients with Coronary Artery Disease and Depression: A Systematic Review.",
+      "somatic_anchor": "Drop shoulders away from ears, place one hand on the lower abdomen, and feel the solid floor underneath your feet for 30 seconds.",
+      "pranayama": "Practice 4-4-4-4 Box Breathing or Nadi Shodhana for 3 minutes to restore autonomic balance.",
+      "micro_habit": "Write down one single micro-task within your direct control right now and release long-term rumination."
+    },
+    "severity_level": "Mild to Moderate",
+    "recommended_trataka_mode": "bindu",
+    "requires_immediate_crisis": false,
+    "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12429168/",
+    "source_platform": "NCBI PubMed & Wikipedia Clinical Knowledge",
+    "query_trigger": "I feel like a complete fake and failure, everyone is better than me and I hate myself"
+  },
+  {
+    "id": "learned_i_am_completely_exhausted__bur",
+    "name": "Learned: I Am Completely Exhausted, Burnt Out Fro Protocol",
+    "category": "Self-Learned Clinical Knowledge",
+    "triguna_balance": "Vata-Rajas Autonomic Regulation",
+    "core_symptoms": [
+      "I am completely exhausted, burnt out from work, and feeling helpless."
+    ],
+    "cognitive_distortions": [
+      "Cognitive Overwhelm",
+      "Emotional Reasoning"
+    ],
+    "solutions": {
+      "cbt_reframing": "Acknowledge this experience as a transient physiological signal. Notice thoughts without judgment.\n\n[Wikipedia Context]: Evidence-based psychological constructs and emotional regulation taxonomies.\n[PubMed Literature]: Efficacy of blended digital and face-to-face psychotherapy compared to enhanced psychotherapy for patients with Somatic Symptom Disorder (iSOMA+): study protocol for a multicenter randomized controlled pragmatic trial.: NCBI Clinical Evidence on I am completely exhausted, burnt out fro: Efficacy of blended digital and face-to-face psychotherapy compared to enhanced psychotherapy for patients with Somatic Symptom Disorder (iSOMA+): study protocol for a multicenter randomized controlled pragmatic trial. Restraint in somatic healthcare: how should it be regulated?: NCBI Clinical Evidence on I am completely exhausted, burnt out fro: Restraint in somatic healthcare: how should it be regulated?",
+      "somatic_anchor": "Drop shoulders away from ears, place one hand on the lower abdomen, and feel the solid floor underneath your feet for 30 seconds.",
+      "pranayama": "Practice 4-4-4-4 Box Breathing or Nadi Shodhana for 3 minutes to restore autonomic balance.",
+      "micro_habit": "Write down one single micro-task within your direct control right now and release long-term rumination."
+    },
+    "severity_level": "Mild to Moderate",
+    "recommended_trataka_mode": "bindu",
+    "requires_immediate_crisis": false,
+    "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13352642/",
+    "source_platform": "NCBI PubMed & Wikipedia Clinical Knowledge",
+    "query_trigger": "I am completely exhausted, burnt out from work, and feeling helpless."
+  },
+  {
+    "id": "learned_\u092e_\u091d__\u092c\u0939_\u0924_\u0905\u0915_\u0932_\u092a\u0928_\u0914\u0930_\u0928_\u0930_\u0936__\u092e\u0939",
+    "name": "Learned: \u092e\u0941\u091d\u0947 \u092c\u0939\u0941\u0924 \u0905\u0915\u0947\u0932\u093e\u092a\u0928 \u0914\u0930 \u0928\u093f\u0930\u093e\u0936\u093e \u092e\u0939\u0938\u0942\u0938 \u0939\u094b \u0930\u0939\u0940 Protocol",
+    "category": "Self-Learned Clinical Knowledge",
+    "triguna_balance": "Vata-Rajas Autonomic Regulation",
+    "core_symptoms": [
+      "\u092e\u0941\u091d\u0947 \u092c\u0939\u0941\u0924 \u0905\u0915\u0947\u0932\u093e\u092a\u0928 \u0914\u0930 \u0928\u093f\u0930\u093e\u0936\u093e \u092e\u0939\u0938\u0942\u0938 \u0939\u094b \u0930\u0939\u0940 \u0939\u0948"
+    ],
+    "cognitive_distortions": [
+      "Cognitive Overwhelm",
+      "Emotional Reasoning"
+    ],
+    "solutions": {
+      "cbt_reframing": "Acknowledge this experience as a transient physiological signal. Notice thoughts without judgment.\n\n[Wikipedia Context]: Evidence-based psychological constructs and emotional regulation taxonomies.\n[PubMed Literature]: Efficacy of blended digital and face-to-face psychotherapy compared to enhanced psychotherapy for patients with Somatic Symptom Disorder (iSOMA+): study protocol for a multicenter randomized controlled pragmatic trial.: NCBI Clinical Evidence on \u092e\u0941\u091d\u0947 \u092c\u0939\u0941\u0924 \u0905\u0915\u0947\u0932\u093e\u092a\u0928 \u0914\u0930 \u0928\u093f\u0930\u093e\u0936\u093e \u092e\u0939\u0938\u0942\u0938 \u0939\u094b \u0930\u0939\u0940: Efficacy of blended digital and face-to-face psychotherapy compared to enhanced psychotherapy for patients with Somatic Symptom Disorder (iSOMA+): study protocol for a multicenter randomized controlled pragmatic trial. Restraint in somatic healthcare: how should it be regulated?: NCBI Clinical Evidence on \u092e\u0941\u091d\u0947 \u092c\u0939\u0941\u0924 \u0905\u0915\u0947\u0932\u093e\u092a\u0928 \u0914\u0930 \u0928\u093f\u0930\u093e\u0936\u093e \u092e\u0939\u0938\u0942\u0938 \u0939\u094b \u0930\u0939\u0940: Restraint in somatic healthcare: how should it be regulated?",
+      "somatic_anchor": "Drop shoulders away from ears, place one hand on the lower abdomen, and feel the solid floor underneath your feet for 30 seconds.",
+      "pranayama": "Practice 4-4-4-4 Box Breathing or Nadi Shodhana for 3 minutes to restore autonomic balance.",
+      "micro_habit": "Write down one single micro-task within your direct control right now and release long-term rumination."
+    },
+    "severity_level": "Mild to Moderate",
+    "recommended_trataka_mode": "bindu",
+    "requires_immediate_crisis": false,
+    "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13352642/",
+    "source_platform": "NCBI PubMed & Wikipedia Clinical Knowledge",
+    "query_trigger": "\u092e\u0941\u091d\u0947 \u092c\u0939\u0941\u0924 \u0905\u0915\u0947\u0932\u093e\u092a\u0928 \u0914\u0930 \u0928\u093f\u0930\u093e\u0936\u093e \u092e\u0939\u0938\u0942\u0938 \u0939\u094b \u0930\u0939\u0940 \u0939\u0948"
+  },
+  {
+    "id": "learned_\u0915_\u091b_\u0905\u091a_\u091b__\u0928\u0939___\u0932\u0917_\u0930\u0939__\u0939__\u0936\u0930_\u0930",
+    "name": "Learned: \u0915\u0941\u091b \u0905\u091a\u094d\u091b\u093e \u0928\u0939\u0940\u0902 \u0932\u0917 \u0930\u0939\u093e \u0939\u0948 \u0936\u0930\u0940\u0930 \u092d\u0940 \u0925\u0915\u093e \u0939\u0941\u0906 Protocol",
+    "category": "Self-Learned Clinical Knowledge",
+    "triguna_balance": "Vata-Rajas Autonomic Regulation",
+    "core_symptoms": [
+      "\u0915\u0941\u091b \u0905\u091a\u094d\u091b\u093e \u0928\u0939\u0940\u0902 \u0932\u0917 \u0930\u0939\u093e \u0939\u0948 \u0936\u0930\u0940\u0930 \u092d\u0940 \u0925\u0915\u093e \u0939\u0941\u0906"
+    ],
+    "cognitive_distortions": [
+      "Cognitive Overwhelm",
+      "Emotional Reasoning"
+    ],
+    "solutions": {
+      "cbt_reframing": "Acknowledge this experience as a transient physiological signal. Notice thoughts without judgment.\n\n[Wikipedia Context]: Evidence-based psychological constructs and emotional regulation taxonomies.\n[PubMed Literature]: Efficacy of blended digital and face-to-face psychotherapy compared to enhanced psychotherapy for patients with Somatic Symptom Disorder (iSOMA+): study protocol for a multicenter randomized controlled pragmatic trial.: NCBI Clinical Evidence on \u0915\u0941\u091b \u0905\u091a\u094d\u091b\u093e \u0928\u0939\u0940\u0902 \u0932\u0917 \u0930\u0939\u093e \u0939\u0948 \u0936\u0930\u0940\u0930 \u092d\u0940 \u0925\u0915\u093e \u0939\u0941\u0906: Efficacy of blended digital and face-to-face psychotherapy compared to enhanced psychotherapy for patients with Somatic Symptom Disorder (iSOMA+): study protocol for a multicenter randomized controlled pragmatic trial. Restraint in somatic healthcare: how should it be regulated?: NCBI Clinical Evidence on \u0915\u0941\u091b \u0905\u091a\u094d\u091b\u093e \u0928\u0939\u0940\u0902 \u0932\u0917 \u0930\u0939\u093e \u0939\u0948 \u0936\u0930\u0940\u0930 \u092d\u0940 \u0925\u0915\u093e \u0939\u0941\u0906: Restraint in somatic healthcare: how should it be regulated?",
+      "somatic_anchor": "Drop shoulders away from ears, place one hand on the lower abdomen, and feel the solid floor underneath your feet for 30 seconds.",
+      "pranayama": "Practice 4-4-4-4 Box Breathing or Nadi Shodhana for 3 minutes to restore autonomic balance.",
+      "micro_habit": "Write down one single micro-task within your direct control right now and release long-term rumination."
+    },
+    "severity_level": "Mild to Moderate",
+    "recommended_trataka_mode": "bindu",
+    "requires_immediate_crisis": false,
+    "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13352642/",
+    "source_platform": "NCBI PubMed & Wikipedia Clinical Knowledge",
+    "query_trigger": "\u0915\u0941\u091b \u0905\u091a\u094d\u091b\u093e \u0928\u0939\u0940\u0902 \u0932\u0917 \u0930\u0939\u093e \u0939\u0948 \u0936\u0930\u0940\u0930 \u092d\u0940 \u0925\u0915\u093e \u0939\u0941\u0906"
+  },
+  {
+    "id": "learned_my_partner_broke_up_with_me_an",
+    "name": "Learned: My Partner Broke Up With Me And The Hear Protocol",
+    "category": "Self-Learned Clinical Knowledge",
+    "triguna_balance": "Vata-Rajas Autonomic Regulation",
+    "core_symptoms": [
+      "My partner broke up with me and the heartbreak is physically hurting in my chest"
+    ],
+    "cognitive_distortions": [
+      "Cognitive Overwhelm",
+      "Emotional Reasoning"
+    ],
+    "solutions": {
+      "cbt_reframing": "Acknowledge this experience as a transient physiological signal. Notice thoughts without judgment.\n\n[Wikipedia Context]: Evidence-based psychological constructs and emotional regulation taxonomies.\n[PubMed Literature]: Efficacy of blended digital and face-to-face psychotherapy compared to enhanced psychotherapy for patients with Somatic Symptom Disorder (iSOMA+): study protocol for a multicenter randomized controlled pragmatic trial.: NCBI Clinical Evidence on My partner broke up with me and the hear: Efficacy of blended digital and face-to-face psychotherapy compared to enhanced psychotherapy for patients with Somatic Symptom Disorder (iSOMA+): study protocol for a multicenter randomized controlled pragmatic trial. Restraint in somatic healthcare: how should it be regulated?: NCBI Clinical Evidence on My partner broke up with me and the hear: Restraint in somatic healthcare: how should it be regulated?",
+      "somatic_anchor": "Drop shoulders away from ears, place one hand on the lower abdomen, and feel the solid floor underneath your feet for 30 seconds.",
+      "pranayama": "Practice 4-4-4-4 Box Breathing or Nadi Shodhana for 3 minutes to restore autonomic balance.",
+      "micro_habit": "Write down one single micro-task within your direct control right now and release long-term rumination."
+    },
+    "severity_level": "Mild to Moderate",
+    "recommended_trataka_mode": "bindu",
+    "requires_immediate_crisis": false,
+    "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13352642/",
+    "source_platform": "NCBI PubMed & Wikipedia Clinical Knowledge",
+    "query_trigger": "My partner broke up with me and the heartbreak is physically hurting in my chest"
+  },
+  {
+    "id": "learned_my_toxic_boss_yelled_at_me_and",
+    "name": "Learned: My Toxic Boss Yelled At Me And Gaslighte Protocol",
+    "category": "Self-Learned Clinical Knowledge",
+    "triguna_balance": "Vata-Rajas Autonomic Regulation",
+    "core_symptoms": [
+      "My toxic boss yelled at me and gaslighted my work in front of everyone, I am furious and shaking with rage"
+    ],
+    "cognitive_distortions": [
+      "Cognitive Overwhelm",
+      "Emotional Reasoning"
+    ],
+    "solutions": {
+      "cbt_reframing": "Acknowledge this experience as a transient physiological signal. Notice thoughts without judgment.\n\n[Wikipedia Context]: Evidence-based psychological constructs and emotional regulation taxonomies.\n[PubMed Literature]: Anger management in substance abuse based on cognitive behavioral therapy: an interventional study.: NCBI Clinical Evidence on My toxic boss yelled at me and gaslighte: Anger management in substance abuse based on cognitive behavioral therapy: an interventional study. Cognitive-behavioral group therapy for intermittent explosive disorder: description and preliminary analysis.: NCBI Clinical Evidence on My toxic boss yelled at me and gaslighte: Cognitive-behavioral group therapy for intermittent explosive disorder: description and preliminary analysis.",
+      "somatic_anchor": "Drop shoulders away from ears, place one hand on the lower abdomen, and feel the solid floor underneath your feet for 30 seconds.",
+      "pranayama": "Practice 4-4-4-4 Box Breathing or Nadi Shodhana for 3 minutes to restore autonomic balance.",
+      "micro_habit": "Write down one single micro-task within your direct control right now and release long-term rumination."
+    },
+    "severity_level": "Mild to Moderate",
+    "recommended_trataka_mode": "bindu",
+    "requires_immediate_crisis": false,
+    "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5701421/",
+    "source_platform": "NCBI PubMed & Wikipedia Clinical Knowledge",
+    "query_trigger": "My toxic boss yelled at me and gaslighted my work in front of everyone, I am furious and shaking with rage"
+  },
+  {
+    "id": "learned_i_have_too_many_tasks__sensory",
+    "name": "Learned: I Have Too Many Tasks, Sensory Overload, Protocol",
+    "category": "Self-Learned Clinical Knowledge",
+    "triguna_balance": "Vata-Rajas Autonomic Regulation",
+    "core_symptoms": [
+      "I have too many tasks, sensory overload, racing thoughts, and my mind feels like a hurricane"
+    ],
+    "cognitive_distortions": [
+      "Cognitive Overwhelm",
+      "Emotional Reasoning"
+    ],
+    "solutions": {
+      "cbt_reframing": "Acknowledge this experience as a transient physiological signal. Notice thoughts without judgment.\n\n[Wikipedia Context]: Evidence-based psychological constructs and emotional regulation taxonomies.\n[PubMed Literature]: Homeostatic systems, biocybernetics, and autonomic neuroscience.: NCBI Clinical Evidence on I have too many tasks, sensory overload,: Homeostatic systems, biocybernetics, and autonomic neuroscience. An animal model of panic vulnerability with chronic disinhibition of the dorsomedial/perifornical hypothalamus.: NCBI Clinical Evidence on I have too many tasks, sensory overload,: An animal model of panic vulnerability with chronic disinhibition of the dorsomedial/perifornical hypothalamus.",
+      "somatic_anchor": "Drop shoulders away from ears, place one hand on the lower abdomen, and feel the solid floor underneath your feet for 30 seconds.",
+      "pranayama": "Practice 4-4-4-4 Box Breathing or Nadi Shodhana for 3 minutes to restore autonomic balance.",
+      "micro_habit": "Write down one single micro-task within your direct control right now and release long-term rumination."
+    },
+    "severity_level": "Mild to Moderate",
+    "recommended_trataka_mode": "bindu",
+    "requires_immediate_crisis": false,
+    "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5819891/",
+    "source_platform": "NCBI PubMed & Wikipedia Clinical Knowledge",
+    "query_trigger": "I have too many tasks, sensory overload, racing thoughts, and my mind feels like a hurricane"
+  },
+  {
+    "id": "learned_\u092e_\u091d__\u0905\u092a\u0928__\u092d\u0935_\u0937_\u092f_\u0915__\u0932_\u0915\u0930_\u092c\u0939_\u0924",
+    "name": "Learned: \u092e\u0941\u091d\u0947 \u0905\u092a\u0928\u0947 \u092d\u0935\u093f\u0937\u094d\u092f \u0915\u094b \u0932\u0947\u0915\u0930 \u092c\u0939\u0941\u0924 \u091c\u094d\u092f\u093e\u0926\u093e \u0921\u0930  Protocol",
+    "category": "Self-Learned Clinical Knowledge",
+    "triguna_balance": "Vata-Rajas Autonomic Regulation",
+    "core_symptoms": [
+      "\u092e\u0941\u091d\u0947 \u0905\u092a\u0928\u0947 \u092d\u0935\u093f\u0937\u094d\u092f \u0915\u094b \u0932\u0947\u0915\u0930 \u092c\u0939\u0941\u0924 \u091c\u094d\u092f\u093e\u0926\u093e \u0921\u0930 \u0914\u0930 \u0905\u0938\u092e\u0902\u091c\u0938 \u0932\u0917 \u0930\u0939\u093e \u0939\u0948"
+    ],
+    "cognitive_distortions": [
+      "Cognitive Overwhelm",
+      "Emotional Reasoning"
+    ],
+    "solutions": {
+      "cbt_reframing": "Acknowledge this experience as a transient physiological signal. Notice thoughts without judgment.\n\n[Wikipedia Context]: Evidence-based psychological constructs and emotional regulation taxonomies.\n[PubMed Literature]: Efficacy of blended digital and face-to-face psychotherapy compared to enhanced psychotherapy for patients with Somatic Symptom Disorder (iSOMA+): study protocol for a multicenter randomized controlled pragmatic trial.: NCBI Clinical Evidence on \u092e\u0941\u091d\u0947 \u0905\u092a\u0928\u0947 \u092d\u0935\u093f\u0937\u094d\u092f \u0915\u094b \u0932\u0947\u0915\u0930 \u092c\u0939\u0941\u0924 \u091c\u094d\u092f\u093e\u0926\u093e \u0921\u0930 : Efficacy of blended digital and face-to-face psychotherapy compared to enhanced psychotherapy for patients with Somatic Symptom Disorder (iSOMA+): study protocol for a multicenter randomized controlled pragmatic trial. Restraint in somatic healthcare: how should it be regulated?: NCBI Clinical Evidence on \u092e\u0941\u091d\u0947 \u0905\u092a\u0928\u0947 \u092d\u0935\u093f\u0937\u094d\u092f \u0915\u094b \u0932\u0947\u0915\u0930 \u092c\u0939\u0941\u0924 \u091c\u094d\u092f\u093e\u0926\u093e \u0921\u0930 : Restraint in somatic healthcare: how should it be regulated?",
+      "somatic_anchor": "Drop shoulders away from ears, place one hand on the lower abdomen, and feel the solid floor underneath your feet for 30 seconds.",
+      "pranayama": "Practice 4-4-4-4 Box Breathing or Nadi Shodhana for 3 minutes to restore autonomic balance.",
+      "micro_habit": "Write down one single micro-task within your direct control right now and release long-term rumination."
+    },
+    "severity_level": "Mild to Moderate",
+    "recommended_trataka_mode": "bindu",
+    "requires_immediate_crisis": false,
+    "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13352642/",
+    "source_platform": "NCBI PubMed & Wikipedia Clinical Knowledge",
+    "query_trigger": "\u092e\u0941\u091d\u0947 \u0905\u092a\u0928\u0947 \u092d\u0935\u093f\u0937\u094d\u092f \u0915\u094b \u0932\u0947\u0915\u0930 \u092c\u0939\u0941\u0924 \u091c\u094d\u092f\u093e\u0926\u093e \u0921\u0930 \u0914\u0930 \u0905\u0938\u092e\u0902\u091c\u0938 \u0932\u0917 \u0930\u0939\u093e \u0939\u0948"
+  },
+  {
+    "id": "learned_i_feel_panic_and_my_heart_is_r",
+    "name": "Learned: I Feel Panic And My Heart Is Racing Protocol",
+    "category": "Self-Learned Clinical Knowledge",
+    "triguna_balance": "Vata-Rajas Autonomic Regulation",
+    "core_symptoms": [
+      "I feel panic and my heart is racing"
+    ],
+    "cognitive_distortions": [
+      "Cognitive Overwhelm",
+      "Emotional Reasoning"
+    ],
+    "solutions": {
+      "cbt_reframing": "Acknowledge this experience as a transient physiological signal. Notice thoughts without judgment.\n\n[Wikipedia Context]: Evidence-based psychological constructs and emotional regulation taxonomies.\n[PubMed Literature]: Homeostatic systems, biocybernetics, and autonomic neuroscience.: NCBI Clinical Evidence on I feel panic and my heart is racing: Homeostatic systems, biocybernetics, and autonomic neuroscience. An animal model of panic vulnerability with chronic disinhibition of the dorsomedial/perifornical hypothalamus.: NCBI Clinical Evidence on I feel panic and my heart is racing: An animal model of panic vulnerability with chronic disinhibition of the dorsomedial/perifornical hypothalamus.",
+      "somatic_anchor": "Drop shoulders away from ears, place one hand on the lower abdomen, and feel the solid floor underneath your feet for 30 seconds.",
+      "pranayama": "Practice 4-4-4-4 Box Breathing or Nadi Shodhana for 3 minutes to restore autonomic balance.",
+      "micro_habit": "Write down one single micro-task within your direct control right now and release long-term rumination."
+    },
+    "severity_level": "Mild to Moderate",
+    "recommended_trataka_mode": "bindu",
+    "requires_immediate_crisis": false,
+    "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5819891/",
+    "source_platform": "NCBI PubMed & Wikipedia Clinical Knowledge",
+    "query_trigger": "I feel panic and my heart is racing"
   }
 ]

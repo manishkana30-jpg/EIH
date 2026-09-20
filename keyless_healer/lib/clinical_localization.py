@@ -268,6 +268,159 @@ GENERAL_LOCALIZED_ADVICE: Dict[str, Dict[str, str]] = {
     },
 }
 
+def build_diagnostic_suffering_assessment(
+    user_message: str = "",
+    emotion_hint: Optional[str] = None,
+    condition_name: Optional[str] = None,
+    lang_code: Optional[str] = "en"
+) -> dict[str, Any]:
+    norm = normalize_language_code(lang_code)
+    text = (user_message or "").strip().lower()
+
+    distress_score = 7
+    if any(w in text for w in ["terrified", "panic", "heartbreak", "cannot bear", "furious", "ruined", "dying"]):
+        distress_score = 9
+    elif any(w in text for w in ["anxious", "depressed", "exhausted", "shame", "angry", "failed"]):
+        distress_score = 7
+    elif any(w in text for w in ["stressed", "worried", "confused", "tired"]):
+        distress_score = 5
+    else:
+        distress_score = 4
+
+    is_dorsal = any(w in text for w in ["numb", "hopeless", "empty", "exhaust", "give up", "paralyz"])
+    is_sympathetic = not is_dorsal
+
+    if any(w in text for w in ["sad", "grief", "heartbreak", "broke up", "cry"]):
+        matched_key = "sadness"
+    elif any(w in text for w in ["ang", "rage", "yelled", "furious", "boss"]):
+        matched_key = "anger"
+    elif any(w in text for w in ["panic", "fear", "terrified"]):
+        matched_key = "fear"
+    elif any(w in text for w in ["sham", "guilt", "fake", "imposter", "failure", "hate myself"]):
+        matched_key = "shame"
+    elif any(w in text for w in ["dilemma", "confus", "cannot decide", "can't decide"]):
+        matched_key = "confusion"
+    elif any(w in text for w in ["overwhelm", "burnout", "racing thoughts", "hurricane", "chaos"]):
+        matched_key = "overwhelm"
+    else:
+        matched_key = "anxiety"
+
+    emotion_names = {
+        "anxiety": {
+            "en": "Anticipatory Anxiety & Fear of Negative Outcomes",
+            "hi": "भविष्य की अनहोनी का भय एवं अत्यधिक चिंता",
+            "es": "Ansiedad Anticipatoria y Temor al Futuro",
+            "fr": "Anxiété Anticipatoire et Peur de l'Échec",
+            "de": "Antizipatorische Angst & Sorge vor Ungewissheit"
+        },
+        "sadness": {
+            "en": "Acute Sadness, Grief & Emotional Heaviness",
+            "hi": "गहरा विषाद, शोक एवं भावनात्मक भारीपन",
+            "es": "Tristeza Aguda, Duelo y Pesadez Emocional",
+            "fr": "Tristesse Aiguë, Deuil et Accablement",
+            "de": "Akute Traurigkeit, Trauer & Seelischer Schmerz"
+        },
+        "anger": {
+            "en": "Frustration, Interpersonal Betrayal & Anger Cascade",
+            "hi": "तीव्र रोष, विश्वासघात की पीड़ा एवं क्रोध",
+            "es": "Frustración, Ira y Sentimiento de Injusticia",
+            "fr": "Colère Vive, Frustration et Sentiment de Trahison",
+            "de": "Wut, Frustration & Empörung über Kränkungen"
+        },
+        "fear": {
+            "en": "Panic, Threat Alarm & Autonomic Dysregulation",
+            "hi": "अचानक घबराहट, पैनिक एवं भय का तीव्र वेग",
+            "es": "Pánico, Alarma de Amenaza y Desregulación",
+            "fr": "Panique Aiguë, Alerte de Danger et Angoisse",
+            "de": "Panik, Bedrohungsgefühl & Vegetative Übererregung"
+        },
+        "shame": {
+            "en": "Core Shame, Self-Blame & Imposter Syndrome",
+            "hi": "आत्म-संदेह, हीनभावना एवं आत्म-निंदा",
+            "es": "Culpa Tóxica, Vergüenza y Síndrome del Impostor",
+            "fr": "Honte Profonde, Autocritique et Syndrome de l'Imposteur",
+            "de": "Toxische Scham, Selbstzweifel & Hochstapler-Syndrom"
+        },
+        "confusion": {
+            "en": "Existential Dilemma, Decision Paralysis & Mental Fog",
+            "hi": "धर्मसंकट, निर्णय न ले पाना एवं मानसिक असमंजस",
+            "es": "Dilema Existencial, Parálisis por Análisis y Confusión",
+            "fr": "Dilemme Existantiel, Paralysie Décisionnelle et Flou Mental",
+            "de": "Existenzielles Dilemma, Entscheidungslähmung & Verwirrung"
+        },
+        "overwhelm": {
+            "en": "Cognitive Overload, Sensory Chaos & Burnout Exhaustion",
+            "hi": "मानसिक बिखराव, संवेदी अधिभार एवं अत्यधिक मानसिक थकान",
+            "es": "Sobrecarga Cognitiva, Saturación Mental y Agotamiento",
+            "fr": "Surcharge Mentale, Épuisement et Dispersion Cognitive",
+            "de": "Mentale Überlastung, Reizüberflutung & Erschöpfung"
+        },
+    }
+
+    emotion_name = emotion_names.get(matched_key, {}).get(norm, condition_name or "Emotional Strain")
+
+    if norm == "hi":
+        severity = "अत्यधिक तीव्र कष्ट (Severe / Acute Dysregulation)" if distress_score >= 8 else ("मध्यम से गंभीर तनाव (Moderate / High Strain)" if distress_score >= 6 else "हल्का से मध्यम तनाव")
+        nervous = "सिम्पैथेटिक तंत्रिका तंत्र की अति-सक्रियता (लड़ो या भागो / Fight-or-Flight)" if is_sympathetic else "डॉर्सल वेगल शटडाउन (भावशून्यता व अत्यधिक थकान)"
+        bodily = "सीने में जकड़न, तेज़ सांसें और आंतरिक तनाव" if is_sympathetic else "शरीर में भारीपन, सुन्नता और ऊर्जा का अभाव"
+        summary = "आप इस समय जिस मानसिक वेदना, अनिश्चितता और भारीपन से जूझ रहे हैं, आपका मन और शरीर दोनों उससे अत्यधिक थके हुए हैं।"
+        md = f"**आपकी स्थिति का सारांश एवं मानसिक पीड़ा का मूल्यांकन:**\n• **पहचाना गया मनोभाव एवं मुख्य संघर्ष:** {emotion_name}\n• **पीड़ा का स्तर एवं तंत्रिका तंत्र स्थिति:** {severity} (कष्ट सूचकांक: {distress_score}/10) | {nervous}\n• **शारीरिक संवेदनाएं व आंतरिक तनाव:** {bodily}\n• **आपकी स्थिति का संवेदनशील सारांश:** {summary}"
+    else:
+        severity = "Severe / Acute High Distress" if distress_score >= 8 else ("Moderate to Elevated Distress" if distress_score >= 6 else "Mild to Moderate Strain")
+        nervous = "Sympathetic Nervous System Hyperarousal (Fight-or-Flight)" if is_sympathetic else "Dorsal Vagal Shutdown (Freeze & Depletion)"
+        bodily = "Chest tightness, rapid breathing, and visceral tension" if is_sympathetic else "Heavy limbs, brain fog, and energetic depletion"
+        summary = "You are carrying a heavy burden of acute emotional strain and internal turbulence that is placing your body and mind under exhaustion."
+        md = f"**SUMMARY OF YOUR INPUT & EMOTIONAL SUFFERING ASSESSMENT (स्थिति व कष्ट का विश्लेषण):**\n• **Identified Emotional State:** {emotion_name}\n• **Suffering Severity & Autonomic State:** {severity} (Distress Index: {distress_score}/10) | {nervous}\n• **Interoceptive Bodily Burden:** {bodily}\n• **Empathic Summary of Your Experience:** {summary}"
+
+    return {
+        "emotion_name": emotion_name,
+        "distress_score": distress_score,
+        "markdown": md,
+    }
+
+
+def build_tri_pillar_synergy_resolution(
+    lang_code: Optional[str] = "en",
+    tratak_name: Optional[str] = None,
+    gita_theme: Optional[str] = None
+) -> str:
+    norm = normalize_language_code(lang_code)
+    t_name = tratak_name or "Tratak Gazing"
+
+    if norm == "hi":
+        return (
+            f"**4. एकीकृत त्रिवेणी उपचार योजना (गीता + CBT + त्राटक मिलकर आपकी पीड़ा कैसे दूर करेंगे):**\n"
+            f"यह तीनों दिव्य एवं वैज्ञानिक पद्धतियाँ एक साथ मिलकर आपकी व्यथा का संपूर्ण समाधान इस प्रकार करती हैं:\n\n"
+            f"1. **आत्मिक व दार्शनिक संबल (श्रीमद्भगवद्गीता):**\n"
+            f"   गीता का अमर उपदेश आपके मन को काल्पनिक भविष्य के डर और परिणामों की चिंता से मुक्त कर 'साक्षी भाव' में स्थिर करता है। जब आप परिणाम की आसक्ति छोड़कर केवल अपने कर्तव्य पर ध्यान केंद्रित करते हैं, तो असफलता का भय और अनिर्णय की पीड़ा स्वतः विलीन हो जाती है।\n\n"
+            f"2. **संज्ञानात्मक पुनर्विचार एवं शारीरिक संतुलन (CBT व सोमैटिक विज्ञान):**\n"
+            f"   जहाँ गीता आत्मिक चेतना को ऊंचा उठाती है, वहीं CBT आपके मन में उठने वाले नकारात्मक विचारों (जैसे अनहोनी की आशंका या आत्म-दोष) को तार्किक रूप से ठीक करता है। इसके साथ ही दिया गया प्राणायाम और सोमैटिक ग्राउंडिंग आपके तंत्रिका तंत्र को तुरंत शांत करके शरीर में सुरक्षा और स्थिरता का संचार करते हैं।\n\n"
+            f"3. **न्यूरो-ऑक्युलर दृष्टि स्थिरीकरण (त्राटक ध्यान):**\n"
+            f"   त्राटक इन दोनों उपायों को जैविक आधार प्रदान करता है। जब मन अशांत होता है, तो आँखें तेजी से फड़कती और भटकती हैं, जिससे मस्तिष्क का तनाव केंद्र (एमीग्डाला) भड़क उठता है। {t_name} द्वारा दृष्टि को एक बिंदु पर टिकाने से आँखों की यह चंचलता रुक जाती है, जिससे विचारों का तूफ़ान तुरंत थम जाता है।\n\n"
+            f"4. **आपका समन्वित दैनिक अभ्यास क्रम:**\n"
+            f"   • **पहला चरण (दृष्टि स्थिरीकरण):** 3 से 5 मिनट {t_name} का अभ्यास करें ताकि मस्तिष्क के तनाव केंद्र को शांति मिले।\n"
+            f"   • **दूसरा चरण (प्राणायाम व विश्राम):** निर्धारित प्राणायाम करें जिससे हृदय गति और सीने का खिंचाव सामान्य हो सके।\n"
+            f"   • **तीसरा चरण (सकारात्मक विचार):** CBT द्वारा सुझाए गए नए विचार को मन में दोहराकर नकारात्मक सोच को बदलें।\n"
+            f"   • **चौथा चरण (सच्चा कर्तव्य):** गीता के संदेश के अनुसार परिणाम की चिंता छोड़ केवल अपने वर्तमान कर्तव्य में पूरी निष्ठा से लग जाएं।"
+        )
+    else:
+        return (
+            f"**4. TRI-PILLAR SYNERGISTIC RESOLUTION (How Gita + CBT + Tratak Work in Combination to Heal You):**\n"
+            f"Here is how these three disciplines operate in unified synergy to permanently resolve your suffering:\n\n"
+            f"1. **Spiritual & Existential Anchor (Bhagavad Gita):**\n"
+            f"   The Gita shifts your conscious awareness from outcome obsession and catastrophic helplessness into *Sakshi Bhava* (the calm, detached witness). By releasing attachment to uncertain futures, your mind breaks free from mental paralysis and steps into present-moment purposeful action (*Nishkama Karma*).\n\n"
+            f"2. **Cognitive & Somatic Restructuring (CBT & Polyvagal Science):**\n"
+            f"   While the Gita elevates your spiritual perspective, CBT systematically dismantles the cognitive distortions (such as catastrophizing, mind-reading, or toxic self-blame) keeping you trapped. Simultaneously, the somatic anchor and pranayama activate your parasympathetic vagal brake, physically clearing adrenaline and signaling safety to your heart.\n\n"
+            f"3. **Neuro-Ocular Stabilization (Tratak Gazing Meditation):**\n"
+            f"   Tratak provides the physiological foundation for both Gita and CBT. Involuntary micro-saccadic eye movements directly stimulate the brain's alarm center (the amygdala). By fixing your gaze on a single point ({t_name}), Tratak mechanically stops ocular flutter, locking your autonomic nervous system into stability and clearing mental static.\n\n"
+            f"4. **Your Integrated Recovery Sequence:**\n"
+            f"   • **Phase 1 (Stabilize Brainstem):** Practice {t_name} for 3–5 minutes to arrest rapid eye saccades and de-escalate amygdala hyperarousal.\n"
+            f"   • **Phase 2 (Regulate Physiology):** Perform your prescribed somatic breathwork to release visceral tension from your chest and gut.\n"
+            f"   • **Phase 3 (Reframe the Mind):** Internalize the CBT cognitive reframe to replace automatic catastrophic thoughts with objective truth.\n"
+            f"   • **Phase 4 (Soul-Centered Action):** Execute the Gita's actionable guidance immediately, focusing entirely on your present duty without fear of results."
+        )
+
+
 def format_human_therapeutic_message(
     cond_id: str,
     lang_code: Optional[str] = "en",
@@ -288,16 +441,21 @@ def format_human_therapeutic_message(
     if not loc:
         return GENERAL_LOCALIZED_ADVICE.get(norm, GENERAL_LOCALIZED_ADVICE["en"])["default"]
 
-    if norm == "hi":
-        return f"{loc['validation']} {loc['cbt_reframing']} अपने तंत्रिका तंत्र को स्थिर करने के लिए: {loc['somatic_anchor']} इसके साथ ही {loc['pranayama']}"
-    elif norm == "es":
-        return f"{loc['validation']} {loc['cbt_reframing']} Para regular tu sistema nervioso en este instante: practica {loc['somatic_anchor']} y {loc['pranayama']}"
-    elif norm == "fr":
-        return f"{loc['validation']} {loc['cbt_reframing']} Pour apaiser votre système nerveux dès maintenant : appliquez {loc['somatic_anchor']} ainsi que {loc['pranayama']}"
-    elif norm == "de":
-        return f"{loc['validation']} {loc['cbt_reframing']} Um Ihr Nervensystem jetzt zu beruhigen: Nutzen Sie {loc['somatic_anchor']} und {loc['pranayama']}"
+    diag_data = build_diagnostic_suffering_assessment(user_message, cond_id, None, norm)
+    synergy = build_tri_pillar_synergy_resolution(norm, "Tratak")
 
-    return f"{loc['validation']} {loc['cbt_reframing']} To steady your autonomic nervous system right now: engage in {loc['somatic_anchor']} alongside {loc['pranayama']}"
+    if norm == "hi":
+        cbt_part = f"{loc['validation']} {loc['cbt_reframing']} अपने तंत्रिका तंत्र को स्थिर करने के लिए: {loc['somatic_anchor']} इसके साथ ही {loc['pranayama']}"
+    elif norm == "es":
+        cbt_part = f"{loc['validation']} {loc['cbt_reframing']} Para regular tu sistema nervioso en este instante: practica {loc['somatic_anchor']} y {loc['pranayama']}"
+    elif norm == "fr":
+        cbt_part = f"{loc['validation']} {loc['cbt_reframing']} Pour apaiser votre système nerveux dès maintenant : appliquez {loc['somatic_anchor']} ainsi que {loc['pranayama']}"
+    elif norm == "de":
+        cbt_part = f"{loc['validation']} {loc['cbt_reframing']} Um Ihr Nervensystem jetzt zu beruhigen: Nutzen Sie {loc['somatic_anchor']} und {loc['pranayama']}"
+    else:
+        cbt_part = f"{loc['validation']} {loc['cbt_reframing']} To steady your autonomic nervous system right now: engage in {loc['somatic_anchor']} alongside {loc['pranayama']}"
+
+    return f"{diag_data['markdown']}\n\n**2. CLINICAL COGNITIVE NEUROSCIENCE (CBT):**\n{cbt_part}\n\n{synergy}"
 
 
 # =============================================================================

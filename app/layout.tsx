@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from 'next';
 import { Inter, Outfit } from 'next/font/google';
 import Link from 'next/link';
 import { Brain } from 'lucide-react';
-import { GpsCrisisBanner } from '@/components/crisis/GpsCrisisBanner';
 import { GlobalFooter } from '@/components/navigation/GlobalFooter';
 import './globals.css';
 
@@ -96,7 +95,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`dark ${inter.variable} ${outfit.variable}`}>
+    <html lang="en" className={`dark ${inter.variable} ${outfit.variable} h-full`}>
       <head>
         <link rel="manifest" href="/manifest.webmanifest" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -107,12 +106,9 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://eutils.ncbi.nlm.nih.gov" />
         <link rel="dns-prefetch" href="https://en.wikipedia.org" />
       </head>
-      <body className="bg-[#09090b] text-[#ecf3ee] min-h-screen flex flex-col antialiased selection:bg-amber-500/30 selection:text-amber-100">
-        {/* Dynamic GPS Location Crisis Safety Banner */}
-        <GpsCrisisBanner />
-
-        {/* Global Sticky Sanctuary Header */}
-        <header className="sticky top-[31px] z-40 bg-[#09090b]/85 backdrop-blur-xl border-b border-zinc-800/80 px-4 sm:px-6 py-2.5 transition-all">
+      <body className="bg-[#09090b] text-[#ecf3ee] h-full h-[100dvh] flex flex-col antialiased selection:bg-amber-500/30 selection:text-amber-100 overflow-hidden">
+        {/* Global Sticky Header */}
+        <header className="sticky top-0 z-40 bg-[#09090b]/85 backdrop-blur-xl border-b border-zinc-800/80 px-4 sm:px-6 py-2.5 transition-all shrink-0">
           <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
             <Link href="/" className="flex items-center gap-2.5 group">
               <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-500/20 to-emerald-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 font-serif font-bold text-sm shadow-[0_0_15px_rgba(245,158,11,0.15)] group-hover:border-amber-400 transition-colors">
@@ -123,13 +119,12 @@ export default function RootLayout({
                   Emotional Intelligence Healer
                 </span>
                 <span className="text-[10px] text-zinc-400 tracking-wider uppercase font-sans">
-                  Neuro-Vedantic Mind Sanctuary
+                  Neuro-Vedantic Cognitive Science
                 </span>
               </div>
             </Link>
 
-            <nav aria-label="Main Sanctuary Navigation" className="hidden md:flex items-center gap-6 text-xs text-zinc-300 font-medium">
-              <Link href="/" className="hover:text-amber-400 transition-colors">Sanctuary</Link>
+            <nav aria-label="Main Navigation" className="hidden md:flex items-center gap-6 text-xs text-zinc-300 font-medium">
               <Link href="/library" className="hover:text-amber-400 transition-colors">Clinical Library</Link>
               <Link href="/clinical-guide" className="hover:text-amber-400 transition-colors">Clinical Evidence</Link>
               <Link href="/about" className="hover:text-amber-400 transition-colors">Methodology</Link>
@@ -149,7 +144,7 @@ export default function RootLayout({
         </header>
 
         {/* Main Content Area */}
-        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+        <div className="flex-1 flex flex-col min-h-0 overflow-y-auto">
           {children}
         </div>
 

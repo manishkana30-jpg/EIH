@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import PratibimbCamera from './PratibimbCamera';
 import { browserSpeechController } from '@/lib/audio/browser-speech';
+import { normalizeTratakaMode } from '@/lib/knowledge/trataka-recommendations';
 
 export type TratakaModeId = 'bindu' | 'flame' | 'murti' | 'pratibimb' | 'shoonya';
 
@@ -257,8 +258,9 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
 
     if (justOpened) {
       if (recommendedMode) {
-        setTratakaMode(recommendedMode);
-        if (recommendedMode === 'pratibimb') {
+        const canonicalMode = normalizeTratakaMode(recommendedMode);
+        setTratakaMode(canonicalMode); // setTratakaMode(recommendedMode)
+        if (canonicalMode === 'pratibimb') {
           setElapsedSec(60);
           lastPlayedStageRef.current = 2;
         } else {
@@ -287,7 +289,13 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
     activeCbtReframe ||
     'You are not your racing thoughts; you are the calm, witnessing awareness behind them. Notice how the mind naturally settles into quiet power when anchored in single-pointed focus.';
 
-  const activeModeConfig = TRATAKA_MODES.find((m) => m.id === tratakaMode) || TRATAKA_MODES[0];
+  const activeModeConfig =
+    TRATAKA_MODES.find(
+      (m) =>
+        m.id === tratakaMode ||
+        (m.id === 'flame' && (tratakaMode as any) === 'jyoti') ||
+        (m.id === 'murti' && (tratakaMode as any) === 'mandala')
+    ) || TRATAKA_MODES[0];
 
   // Determine current stage from elapsed seconds
   const currentStageConfig =
@@ -488,36 +496,40 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
             </p>
           </div>
 
-          {recommendedMode && (
-            <div className="mb-6 max-w-xl mx-auto w-full p-4 rounded-2xl bg-amber-500/10 border border-amber-400/30 flex items-center justify-between gap-4 backdrop-blur-md">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300 shrink-0">
-                  <Sparkles className="w-4 h-4" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-white">Prescribed Archetype:</span>
-                    <span className="text-xs font-bold text-amber-400 font-mono">
-                      {TRATAKA_MODES.find((m) => m.id === recommendedMode)?.name || recommendedMode}
-                    </span>
+          {recommendedMode && (() => {
+            const canonicalRec = normalizeTratakaMode(recommendedMode);
+            const recConfig = TRATAKA_MODES.find((m) => m.id === canonicalRec) || TRATAKA_MODES[0];
+            return (
+              <div className="mb-6 max-w-xl mx-auto w-full p-4 rounded-2xl bg-amber-500/10 border border-amber-400/30 flex items-center justify-between gap-4 backdrop-blur-md">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300 shrink-0">
+                    <Sparkles className="w-4 h-4" />
                   </div>
-                  <p className="text-[11px] text-slate-300">
-                    Synchronized with your active emotional & autonomic state
-                  </p>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-white">Prescribed Archetype:</span>
+                      <span className="text-xs font-bold text-amber-400 font-mono">
+                        {recConfig.name}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-300">
+                      Synchronized with your active emotional & autonomic state
+                    </p>
+                  </div>
                 </div>
+                <button
+                  onClick={() => handleSelectMode(canonicalRec)}
+                  className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition-colors shrink-0 cursor-pointer shadow-md"
+                >
+                  Launch Prescribed
+                </button>
               </div>
-              <button
-                onClick={() => handleSelectMode(recommendedMode)}
-                className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition-colors shrink-0 cursor-pointer shadow-md"
-              >
-                Launch Prescribed
-              </button>
-            </div>
-          )}
+            );
+          })()}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
             {TRATAKA_MODES.map((mode) => {
-              const isPrescribed = recommendedMode === mode.id;
+              const isPrescribed = normalizeTratakaMode(recommendedMode) === mode.id;
               return (
                 <button
                   key={mode.id}
@@ -893,7 +905,7 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
               )}
 
               {/* 2. FLAME (JYOTI): Pure CSS Flickering Flame */}
-              {tratakaMode === 'flame' && (
+              {(tratakaMode === 'flame' || (tratakaMode as any) === 'jyoti') && (
                 <div className="relative flex flex-col items-center justify-center">
                   {/* Ambient Tejas radiant heat aura */}
                   <div className="absolute w-64 h-64 rounded-full bg-orange-500/15 blur-3xl pointer-events-none" />

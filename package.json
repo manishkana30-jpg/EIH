@@ -7,9 +7,9 @@
     "node": ">=18.17.0"
   },
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3001",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p 3001",
     "lint": "next lint",
     "test": "node --no-warnings tests/run-all-tests.js",
     "clean": "node -e \"const fs=require('fs');['.next','.ruff_cache','tsconfig.tsbuildinfo','.tmp.driveupload','.tmp.drivedownload','scratch'].forEach(p=>{if(fs.existsSync(p)){fs.rmSync(p,{recursive:true,force:true});console.log('Cleaned '+p);}});\"",

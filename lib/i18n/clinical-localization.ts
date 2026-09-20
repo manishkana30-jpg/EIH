@@ -10,6 +10,7 @@
 import { findGitaWisdom, formatGitaShlokaBlock } from "../knowledge/gita-library.ts";
 import { resolveTratakaPrescription, TRATAKA_PRESCRIPTIONS, type TratakaModeId } from "../knowledge/trataka-recommendations.ts";
 import { getConditionById } from "../knowledge/psychology-library-rag.ts";
+import { emotionClassifier } from "../knowledge/emotion-classifier.ts";
 
 export interface LocalizedIntervention {
   conditionName: string;
@@ -1610,6 +1611,384 @@ export function getLocalizedTratakaItem(tratakItem: any, langCode?: string): Loc
   };
 }
 
+export interface SufferingAssessmentData {
+  emotionId: string;
+  emotionName: string;
+  severityLabel: string;
+  distressScore: number;
+  nervousSystem: string;
+  bodilyMarkers: string;
+  inputSummary: string;
+  markdown: string;
+}
+
+/**
+ * Assesses the user's emotion, suffering severity level (1-10), autonomic nervous
+ * system dysregulation, and generates a compassionate, tailored input summary.
+ */
+export function buildDiagnosticSufferingAssessment(
+  userMessage?: string,
+  emotionHint?: string,
+  conditionName?: string,
+  languageCode?: string
+): SufferingAssessmentData {
+  const norm = normalizeLanguageCode(languageCode);
+  const text = (userMessage || '').trim();
+  const lower = text.toLowerCase();
+  const diag = emotionClassifier.classifyText(text);
+  const activeEmotionId = emotionHint || diag.dimensionId || 'anxiety';
+
+  // Calculate distress score (1-10) based on valence, arousal and intensity
+  let distressScore = 7;
+  if (
+    diag.intensity === 'peak' ||
+    diag.coreAffect.valence <= -0.8 ||
+    lower.includes('terrified') ||
+    lower.includes('panic') ||
+    lower.includes('heartbreak') ||
+    lower.includes('cannot bear') ||
+    lower.includes('furious')
+  ) {
+    distressScore = 8 + (Math.abs(diag.coreAffect.valence) > 0.88 || diag.coreAffect.arousal > 0.8 ? 1 : 0);
+  } else if (diag.coreAffect.valence <= -0.55 || diag.coreAffect.arousal >= 0.65) {
+    distressScore = 7;
+  } else if (diag.coreAffect.valence <= -0.25) {
+    distressScore = 5;
+  } else {
+    distressScore = 4;
+  }
+
+  // Determine nervous system state
+  const isDorsal =
+    diag.polyvagalState?.toLowerCase().includes('dorsal') ||
+    diag.coreAffect.arousal < -0.3 ||
+    lower.includes('numb') ||
+    lower.includes('hopeless') ||
+    lower.includes('empty') ||
+    lower.includes('exhaust');
+  const isSympathetic = !isDorsal;
+
+  // Emotion labels
+  const emotionLabels: Record<string, Record<SupportedLocaleKey, string>> = {
+    anxiety: {
+      en: "Anticipatory Anxiety & Fear of Negative Outcomes",
+      hi: "भविष्य की अनहोनी का भय एवं अत्यधिक चिंता",
+      es: "Ansiedad Anticipatoria y Temor al Futuro",
+      fr: "Anxiété Anticipatoire et Peur de l'Échec",
+      de: "Antizipatorische Angst & Sorge vor Ungewissheit"
+    },
+    sadness: {
+      en: "Acute Sadness, Grief & Emotional Heaviness",
+      hi: "गहरा विषाद, शोक एवं भावनात्मक भारीपन",
+      es: "Tristeza Aguda, Duelo y Pesadez Emocional",
+      fr: "Tristesse Aiguë, Deuil et Accablement",
+      de: "Akute Traurigkeit, Trauer & Seelischer Schmerz"
+    },
+    anger: {
+      en: "Frustration, Interpersonal Betrayal & Anger Cascade",
+      hi: "तीव्र रोष, विश्वासघात की पीड़ा एवं क्रोध",
+      es: "Frustración, Ira y Sentimiento de Injusticia",
+      fr: "Colère Vive, Frustration et Sentiment de Trahison",
+      de: "Wut, Frustration & Empörung über Kränkungen"
+    },
+    fear: {
+      en: "Panic, Threat Alarm & Autonomic Dysregulation",
+      hi: "अचानक घबराहट, पैनिक एवं भय का तीव्र वेग",
+      es: "Pánico, Alarma de Amenaza y Desregulación",
+      fr: "Panique Aiguë, Alerte de Danger et Angoisse",
+      de: "Panik, Bedrohungsgefühl & Vegetative Übererregung"
+    },
+    shame: {
+      en: "Core Shame, Self-Blame & Imposter Syndrome",
+      hi: "आत्म-संदेह, हीनभावना एवं आत्म-निंदा",
+      es: "Culpa Tóxica, Vergüenza y Síndrome del Impostor",
+      fr: "Honte Profonde, Autocritique et Syndrome de l'Imposteur",
+      de: "Toxische Scham, Selbstzweifel & Hochstapler-Syndrom"
+    },
+    confusion: {
+      en: "Existential Dilemma, Decision Paralysis & Mental Fog",
+      hi: "धर्मसंकट, निर्णय न ले पाना एवं मानसिक असमंजस",
+      es: "Dilema Existencial, Parálisis por Análisis y Confusión",
+      fr: "Dilemme Existantiel, Paralysie Décisionnelle et Flou Mental",
+      de: "Existenzielles Dilemma, Entscheidungslähmung & Verwirrung"
+    },
+    overwhelm: {
+      en: "Cognitive Overload, Sensory Chaos & Burnout Exhaustion",
+      hi: "मानसिक बिखराव, संवेदी अधिभार एवं अत्यधिक मानसिक थकान",
+      es: "Sobrecarga Cognitiva, Saturación Mental y Agotamiento",
+      fr: "Surcharge Mentale, Épuisement et Dispersion Cognitive",
+      de: "Mentale Überlastung, Reizüberflutung & Erschöpfung"
+    },
+  };
+
+  let matchedKey = 'anxiety';
+  if (activeEmotionId.includes('sad') || activeEmotionId.includes('grief') || lower.includes('heartbreak') || lower.includes('broke up')) matchedKey = 'sadness';
+  else if (activeEmotionId.includes('ang') || activeEmotionId.includes('rage') || lower.includes('yelled') || lower.includes('furious')) matchedKey = 'anger';
+  else if (activeEmotionId.includes('panic') || activeEmotionId.includes('fear') || lower.includes('terrified')) matchedKey = 'fear';
+  else if (activeEmotionId.includes('sham') || activeEmotionId.includes('guilt') || lower.includes('fake') || lower.includes('imposter') || lower.includes('failure')) matchedKey = 'shame';
+  else if (activeEmotionId.includes('dilemma') || activeEmotionId.includes('confus') || lower.includes('cannot decide') || lower.includes("can't decide")) matchedKey = 'confusion';
+  else if (activeEmotionId.includes('overwhelm') || activeEmotionId.includes('burnout') || lower.includes('racing thoughts') || lower.includes('hurricane')) matchedKey = 'overwhelm';
+
+  const emotionName = emotionLabels[matchedKey]?.[norm] || (conditionName || diag.dimensionName);
+
+  // Severity Label
+  let severityLabel = "";
+  if (norm === 'hi') {
+    severityLabel = distressScore >= 8 ? "अत्यधिक तीव्र कष्ट (Severe / Acute Dysregulation)" : (distressScore >= 6 ? "मध्यम से गंभीर मानसिक तनाव (Moderate / High Strain)" : "हल्का से मध्यम तनाव (Mild / Moderate Tension)");
+  } else if (norm === 'es') {
+    severityLabel = distressScore >= 8 ? "Détresse Grave / Aguda (Severe Dysregulation)" : (distressScore >= 6 ? "Tensión Moderada a Alta (Moderate Strain)" : "Malestar Leve a Moderado (Mild Strain)");
+  } else if (norm === 'fr') {
+    severityLabel = distressScore >= 8 ? "Détresse Sévère / Aiguë" : (distressScore >= 6 ? "Tension Modérée à Élevée" : "Tension Légère à Modérée");
+  } else if (norm === 'de') {
+    severityLabel = distressScore >= 8 ? "Schwere / Akute Belastung" : (distressScore >= 6 ? "Moderate bis Hohe Belastung" : "Leichte bis Moderate Anspannung");
+  } else {
+    severityLabel = distressScore >= 8 ? "Severe / Acute High Distress" : (distressScore >= 6 ? "Moderate to Elevated Distress" : "Mild to Moderate Strain");
+  }
+
+  // Nervous System State
+  let nervousSystem = "";
+  if (norm === 'hi') {
+    nervousSystem = isSympathetic
+      ? "सिम्पैथेटिक तंत्रिका तंत्र की अति-सक्रियता (लड़ो या भागो / Fight-or-Flight Hyperarousal)"
+      : "डॉर्सल वेगल शटडाउन (भावशून्यता, अत्यधिक थकान व अवसाद / Dorsal Vagal Freeze)";
+  } else if (norm === 'es') {
+    nervousSystem = isSympathetic
+      ? "Hiperactivación Simpática (Lucha o Huida / Fight-or-Flight)"
+      : "Inhibición Vagal Dorsal (Colapso / Fatiga Profunda)";
+  } else if (norm === 'fr') {
+    nervousSystem = isSympathetic
+      ? "Hyperactivation Sympathique (Fuite ou Combat)"
+      : "Inhibition Vagale Dorsale (Figement / Épuisement)";
+  } else if (norm === 'de') {
+    nervousSystem = isSympathetic
+      ? "Sympathische Übererregung (Kampf- oder Flucht-Modus)"
+      : "Dorsal-Vagaler Schockzustand (Erstarrung / Erschöpfung)";
+  } else {
+    nervousSystem = isSympathetic
+      ? "Sympathetic Nervous System Hyperarousal (Fight-or-Flight Overdrive)"
+      : "Dorsal Vagal Shutdown (Hypoarousal / Depletion & Freeze)";
+  }
+
+  // Bodily Markers
+  let bodilyMarkers = "";
+  if (norm === 'hi') {
+    bodilyMarkers = isSympathetic
+      ? "सीने में जकड़न, तेज़ सांसें, गले में भारीपन और मांसपेशियों में खिंचाव"
+      : "शरीर में भारीपन, ऊर्जा का पूर्ण अभाव, सिर में धुंधलापन और सुन्नता";
+  } else if (norm === 'es') {
+    bodilyMarkers = isSympathetic
+      ? "Opresión torácica, respiración acelerada y tensión muscular"
+      : "Pesadez corporal, letargo profundo y fatiga neurovegetativa";
+  } else if (norm === 'fr') {
+    bodilyMarkers = isSympathetic
+      ? "Oppression thoracique, rythme cardiaque élevé et crispation"
+      : "Lourdeur corporelle, sensation de vide et épuisement physique";
+  } else if (norm === 'de') {
+    bodilyMarkers = isSympathetic
+      ? "Engegefühl in der Brust, flache Atmung und innere Unruhe"
+      : "Schwere im Körper, Lähmungsgefühl und geistige Erschöpfung";
+  } else {
+    bodilyMarkers = isSympathetic
+      ? "Chest tightness, rapid shallow breathing, throat constriction, and visceral unrest"
+      : "Heavy limbs, neuro-energetic depletion, brain fog, and interoceptive numbness";
+  }
+
+  // User input summary
+  let inputSummary = "";
+  if (lower.includes('interview') || lower.includes('exam') || lower.includes('test') || lower.includes('failing') || lower.includes('career')) {
+    if (norm === 'hi') inputSummary = "आप आने वाली परीक्षा या साक्षात्कार को लेकर अत्यधिक आशंकित हैं, असफलता का डर आपको सता रहा है और अनिर्णय की स्थिति आपको मानसिक रूप से थका रही है।";
+    else if (norm === 'es') inputSummary = "Te enfrentas a una prueba o entrevista decisiva, experimentando un temor abrumador al fracaso y parálisis para tomar decisiones de estudio.";
+    else if (norm === 'fr') inputSummary = "Vous affrontez une échéance importante avec une angoisse vive liée à la peur de l'échec et une hésitation paralysante.";
+    else if (norm === 'de') inputSummary = "Sie stehen vor einer wichtigen Prüfung oder einem Interview und leiden unter akuter Versagensangst und Entscheidungslähmung.";
+    else inputSummary = "You are preparing for a high-stakes interview or milestone, trapped in intense anticipatory dread of failure and overwhelming decision paralysis.";
+  } else if (lower.includes('breakup') || lower.includes('broke up') || lower.includes('partner') || lower.includes('heartbreak') || lower.includes('grief')) {
+    if (norm === 'hi') inputSummary = "आप विछोह या संबंध टूटने के गहरे भावनात्मक आघात से जूझ रहे हैं, जिसका शारीरिक दर्द आपके सीने और हृदय में साफ महसूस हो रहा है।";
+    else if (norm === 'es') inputSummary = "Estás atravesando el dolor lacerante de una ruptura afectiva y un duelo que se manifiesta como dolor físico en el pecho.";
+    else if (norm === 'fr') inputSummary = "Vous vivez la déchirure d'une rupture amoureuse et un chagrin intense qui se répercute physiquement dans votre poitrine.";
+    else if (norm === 'de') inputSummary = "Sie durchleben den tiefen Schmerz einer Trennung und Liebeskummer, der sich körperlich als Enge im Herzen äußert.";
+    else inputSummary = "You are enduring the raw agony of emotional heartbreak and relational grief, where emotional loss has translated into palpable physical ache in your chest.";
+  } else if (lower.includes('boss') || lower.includes('yelled') || lower.includes('gaslight') || lower.includes('rage') || lower.includes('furious')) {
+    if (norm === 'hi') inputSummary = "कार्यस्थल पर अपमान, कटु व्यवहार और अनुचित बर्ताव के कारण आपका मन तीव्र क्रोध, कंपन और आहत स्वाभिमान की पीड़ा से जल रहा है।";
+    else if (norm === 'es') inputSummary = "Has sufrido maltrato o descalificación injusta en tu entorno, lo que te genera un temblor de indignación y una rabia difícil de contener.";
+    else if (norm === 'fr') inputSummary = "Vous avez subi une agression verbale ou un comportement toxique, provoquant une violente onde de colère et un sentiment d'injustice.";
+    else if (norm === 'de') inputSummary = "Sie wurden ungerecht behandelt oder gekränkt, was in Ihnen eine Welle aus Zorn, Fassungslosigkeit und innerem Zittern auslöst.";
+    else inputSummary = "You have been subjected to hostile treatment and toxic invalidation, leaving your nervous system shaking with acute rage and indignation.";
+  } else if (lower.includes('fake') || lower.includes('failure') || lower.includes('hate myself') || lower.includes('loser') || lower.includes('imposter')) {
+    if (norm === 'hi') inputSummary = "आप स्वयं को दूसरों से कमतर समझकर आत्म-ग्लानि और हीनभावना के भंवर में फंसे हैं, जहाँ अंतर्मन का आलोचक आपको अयोग्य महसूस करा रहा है।";
+    else if (norm === 'es') inputSummary = "Estás atrapado en un ciclo implacable de autocrítica destructiva, sintiéndote un fraude y comparándote dolorosamente con los demás.";
+    else if (norm === 'fr') inputSummary = "Vous êtes enfermé dans une spirale d'autodépréciation sévère, vous sentant illégitime et submergé par un sentiment d'échec.";
+    else if (norm === 'de') inputSummary = "Sie befinden sich in einer quälenden Spirale aus Selbstverurteilung, fühlen sich unzulänglich und leiden unter massiven Selbstzweifeln.";
+    else inputSummary = "You are caught in a punishing cycle of toxic core shame and imposter syndrome, where an aggressive inner critic convinces you that you are fundamentally inadequate.";
+  } else if (lower.includes('overwhelm') || lower.includes('racing') || lower.includes('hurricane') || lower.includes('chaos') || lower.includes('adhd')) {
+    if (norm === 'hi') inputSummary = "अत्यधिक कार्यों, संवेदी उत्तेजनाओं और बेकाबू विचारों के कारण आपका मस्तिष्क एक चक्रवात की तरह अशांत और बिखरा हुआ महसूस हो रहा है।";
+    else if (norm === 'es') inputSummary = "Tu mente se encuentra desbordada por una tormenta de pensamientos acelerados, tareas pendientes y saturación sensorial.";
+    else if (norm === 'fr') inputSummary = "Votre esprit est submergé par un flot incessant de pensées et de stimuli, semblable à une tempête mentale incontrôlable.";
+    else if (norm === 'de') inputSummary = "Ihr Geist ist völlig überflutet von rasenden Gedanken, Reizen und Aufgaben, was sich wie ein innerer Sturm anfühlt.";
+    else inputSummary = "Your cognitive bandwidth has been swamped by sensory overload, unrelenting task friction, and racing thoughts that resemble an internal hurricane.";
+  } else {
+    if (norm === 'hi') inputSummary = "आप इस समय मानसिक तनाव, भावनात्मक अशांति और आंतरिक संघर्ष से जूझ रहे हैं, जिसने आपके मन और शरीर दोनों को असंतुलित कर दिया है।";
+    else if (norm === 'es') inputSummary = "Estás experimentando un pico de agitación emocional y tensión interna que está sobrecargando tu equilibrio físico y psicológico.";
+    else if (norm === 'fr') inputSummary = "Vous traversez une période d'intense tension intérieure et d'inconfort émotionnel qui fragilise votre équilibre.";
+    else if (norm === 'de') inputSummary = "Sie durchleben eine Phase spürbarer seelischer Belastung und innerer Unruhe, die Körper und Geist fordert.";
+    else inputSummary = `You are carrying a heavy burden of emotional strain and psychological unease${conditionName ? ` related to ${conditionName}` : ''} that has thrown your mind and physiology into turmoil.`;
+  }
+
+  // Full section Markdown
+  let markdown = "";
+  if (norm === 'hi') {
+    markdown = `**आपकी स्थिति का सारांश एवं मानसिक पीड़ा का मूल्यांकन:**
+• **पहचाना गया मनोभाव एवं मुख्य संघर्ष:** ${emotionName}
+• **पीड़ा का स्तर एवं तंत्रिका तंत्र स्थिति:** ${severityLabel} (कष्ट सूचकांक: ${distressScore}/10) | ${nervousSystem}
+• **शारीरिक संवेदनाएं व आंतरिक तनाव:** ${bodilyMarkers}
+• **आपकी स्थिति का संवेदनशील सारांश:** ${inputSummary}`;
+  } else if (norm === 'es') {
+    markdown = `**RESUMEN DIAGNÓSTICO Y EVALUACIÓN DEL SUFRIMIENTO:**
+• **Emoción y Conflicto Central:** ${emotionName}
+• **Nivel de Sufrimiento y Estado Autonómico:** ${severityLabel} (Índice de aflicción: ${distressScore}/10) | ${nervousSystem}
+• **Manifestación Somática Corporal:** ${bodilyMarkers}
+• **Resumen Empático de tu Situación:** ${inputSummary}`;
+  } else if (norm === 'fr') {
+    markdown = `**SYNTHÈSE CLINIQUE ET ÉVALUATION DE LA SOUFFRANCE:**
+• **Émotion Identifiée et Conflit Central :** ${emotionName}
+• **Niveau de Souffrance et État Neurovégétatif :** ${severityLabel} (Indice de détresse : ${distressScore}/10) | ${nervousSystem}
+• **Charge Somatique Corporelle :** ${bodilyMarkers}
+• **Synthèse Empathique de votre Situation :** ${inputSummary}`;
+  } else if (norm === 'de') {
+    markdown = `**KLINISCHE ZUSAMMENFASSUNG & BELASTUNGSEVALUATION:**
+• **Identifizierter Gefühlszustand & Konflikt:** ${emotionName}
+• **Schweregrad des Leidens & Vegetativer Status:** ${severityLabel} (Belastungsindex: ${distressScore}/10) | ${nervousSystem}
+• **Körperlich-somatische Belastung:** ${bodilyMarkers}
+• **Empathische Zusammenfassung Ihrer Situation:** ${inputSummary}`;
+  } else {
+    markdown = `**SUMMARY OF YOUR INPUT & EMOTIONAL SUFFERING ASSESSMENT (स्थिति व कष्ट का विश्लेषण):**
+• **Identified Emotional State:** ${emotionName}
+• **Suffering Severity & Autonomic State:** ${severityLabel} (Distress Index: ${distressScore}/10) | ${nervousSystem}
+• **Interoceptive Bodily Burden:** ${bodilyMarkers}
+• **Empathic Summary of Your Experience:** ${inputSummary}`;
+  }
+
+  return {
+    emotionId: matchedKey,
+    emotionName,
+    severityLabel,
+    distressScore,
+    nervousSystem,
+    bodilyMarkers,
+    inputSummary,
+    markdown,
+  };
+}
+
+/**
+ * Explains how Gita + CBT + Tratak work together synergistically to resolve the user's issue.
+ */
+export function buildTriPillarSynergyResolution(
+  languageCode?: string,
+  tratakName?: string,
+  gitaTheme?: string
+): string {
+  const norm = normalizeLanguageCode(languageCode);
+  const tName = tratakName || "Tratak Gazing";
+
+  if (norm === 'hi') {
+    return `**4. एकीकृत त्रिवेणी उपचार योजना (गीता + CBT + त्राटक मिलकर आपकी पीड़ा कैसे दूर करेंगे):**
+यह तीनों दिव्य एवं वैज्ञानिक पद्धतियाँ एक साथ मिलकर आपकी व्यथा का संपूर्ण समाधान इस प्रकार करती हैं:
+
+1. **आत्मिक व दार्शनिक संबल (श्रीमद्भगवद्गीता):**
+   गीता का अमर उपदेश आपके मन को काल्पनिक भविष्य के डर और परिणामों की चिंता से मुक्त कर 'साक्षी भाव' में स्थिर करता है। जब आप परिणाम की आसक्ति छोड़कर केवल अपने कर्तव्य पर ध्यान केंद्रित करते हैं, तो असफलता का भय और अनिर्णय की पीड़ा स्वतः विलीन हो जाती है।
+
+2. **संज्ञानात्मक पुनर्विचार एवं शारीरिक संतुलन (CBT व सोमैटिक विज्ञान):**
+   जहाँ गीता आत्मिक चेतना को ऊंचा उठाती है, वहीं CBT आपके मन में उठने वाले नकारात्मक विचारों (जैसे अनहोनी की आशंका या आत्म-दोष) को तार्किक रूप से ठीक करता है। इसके साथ ही दिया गया प्राणायाम और सोमैटिक ग्राउंडिंग आपके तंत्रिका तंत्र को तुरंत शांत करके शरीर में सुरक्षा और स्थिरता का संचार करते हैं।
+
+3. **न्यूरो-ऑक्युलर दृष्टि स्थिरीकरण (त्राटक ध्यान):**
+   त्राटक इन दोनों उपायों को जैविक आधार प्रदान करता है। जब मन अशांत होता है, तो आँखें तेजी से फड़कती और भटकती हैं, जिससे मस्तिष्क का तनाव केंद्र (एमीग्डाला) भड़क उठता है। ${tName} द्वारा दृष्टि को एक बिंदु पर टिकाने से आँखों की यह चंचलता रुक जाती है, जिससे विचारों का तूफ़ान तुरंत थम जाता है।
+
+4. **आपका समन्वित दैनिक अभ्यास क्रम:**
+   • **पहला चरण (दृष्टि स्थिरीकरण):** 3 से 5 मिनट ${tName} का अभ्यास करें ताकि मस्तिष्क के तनाव केंद्र को शांति मिले।
+   • **दूसरा चरण (प्राणायाम व विश्राम):** निर्धारित प्राणायाम करें जिससे हृदय गति और सीने का खिंचाव सामान्य हो सके।
+   • **तीसरा चरण (सकारात्मक विचार):** CBT द्वारा सुझाए गए नए विचार को मन में दोहराकर नकारात्मक सोच को बदलें।
+   • **चौथा चरण (सच्चा कर्तव्य):** गीता के संदेश के अनुसार परिणाम की चिंता छोड़ केवल अपने वर्तमान कर्तव्य में पूरी निष्ठा से लग जाएं।`;
+  }
+
+  if (norm === 'es') {
+    return `**4. RESOLUCIÓN SINÉRGICA TRIPLE (Cómo la Gita + TCC + Tratak se combinan para sanar tu sufrimiento):**
+Estas tres disciplinas sagradas y científicas operan en sinergia unificada para disolver de raíz tu malestar:
+
+1. **Ancla Espiritual y Existencial (Bhagavad Gita):**
+   La sabiduría de la Gita traslada tu conciencia desde la obsesión por el resultado hacia el 'Sakshi Bhava' (el testigo sereno). Al soltar el apego al futuro incierto, te liberas de la parálisis y actúas con propósito presente.
+
+2. **Reestructuración Cognitiva y Somática (TCC y Polivagal):**
+   La TCC desmantela las distorsiones que alimentan tu mente (catastrofismo o culpa). Al mismo tiempo, el anclaje somático y el pranayama activan el freno vagal parasimpático, disipando la adrenalina y devolviendo seguridad a tu cuerpo.
+
+3. **Estabilización Neuro-Ocular (Meditación Tratak):**
+   Tratak proporciona la base biológica indispensable. Las sacadas oculares involuntarias hiperactivan la amígdala cerebral. Al fijar la mirada en ${tName}, detienes la agitación visual y estabilizas el ritmo cardíaco.
+
+4. **Secuencia Práctica Integrada:**
+   • **Paso 1 (Calma Ocular):** Realiza 3–5 min de ${tName} para sosegar la amígdala.
+   • **Paso 2 (Regulación Fisiológica):** Aplica la respiración prescrita para aflojar el pecho y abdomen.
+   • **Paso 3 (Reencuadre Mental):** Internaliza el pensamiento adaptativo de la TCC.
+   • **Paso 4 (Acción Serena):** Ejecuta tu deber presente sin temor al desenlace.`;
+  }
+
+  if (norm === 'fr') {
+    return `**4. RÉSOLUTION THÉRAPEUTIQUE SYNERGIQUE (Comment la Gita + TCC + Tratak agissent ensemble pour guérir votre épreuve):**
+Ces trois piliers spirituels et neuroscientifiques s'unissent pour transformer votre souffrance en paix stable :
+
+1. **Ancrage Spirituel et Métacognitif (Bhagavad Gita) :**
+   La Gita élève votre conscience au-delà de l'obsession du résultat vers le 'Sakshi Bhava' (la posture de témoin). Vous vous affranchissez de l'angoisse de l'avenir pour vous consacrer pleinement à l'action juste.
+
+2. **Restructuration Cognitive et Régulation Somatique (TCC & Polyvagal) :**
+   La TCC désamorce les distorsions qui empoisonnent vos pensées. Simultanément, le pranayama et l'ancrage somatique réactivent le nerf vague et rétablissent la sécurité physiologique dans votre poitrine.
+
+3. **Stabilisation Neuro-Oculaire (Méditation Tratak) :**
+   Tratak stabilise directement l'axe œil-cerveau. Les micromouvements saccadiques nourrissent l'amygdale cérébrale. En fixant un point unique avec ${tName}, vous suspendez mécaniquement la tempête mentale.
+
+4. **Votre Protocole Quotidien Intégré :**
+   • **Étape 1 (Apaisement Oculaire) :** 3 à 5 min de ${tName} pour calmer l'amygdale.
+   • **Étape 2 (Frein Vagal) :** Pratiquez la respiration indiquée pour libérer la cage thoracique.
+   • **Étape 3 (Restructuration TCC) :** Adoptez la pensée restructurée face au doute.
+   • **Étape 4 (Action Juste) :** Engagez-vous dans votre devoir présent avec détachement.`;
+  }
+
+  if (norm === 'de') {
+    return `**4. DREI-SÄULEN-SYNERGIEPLAN (Wie Gita + CBT + Tratak gemeinsam Ihre Belastung auflösen):**
+Diese drei Disziplinen greifen nahtlos ineinander, um Ihr seelisches und körperliches Gleichgewicht wiederherzustellen:
+
+1. **Spirituell-existenzieller Anker (Bhagavad Gita):**
+   Die Gita befreit Ihren Geist von der Fixierung auf unkontrollierbare Ergebnisse und verankert Sie im 'Sakshi Bhava' (Zeugenbewusstsein). Aus Zukunftsangst wird zielgerichtetes gegenwärtiges Handeln.
+
+2. **Kognitive Umstrukturierung & Somatische Regulation (CBT & Vagusnerv):**
+   CBT entlarvt katastrophisierende Denkmuster. Parallel dazu aktiviert die Atemübung Ihren Vagusnerv, senkt das Stresslevel und signalisiert Ihrem Körper Sicherheit.
+
+3. **Neuro-Okulare Blickzentrierung (Tratak-Meditation):**
+   Tratak beruhigt die neurobiologische Basis. Unruhige Augensakkaden befeuern die Amygdala. Durch die Fixierung auf ${tName} wird der visuelle Reizstrom gebremst und der Geist beruhigt.
+
+4. **Integrierte Handlungsabfolge:**
+   • **Schritt 1 (Blickfokussierung):** 3–5 Min ${tName} zur Dämpfung der Amygdala.
+   • **Schritt 2 (Vegetative Erdung):** Atemübung zur Entlastung von Herz und Brustraum.
+   • **Schritt 3 (Kognitive Neuausrichtung):** Verinnerlichung des heilsamen CBT-Gedankens.
+   • **Schritt 4 (Pflicht im Hier und Jetzt):** Entschlossenes Handeln ohne Angst vor dem Ausgang.`;
+  }
+
+  return `**4. TRI-PILLAR SYNERGISTIC RESOLUTION (How Gita + CBT + Tratak Work in Combination to Heal You):**
+Here is how these three disciplines operate in unified synergy to permanently resolve your suffering:
+
+1. **Spiritual & Existential Anchor (Bhagavad Gita):**
+   The Gita shifts your conscious awareness from outcome obsession and catastrophic helplessness into *Sakshi Bhava* (the calm, detached witness). By releasing attachment to uncertain futures, your mind breaks free from mental paralysis and steps into present-moment purposeful action (*Nishkama Karma*).
+
+2. **Cognitive & Somatic Restructuring (CBT & Polyvagal Science):**
+   While the Gita elevates your spiritual perspective, CBT systematically dismantles the cognitive distortions (such as catastrophizing, mind-reading, or toxic self-blame) keeping you trapped. Simultaneously, the somatic anchor and pranayama activate your parasympathetic vagal brake, physically clearing adrenaline and signaling safety to your heart.
+
+3. **Neuro-Ocular Stabilization (Tratak Gazing Meditation):**
+   Tratak provides the physiological foundation for both Gita and CBT. Involuntary micro-saccadic eye movements directly stimulate the brain's alarm center (the amygdala). By fixing your gaze on a single point (${tName}), Tratak mechanically stops ocular flutter, locking your autonomic nervous system into stability and clearing mental static.
+
+4. **Your Integrated Recovery Sequence:**
+   • **Phase 1 (Stabilize Brainstem):** Practice ${tName} for 3–5 minutes to arrest rapid eye saccades and de-escalate amygdala hyperarousal.
+   • **Phase 2 (Regulate Physiology):** Perform your prescribed somatic breathwork to release visceral tension from your chest and gut.
+   • **Phase 3 (Reframe the Mind):** Internalize the CBT cognitive reframe to replace automatic catastrophic thoughts with objective truth.
+   • **Phase 4 (Soul-Centered Action):** Execute the Gita's actionable guidance immediately, focusing entirely on your present duty without fear of results.`;
+}
+
 /**
  * Formats a cohesive, compassionate, 100% human-like therapeutic message
  * in the user's local language without mixing English phrases or labels.
@@ -1641,8 +2020,13 @@ export function formatHumanTherapeuticMessage(
   const locGita = getLocalizedGitaItem(gitaItem, norm);
   const locTratak = getLocalizedTratakaItem(tratakItem, norm);
 
+  const diagnosticAssessment = buildDiagnosticSufferingAssessment(userMessage, condId, intervention.conditionName, norm);
+  const synergyResolution = buildTriPillarSynergyResolution(norm, locTratak.name, gitaItem.theme);
+
   if (norm === 'hi') {
-    return `**1. श्रीमद्भगवद्गीता का आत्मिक मार्गदर्शन (अध्याय ${gitaItem.chapter}, श्लोक ${gitaItem.verse}):**
+    return `${diagnosticAssessment.markdown}
+
+**1. श्रीमद्भगवद्गीता का आत्मिक मार्गदर्शन (अध्याय ${gitaItem.chapter}, श्लोक ${gitaItem.verse}):**
 ${gitaBlock}
 भगवान श्रीकृष्ण इस पावन श्लोक में हमें समझाते हैं कि ${locGita.meaning}
 
@@ -1662,11 +2046,15 @@ ${intervention.validation}
 
 • **एकाग्रता का केंद्र:** ${locTratak.focalTarget}
 • **मस्तिष्क पर शांत प्रभाव:** ${locTratak.neuroMechanism}
-• **अभ्यास की सरल विधि (${tratakItem.durationMinutes} मिनट):** ${locTratak.guidance}`;
+• **अभ्यास की सरल विधि (${tratakItem.durationMinutes} मिनट):** ${locTratak.guidance}
+
+${synergyResolution}`;
   }
 
   if (norm === 'es') {
-    return `**1. SABIDURÍA DEL BHAGAVAD GITA (Capítulo ${gitaItem.chapter}, Verso ${gitaItem.verse}):**
+    return `${diagnosticAssessment.markdown}
+
+**1. SABIDURÍA DEL BHAGAVAD GITA (Capítulo ${gitaItem.chapter}, Verso ${gitaItem.verse}):**
 ${gitaBlock}
 La sabiduría trascendente de la Gita nos recuerda: ${locGita.meaning}
 
@@ -1686,11 +2074,15 @@ Para calmar la sobreexcitación y recuperar el enfoque, practica ${locTratak.nam
 
 • **Foco de Mirada:** ${locTratak.focalTarget}
 • **Efecto Neurológico:** ${locTratak.neuroMechanism}
-• **Instrucciones (${tratakItem.durationMinutes} min):** ${locTratak.guidance}`;
+• **Instrucciones (${tratakItem.durationMinutes} min):** ${locTratak.guidance}
+
+${synergyResolution}`;
   }
 
   if (norm === 'fr') {
-    return `**1. SAGESSE DE LA BHAGAVAD GITA (Chapitre ${gitaItem.chapter}, Verset ${gitaItem.verse}):**
+    return `${diagnosticAssessment.markdown}
+
+**1. SAGESSE DE LA BHAGAVAD GITA (Chapitre ${gitaItem.chapter}, Verset ${gitaItem.verse}):**
 ${gitaBlock}
 La sagesse intemporelle de la Gita nous enseigne : ${locGita.meaning}
 
@@ -1710,11 +2102,15 @@ Pour désamorcer la tension et apaiser l'esprit, pratiquez ${locTratak.name} :
 
 • **Point Focal :** ${locTratak.focalTarget}
 • **Effet Neurologique :** ${locTratak.neuroMechanism}
-• **Pratique guidée (${tratakItem.durationMinutes} min) :** ${locTratak.guidance}`;
+• **Pratique guidée (${tratakItem.durationMinutes} min) :** ${locTratak.guidance}
+
+${synergyResolution}`;
   }
 
   if (norm === 'de') {
-    return `**1. WEISHEIT DER BHAGAVAD GITA (Kapitel ${gitaItem.chapter}, Vers ${gitaItem.verse}):**
+    return `${diagnosticAssessment.markdown}
+
+**1. WEISHEIT DER BHAGAVAD GITA (Kapitel ${gitaItem.chapter}, Vers ${gitaItem.verse}):**
 ${gitaBlock}
 Die zeitlose Lehre der Gita erinnert uns: ${locGita.meaning}
 
@@ -1734,11 +2130,15 @@ Um das Nervensystem sanft zu regulieren, üben Sie ${locTratak.name}:
 
 • **Blickfokus:** ${locTratak.focalTarget}
 • **Neurologische Wirkung:** ${locTratak.neuroMechanism}
-• **Anleitung (${tratakItem.durationMinutes} Min):** ${locTratak.guidance}`;
+• **Anleitung (${tratakItem.durationMinutes} Min):** ${locTratak.guidance}
+
+${synergyResolution}`;
   }
 
   // English Universal Default
-  return `**1. BHAGAVAD GITA REFRAMING (Chapter ${gitaItem.chapter}, Verse ${gitaItem.verse}):**
+  return `${diagnosticAssessment.markdown}
+
+**1. BHAGAVAD GITA REFRAMING (Chapter ${gitaItem.chapter}, Verse ${gitaItem.verse}):**
 ${gitaBlock}
 The timeless wisdom of the Gita reminds us: ${gitaItem.philosophical_meaning}
 
@@ -1758,7 +2158,9 @@ To down-regulate sympathetic arousal and quiet the wandering mind, engage in ${t
 
 • **Sacred Gazing Target:** ${tratakItem.focalTarget}
 • **Neuro-Ocular Calming Mechanism:** ${tratakItem.neuroMechanism}
-• **Practice Guidance (${tratakItem.durationMinutes} Minutes):** ${tratakItem.stepByStepGuidance.join(' ')}`;
+• **Practice Guidance (${tratakItem.durationMinutes} Minutes):** ${tratakItem.stepByStepGuidance.join(' ')}
+
+${synergyResolution}`;
 }
 
 /**
@@ -1792,8 +2194,13 @@ export function getLocalizedGeneralAdvice(
   const locGita = getLocalizedGitaItem(gitaItem, norm);
   const locTratak = getLocalizedTratakaItem(tratakItem, norm);
 
+  const diagnosticAssessment = buildDiagnosticSufferingAssessment(userMessage, emotion, undefined, norm);
+  const synergyResolution = buildTriPillarSynergyResolution(norm, locTratak.name, gitaItem.theme);
+
   if (norm === 'hi') {
-    return `**1. श्रीमद्भगवद्गीता का आत्मिक मार्गदर्शन (अध्याय ${gitaItem.chapter}, श्लोक ${gitaItem.verse}):**
+    return `${diagnosticAssessment.markdown}
+
+**1. श्रीमद्भगवद्गीता का आत्मिक मार्गदर्शन (अध्याय ${gitaItem.chapter}, श्लोक ${gitaItem.verse}):**
 ${gitaBlock}
 भगवान श्रीकृष्ण इस पावन श्लोक में समझाते हैं कि ${locGita.meaning}
 
@@ -1807,11 +2214,15 @@ ${advice}
 
 • **एकाग्रता का केंद्र:** ${locTratak.focalTarget}
 • **मस्तिष्क पर शांत प्रभाव:** ${locTratak.neuroMechanism}
-• **अभ्यास की सरल विधि (${tratakItem.durationMinutes} मिनट):** ${locTratak.guidance}`;
+• **अभ्यास की सरल विधि (${tratakItem.durationMinutes} मिनट):** ${locTratak.guidance}
+
+${synergyResolution}`;
   }
 
   if (norm === 'es') {
-    return `**1. SABIDURÍA DEL BHAGAVAD GITA (Capítulo ${gitaItem.chapter}, Verso ${gitaItem.verse}):**
+    return `${diagnosticAssessment.markdown}
+
+**1. SABIDURÍA DEL BHAGAVAD GITA (Capítulo ${gitaItem.chapter}, Verso ${gitaItem.verse}):**
 ${gitaBlock}
 La enseñanza de la Gita nos recuerda: ${locGita.meaning}
 
@@ -1825,11 +2236,15 @@ Para recuperar la serenidad y la presencia:
 
 • **Foco de Mirada:** ${locTratak.focalTarget}
 • **Efecto Neurológico:** ${locTratak.neuroMechanism}
-• **Instrucciones (${tratakItem.durationMinutes} min):** ${locTratak.guidance}`;
+• **Instrucciones (${tratakItem.durationMinutes} min):** ${locTratak.guidance}
+
+${synergyResolution}`;
   }
 
   if (norm === 'fr') {
-    return `**1. SAGESSE DE LA BHAGAVAD GITA (Chapitre ${gitaItem.chapter}, Verset ${gitaItem.verse}):**
+    return `${diagnosticAssessment.markdown}
+
+**1. SAGESSE DE LA BHAGAVAD GITA (Chapitre ${gitaItem.chapter}, Verset ${gitaItem.verse}):**
 ${gitaBlock}
 La parole de la Gita nous éclaire : ${locGita.meaning}
 
@@ -1843,11 +2258,15 @@ Pour apaiser le mental et retrouver l'équilibre :
 
 • **Point Focal :** ${locTratak.focalTarget}
 • **Effet Neurologique :** ${locTratak.neuroMechanism}
-• **Pratique guidée (${tratakItem.durationMinutes} min) :** ${locTratak.guidance}`;
+• **Pratique guidée (${tratakItem.durationMinutes} min) :** ${locTratak.guidance}
+
+${synergyResolution}`;
   }
 
   if (norm === 'de') {
-    return `**1. WEISHEIT DER BHAGAVAD GITA (Kapitel ${gitaItem.chapter}, Vers ${gitaItem.verse}):**
+    return `${diagnosticAssessment.markdown}
+
+**1. WEISHEIT DER BHAGAVAD GITA (Kapitel ${gitaItem.chapter}, Vers ${gitaItem.verse}):**
 ${gitaBlock}
 Die Weisheit der Gita besagt: ${locGita.meaning}
 
@@ -1861,10 +2280,14 @@ Zur Beruhigung und Neuausrichtung des Geistes:
 
 • **Blickfokus:** ${locTratak.focalTarget}
 • **Neurologische Wirkung:** ${locTratak.neuroMechanism}
-• **Anleitung (${tratakItem.durationMinutes} Min):** ${locTratak.guidance}`;
+• **Anleitung (${tratakItem.durationMinutes} Min):** ${locTratak.guidance}
+
+${synergyResolution}`;
   }
 
-  return `**1. BHAGAVAD GITA REFRAMING (Chapter ${gitaItem.chapter}, Verse ${gitaItem.verse}):**
+  return `${diagnosticAssessment.markdown}
+
+**1. BHAGAVAD GITA REFRAMING (Chapter ${gitaItem.chapter}, Verse ${gitaItem.verse}):**
 ${gitaBlock}
 The timeless wisdom of the Gita reminds us: ${gitaItem.philosophical_meaning}
 
@@ -1876,5 +2299,7 @@ ${advice}
 **3. TRATAK NEURO-OCULAR PROTOCOL (${tratakItem.name}):**
 • **Sacred Gazing Target:** ${tratakItem.focalTarget}
 • **Neuro-Ocular Mechanism:** ${tratakItem.neuroMechanism}
-• **Practice Guidance (${tratakItem.durationMinutes} Minutes):** ${tratakItem.stepByStepGuidance.join(' ')}`;
+• **Practice Guidance (${tratakItem.durationMinutes} Minutes):** ${tratakItem.stepByStepGuidance.join(' ')}
+
+${synergyResolution}`;
 }
