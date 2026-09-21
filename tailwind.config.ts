@@ -68,6 +68,22 @@ const config: Config = {
           glow: "#ecf3ee",
           gold: "#d4a373",
         },
+        sanctuary: {
+          bg: "var(--color-sanctuary-bg)",
+          surface: "var(--color-sanctuary-surface)",
+          "surface-elevated": "var(--color-sanctuary-surface-elevated)",
+          border: "var(--color-sanctuary-border)",
+        },
+        sacred: {
+          amber: "var(--color-sacred-amber)",
+          "amber-muted": "var(--color-sacred-amber-muted)",
+          "amber-glow": "var(--color-sacred-amber-glow)",
+        },
+        polyvagal: {
+          ventral: "var(--color-polyvagal-ventral)",
+          sympathetic: "var(--color-polyvagal-sympathetic)",
+          dorsal: "var(--color-polyvagal-dorsal)",
+        },
         crisis: {
           bg: "#381818",
           border: "#b94a48",
@@ -75,6 +91,8 @@ const config: Config = {
         }
       },
       fontFamily: {
+        display: ["var(--font-display)", "var(--font-geist-sans)", "system-ui", "sans-serif"],
+        mono: ["var(--font-mono)", "var(--font-geist-mono)", "monospace"],
         sans: ["var(--font-inter)", "system-ui", "sans-serif"],
         heading: ["var(--font-outfit)", "system-ui", "sans-serif"],
       },
