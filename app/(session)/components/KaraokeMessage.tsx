@@ -13,6 +13,7 @@ import {
   User,
 } from "lucide-react";
 import { GitaShlokaCard, parseGitaShloka } from "./GitaShlokaCard";
+import { isWordActive, cleanWordForMatch } from "@/lib/audio/karaoke-tokenizer";
 
 export interface KaraokeState {
   messageId: string;
@@ -53,35 +54,17 @@ interface RenderCounter {
   sentenceIndex: number;
 }
 
-function cleanWordForMatch(str: string): string {
-  return str.toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
-}
-
-function isWordActive(
-  currentWordIndex: number,
-  wordStr: string,
-  activeKaraoke: KaraokeState | null | undefined
-): boolean {
-  if (!activeKaraoke) return false;
-
-  if (activeKaraoke.wordText) {
-    const cleanWord = cleanWordForMatch(wordStr);
-    const cleanTarget = cleanWordForMatch(activeKaraoke.wordText);
-    if (cleanWord && cleanTarget && cleanWord === cleanTarget) {
-      if (Math.abs(currentWordIndex - activeKaraoke.wordIndex) <= 8) {
-        return true;
-      }
-    }
-  }
-
-  return currentWordIndex === activeKaraoke.wordIndex;
-}
-
 /**
  * Renders process flow arrows (e.g. Inhale (4s) → Hold (7s) → Exhale (8s))
  * as horizontal text pills with arrows instead of graphic diagrams.
  */
-function renderProcessFlowLine(line: string) {
+function renderProcessFlowLine(
+  line: string,
+  isSpeaking: boolean,
+  activeKaraoke: KaraokeState | null | undefined,
+  activeWordRef: React.RefObject<HTMLSpanElement> | undefined,
+  counter: RenderCounter
+) {
   // Matches "A -> B -> C" or "A → B → C" or "A --> B"
   const arrowRegex = /\s*(?:->|→|-->)\s*/;
   const steps = line.split(arrowRegex).filter(Boolean);
@@ -90,16 +73,42 @@ function renderProcessFlowLine(line: string) {
 
   return (
     <div className="inline-flex flex-wrap items-center gap-1.5 my-1.5 p-1.5 rounded-xl bg-slate-900/80 border border-slate-800/80">
-      {steps.map((step, idx) => (
-        <React.Fragment key={idx}>
-          <span className="px-2.5 py-0.5 rounded-lg bg-emerald-950/60 border border-emerald-500/30 text-emerald-200 text-xs font-mono font-medium">
-            {step.trim()}
-          </span>
-          {idx < steps.length - 1 && (
-            <span className="text-emerald-400 font-bold text-xs">→</span>
-          )}
-        </React.Fragment>
-      ))}
+      {steps.map((step, idx) => {
+        const stepWords = step.trim().split(/\s+/).filter(Boolean);
+        const renderedWords = stepWords.map((word, wIdx) => {
+          const thisWordIdx = counter.wordIndex++;
+          const activeWord = isSpeaking && isWordActive(thisWordIdx, word, activeKaraoke);
+
+          if (activeWord) {
+            return (
+              <span
+                key={wIdx}
+                id="active-karaoke-word"
+                ref={activeWordRef}
+                className="bg-red-600 text-white font-extrabold px-1.5 py-0.5 rounded shadow-[0_0_14px_rgba(239,68,68,0.95)] scale-105 inline-block mx-0.5 transition-all duration-100 ring-2 ring-red-400"
+              >
+                {word}
+              </span>
+            );
+          }
+          return (
+            <span key={wIdx} className="mx-0.5">
+              {word}
+            </span>
+          );
+        });
+
+        return (
+          <React.Fragment key={idx}>
+            <span className="px-2.5 py-0.5 rounded-lg bg-emerald-950/60 border border-emerald-500/30 text-emerald-200 text-xs font-mono font-medium">
+              {renderedWords}
+            </span>
+            {idx < steps.length - 1 && (
+              <span className="text-emerald-400 font-bold text-xs">→</span>
+            )}
+          </React.Fragment>
+        );
+      })}
     </div>
   );
 }
@@ -133,13 +142,37 @@ function renderInlineBadgesAndText(
         ? "bg-cyan-500/15 border-cyan-500/40 text-cyan-300"
         : "bg-emerald-500/15 border-emerald-500/40 text-emerald-300";
 
+      const badgeWords = label.split(/\s+/).filter(Boolean);
+      const renderedBadge = badgeWords.map((word, bIdx) => {
+        const thisWordIdx = counter.wordIndex++;
+        const activeWord = isSpeaking && isWordActive(thisWordIdx, word, activeKaraoke);
+
+        if (activeWord) {
+          return (
+            <span
+              key={bIdx}
+              id="active-karaoke-word"
+              ref={activeWordRef}
+              className="bg-red-600 text-white font-extrabold px-1.5 py-0.5 rounded shadow-[0_0_14px_rgba(239,68,68,0.95)] scale-105 inline-block mx-0.5 ring-2 ring-red-400"
+            >
+              {word}
+            </span>
+          );
+        }
+        return (
+          <span key={bIdx} className="mx-0.5">
+            {word}
+          </span>
+        );
+      });
+
       return (
         <span
           key={pIdx}
           className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 my-0.5 rounded-full text-[11px] sm:text-xs font-semibold border shadow-sm ${colorClass}`}
         >
           {part.includes("🎯") ? "🎯 " : part.includes("⚡") ? "⚡ " : "🏷️ "}
-          <span>{label}</span>
+          <span>{renderedBadge}</span>
         </span>
       );
     }
@@ -153,7 +186,7 @@ function renderInlineBadgesAndText(
           const isBold = seg.startsWith("**") && seg.endsWith("**");
           const rawText = isBold ? seg.slice(2, -2) : seg;
 
-          if (!isSpeaking || !activeKaraoke) {
+          if (!isSpeaking) {
             if (isBold) {
               return (
                 <strong key={sIdx} className="font-semibold text-slate-50">
@@ -180,7 +213,7 @@ function renderInlineBadgesAndText(
             }
 
             const activeWord = isWordActive(thisWordIdx, token, activeKaraoke);
-            const activeSentence = thisSentenceIdx === activeKaraoke.sentenceIndex;
+            const activeSentence = activeKaraoke ? thisSentenceIdx === activeKaraoke.sentenceIndex : false;
 
             if (activeWord) {
               return (
@@ -188,7 +221,7 @@ function renderInlineBadgesAndText(
                   key={tIdx}
                   id="active-karaoke-word"
                   ref={activeWordRef}
-                  className="bg-emerald-400 text-slate-950 font-bold px-1.5 py-0.5 rounded shadow-[0_0_12px_rgba(52,211,153,0.95)] scale-105 inline-block mx-0.5 transition-all duration-100 ring-2 ring-emerald-300"
+                  className="bg-red-600 text-white font-extrabold px-1.5 py-0.5 rounded shadow-[0_0_14px_rgba(239,68,68,0.95)] scale-105 inline-block mx-0.5 transition-all duration-100 ring-2 ring-red-400"
                 >
                   {token}
                 </span>
@@ -199,14 +232,14 @@ function renderInlineBadgesAndText(
               return (
                 <span
                   key={tIdx}
-                  className="text-emerald-200 bg-emerald-500/15 rounded px-0.5 transition-colors duration-150 font-medium"
+                  className="text-red-100 bg-red-500/15 rounded px-0.5 transition-colors duration-150 font-medium"
                 >
                   {token}
                 </span>
               );
             }
 
-            if (thisWordIdx < activeKaraoke.wordIndex) {
+            if (activeKaraoke && thisWordIdx < activeKaraoke.wordIndex) {
               return (
                 <span key={tIdx} className="text-slate-100">
                   {token}
@@ -260,7 +293,7 @@ function renderFormattedMarkdown(
 
     // Check if line is a process flow (e.g. Inhale (4s) → Hold (7s) → Exhale (8s))
     if (/\s*(?:->|→|-->)\s*/.test(trimmedLine) && !trimmedLine.startsWith("**")) {
-      const flowElement = renderProcessFlowLine(trimmedLine);
+      const flowElement = renderProcessFlowLine(trimmedLine, isSpeaking, activeKaraoke, activeWordRef, counter);
       if (flowElement) {
         return (
           <span key={lIdx} className="block my-1">

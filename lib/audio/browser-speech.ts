@@ -663,14 +663,11 @@ export class BrowserSpeechController {
     const hasDevanagari = /[\u0900-\u097F]/.test(processed);
     const isEnglish = (locale && locale.startsWith('en')) || (!hasDevanagari && !locale);
 
-    // If English speech, completely strip Sanskrit shloka blocks and Devanagari characters
-    // so English TTS voices don't choke or throw synthesis errors on non-Latin unicode
+    // Always strictly strip [GITA_SHLOKA]...[/GITA_SHLOKA] from speech payload in all languages
+    // The Gita contemplation card is rendered silently in the UI
+    processed = processed.replace(/\[GITA_SHLOKA\][\s\S]*?\[\/GITA_SHLOKA\]/gi, '');
     if (isEnglish) {
-      processed = processed.replace(/\[GITA_SHLOKA\][\s\S]*?\[\/GITA_SHLOKA\]/gi, '');
       processed = processed.replace(/[\u0900-\u097F]+/g, '');
-    } else {
-      // In Hindi mode, strip the tag wrappers but preserve the sacred Shloka and Hindi text
-      processed = processed.replace(/\[\/?GITA_SHLOKA\]/gi, '');
     }
 
     return processed
@@ -884,7 +881,7 @@ export class BrowserSpeechController {
           console.warn('HTMLAudioElement error on blob, trying Web Audio decoding fallback...');
           await this.playWithAudioContext(audioBlob, finishSpeech, () => {
             this.speakWithWebSpeechSynth(cleanText, onStart, onEnd, effectiveLocale);
-          });
+          }, cleanText);
         };
 
         await audio.play();
@@ -894,7 +891,7 @@ export class BrowserSpeechController {
         // Method B: Web Audio API AudioBufferSourceNode (Bypasses HTML5 Autoplay restrictions)
         await this.playWithAudioContext(audioBlob, finishSpeech, () => {
           this.speakWithWebSpeechSynth(cleanText, onStart, onEnd, effectiveLocale);
-        });
+        }, cleanText);
         return;
       }
     } catch (neuralErr) {
@@ -913,7 +910,8 @@ export class BrowserSpeechController {
   private async playWithAudioContext(
     blob: Blob,
     onEnded: () => void,
-    onFallback: () => void
+    onFallback: () => void,
+    cleanText?: string
   ): Promise<void> {
     try {
       if (!this.audioCtx) {
@@ -938,7 +936,28 @@ export class BrowserSpeechController {
       const source = this.audioCtx.createBufferSource();
       source.buffer = audioBuffer;
       source.connect(this.audioCtx.destination);
+
+      let animId: number | null = null;
+      const startTime = this.audioCtx.currentTime;
+      const totalDuration = audioBuffer.duration;
+
+      const trackProgress = () => {
+        if (!this.audioCtx || !this.isSpeaking || !cleanText) return;
+        const elapsed = this.audioCtx.currentTime - startTime;
+        if (elapsed >= totalDuration) return;
+
+        const progress = Math.min(1, Math.max(0, elapsed / totalDuration));
+        const charIndex = Math.min(cleanText.length - 1, Math.floor(progress * cleanText.length));
+        const prefix = cleanText.slice(0, charIndex);
+        const words = prefix.trim().split(/\s+/).filter(Boolean);
+        const currentWord = words[words.length - 1] || '';
+        this.callbacks.onWordBoundary?.(charIndex, currentWord.length, currentWord);
+
+        animId = requestAnimationFrame(trackProgress);
+      };
+
       source.onended = () => {
+        if (animId) cancelAnimationFrame(animId);
         this.currentSourceNode = null;
         onEnded();
       };
@@ -947,6 +966,10 @@ export class BrowserSpeechController {
       this.isSpeaking = true;
       this.callbacks.onAssistantStart?.();
       source.start(0);
+
+      if (cleanText) {
+        animId = requestAnimationFrame(trackProgress);
+      }
     } catch (err) {
       console.warn('AudioContext playback error:', err);
       onFallback();
@@ -1113,11 +1136,25 @@ export class BrowserSpeechController {
       (window as any).__activeUtterance = utterance;
       this.currentUtterance = utterance;
 
+      let lastBoundaryFiredTime = performance.now();
+      let chunkStartTime = performance.now();
+      let lastEmittedCharIndex = 0;
+      let boundaryTicker: ReturnType<typeof setInterval> | null = null;
+
+      const stopBoundaryTicker = () => {
+        if (boundaryTicker) {
+          clearInterval(boundaryTicker);
+          boundaryTicker = null;
+        }
+      };
+
       // Real-Time Word & Sentence Boundary Highlighting (Karaoke Mode)
       utterance.onboundary = (event: any) => {
         if (event.name && event.name !== 'word') return;
+        lastBoundaryFiredTime = performance.now();
         const relativeCharIndex = event.charIndex || 0;
         const charLength = event.charLength || 0;
+        lastEmittedCharIndex = relativeCharIndex;
         const absoluteCharIndex = currentChunkOffset + relativeCharIndex;
         let word = '';
         if (charLength > 0) {
@@ -1130,14 +1167,51 @@ export class BrowserSpeechController {
       };
 
       utterance.onstart = () => {
+        chunkStartTime = performance.now();
+        lastBoundaryFiredTime = performance.now();
+        lastEmittedCharIndex = 0;
+
         if (chunkIdx === 1) {
           this.isSpeaking = true;
           this.callbacks.onAssistantStart?.();
           onStart?.();
         }
+
+        // Emit first word of chunk immediately
+        const firstMatch = chunkText.match(/^\S+/);
+        const firstWord = firstMatch ? firstMatch[0] : '';
+        this.callbacks.onWordBoundary?.(currentChunkOffset, firstWord.length, firstWord);
+
+        // Adaptive boundary ticker: if browser voice lacks onboundary support (e.g. Google network voices in Chrome),
+        // smoothly advance word tracking based on elapsed speech duration
+        stopBoundaryTicker();
+        boundaryTicker = setInterval(() => {
+          if (isFinished || !this.isSpeaking) {
+            stopBoundaryTicker();
+            return;
+          }
+          const now = performance.now();
+          // If native onboundary hasn't fired in the last 280ms, interpolate progress
+          if (now - lastBoundaryFiredTime > 280) {
+            const elapsedSec = (now - chunkStartTime) / 1000;
+            // Average conversational speech reading rate: ~15.5 characters per second
+            const estimatedRelativeChar = Math.min(
+              chunkText.length - 1,
+              Math.max(lastEmittedCharIndex, Math.floor(elapsedSec * 15.5))
+            );
+            if (estimatedRelativeChar >= lastEmittedCharIndex) {
+              lastEmittedCharIndex = estimatedRelativeChar;
+              const absoluteCharIndex = currentChunkOffset + estimatedRelativeChar;
+              const match = chunkText.slice(estimatedRelativeChar).match(/^\S+/);
+              const word = match ? match[0] : '';
+              this.callbacks.onWordBoundary?.(absoluteCharIndex, word.length || 1, word);
+            }
+          }
+        }, 70);
       };
 
       utterance.onend = () => {
+        stopBoundaryTicker();
         if (chunkIdx < sentenceChunks.length) {
           speakNextChunk();
         } else {
@@ -1146,6 +1220,7 @@ export class BrowserSpeechController {
       };
 
       utterance.onerror = (e) => {
+        stopBoundaryTicker();
         console.warn("SpeechSynthesis chunk notice:", e);
         if (chunkIdx < sentenceChunks.length) {
           speakNextChunk();

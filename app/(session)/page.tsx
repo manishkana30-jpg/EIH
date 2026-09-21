@@ -34,7 +34,7 @@ import { AudioWaveform } from "./components/AudioWaveform";
 import { LanguageSelector } from "./components/LanguageSelector";
 import { GitaShlokaCard, parseGitaShloka } from "./components/GitaShlokaCard";
 import { KaraokeMessage } from "./components/KaraokeMessage";
-import { useKaraokeTTS } from "@/lib/audio/useKaraokeTTS";
+import { tokenizeForKaraoke } from "@/lib/audio/karaoke-tokenizer";
 import { EditorialGuide } from "@/components/seo/EditorialGuide";
 
 /* ─── Lazy-loaded heavy components (only fetched when user interacts) ─── */
@@ -197,7 +197,7 @@ function renderFormattedMarkdown(
                 <span
                   key={tIdx}
                   id="active-karaoke-word"
-                  className="bg-emerald-400 text-slate-950 font-bold px-1.5 py-0.5 rounded shadow-[0_0_12px_rgba(52,211,153,0.95)] scale-105 inline-block mx-0.5 transition-all duration-100 ring-2 ring-emerald-300"
+                  className="bg-red-600 text-white font-extrabold px-1.5 py-0.5 rounded shadow-[0_0_14px_rgba(239,68,68,0.95)] scale-105 inline-block mx-0.5 transition-all duration-100 ring-2 ring-red-400"
                 >
                   {token}
                 </span>
@@ -208,7 +208,7 @@ function renderFormattedMarkdown(
               return (
                 <span
                   key={tIdx}
-                  className="text-emerald-200 bg-emerald-500/15 rounded px-0.5 transition-colors duration-150 font-medium"
+                  className="text-red-100 bg-red-500/15 rounded px-0.5 transition-colors duration-150 font-medium"
                 >
                   {token}
                 </span>
@@ -524,6 +524,7 @@ export default function SanctuarySessionPage() {
   // ─── Voice, Audio Playback & Echo Avoidance ───
   const [isRecording, setIsRecording] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [speakingMessageId, setSpeakingMessageId] = useState<string | null>(null);
   const [isEchoLocked, setIsEchoLocked] = useState(false);
   const [recordingStream, setRecordingStream] = useState<MediaStream | null>(null);
 
@@ -576,6 +577,7 @@ export default function SanctuarySessionPage() {
       setIsPlayingAudio(false);
       isPlayingAudioRef.current = false;
       setActiveKaraoke(null);
+      setSpeakingMessageId(null);
       activeSpeakingMessageIdRef.current = null;
     }
   }, [isAiMuted]);
@@ -654,14 +656,6 @@ export default function SanctuarySessionPage() {
     if (!activeEl) return;
 
     // Smoothly keep current active word centered in viewport (scoped to active playback)
-    try {
-      activeEl.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-        inline: "nearest",
-      });
-    } catch (_) {}
-
     const container = chatContainerRef.current;
     const containerRect = container.getBoundingClientRect();
     const wordRect = activeEl.getBoundingClientRect();
@@ -670,7 +664,7 @@ export default function SanctuarySessionPage() {
     const containerCenter = containerRect.top + containerRect.height / 2;
     const diff = wordCenter - containerCenter;
 
-    if (Math.abs(diff) > 40) {
+    if (Math.abs(diff) > 25) {
       container.scrollBy({
         top: diff,
         behavior: "smooth",
@@ -682,37 +676,18 @@ export default function SanctuarySessionPage() {
   const playVoice = useCallback((text: string, audioBase64?: string, messageId?: string) => {
     if (isAiMutedRef.current) return;
 
-    // 1. Strip section headers and metadata to ensure 1:1 match with rendered markdown words
-    const strippedText = cleanMessageForSpeech(text);
-    const hasDevanagari = /[\u0900-\u097F]/.test(strippedText || text);
+    const hasDevanagari = /[\u0900-\u097F]/.test(text);
     const targetLocale = hasDevanagari
       ? 'hi-IN'
       : currentLanguageRef.current.speechLocale || userLocaleRef.current || 'en-US';
 
-    const cleanText = browserSpeechController.cleanTextForSpeech(strippedText, targetLocale);
-    if (!cleanText && !strippedText && !audioBase64) return;
+    // 1. Precompute words and sentences for 100% exact 1:1 boundary mapping
+    const { words: cleanWordList, speechText } = tokenizeForKaraoke(text, targetLocale);
+    const effectiveClean = speechText || text;
+    if (!effectiveClean && !audioBase64) return;
 
-    const effectiveClean = cleanText || strippedText || text;
     activeSpeakingMessageIdRef.current = messageId || null;
-
-    // Precompute words and sentences for exact boundary mapping
-    const sentences = effectiveClean.split(/(?<=[.!?।])\s+/).filter(Boolean);
-    const cleanWordList: { word: string; sentenceIdx: number; startChar: number; endChar: number }[] = [];
-    let charCursor = 0;
-    sentences.forEach((sent, sentIdx) => {
-      const sentWords = sent.trim().split(/\s+/).filter(Boolean);
-      sentWords.forEach((w) => {
-        const startChar = effectiveClean.indexOf(w, charCursor);
-        const endChar = startChar >= 0 ? startChar + w.length : charCursor + w.length;
-        charCursor = Math.max(charCursor, endChar);
-        cleanWordList.push({
-          word: w,
-          sentenceIdx: sentIdx,
-          startChar: startChar >= 0 ? startChar : charCursor,
-          endChar,
-        });
-      });
-    });
+    setSpeakingMessageId(messageId || null);
 
     const handleWordBoundary = (charIndex: number, charLength: number, wordText?: string) => {
       if (charIndex < 0 || !activeSpeakingMessageIdRef.current) {
@@ -734,13 +709,13 @@ export default function SanctuarySessionPage() {
           }
         });
       }
-      activeWordIdx = Math.max(0, activeWordIdx);
+      activeWordIdx = Math.max(0, Math.min(cleanWordList.length - 1, activeWordIdx));
       const activeWord = cleanWordList[activeWordIdx];
-      const activeSentenceIdx = activeWord ? activeWord.sentenceIdx : 0;
+      const activeSentenceIdx = activeWord ? activeWord.sentenceIndex : 0;
 
       setActiveKaraoke({
         messageId: activeSpeakingMessageIdRef.current,
-        wordIndex: activeWordIdx,
+        wordIndex: activeWord ? activeWord.wordIndex : activeWordIdx,
         sentenceIndex: activeSentenceIdx,
         wordText: wordText || activeWord?.word,
       });
@@ -776,6 +751,7 @@ export default function SanctuarySessionPage() {
       setIsPlayingAudio(false);
       activeAudioRef.current = null;
       setActiveKaraoke(null);
+      setSpeakingMessageId(null);
       activeSpeakingMessageIdRef.current = null;
 
       setTimeout(() => {
@@ -818,18 +794,29 @@ export default function SanctuarySessionPage() {
         const audio = new Audio(`data:audio/mp3;base64,${audioBase64}`);
         activeAudioRef.current = audio;
 
-        audio.ontimeupdate = () => {
-          if (!audio.duration || audio.duration === 0) return;
+        let animFrame: number | null = null;
+        const trackBase64Progress = () => {
+          if (!audio || audio.paused || !audio.duration) return;
           const progress = Math.min(1, Math.max(0, audio.currentTime / audio.duration));
           const charIndex = Math.min(effectiveClean.length - 1, Math.floor(progress * effectiveClean.length));
           const prefix = effectiveClean.slice(0, charIndex);
           const words = prefix.trim().split(/\s+/).filter(Boolean);
           const currentWord = words[words.length - 1] || '';
           handleWordBoundary(charIndex, currentWord.length, currentWord);
+          animFrame = requestAnimationFrame(trackBase64Progress);
         };
 
-        audio.onended = handleAudioEnd;
+        audio.onplay = () => {
+          animFrame = requestAnimationFrame(trackBase64Progress);
+        };
+
+        audio.onended = () => {
+          if (animFrame) cancelAnimationFrame(animFrame);
+          handleAudioEnd();
+        };
+
         audio.onerror = (e) => {
+          if (animFrame) cancelAnimationFrame(animFrame);
           console.warn("Direct base64 audio failed, fallback to browser speech:", e);
           browserSpeechController.speak(effectiveClean, undefined, handleAudioEnd, targetLocale);
         };
@@ -837,6 +824,7 @@ export default function SanctuarySessionPage() {
         const playPromise = audio.play();
         if (playPromise !== undefined) {
           playPromise.catch((err) => {
+            if (animFrame) cancelAnimationFrame(animFrame);
             console.warn("Audio autoplay blocked, fallback to browser speech:", err);
             browserSpeechController.speak(effectiveClean, undefined, handleAudioEnd, targetLocale);
           });
@@ -867,6 +855,7 @@ export default function SanctuarySessionPage() {
     }
     browserSpeechController.cancelSpeech();
     setActiveKaraoke(null);
+    setSpeakingMessageId(null);
     activeSpeakingMessageIdRef.current = null;
 
     setErrorMessage(null);
@@ -1773,7 +1762,7 @@ export default function SanctuarySessionPage() {
                   (m.recommended_trataka ? normalizeTratakaMode(m.recommended_trataka) : null) ||
                   (recommendedTrataka ? normalizeTratakaMode(recommendedTrataka) : 'bindu');
 
-                const isCurrentlySpeaking = activeKaraoke?.messageId === m.id && isPlayingAudio;
+                const isCurrentlySpeaking = (speakingMessageId === m.id || activeKaraoke?.messageId === m.id) && isPlayingAudio;
 
                 return (
                   <motion.div
@@ -1815,10 +1804,11 @@ export default function SanctuarySessionPage() {
                         }
                         setIsPlayingAudio(false);
                         setActiveKaraoke(null);
+                        setSpeakingMessageId(null);
                         activeSpeakingMessageIdRef.current = null;
                       }}
                       onToggle={() => {
-                        if (activeKaraoke?.messageId === m.id) {
+                        if (speakingMessageId === m.id || activeKaraoke?.messageId === m.id) {
                           browserSpeechController.cancelSpeech();
                           if (activeAudioRef.current) {
                             try {
@@ -1829,6 +1819,7 @@ export default function SanctuarySessionPage() {
                           }
                           setIsPlayingAudio(false);
                           setActiveKaraoke(null);
+                          setSpeakingMessageId(null);
                           activeSpeakingMessageIdRef.current = null;
                         } else {
                           playVoice(m.text, undefined, m.id);

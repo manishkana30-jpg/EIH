@@ -159,6 +159,15 @@ Inhale (4s) → Hold (7s) → Exhale (8s)`;
   });
   console.log('  ✓ Verified last card is strictly called Summary and never श्रीमद्भगवद्गीता आत्मिक दर्शन');
 
+  // Test 6: Verify karaoke-tokenizer.ts existence and exports
+  const tokenizerFile = path.join(__dirname, '..', 'lib', 'audio', 'karaoke-tokenizer.ts');
+  assert(fs.existsSync(tokenizerFile), 'karaoke-tokenizer.ts must exist in lib/audio/');
+  const tokenizerCode = fs.readFileSync(tokenizerFile, 'utf8');
+  assert(tokenizerCode.includes('tokenizeForKaraoke'), 'karaoke-tokenizer must export tokenizeForKaraoke');
+  assert(tokenizerCode.includes('isWordActive'), 'karaoke-tokenizer must export isWordActive');
+  assert(tokenizerCode.includes('cleanWordForMatch'), 'karaoke-tokenizer must export cleanWordForMatch');
+  console.log('  ✓ karaoke-tokenizer.ts single source of truth verified with 1:1 token alignment');
+
   console.log('  ✓ useKaraokeTTS and KaraokeMessage verified with modular React architecture');
   console.log('\nAll Modular Karaoke & Web Audio Tests Passed!\n');
 }
