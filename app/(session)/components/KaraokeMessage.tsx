@@ -363,28 +363,64 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
               const trimmed = part.trim();
               if (!trimmed) return null;
 
-              const isDiagnostic =
-                trimmed.startsWith("**SUMMARY") ||
-                trimmed.toLowerCase().includes("suffering assessment") ||
-                trimmed.includes("स्थिति व कष्ट") ||
-                trimmed.includes("मानसिक पीड़ा") ||
-                trimmed.toLowerCase().includes("diagnostic");
+              const isLastCard = idx === parts.length - 1;
 
-              const isGita = !isDiagnostic && (trimmed.startsWith("**1.") || trimmed.toLowerCase().includes("gita") || trimmed.includes("गीता"));
-              const isClinical = !isDiagnostic && (trimmed.startsWith("**2.") || trimmed.toLowerCase().includes("clinical") || trimmed.includes("कॉग्निटिव") || trimmed.toLowerCase().includes("cbt"));
-              const isTratak = !isDiagnostic && (trimmed.startsWith("**3.") || trimmed.toLowerCase().includes("tratak") || trimmed.includes("त्राटक"));
-              const isSynergy = !isDiagnostic && (trimmed.startsWith("**4.") || trimmed.toLowerCase().includes("synerg") || trimmed.toLowerCase().includes("combination") || trimmed.includes("त्रिवेणी") || trimmed.includes("समाधान"));
+              const isDiagnostic =
+                !isLastCard &&
+                (trimmed.startsWith("**SUMMARY") ||
+                  trimmed.toLowerCase().includes("suffering assessment") ||
+                  trimmed.includes("स्थिति व कष्ट") ||
+                  trimmed.includes("मानसिक पीड़ा") ||
+                  trimmed.toLowerCase().includes("diagnostic"));
+
+              const isSynergy =
+                isLastCard ||
+                (!isDiagnostic &&
+                  (trimmed.startsWith("**4.") ||
+                    trimmed.toLowerCase().includes("synerg") ||
+                    trimmed.toLowerCase().includes("combination") ||
+                    trimmed.includes("त्रिवेणी") ||
+                    trimmed.includes("समाधान") ||
+                    trimmed.toLowerCase().includes("summary")));
+
+              const isTratak =
+                !isDiagnostic &&
+                !isSynergy &&
+                !isLastCard &&
+                (trimmed.startsWith("**3.") ||
+                  trimmed.toLowerCase().includes("tratak") ||
+                  trimmed.includes("त्राटक"));
+
+              const isClinical =
+                !isDiagnostic &&
+                !isSynergy &&
+                !isTratak &&
+                !isLastCard &&
+                (trimmed.startsWith("**2.") ||
+                  trimmed.toLowerCase().includes("clinical") ||
+                  trimmed.includes("कॉग्निटिव") ||
+                  trimmed.toLowerCase().includes("cbt"));
+
+              const isGita =
+                !isDiagnostic &&
+                !isSynergy &&
+                !isTratak &&
+                !isClinical &&
+                !isLastCard &&
+                (trimmed.startsWith("**1.") ||
+                  trimmed.toLowerCase().includes("bhagavad gita") ||
+                  (trimmed.includes("गीता") && !trimmed.includes("त्रिवेणी") && !trimmed.startsWith("**4.")));
 
               const borderClass = isDiagnostic
                 ? "border-purple-500/35 bg-gradient-to-br from-purple-950/40 via-purple-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(168,85,247,0.08)]"
+                : (isSynergy || isLastCard)
+                ? "border-fuchsia-500/35 bg-gradient-to-br from-fuchsia-950/40 via-fuchsia-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(217,70,239,0.08)]"
                 : isGita
                 ? "border-amber-500/35 bg-gradient-to-br from-amber-950/40 via-amber-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(245,158,11,0.08)]"
                 : isClinical
-                ? "border-emerald-500/35 bg-gradient-to-br from-emerald-950/40 via-emerald-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(16,185,129,0.08)]"
+                ? "border-emerald-500/35 bg-gradient-to-br from-emerald-950/40 via-emerald-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(160,185,129,0.08)]"
                 : isTratak
                 ? "border-cyan-500/35 bg-gradient-to-br from-cyan-950/40 via-cyan-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(6,182,212,0.08)]"
-                : isSynergy
-                ? "border-fuchsia-500/35 bg-gradient-to-br from-fuchsia-950/40 via-fuchsia-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(217,70,239,0.08)]"
                 : "border-slate-800/80 bg-slate-900/60";
 
               const isHindi = /[\u0900-\u097F]/.test(trimmed);
@@ -394,18 +430,20 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
 
               const badgeText = isDiagnostic
                 ? (isHindi ? "📋 स्थिति व मानसिक पीड़ा का मूल्यांकन" : isSpanish ? "📋 Evaluación del Sufrimiento" : isFrench ? "📋 Évaluation de la Souffrance" : isGerman ? "📋 Belastungsanalyse" : "📋 Diagnostic & Suffering Assessment")
+                : (isSynergy || isLastCard)
+                ? "✨ Summary"
                 : isGita
                 ? (isHindi ? "🕉️ श्रीमद्भगवद्गीता आत्मिक दर्शन" : isSpanish ? "🕉️ Sabiduría del Bhagavad Gita" : isFrench ? "🕉️ Sagesse de la Bhagavad Gita" : isGerman ? "🕉️ Weisheit der Bhagavad Gita" : "🕉️ Bhagavad Gita Wisdom")
                 : isClinical
                 ? (isHindi ? "🧠 क्लिनिकल कॉग्निटिव न्यूरोसाइंस (CBT)" : isSpanish ? "🧠 Neurociencia Clínica Cognitiva (TCC)" : isFrench ? "🧠 Neurosciences Cliniques Cognitives (TCC)" : isGerman ? "🧠 Klinische Kognitive Neurowissenschaft (CBT)" : "🧠 Clinical Cognitive Neuroscience (CBT)")
                 : isTratak
                 ? (isHindi ? "👁️ त्राटक न्यूरो-ऑक्युलर ध्यान विधि" : isSpanish ? "👁️ Protocolo Neuro-Ocular Tratak" : isFrench ? "👁️ Protocole Neuro-Oculaire Tratak" : isGerman ? "👁️ Tratak Neuro-Okulares Protokoll" : "👁️ Tratak Neuro-Ocular Protocol")
-                : isSynergy
-                ? (isHindi ? "✨ एकीकृत त्रिवेणी उपचार योजना (गीता + CBT + त्राटक)" : isSpanish ? "✨ Resolución Sinérgica Tri-Pilar" : isFrench ? "✨ Résolution Synergique Tri-Piliers" : isGerman ? "✨ Synergistische Dreisäulen-Lösung" : "✨ Tri-Pillar Synergistic Resolution (Gita + CBT + Tratak)")
                 : null;
 
               const badgeColor = isDiagnostic
                 ? "text-purple-300 bg-purple-500/15 border-purple-500/30"
+                : (isSynergy || isLastCard)
+                ? "text-fuchsia-400 bg-fuchsia-500/15 border-fuchsia-500/30"
                 : isGita
                 ? "text-amber-400 bg-amber-500/15 border-amber-500/30"
                 : isClinical

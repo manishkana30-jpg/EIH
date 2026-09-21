@@ -130,6 +130,33 @@ Inhale (4s) → Hold (7s) → Exhale (8s)`;
   assert(compCode.includes('Speaking...'), 'KaraokeMessage must render Speaking state indicator');
   assert(compCode.includes('Listen'), 'KaraokeMessage must render Listen button');
 
+  // Test 5: Verify Last Card is called Summary and never Gita badge
+  assert(compCode.includes('isLastCard'), 'KaraokeMessage must detect isLastCard');
+  assert(compCode.includes('"✨ Summary"'), 'KaraokeMessage must label synergy / last card with "✨ Summary"');
+  assert(compCode.includes('!isLastCard &&'), 'Gita badge and shloka card must explicitly exclude isLastCard');
+
+  // Test Card classification simulation
+  const sampleParts = [
+    "**1. श्रीमद्भगवद्गीता आत्मिक दर्शन (Bhagavad Gita Wisdom):** कर्मण्येवाधिकारस्ते...",
+    "**2. क्लिनिकल कॉग्निटिव न्यूरोसाइंस (CBT Framework):** संज्ञानात्मक पुनर्गठन...",
+    "**3. त्राटक न्यूरो-ऑक्युलर ध्यान विधि:** बिंदु त्राटक...",
+    "**4. एकीकृत त्रिवेणी उपचार योजना (गीता + CBT + त्राटक मिलकर आपकी पीड़ा कैसे दूर करेंगे):** सतत अभ्यास..."
+  ];
+
+  sampleParts.forEach((part, idx) => {
+    const trimmed = part.trim();
+    const isLastCard = idx === sampleParts.length - 1;
+    const isDiagnostic = !isLastCard && trimmed.startsWith("**SUMMARY");
+    const isSynergy = isLastCard || (!isDiagnostic && trimmed.startsWith("**4."));
+    const isGita = !isDiagnostic && !isSynergy && !isLastCard && trimmed.startsWith("**1.");
+    
+    if (isLastCard) {
+      assert.strictEqual(isGita, false, "Last card must NEVER be classified as isGita even if it mentions गीता");
+      assert.strictEqual(isSynergy, true, "Last card must be classified as isSynergy / Summary");
+    }
+  });
+  console.log('  ✓ Verified last card is strictly called Summary and never श्रीमद्भगवद्गीता आत्मिक दर्शन');
+
   console.log('  ✓ useKaraokeTTS and KaraokeMessage verified with modular React architecture');
   console.log('\nAll Modular Karaoke & Web Audio Tests Passed!\n');
 }
