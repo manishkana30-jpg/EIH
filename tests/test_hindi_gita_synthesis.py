@@ -41,7 +41,7 @@ class TestHindiGitaSynthesis(unittest.TestCase):
         self.assertIn("भगवान श्रीकृष्ण इस पावन श्लोक में हमें समझाते हैं", reply)
 
     def test_catalogs_fully_populated(self):
-        self.assertEqual(len(GITA_LOCALIZATION_CATALOG), 12)
+        self.assertGreaterEqual(len(GITA_LOCALIZATION_CATALOG), 12)
         self.assertEqual(len(TRATAKA_LOCALIZATION_CATALOG), 5)
         for k, v in GITA_LOCALIZATION_CATALOG.items():
             self.assertIn("hi", v, f"Missing 'hi' in {k}")

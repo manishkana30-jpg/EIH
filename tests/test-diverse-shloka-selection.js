@@ -124,7 +124,7 @@ function runDiversityTests() {
   console.log('TESTING DIVERSE SHLOKA SELECTION & ANTI-LOOPING GUARANTEE');
   console.log('================================================================\n');
 
-  assert.strictEqual(GITA_LIBRARY.length, 12, "Gita library must contain exactly 12 psychological Shlokas");
+  assert.strictEqual(GITA_LIBRARY.length, 13, "Gita library must contain exactly 13 psychological Shlokas");
   console.log(`✓ Verified full library of ${GITA_LIBRARY.length} distinct clinical Shlokas.\n`);
 
   const matchedShlokas = new Set();

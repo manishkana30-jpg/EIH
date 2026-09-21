@@ -12,11 +12,17 @@
 
 import { emotionClassifier } from './emotion-classifier.ts';
 
+export type GitaCategory = "all" | "anxiety_fear" | "burnout_action" | "clarity_focus" | "grief_loss";
+
 export interface GitaShlokaItem {
   id: string;
   chapter: number;
   verse: string;
+  reference_header: string; // e.g. "BG 2.48"
   theme: string;
+  category: "anxiety_fear" | "burnout_action" | "clarity_focus" | "grief_loss";
+  psychological_somatic_mapping: string; // e.g. "Clinical Focus: Equanimity & Sympathetic Down-Regulation"
+  cognitive_tags: string[]; // e.g. ["#Sattva", "#Detachment", "#CognitiveReframing"]
   keywords: string[];
   associated_emotions: string[];
   associated_conditions: string[];
@@ -35,7 +41,11 @@ export const GITA_LIBRARY: GitaShlokaItem[] = [
     id: "bg_2_47",
     chapter: 2,
     verse: "47",
+    reference_header: "BG 2.47",
     theme: "Outcome Detachment / Career Anxiety / Decision Paralysis",
+    category: "burnout_action",
+    psychological_somatic_mapping: "Clinical Focus: Present Process Focus & Performance Anxiety De-escalation",
+    cognitive_tags: ["#NishkamaKarma", "#Detachment", "#CognitiveReframing", "#PresentFocus"],
     associated_emotions: ["confusion", "anxiety"],
     associated_conditions: ["gad", "career_anxiety", "perfectionism"],
     keywords: [
@@ -56,10 +66,39 @@ export const GITA_LIBRARY: GitaShlokaItem[] = [
     }
   },
   {
+    id: "bg_2_48",
+    chapter: 2,
+    verse: "48",
+    reference_header: "BG 2.48",
+    theme: "Equanimity in Action / Samatvam / Performance Equilibrium",
+    category: "burnout_action",
+    psychological_somatic_mapping: "Clinical Focus: Equanimity & Sympathetic Down-Regulation",
+    cognitive_tags: ["#Sattva", "#Detachment", "#CognitiveReframing", "#Samatvam"],
+    associated_emotions: ["anxiety", "confusion"],
+    associated_conditions: ["gad", "career_anxiety", "perfectionism"],
+    keywords: [
+      "equanimity", "samatva", "samatvam", "success or failure", "balanced mind",
+      "calm in action", "work stress", "performance", "perfectionist", "balance",
+      "समत्व", "योगस्थ", "समत्वं योग उच्यते", "संतुलन", "सफलता असफलता"
+    ],
+    shloka_sanskrit: "योगस्थः कुरु कर्माणि सङ्गं त्यक्त्वा धनञ्जय।\nसिद्ध्यसिद्ध्योः समो भूत्वा समत्वं योग उच्यते॥",
+    shloka_roman: "yoga-sthaḥ kuru karmāṇi saṅgaṁ tyaktvā dhanañjaya |\nsiddhy-asiddhyoḥ samo bhūtvā samatvaṁ yoga ucyate ||",
+    philosophical_meaning: "Be steadfast in yoga, O Arjuna. Perform your duty without attachment, remaining even-minded in success and failure. Such equanimity of mind is known as Yoga.",
+    clinical_reframe: "Somatic equilibrium and autonomic down-regulation (Samatvam). When the nervous system stops swinging erratically between fear of failure and euphoria of success, baseline vagal tone stabilizes, enabling sustained cognitive clarity.",
+    actionable_guidance: {
+      what_to_do: "Anchor in your neutral observing center before initiating high-pressure tasks, viewing all outcomes as informative feedback rather than personal identity.",
+      what_not_to_do: "Do not ride the emotional rollercoaster of short-term wins and setbacks, and avoid tying self-worth to fluctuating metrics."
+    }
+  },
+  {
     id: "bg_2_14",
     chapter: 2,
     verse: "14",
+    reference_header: "BG 2.14",
     theme: "Impermanence of Pain / Heartbreak / Emotional Transience",
+    category: "grief_loss",
+    psychological_somatic_mapping: "Clinical Focus: Titiksha Somatic Acceptance & Emotional Distress Tolerance",
+    cognitive_tags: ["#Titiksha", "#Impermanence", "#SomaticAcceptance", "#EmotionalTolerance"],
     associated_emotions: ["sadness", "nostalgia", "empathic_pain"],
     associated_conditions: ["grief_bereavement", "major_depressive_inertia"],
     keywords: [
@@ -84,7 +123,11 @@ export const GITA_LIBRARY: GitaShlokaItem[] = [
     id: "bg_2_62_63",
     chapter: 2,
     verse: "62-63",
+    reference_header: "BG 2.62-63",
     theme: "Anger Cascade / Betrayal / Cognitive De-escalation",
+    category: "anxiety_fear",
+    psychological_somatic_mapping: "Clinical Focus: Prefrontal Cortex Restraint & Sympathetic Hijack De-escalation",
+    cognitive_tags: ["#BuddhiPreservation", "#AngerDeescalation", "#CognitiveControl", "#VagalBrake"],
     associated_emotions: ["anger"],
     associated_conditions: ["anger_frustration_dysregulation"],
     keywords: [
@@ -108,7 +151,11 @@ export const GITA_LIBRARY: GitaShlokaItem[] = [
     id: "bg_6_5",
     chapter: 6,
     verse: "5",
+    reference_header: "BG 6.5",
     theme: "Self-Mastery / Inner Critic / Imposter Syndrome",
+    category: "clarity_focus",
+    psychological_somatic_mapping: "Clinical Focus: Internal Locus of Control & Cultivating the Self as Ally",
+    cognitive_tags: ["#AtmaKripa", "#SelfMastery", "#InnerAlly", "#CognitiveReframing"],
     associated_emotions: ["disgust", "shame"],
     associated_conditions: ["shame_core_defectiveness", "imposter_syndrome"],
     keywords: [
@@ -132,7 +179,11 @@ export const GITA_LIBRARY: GitaShlokaItem[] = [
     id: "bg_2_70",
     chapter: 2,
     verse: "70",
+    reference_header: "BG 2.70",
     theme: "Ocean Equanimity / Overwhelm / Sensory Chaos",
+    category: "burnout_action",
+    psychological_somatic_mapping: "Clinical Focus: Ocean Awareness & Sensory Overload De-escalation",
+    cognitive_tags: ["#SamudraSthiti", "#OceanEquanimity", "#SensoryGrounding", "#Sattva"],
     associated_emotions: ["confusion", "anxiety"],
     associated_conditions: ["adhd_executive_overwhelm", "burnout_fatigue"],
     keywords: [
@@ -155,7 +206,11 @@ export const GITA_LIBRARY: GitaShlokaItem[] = [
     id: "bg_6_26",
     chapter: 6,
     verse: "26",
+    reference_header: "BG 6.26",
     theme: "Restless Mind / Intrusive Thoughts / OCD Rumination",
+    category: "clarity_focus",
+    psychological_somatic_mapping: "Clinical Focus: Attentional Redirect & Non-Judgmental Re-anchoring",
+    cognitive_tags: ["#Abhyasa", "#AttentionalControl", "#CognitiveDefusion", "#Mindfulness"],
     associated_emotions: ["anxiety"],
     associated_conditions: ["ocd_rumination_loops", "insomnia_hyperarousal"],
     keywords: [
@@ -179,7 +234,11 @@ export const GITA_LIBRARY: GitaShlokaItem[] = [
     id: "bg_18_63",
     chapter: 18,
     verse: "63",
+    reference_header: "BG 18.63",
     theme: "Autonomy / Existential Paralysis / Free Will",
+    category: "clarity_focus",
+    psychological_somatic_mapping: "Clinical Focus: Internal Locus of Control & Autonomous Deliberate Choice",
+    cognitive_tags: ["#Svadharma", "#ConsciousAgency", "#FreeWill", "#AutonomousChoice"],
     associated_emotions: ["confusion"],
     associated_conditions: ["existential_dread_crisis"],
     keywords: [
@@ -202,7 +261,11 @@ export const GITA_LIBRARY: GitaShlokaItem[] = [
     id: "bg_2_56",
     chapter: 2,
     verse: "56",
+    reference_header: "BG 2.56",
     theme: "Sthitaprajna / Emotional Stability / Freedom from Fear",
+    category: "anxiety_fear",
+    psychological_somatic_mapping: "Clinical Focus: Affective Equilibrium & Autonomic Panic Resiliency",
+    cognitive_tags: ["#Sthitaprajna", "#FearRelease", "#AffectiveEquilibrium", "#Sakshi"],
     associated_emotions: ["fear", "horror"],
     associated_conditions: ["panic_dysregulation", "trauma_hypervigilance"],
     keywords: [
@@ -224,7 +287,11 @@ export const GITA_LIBRARY: GitaShlokaItem[] = [
     id: "bg_12_15",
     chapter: 12,
     verse: "15",
+    reference_header: "BG 12.15",
     theme: "Social Anxiety / Relational Boundary / Toxic Environment",
+    category: "anxiety_fear",
+    psychological_somatic_mapping: "Clinical Focus: Interpersonal Differentiation & Social Evaluative Threat Dissolution",
+    cognitive_tags: ["#RelationalPeace", "#Boundaries", "#SocialSafety", "#Equanimity"],
     associated_emotions: ["awkwardness", "disgust"],
     associated_conditions: ["social_evaluative_threat", "compassion_fatigue_caregiver"],
     keywords: [
@@ -247,7 +314,11 @@ export const GITA_LIBRARY: GitaShlokaItem[] = [
     id: "bg_3_35",
     chapter: 3,
     verse: "35",
+    reference_header: "BG 3.35",
     theme: "Comparison Fatigue / Authenticity / Svadharma",
+    category: "clarity_focus",
+    psychological_somatic_mapping: "Clinical Focus: Authentic Svadharma & Comparison Fatigue Detox",
+    cognitive_tags: ["#Svadharma", "#Authenticity", "#ComparisonDetox", "#InternalValidation"],
     associated_emotions: ["awkwardness", "disgust"],
     associated_conditions: ["imposter_syndrome"],
     keywords: [
@@ -269,7 +340,11 @@ export const GITA_LIBRARY: GitaShlokaItem[] = [
     id: "bg_5_23",
     chapter: 5,
     verse: "23",
+    reference_header: "BG 5.23",
     theme: "Urge Surfing / Impulsive Reaction / Distress Tolerance",
+    category: "burnout_action",
+    psychological_somatic_mapping: "Clinical Focus: Somatic Urge Surfing & Neurochemical Impulse Restraint",
+    cognitive_tags: ["#UrgeSurfing", "#ImpulseControl", "#DistressTolerance", "#VegaSahana"],
     associated_emotions: ["craving"],
     associated_conditions: ["adhd_executive_overwhelm"],
     keywords: [
@@ -291,7 +366,11 @@ export const GITA_LIBRARY: GitaShlokaItem[] = [
     id: "bg_18_66",
     chapter: 18,
     verse: "66",
+    reference_header: "BG 18.66",
     theme: "Existential Surrender / Severe Despair / Radical Acceptance",
+    category: "grief_loss",
+    psychological_somatic_mapping: "Clinical Focus: Radical Surrender & Vagal Re-anchoring in Trust",
+    cognitive_tags: ["#Sharanagati", "#RadicalAcceptance", "#ExistentialPeace", "#Surrender"],
     associated_emotions: ["sadness", "boredom"],
     associated_conditions: ["major_depressive_inertia", "burnout_fatigue"],
     keywords: [
@@ -460,6 +539,83 @@ export function formatGitaShlokaBlock(item: GitaShlokaItem): string {
 ${item.shloka_sanskrit}
 
 ${item.shloka_roman}
-— श्रीमद्भगवद्गीता (Chapter ${item.chapter}, Verse ${item.verse})
+— श्रीमद्भगवद्गीता (${item.reference_header || `Chapter ${item.chapter}, Verse ${item.verse}`})
 [/GITA_SHLOKA]`;
 }
+
+/**
+ * Instant Real-Time Search & Category Filtering for the Bhagavad Gita Library
+ */
+export function searchGitaLibrary(
+  query?: string,
+  category?: string
+): GitaShlokaItem[] {
+  let list = GITA_LIBRARY;
+
+  if (category && category !== "all") {
+    list = list.filter((item) => item.category === category);
+  }
+
+  if (!query || !query.trim()) {
+    return list;
+  }
+
+  const q = query.toLowerCase().trim();
+  return list.filter((item) => {
+    // Check chapter/verse match (e.g. "2", "2.48", "48", "bg 2.48", "chapter 2")
+    const chStr = String(item.chapter);
+    const vStr = String(item.verse);
+    const ref = (item.reference_header || `BG ${item.chapter}.${item.verse}`).toLowerCase();
+    if (
+      ref.includes(q) ||
+      q === chStr ||
+      q === vStr ||
+      q === `${chStr}.${vStr}` ||
+      q === `${chStr}:${vStr}` ||
+      q === `chapter ${chStr}` ||
+      q === `verse ${vStr}`
+    ) {
+      return true;
+    }
+
+    // Check theme & clinical focus
+    if (item.theme.toLowerCase().includes(q)) return true;
+    if (item.psychological_somatic_mapping.toLowerCase().includes(q)) return true;
+
+    // Check cognitive tags
+    if (item.cognitive_tags.some((tag) => tag.toLowerCase().includes(q))) return true;
+
+    // Check emotions & conditions
+    if (item.associated_emotions.some((e) => e.toLowerCase().includes(q))) return true;
+    if (item.associated_conditions.some((c) => c.toLowerCase().includes(q))) return true;
+
+    // Check keywords
+    if (item.keywords.some((k) => k.toLowerCase().includes(q))) return true;
+
+    // Check meaning, reframe, transliteration, sanskrit
+    if (item.philosophical_meaning.toLowerCase().includes(q)) return true;
+    if (item.clinical_reframe.toLowerCase().includes(q)) return true;
+    if (item.shloka_roman.toLowerCase().includes(q)) return true;
+    if (item.shloka_sanskrit.includes(q)) return true;
+
+    return false;
+  });
+}
+
+/**
+ * Direct Emotion-to-Shloka Mapper for quick RAG retrieval
+ */
+export function getGitaShlokaForEmotion(emotion: string): GitaShlokaItem | null {
+  if (!emotion) return null;
+  const norm = emotion.toLowerCase().trim();
+  const targetId = EMOTION_TO_GITA_MAP[norm];
+  if (targetId) {
+    const found = GITA_LIBRARY.find((s) => s.id === targetId);
+    if (found) return found;
+  }
+  return (
+    GITA_LIBRARY.find((s) => s.associated_emotions.includes(norm)) ||
+    findGitaWisdom(emotion, norm)
+  );
+}
+

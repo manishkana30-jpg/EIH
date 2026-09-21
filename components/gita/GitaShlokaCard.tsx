@@ -1,12 +1,15 @@
 "use client";
 
 import React, { useState } from "react";
-import { Sparkles, Copy, Check, Volume2 } from "lucide-react";
+import { GITA_LIBRARY, GitaShlokaItem } from "@/lib/knowledge/gita-library";
+import { getLocalizedGitaItem } from "@/lib/i18n/clinical-localization";
 
 export interface GitaShlokaCardProps {
-  shlokaContent: string;
+  item?: GitaShlokaItem;
+  shlokaContent?: string;
   chapterVerse?: string;
-  onSpeak?: (text: string) => void;
+  languageCode?: string;
+  onSelect?: (item: GitaShlokaItem) => void;
   className?: string;
 }
 
@@ -36,91 +39,173 @@ export function parseGitaShloka(text: string): {
   return { isGita: false, shlokaBlock: null, remainingText: text };
 }
 
+/**
+ * 100% Text-Only Semantic Gita Shloka Card.
+ * Adheres strictly to text typography, subtle text borders, and clean contrast.
+ * Completely free of <img>, thumbnails, background picture cards, and SVG illustrations.
+ */
 export const GitaShlokaCard: React.FC<GitaShlokaCardProps> = ({
+  item,
   shlokaContent,
   chapterVerse,
-  onSpeak,
+  languageCode,
+  onSelect,
   className = "",
 }) => {
   const [copied, setCopied] = useState(false);
 
-  if (!shlokaContent) return null;
+  // If item not provided directly, try finding it in GITA_LIBRARY
+  const resolvedItem = React.useMemo(() => {
+    if (item) return item;
+    if (!shlokaContent) return null;
 
-  // Split Devanagari lines and Roman/attribution lines
-  const lines = shlokaContent.split("\n").map((l) => l.trim()).filter(Boolean);
-  const devanagariLines = lines.filter((l) => /[\u0900-\u097F]/.test(l) && !l.startsWith("—"));
-  const romanLines = lines.filter((l) => !/[\u0900-\u097F]/.test(l) && !l.startsWith("—"));
-  const attribution =
+    const lower = shlokaContent.toLowerCase();
+    return (
+      GITA_LIBRARY.find((s) => {
+        if (lower.includes(`chapter ${s.chapter}`) && lower.includes(`verse ${s.verse}`)) return true;
+        if (lower.includes(`${s.chapter}.${s.verse}`)) return true;
+        if (lower.includes(s.id)) return true;
+        if (s.shloka_roman && lower.includes(s.shloka_roman.slice(0, 20).toLowerCase())) return true;
+        return false;
+      }) || null
+    );
+  }, [item, shlokaContent]);
+
+  if (!resolvedItem && !shlokaContent) return null;
+
+  // Extract Devanagari and Roman lines
+  const lines = (shlokaContent || (resolvedItem ? `${resolvedItem.shloka_sanskrit}\n\n${resolvedItem.shloka_roman}` : ""))
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean);
+
+  const devanagariLines = resolvedItem
+    ? resolvedItem.shloka_sanskrit.split("\n").map((l) => l.trim()).filter(Boolean)
+    : lines.filter((l) => /[\u0900-\u097F]/.test(l) && !l.startsWith("—"));
+
+  const romanLines = resolvedItem
+    ? resolvedItem.shloka_roman.split("\n").map((l) => l.trim()).filter(Boolean)
+    : lines.filter((l) => !/[\u0900-\u097F]/.test(l) && !l.startsWith("—"));
+
+  const referenceHeader =
+    resolvedItem?.reference_header ||
     chapterVerse ||
-    lines.find((l) => l.startsWith("—") || l.toLowerCase().includes("chapter") || l.toLowerCase().includes("bg"));
+    (resolvedItem ? `BG ${resolvedItem.chapter}.${resolvedItem.verse}` : "BG VEDIC ANCHOR");
+
+  const localized = resolvedItem ? getLocalizedGitaItem(resolvedItem, languageCode) : null;
+  const translationText = localized?.meaning || resolvedItem?.philosophical_meaning;
+  const clinicalMapping = resolvedItem?.psychological_somatic_mapping;
+  const tags = resolvedItem?.cognitive_tags || ["#Sattva", "#Detachment", "#CognitiveReframing"];
 
   const handleCopy = async () => {
+    const fullText = [
+      referenceHeader,
+      devanagariLines.join("\n"),
+      romanLines.join("\n"),
+      translationText ? `Translation: ${translationText}` : "",
+      clinicalMapping ? clinicalMapping : "",
+      tags.join(" "),
+    ]
+      .filter(Boolean)
+      .join("\n\n");
+
     try {
-      await navigator.clipboard.writeText(shlokaContent);
+      await navigator.clipboard.writeText(fullText);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (_) {}
   };
 
   return (
-    <blockquote
-      className={`my-4 p-5 sm:p-6 rounded-2xl bg-amber-500/10 border-l-4 border-amber-500 text-amber-50 shadow-[0_0_20px_rgba(245,158,11,0.12)] font-serif text-center relative overflow-hidden transition-all duration-300 ${className}`}
+    <article
+      className={`p-5 sm:p-6 rounded-xl bg-slate-950/80 border border-amber-500/20 text-slate-100 shadow-sm transition-all duration-200 hover:border-amber-500/40 text-left ${className}`}
     >
-      <div className="flex items-center justify-between gap-2 mb-3">
-        <div className="flex items-center gap-2 mx-auto">
-          <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" />
-          <span className="text-[11px] font-sans font-bold tracking-widest text-amber-400 uppercase">
-            {attribution ? attribution.replace(/^[—\-]\s*/, "") : "श्रीमद्भगवद्गीता • Sacred Cognitive Anchor"}
+      {/* Top Header: Reference & Plain Text Actions */}
+      <div className="flex items-center justify-between gap-3 pb-3 border-b border-amber-500/15">
+        <div className="flex items-center gap-2">
+          <span className="font-mono text-xs sm:text-sm font-bold tracking-widest text-amber-400 uppercase bg-amber-500/10 px-2.5 py-0.5 rounded border border-amber-500/20">
+            {referenceHeader}
           </span>
-          <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" />
+          {resolvedItem?.theme && (
+            <span className="text-xs text-slate-400 font-medium hidden sm:inline">
+              — {resolvedItem.theme}
+            </span>
+          )}
         </div>
 
-        <div className="flex items-center gap-1.5 absolute right-4 top-4">
-          {onSpeak && (
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleCopy}
+            title="Copy verse text"
+            className="text-[11px] font-mono px-2 py-0.5 rounded border border-slate-700 hover:border-amber-400/50 text-slate-400 hover:text-amber-300 transition-colors"
+          >
+            {copied ? "[Copied]" : "[Copy]"}
+          </button>
+          {onSelect && resolvedItem && (
             <button
-              onClick={() => onSpeak(shlokaContent)}
-              title="Speak Verse"
-              aria-label="Speak Verse"
-              className="p-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 transition-colors focus-visible:ring-2 focus-visible:ring-amber-500/50"
+              type="button"
+              onClick={() => onSelect(resolvedItem)}
+              className="text-[11px] font-mono px-2 py-0.5 rounded border border-amber-500/40 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 transition-colors"
             >
-              <Volume2 className="w-3.5 h-3.5" />
+              [Reflect]
             </button>
           )}
-          <button
-            onClick={handleCopy}
-            title={copied ? "Copied" : "Copy Shloka"}
-            aria-label="Copy Shloka"
-            className="p-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 transition-colors focus-visible:ring-2 focus-visible:ring-amber-500/50"
-          >
-            {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-          </button>
         </div>
       </div>
 
-      {devanagariLines.length > 0 ? (
-        <div className="space-y-1.5 my-3">
-          {devanagariLines.map((line, idx) => (
-            <p key={idx} className="text-base sm:text-lg font-medium text-amber-100 leading-relaxed tracking-wide">
+      {/* Sanskrit Devanagari (Legible Serif Font) */}
+      <div className="my-4 space-y-1 text-center sm:text-left">
+        {devanagariLines.map((line, idx) => (
+          <p
+            key={idx}
+            className="font-serif text-base sm:text-lg font-medium text-amber-100 leading-relaxed tracking-wide"
+          >
+            {line}
+          </p>
+        ))}
+      </div>
+
+      {/* Romanized IAST Transliteration */}
+      {romanLines.length > 0 && (
+        <div className="my-3 space-y-0.5 text-center sm:text-left">
+          {romanLines.map((line, idx) => (
+            <p key={idx} className="font-sans text-xs sm:text-sm text-amber-200/80 italic leading-relaxed">
               {line}
             </p>
           ))}
         </div>
-      ) : (
-        <p className="text-base sm:text-lg font-medium text-amber-100 leading-relaxed tracking-wide my-3">
-          {shlokaContent}
-        </p>
       )}
 
-      {romanLines.length > 0 && (
-        <div className="space-y-0.5 mt-2 pt-2 border-t border-amber-500/20">
-          {romanLines.map((line, idx) => (
-            <p key={idx} className="text-xs sm:text-sm text-amber-200/80 italic font-sans">
-              {line}
-            </p>
+      {/* Plain Language Translation */}
+      {translationText && (
+        <div className="mt-3 pt-3 border-t border-slate-800/80 text-xs sm:text-sm text-slate-300 leading-relaxed">
+          <span className="font-medium text-amber-300/90 mr-1.5 font-sans">Translation:</span>
+          <span>{translationText}</span>
+        </div>
+      )}
+
+      {/* Psychological / Somatic Mapping */}
+      {clinicalMapping && (
+        <div className="mt-3 text-xs text-amber-400/95 font-sans font-medium bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
+          {clinicalMapping}
+        </div>
+      )}
+
+      {/* Cognitive Tags */}
+      {tags && tags.length > 0 && (
+        <div className="mt-3.5 pt-2.5 border-t border-white/5 flex flex-wrap items-center gap-1.5">
+          {tags.map((tag, idx) => (
+            <span
+              key={idx}
+              className="text-[10px] font-mono font-medium text-amber-300/80 bg-amber-500/5 px-2 py-0.5 rounded border border-amber-500/15"
+            >
+              {tag}
+            </span>
           ))}
         </div>
       )}
-    </blockquote>
+    </article>
   );
 };
 

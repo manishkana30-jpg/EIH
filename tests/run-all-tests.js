@@ -30,6 +30,7 @@ require('./test-cbt-trataka-multilingual-fixes.js');
 require('./test-language-and-vocal-selection.js');
 require('./test-seo-verification.js');
 require('./test-karaoke-engine-modular.js');
+require('./test-text-only-gita-library.js');
 
 
 console.log('================================================================');

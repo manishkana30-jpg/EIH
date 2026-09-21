@@ -1162,6 +1162,32 @@ export const GITA_LOCALIZATION_CATALOG: Record<string, Partial<Record<SupportedL
       what_not_to_do: "Grübeln Sie nicht über hypothetische Folgen nach und verharren Sie nicht in Erstarrung.",
     },
   },
+  bg_2_48: {
+    hi: {
+      meaning: "हे धनञ्जय! आसक्ति को त्यागकर तथा सिद्धि और असिद्धि (सफलता और असफलता) में समभाव होकर अपने कर्तव्य का पालन करो। मन की यही समता 'योग' कहलाती है।",
+      reflection: "समतत्वं योग उच्यते। सफलता और असफलता में मन की समता बनाए रखना ही वास्तविक योग और न्यूरोलॉजिकल संतुलन है। जब आप परिणाम की चिंता छोड़ केवल कर्म में स्थित होते हैं, तो तंत्रिका तंत्र तुरंत शांत हो जाता है।",
+      what_to_do: "कार्य करते समय सफलता या विफलता की व्यर्थ चिंता छोड़ें और अपने मन को पूर्ण संतुलन और साक्षी भाव में स्थिर रखें।",
+      what_not_to_do: "सफलता में अहंकार से न भरें और असफलता में हताश होकर कर्म करना न छोड़ें।",
+    },
+    es: {
+      meaning: "Mantente firme en el yoga, ¡oh Arjuna! Realiza tu deber sin apego, permaneciendo ecuánime ante el éxito y el fracaso. Esa ecuanimidad mental se llama Yoga.",
+      reflection: "La verdadera estabilidad psicológica nace del equilibrio (Samatvam). Al desvincular tu valor del resultado temporal, tu sistema nervioso se desactiva del pánico y recupera la calma biológica.",
+      what_to_do: "Actúa con entrega total en el presente, aceptando cualquier resultado con ánimo sereno.",
+      what_not_to_do: "No dejes que tu bienestar oscile descontroladamente entre la euforia y el abatimiento.",
+    },
+    fr: {
+      meaning: "Établi dans le yoga, ô Arjuna, accomplis ton devoir sans attachement, égal dans le succès comme dans l'échec. Car l'équanimité est le yoga même.",
+      reflection: "L'équanimité (Samatvam) est le véritable sanctuaire intérieur. En libérant votre système nerveux de l'obsession de la victoire ou de la défaite, vous retrouvez une clarté souveraine.",
+      what_to_do: "Posez votre acte avec une conscience sereine et détachez-vous de l'anxiété du résultat.",
+      what_not_to_do: "Ne liez pas votre valeur humaine aux fluctuations éphémères du succès extérieur.",
+    },
+    de: {
+      meaning: "Im Yoga verankert, erfülle deine Pflicht ohne Anhaftung, gleichmütig in Erfolg und Misserfolg. Dieser Gleichmut des Geistes wird Yoga genannt.",
+      reflection: "Gleichmut (Samatvam) ist die höchste Kunst seelischer Resilienz. Wenn der Geist aufhört, zwischen Triumph und Versagensangst hin- und hergerissen zu werden, kehrt tiefer Friede ein.",
+      what_to_do: "Handeln Sie mit voller Hingabe im Hier und Jetzt und begegnen Sie allen Ergebnissen mit innerer Ruhe.",
+      what_not_to_do: "Lassen Sie Ihren Selbstwert nicht von äußeren Erfolgen oder Rückschlägen abhängig machen.",
+    },
+  },
   bg_2_14: {
     hi: {
       meaning: "हे कुन्तीपुत्र! इन्द्रियों और उनके विषयों का संपर्क ही सुख-दुःख, सर्दी-गर्मी का अनुभव कराता है। ये सभी अनित्य और क्षणिक हैं, आते हैं और चले जाते हैं। हे भरतवंशी! तुम इन्हें धैर्य और आत्म-बल के साथ सहन करो।",
