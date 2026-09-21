@@ -99,6 +99,19 @@ function runTests() {
 
   console.log('  ✓ Verified app/api/gita/route.ts REST endpoint exists');
 
+  // ─── 7. Verify Shloka is Embedded Plain-Text Inside Gita Section, Not at Top of Chat ───
+  const karaokeMsgPath = path.join(__dirname, '..', 'app', '(session)', 'components', 'KaraokeMessage.tsx');
+  const karaokeMsgCode = fs.readFileSync(karaokeMsgPath, 'utf8');
+
+  assert(karaokeMsgCode.includes('variant="inline"'), 'KaraokeMessage must render Gita shloka using variant="inline"');
+  assert(karaokeMsgCode.includes('isGita && gitaParsed.isGita && gitaParsed.shlokaBlock'), 'KaraokeMessage must embed shloka inside the isGita section');
+
+  const topCardBeforeBubble = karaokeMsgCode.indexOf('<GitaShlokaCard');
+  const messageBubbleStart = karaokeMsgCode.indexOf('max-w-[88%]');
+  assert(topCardBeforeBubble > messageBubbleStart, 'GitaShlokaCard must NOT be rendered at the top of the chat outside the message bubble');
+
+  console.log('  ✓ Verified Shloka is rendered in plain-text inside Shreemadh Bhagwatgita section and NOT at top of chat');
+
   console.log('\nAll 100% Text-Only Bhagavad Gita Architecture Tests Passed Successfully!\n');
 }
 

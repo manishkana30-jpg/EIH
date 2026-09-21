@@ -11,6 +11,7 @@ export interface GitaShlokaCardProps {
   languageCode?: string;
   onSelect?: (item: GitaShlokaItem) => void;
   className?: string;
+  variant?: "card" | "inline";
 }
 
 export function parseGitaShloka(text: string): {
@@ -51,6 +52,7 @@ export const GitaShlokaCard: React.FC<GitaShlokaCardProps> = ({
   languageCode,
   onSelect,
   className = "",
+  variant = "card",
 }) => {
   const [copied, setCopied] = useState(false);
 
@@ -115,6 +117,48 @@ export const GitaShlokaCard: React.FC<GitaShlokaCardProps> = ({
       setTimeout(() => setCopied(false), 2000);
     } catch (_) {}
   };
+
+  // Inline Plain-Text Mode: Embedded directly inside message sections (e.g. Shrimad Bhagavad Gita Atma Darshan)
+  if (variant === "inline") {
+    return (
+      <div
+        className={`my-2.5 p-3 sm:p-3.5 rounded-lg bg-amber-950/25 border-l-2 border-amber-500/60 font-sans space-y-1.5 text-left ${className}`}
+      >
+        {/* Sanskrit Devanagari */}
+        {devanagariLines.length > 0 && (
+          <div className="space-y-0.5">
+            {devanagariLines.map((line, idx) => (
+              <p
+                key={idx}
+                className="font-serif text-sm sm:text-base font-semibold text-amber-100 leading-relaxed tracking-wide"
+              >
+                {line}
+              </p>
+            ))}
+          </div>
+        )}
+
+        {/* Romanized IAST Transliteration */}
+        {romanLines.length > 0 && (
+          <div className="space-y-0.5 pt-0.5 border-t border-amber-500/15">
+            {romanLines.map((line, idx) => (
+              <p
+                key={idx}
+                className="font-sans text-xs sm:text-sm text-amber-200/80 italic leading-normal"
+              >
+                {line}
+              </p>
+            ))}
+          </div>
+        )}
+
+        {/* Subtle Plain-Text Attribution Line */}
+        <p className="text-[11px] font-mono font-medium text-amber-400/90 pt-0.5">
+          — श्रीमद्भगवद्गीता ({referenceHeader})
+        </p>
+      </div>
+    );
+  }
 
   return (
     <article

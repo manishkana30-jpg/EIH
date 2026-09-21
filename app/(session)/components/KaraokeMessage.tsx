@@ -348,17 +348,13 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
         <span className="text-teal-300 font-semibold">Sanctuary Healer</span>
       </div>
 
-      {/* 1. Gita Shloka Contemplation Card (Excluded from speech synthesis) */}
-      {gitaParsed.isGita && gitaParsed.shlokaBlock && (
-        <div className="w-full max-w-[88%] md:max-w-xl mb-1">
-          <GitaShlokaCard shlokaContent={gitaParsed.shlokaBlock} />
-        </div>
-      )}
-
-      {/* 2. Direct Therapeutic / Educational Content with Real-Time Karaoke */}
+      {/* Therapeutic / Educational Content with Real-Time Karaoke & Inline Plain-Text Shloka */}
       <div className="max-w-[88%] md:max-w-xl p-4 rounded-2xl text-sm leading-relaxed bg-gradient-to-br from-slate-900/90 via-slate-900/80 to-slate-950/95 border border-slate-800/80 text-slate-100 rounded-tl-sm shadow-xl backdrop-blur-md">
         {parts.length <= 1 ? (
           <div className="space-y-1.5 text-slate-100 text-xs sm:text-sm">
+            {gitaParsed.isGita && gitaParsed.shlokaBlock && (
+              <GitaShlokaCard shlokaContent={gitaParsed.shlokaBlock} variant="inline" />
+            )}
             {renderFormattedMarkdown(therapeuticBody, isSpeaking, activeKaraoke, activeWordRef, counter)}
           </div>
         ) : (
@@ -434,6 +430,13 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
                         </span>
                       )}
                     </div>
+                  )}
+                  {/* Shloka in plain text format inside Shreemadh Bhagwatgita Aatam Darshan */}
+                  {isGita && gitaParsed.isGita && gitaParsed.shlokaBlock && (
+                    <GitaShlokaCard
+                      shlokaContent={gitaParsed.shlokaBlock}
+                      variant="inline"
+                    />
                   )}
                   <div className="leading-relaxed text-slate-100 text-xs sm:text-sm font-sans space-y-1">
                     {renderFormattedMarkdown(trimmed, isSpeaking, activeKaraoke, activeWordRef, counter)}
