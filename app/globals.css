@@ -2,92 +2,56 @@
 @tailwind components;
 @tailwind utilities;
 
-@theme {
-  --color-sanctuary-bg: #09090b;
-  --color-sanctuary-surface: #18181b;
-  --color-sanctuary-surface-elevated: #27272a;
-  --color-sanctuary-border: #3f3f46;
-  
-  --color-sacred-amber: #f59e0b;
-  --color-sacred-amber-muted: rgba(245, 158, 11, 0.1);
-  --color-sacred-amber-glow: rgba(245, 158, 11, 0.25);
-
-  --color-polyvagal-ventral: #10b981;
-  --color-polyvagal-sympathetic: #f59e0b;
-  --color-polyvagal-dorsal: #6366f1;
-
-  --font-display: var(--font-geist-sans), system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), monospace;
-}
-
-:root {
-  --color-sanctuary-bg: #09090b;
-  --color-sanctuary-surface: #18181b;
-  --color-sanctuary-surface-elevated: #27272a;
-  --color-sanctuary-border: #3f3f46;
-  
-  --color-sacred-amber: #f59e0b;
-  --color-sacred-amber-muted: rgba(245, 158, 11, 0.1);
-  --color-sacred-amber-glow: rgba(245, 158, 11, 0.25);
-
-  --color-polyvagal-ventral: #10b981;
-  --color-polyvagal-sympathetic: #f59e0b;
-  --color-polyvagal-dorsal: #6366f1;
-
-  --font-display: var(--font-geist-sans), var(--font-inter), system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), monospace;
-
-  --bg-primary: var(--color-sanctuary-bg);
-  --text-primary: #fafafa;
-  --text-secondary: #a1a1aa;
-
-  --font-inter: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-outfit: 'Outfit', system-ui, -apple-system, sans-serif;
-
-  /* Nature Calm Token Aliases (Spec 2.0) */
-  --bg-base: #0c1410;          /* Deep forest floor — primary page background */
-  --bg-surface: #14201a;       /* Lifted surface — panels, sidebars */
-  --bg-card: #1b2a23;          /* Card elevation — tool drawers, modals */
-
-  --border-subtle: #283c32;    /* Low-contrast dividers */
-  --border-focus: #588e73;     /* High-contrast keyboard focus rings */
-
-  --text-disabled: #4a6357;    /* Inactive states */
-
-  --accent-sage: #81a890;            /* Primary interactive */
-  --accent-eucalyptus: #588e73;      /* Hover / pressed states */
-  --accent-dawn: #c8b89a;            /* Warm highlight for emotional acknowledgment */
-
-  --status-crisis: #e05c5c;    /* Crisis modal trigger */
-  --status-calm: #588e73;      /* Positive state indicator */
-  --status-alert: #d4a94a;     /* Gentle prompt */
-
-  /* Sanctuary Theme Tokens */
-  --color-obsidian: #09090b;
-  --color-surface-zinc: #18181b;
-  --color-border-zinc: #27272a;
-  --color-amber-sacred: #f59e0b;
-  --color-ventral: #10b981;
-  --color-sympathetic: #f59e0b;
-  --color-dorsal: #6366f1;
-
-  /* Legacy compatibility mappings */
-  --bg-nature-base: var(--color-sanctuary-bg);
-  --bg-nature-surface: var(--color-sanctuary-surface);
-  --bg-nature-card: var(--color-sanctuary-surface-elevated);
-  --border-nature-subtle: var(--color-sanctuary-border);
-  --border-nature-highlight: #3d584a;
-  --text-nature-primary: var(--text-primary);
-  --text-nature-secondary: var(--text-secondary);
-  --text-nature-muted: #647d70;
-  --accent-clay: #c48b71;
-  --accent-amber: #f59e0b;
-  --bubble-user: #22382c;
-  --bubble-ai: #17241d;
-  --color-bg: var(--bg-primary);
-}
-
 @layer base {
+  :root {
+    --font-inter: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-outfit: 'Outfit', system-ui, -apple-system, sans-serif;
+
+    /* Nature Calm Token Aliases (Spec 2.0) */
+    --bg-base: #0c1410;          /* Deep forest floor — primary page background */
+    --bg-surface: #14201a;       /* Lifted surface — panels, sidebars */
+    --bg-card: #1b2a23;          /* Card elevation — tool drawers, modals */
+
+    --border-subtle: #283c32;    /* Low-contrast dividers */
+    --border-focus: #588e73;     /* High-contrast keyboard focus rings */
+
+    --text-primary: #ecf3ee;     /* Body copy, headings */
+    --text-secondary: #9cb5a6;   /* Captions, metadata, placeholder text */
+    --text-disabled: #4a6357;    /* Inactive states */
+
+    --accent-sage: #81a890;            /* Primary interactive */
+    --accent-eucalyptus: #588e73;      /* Hover / pressed states */
+    --accent-dawn: #c8b89a;            /* Warm highlight for emotional acknowledgment */
+
+    --status-crisis: #e05c5c;    /* Crisis modal trigger */
+    --status-calm: #588e73;      /* Positive state indicator */
+    --status-alert: #d4a94a;     /* Gentle prompt */
+
+    /* Sanctuary Theme Tokens */
+    --color-obsidian: #09090b;
+    --color-surface-zinc: #18181b;
+    --color-border-zinc: #27272a;
+    --color-amber-sacred: #f59e0b;
+    --color-ventral: #10b981;
+    --color-sympathetic: #f59e0b;
+    --color-dorsal: #6366f1;
+
+    /* Legacy compatibility mappings */
+    --bg-nature-base: var(--bg-base);
+    --bg-nature-surface: var(--bg-surface);
+    --bg-nature-card: var(--bg-card);
+    --border-nature-subtle: var(--border-subtle);
+    --border-nature-highlight: #3d584a;
+    --text-nature-primary: var(--text-primary);
+    --text-nature-secondary: var(--text-secondary);
+    --text-nature-muted: #647d70;
+    --accent-clay: #c48b71;
+    --accent-amber: #f59e0b;
+    --bubble-user: #22382c;
+    --bubble-ai: #17241d;
+    --color-bg: var(--bg-base);
+  }
+
   @media (prefers-reduced-motion: reduce) {
     *,
     ::before,
@@ -107,12 +71,13 @@
 
   html,
   body {
-    background-color: var(--bg-primary);
-    color: var(--text-primary);
-    font-family: var(--font-display);
-    min-height: 100vh;
+    background-color: var(--bg-nature-base);
+    color: var(--text-nature-primary);
+    font-family: var(--font-inter);
     overflow-x: hidden;
-    text-rendering: optimizeLegibility;
+    height: 100%;
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -124,16 +89,6 @@
     padding-left: env(safe-area-inset-left, 0px);
     padding-right: env(safe-area-inset-right, 0px);
   }
-}
-
-.sanctuary-card-slot {
-  min-height: 240px;
-  contain: layout style;
-}
-
-.trataka-viewport-slot {
-  min-height: 360px;
-  contain: layout paint;
 }
 
 /* ─── Linen Glassmorphism (Nature Calm) ─── */
