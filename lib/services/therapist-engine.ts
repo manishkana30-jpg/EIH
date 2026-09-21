@@ -64,6 +64,22 @@ For ANY situation, emotional struggle, or dilemma presented by the user, you MUS
   4. Integrated Step-by-Step Daily Recovery Sequence (how to apply them in tandem to recover).
 
 Structure your output cleanly with these headers, using line-by-line bullet points so the user can easily absorb and apply each solution.
+
+### STRICT CONVERSATIONAL DIRECTIVES:
+1. CURRENT-TURN EMOTIONAL GROUNDING (NO STICKY EMOTIONS):
+- Always classify the user's emotional state solely based on their MOST RECENT input.
+- Direct user assertions override all previous context. If the user states "I am happy", immediately treat their current emotion as HAPPY/POSITIVE.
+- Discard and flush any previous sadness, distress, or negative context. Never assume sadness persists when the user explicitly declares otherwise.
+
+2. ANTI-REPETITION ENFORCEMENT:
+- Inspect your last two responses in conversation history.
+- You are strictly forbidden from reusing identical sentence structures, sympathy tropes (e.g. "I hear that...", "I understand...", "It sounds like..."), or repeated questions.
+- If you find yourself giving the same advice or acknowledging the same issue again, break the pattern immediately: acknowledge the shift, match their current energy, and move to the next natural topic.
+
+3. TEXT & SHLOKA PACING (FOR AUDIO/KARAOKE PIPELINES):
+- When delivering shlokas, verses, or recited text, output each line cleanly with standard whitespace.
+- Do not concatenate words without spaces. Keep Sanskrit/Hindi words clearly separated to ensure accurate audio timestamp generation.
+- Never output unrequested meta-chatter or introductory filler before reciting shlokas.
 `;
 
 export interface ConversationTurn {
@@ -230,6 +246,19 @@ function extractCitedGitaIdsFromHistory(history?: ConversationTurn[]): string[] 
     }
   }
   return citedIds;
+}
+
+/**
+ * Extracts the last two assistant responses from conversation history
+ * to inspect and forbid repetition of sentence structures, sympathy tropes, or questions.
+ */
+function extractRecentAssistantSnippets(history?: ConversationTurn[]): string[] {
+  if (!history || history.length === 0) return [];
+  return history
+    .filter((h) => h.role === "assistant" || h.sender === "ai")
+    .map((h) => (h.content || h.text || "").trim())
+    .filter(Boolean)
+    .slice(-2);
 }
 
 /**
@@ -463,7 +492,27 @@ The user explicitly states their current emotional state in this turn: "${userMe
 Ground your response solely in the user's MOST RECENT input ("${userMessage}").
 Direct user assertions override past context; if the user's emotional state has shifted, discard previous negative assumptions.`;
 
-  const systemPrompt = `${THERAPIST_SYSTEM_PROMPT}${langDirective}${currentTurnGroundingDirective}\n\n[CLINICAL RESEARCH & RETRIEVED WISDOM]:\n${contextString}`;
+  const recentAssistantSnippets = extractRecentAssistantSnippets(history);
+  let antiRepetitionDirective = "";
+  if (recentAssistantSnippets.length > 0) {
+    const priorOpenings = recentAssistantSnippets
+      .map((s, idx) => {
+        const firstLine = s.split("\n")[0] || s.slice(0, 100);
+        return `- Response -${recentAssistantSnippets.length - idx}: "${firstLine.slice(0, 100)}..."`;
+      })
+      .join("\n");
+
+    antiRepetitionDirective = `\n\n### MANDATORY ANTI-REPETITION DIRECTIVE (RULE 2):
+Your recent responses opened with or contained:
+${priorOpenings}
+
+STRICT ANTI-REPETITION CONSTRAINTS:
+1. You are STRICTLY FORBIDDEN from reusing identical sentence structures, sympathy tropes (e.g. "I hear how much pain...", "I understand...", "It sounds like..."), or repeated questions from the above responses.
+2. Break the pattern immediately: do NOT give the same advice or acknowledge the same issue again.
+3. Match the user's current energy, acknowledge their shift, and move forward to the next natural topic with fresh phrasing.`;
+  }
+
+  const systemPrompt = `${THERAPIST_SYSTEM_PROMPT}${langDirective}${currentTurnGroundingDirective}${antiRepetitionDirective}\n\n[CLINICAL RESEARCH & RETRIEVED WISDOM]:\n${contextString}`;
 
   // Helper to guarantee [GITA_SHLOKA] tags, authentic Sanskrit shloka, and diagnostic summary
   function ensureDiagnosticAndGita(replyText: string, gitaBlockStr: string, diagnosticMarkdown?: string): string {
