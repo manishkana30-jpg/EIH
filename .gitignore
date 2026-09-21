@@ -71,6 +71,14 @@ clinical_memory_db/
 *.bin
 *.pt
 
+# Audio & TTS Temporary Files
+*.wav
+*.mp3
+*.webm
+*.ogg
+*.flac
+*.m4a
+
 # Local standalone binaries and deployment caches
 bin/
 .vercel/

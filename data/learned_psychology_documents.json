@@ -436,5 +436,30 @@
     "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5819891/",
     "source_platform": "NCBI PubMed & Wikipedia Clinical Knowledge",
     "query_trigger": "I feel panic and my heart is racing"
+  },
+  {
+    "id": "learned_i_feel_so_deeply_depressed__ex",
+    "name": "Learned: I Feel So Deeply Depressed, Exhausted An Protocol",
+    "category": "Self-Learned Clinical Knowledge",
+    "triguna_balance": "Vata-Rajas Autonomic Regulation",
+    "core_symptoms": [
+      "I feel so deeply depressed, exhausted and burnt out that I have no energy to get out of bed"
+    ],
+    "cognitive_distortions": [
+      "Cognitive Overwhelm",
+      "Emotional Reasoning"
+    ],
+    "solutions": {
+      "cbt_reframing": "Acknowledge this experience as a transient physiological signal. Notice thoughts without judgment.\n\n[Wikipedia Context]: Evidence-based psychological constructs and emotional regulation taxonomies.\n[PubMed Literature]: Efficacy of blended digital and face-to-face psychotherapy compared to enhanced psychotherapy for patients with Somatic Symptom Disorder (iSOMA+): study protocol for a multicenter randomized controlled pragmatic trial.: NCBI Clinical Evidence on I feel so deeply depressed, exhausted an: Efficacy of blended digital and face-to-face psychotherapy compared to enhanced psychotherapy for patients with Somatic Symptom Disorder (iSOMA+): study protocol for a multicenter randomized controlled pragmatic trial. Restraint in somatic healthcare: how should it be regulated?: NCBI Clinical Evidence on I feel so deeply depressed, exhausted an: Restraint in somatic healthcare: how should it be regulated?",
+      "somatic_anchor": "Drop shoulders away from ears, place one hand on the lower abdomen, and feel the solid floor underneath your feet for 30 seconds.",
+      "pranayama": "Practice 4-4-4-4 Box Breathing or Nadi Shodhana for 3 minutes to restore autonomic balance.",
+      "micro_habit": "Write down one single micro-task within your direct control right now and release long-term rumination."
+    },
+    "severity_level": "Mild to Moderate",
+    "recommended_trataka_mode": "bindu",
+    "requires_immediate_crisis": false,
+    "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13352642/",
+    "source_platform": "NCBI PubMed & Wikipedia Clinical Knowledge",
+    "query_trigger": "I feel so deeply depressed, exhausted and burnt out that I have no energy to get out of bed"
   }
 ]

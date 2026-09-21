@@ -5,6 +5,8 @@ const { runConversationalDiversityTests } = require('./conversational-diversity.
 const { runTtsSanitizerTests } = require('./test_tts_sanitizer.js');
 const { runSelfLearningTests } = require('./self_learning_documents.test.js');
 const { testGitaClinicalTratakTrio } = require('./test-gita-clinical-tratak-trio.js');
+const { testTriPillarSynergyDiagnostic } = require('./test-tri-pillar-synergy-diagnostic.js');
+require('./test-trataka-remedy-launch-sync.js');
 require('./language-catalog.test.js');
 require('./remedies-matrix.test.js');
 require('./clinical-research-grounding.test.js');
@@ -40,6 +42,7 @@ async function main() {
     runTtsSanitizerTests();
     await runSelfLearningTests();
     await testGitaClinicalTratakTrio();
+    await testTriPillarSynergyDiagnostic();
     await import('./test-greeting-and-mic-test.js');
     console.log('================================================================');
     console.log('🎉 ALL SYSTEM TESTS PASSED WITH 100% SUCCESS RATE');
