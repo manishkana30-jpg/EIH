@@ -33,6 +33,8 @@ import { healerClient, PsychologicalTelemetry, ClinicalSource, ChatHistoryItem, 
 import { AudioWaveform } from "./components/AudioWaveform";
 import { LanguageSelector } from "./components/LanguageSelector";
 import { GitaShlokaCard, parseGitaShloka } from "./components/GitaShlokaCard";
+import { KaraokeMessage } from "./components/KaraokeMessage";
+import { useKaraokeTTS } from "@/lib/audio/useKaraokeTTS";
 import { EditorialGuide } from "@/components/seo/EditorialGuide";
 
 /* ─── Lazy-loaded heavy components (only fetched when user interacts) ─── */
@@ -491,6 +493,7 @@ export default function SanctuarySessionPage() {
   const activeStreamRef = useRef<MediaStream | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const activeWordRef = useRef<HTMLSpanElement>(null);
   const [showScrollBottom, setShowScrollBottom] = useState(false);
 
   const handleChatScroll = useCallback(() => {
@@ -609,8 +612,17 @@ export default function SanctuarySessionPage() {
   // ─── Auto-Scroll Tracking: Center Active Spoken Word ───
   useEffect(() => {
     if (!activeKaraoke || !chatContainerRef.current) return;
-    const activeEl = document.getElementById("active-karaoke-word");
+    const activeEl = activeWordRef.current || document.getElementById("active-karaoke-word");
     if (!activeEl) return;
+
+    // Smoothly keep current active word centered in viewport (scoped to active playback)
+    try {
+      activeEl.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+        inline: "nearest",
+      });
+    } catch (_) {}
 
     const container = chatContainerRef.current;
     const containerRect = container.getBoundingClientRect();
@@ -1717,142 +1729,81 @@ export default function SanctuarySessionPage() {
             <div className="max-w-3xl w-full mx-auto space-y-5 pt-2 pb-16">
               {messages.map((m, index) => {
                 const isLastMessage = index === messages.length - 1;
-                const gitaParsed = m.sender === "ai" ? parseGitaShloka(m.text) : { isGita: false, shlokaBlock: null, remainingText: m.text };
+                const detectedTratak = m.sender === "ai" ? detectTratakaModeFromText(m.text) : null;
+                const activeTratakMode =
+                  detectedTratak ||
+                  (m.recommended_trataka ? normalizeTratakaMode(m.recommended_trataka) : null) ||
+                  (recommendedTrataka ? normalizeTratakaMode(recommendedTrataka) : 'bindu');
+
+                const isCurrentlySpeaking = activeKaraoke?.messageId === m.id && isPlayingAudio;
+
                 return (
                   <motion.div
                     key={m.id}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3 }}
-                    className={`flex flex-col ${m.sender === "user" ? "items-end" : "items-start"}`}
+                    className={`flex flex-col w-full ${m.sender === "user" ? "items-end" : "items-start"}`}
                   >
-                    {/* Sender Identity Badge */}
-                    <div className="flex items-center gap-1.5 mb-1 px-1 text-[11px] font-medium">
-                      {m.sender === "user" ? (
-                        <>
-                          <span className="text-emerald-400/90">You</span>
-                          <div className="w-4 h-4 rounded-full bg-emerald-950/80 border border-emerald-500/40 flex items-center justify-center text-[9px] text-emerald-300">
-                            <User className="w-2.5 h-2.5" />
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <div className="w-4 h-4 rounded-full bg-teal-950/80 border border-teal-500/40 flex items-center justify-center text-[10px]">
-                            🌿
-                          </div>
-                          <span className="text-teal-300 font-semibold">Sanctuary Healer</span>
-                        </>
-                      )}
-                    </div>
-
-                    {gitaParsed.isGita && gitaParsed.shlokaBlock && (
-                      <div className="w-full max-w-[88%] md:max-w-xl">
-                        <GitaShlokaCard shlokaContent={gitaParsed.shlokaBlock} />
-                      </div>
-                    )}
-
-                    <div
-                      className={`max-w-[88%] md:max-w-xl p-4 rounded-2xl text-sm leading-relaxed ${
-                        m.sender === "user"
-                          ? "bg-gradient-to-br from-emerald-900/50 to-teal-950/60 border border-emerald-500/30 text-emerald-50 rounded-tr-sm shadow-[0_4px_20px_rgba(16,185,129,0.12)] backdrop-blur-sm"
-                          : "bg-gradient-to-br from-slate-900/90 via-slate-900/80 to-slate-950/95 border border-slate-800/80 text-slate-100 rounded-tl-sm shadow-xl backdrop-blur-md"
-                      }`}
-                    >
-                      {m.sender === "ai" ? (
-                        formatTherapeuticMessage(
-                          gitaParsed.isGita ? gitaParsed.remainingText : m.text,
-                          activeKaraoke?.messageId === m.id,
-                          activeKaraoke?.messageId === m.id ? activeKaraoke : null
-                        )
-                      ) : (
-                        <p className="whitespace-pre-wrap">{m.text}</p>
-                      )}
-                    </div>
-
-                    {m.sender === "ai" && isLastMessage && (() => {
-                      const detectedTratak = detectTratakaModeFromText(m.text);
-                      const activeTratakMode =
-                        detectedTratak ||
-                        (m.recommended_trataka ? normalizeTratakaMode(m.recommended_trataka) : null) ||
-                        (recommendedTrataka ? normalizeTratakaMode(recommendedTrataka) : 'bindu');
-
-                      const hasTratakInText =
-                        Boolean(detectedTratak) ||
-                        m.text.toLowerCase().includes("tratak") ||
-                        m.text.includes("त्राटक") ||
-                        Boolean(m.recommended_trataka);
-
-                      if (!hasTratakInText) return null;
-
-                      return (
-                        <div className="mt-1.5 max-w-[88%] md:max-w-xl">
-                          <button
-                            onClick={() => {
-                              setRecommendedTrataka(activeTratakMode);
-                              setIsTratakaOpen(true);
-                            }}
-                            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 text-xs font-semibold transition-all shadow-[0_0_12px_rgba(245,158,11,0.15)] active:scale-[0.98]"
-                          >
-                            <Eye className="w-3.5 h-3.5 text-amber-400" />
-                            <span>Launch Prescribed Trataka Gazing ({getTratakaModeLabel(activeTratakMode)})</span>
-                          </button>
-                        </div>
-                      );
-                    })()}
-
-                    {m.sender === "ai" && m.cbt_distortion && isLastMessage && (
-                      <div className="mt-1.5 max-w-[88%] md:max-w-xl">
-                        <button
-                          onClick={() => setIsCBTModalOpen(true)}
-                          className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-300 text-xs font-semibold transition-all shadow-[0_0_12px_rgba(16,185,129,0.12)] active:scale-[0.98]"
-                        >
-                          <Brain className="w-3.5 h-3.5 text-emerald-400" />
-                          <span>Explore CBT Reframe: {m.cbt_distortion} →</span>
-                        </button>
-                      </div>
-                    )}
-
-                    <div className="flex items-center gap-2 mt-1 px-1">
-                      {m.timestamp && (
-                        <span className="text-[10px] text-slate-500" suppressHydrationWarning>
-                          {m.timestamp}
-                        </span>
-                      )}
-                      {m.engine && (
-                        <span className="text-[9px] text-emerald-400/70 font-mono">[{m.engine}]</span>
-                      )}
-                      {m.sender === "ai" && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (activeKaraoke?.messageId === m.id) {
-                              browserSpeechController.cancelSpeech();
-                              if (activeAudioRef.current) {
-                                try {
-                                  activeAudioRef.current.pause();
-                                  activeAudioRef.current.src = "";
-                                } catch (_) {}
-                                activeAudioRef.current = null;
-                              }
-                              setIsPlayingAudio(false);
-                              setActiveKaraoke(null);
-                              activeSpeakingMessageIdRef.current = null;
-                            } else {
-                              playVoice(m.text, undefined, m.id);
-                            }
-                          }}
-                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-all ${
-                            activeKaraoke?.messageId === m.id
-                              ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-[0_0_8px_rgba(52,211,153,0.3)] animate-pulse"
-                              : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 border border-transparent"
-                          }`}
-                          title={activeKaraoke?.messageId === m.id ? "Stop voice" : "Listen aloud with real-time word highlighting"}
-                        >
-                          <Volume2 className={`w-3 h-3 ${activeKaraoke?.messageId === m.id ? "text-emerald-400 animate-bounce" : ""}`} />
-                          <span>{activeKaraoke?.messageId === m.id ? "Speaking..." : "Listen"}</span>
-                        </button>
-                      )}
-                    </div>
+                    <KaraokeMessage
+                      message={m}
+                      isSpeaking={isCurrentlySpeaking}
+                      isPaused={false}
+                      activeKaraoke={activeKaraoke?.messageId === m.id ? activeKaraoke : null}
+                      activeWordRef={activeWordRef}
+                      onPlay={() => playVoice(m.text, undefined, m.id)}
+                      onPause={() => {
+                        if (typeof window !== "undefined" && "speechSynthesis" in window) {
+                          try {
+                            window.speechSynthesis.pause();
+                          } catch (_) {}
+                        }
+                      }}
+                      onResume={() => {
+                        if (typeof window !== "undefined" && "speechSynthesis" in window) {
+                          try {
+                            window.speechSynthesis.resume();
+                          } catch (_) {}
+                        }
+                      }}
+                      onStop={() => {
+                        browserSpeechController.cancelSpeech();
+                        if (activeAudioRef.current) {
+                          try {
+                            activeAudioRef.current.pause();
+                            activeAudioRef.current.src = "";
+                          } catch (_) {}
+                          activeAudioRef.current = null;
+                        }
+                        setIsPlayingAudio(false);
+                        setActiveKaraoke(null);
+                        activeSpeakingMessageIdRef.current = null;
+                      }}
+                      onToggle={() => {
+                        if (activeKaraoke?.messageId === m.id) {
+                          browserSpeechController.cancelSpeech();
+                          if (activeAudioRef.current) {
+                            try {
+                              activeAudioRef.current.pause();
+                              activeAudioRef.current.src = "";
+                            } catch (_) {}
+                            activeAudioRef.current = null;
+                          }
+                          setIsPlayingAudio(false);
+                          setActiveKaraoke(null);
+                          activeSpeakingMessageIdRef.current = null;
+                        } else {
+                          playVoice(m.text, undefined, m.id);
+                        }
+                      }}
+                      onLaunchTrataka={() => {
+                        setRecommendedTrataka(activeTratakMode);
+                        setIsTratakaOpen(true);
+                      }}
+                      onOpenCBT={() => setIsCBTModalOpen(true)}
+                      isLastMessage={isLastMessage}
+                      recommendedTratakaLabel={getTratakaModeLabel(activeTratakMode)}
+                    />
                   </motion.div>
                 );
               })}
