@@ -118,23 +118,23 @@ export const GitaShlokaCard: React.FC<GitaShlokaCardProps> = ({
     } catch (_) {}
   };
 
-  // Inline Plain-Text Mode: Embedded directly inside message sections (e.g. Shrimad Bhagavad Gita Atma Darshan)
+  // Inline Plain-Text Mode: Embedded directly inside message sections as normal chat text
   if (variant === "inline") {
     return (
       <div
         data-tts-silent="true"
         data-tts-skip="true"
         aria-label="Bhagavad Gita Shloka"
-        className={`my-2.5 p-3.5 sm:p-4 rounded-xl bg-slate-900 border border-amber-500/30 font-sans space-y-2 text-left select-text shadow-sm ${className}`}
+        className={`my-2 space-y-1.5 text-left select-text ${className}`}
       >
-        {/* Sanskrit Devanagari */}
+        {/* Sanskrit Devanagari in normal plain text */}
         {devanagariLines.length > 0 && (
           <div className="space-y-0.5">
             {devanagariLines.map((line, idx) => (
               <p
                 key={idx}
                 lang="sa"
-                className="font-serif text-sm sm:text-base font-semibold text-amber-100 leading-relaxed tracking-wide select-text"
+                className="text-xs sm:text-sm text-slate-100 leading-relaxed select-text font-normal"
               >
                 {line}
               </p>
@@ -142,13 +142,13 @@ export const GitaShlokaCard: React.FC<GitaShlokaCardProps> = ({
           </div>
         )}
 
-        {/* Romanized IAST Transliteration */}
+        {/* Romanized IAST Transliteration in normal plain text */}
         {romanLines.length > 0 && (
-          <div className="space-y-0.5 pt-0.5 border-t border-amber-500/15">
+          <div className="space-y-0.5">
             {romanLines.map((line, idx) => (
               <p
                 key={idx}
-                className="font-sans text-xs sm:text-sm text-amber-200/80 italic leading-normal select-text"
+                className="text-xs sm:text-sm text-slate-300 leading-relaxed select-text font-normal"
               >
                 {line}
               </p>
@@ -157,7 +157,7 @@ export const GitaShlokaCard: React.FC<GitaShlokaCardProps> = ({
         )}
 
         {/* Subtle Plain-Text Attribution Line */}
-        <p className="text-[11px] font-mono font-medium text-amber-400/90 pt-1 border-t border-amber-500/15 select-text">
+        <p className="text-xs text-slate-400 select-text">
           — श्रीमद्भगवद्गीता ({referenceHeader})
         </p>
       </div>
