@@ -20,7 +20,7 @@ import {
   normalizeLanguageCode,
   buildDiagnosticSufferingAssessment,
 } from "../i18n/clinical-localization.ts";
-import { findGitaWisdom, formatGitaShlokaBlock } from "../knowledge/gita-library.ts";
+import { findGitaWisdom, formatGitaShlokaBlock, GITA_LIBRARY } from "../knowledge/gita-library.ts";
 import {
   resolveTratakaPrescription,
   detectTratakaModeFromText,
@@ -204,6 +204,64 @@ async function callLocalKeylessHealer(
 }
 
 /**
+ * Scan prior conversation history to identify previously cited Gita Shlokas
+ * so that subsequent turns present fresh wisdom instead of repeating the same verse.
+ */
+function extractCitedGitaIdsFromHistory(history?: ConversationTurn[]): string[] {
+  if (!history || history.length === 0) return [];
+  const citedIds: string[] = [];
+  const allShlokas = GITA_LIBRARY;
+
+  for (const turn of history) {
+    const text = (turn.content || turn.text || "").toLowerCase();
+    if (!text) continue;
+
+    for (const shloka of allShlokas) {
+      if (
+        text.includes(shloka.id.toLowerCase()) ||
+        (text.includes(`chapter ${shloka.chapter}`) && text.includes(`verse ${shloka.verse}`)) ||
+        (text.includes(`अध्याय ${shloka.chapter}`) && text.includes(`${shloka.verse}`)) ||
+        text.includes(shloka.verse)
+      ) {
+        if (!citedIds.includes(shloka.id)) {
+          citedIds.push(shloka.id);
+        }
+      }
+    }
+  }
+  return citedIds;
+}
+
+/**
+ * Detects meta-conversational user feedback complaining about repetition,
+ * robotic scripts, or feeling not listened to.
+ */
+function isRepetitionComplaintMessage(userMessage: string): boolean {
+  const lower = userMessage.toLowerCase().trim();
+  const repetitionPatterns = [
+    "repeat",
+    "repeating",
+    "same script",
+    "same thing",
+    "again and again",
+    "stop repeating",
+    "you keep saying the same",
+    "phir wahi",
+    "wahi bol rahe ho",
+    "wahi baat",
+    "baar baar",
+    "ek hi cheez",
+    "kuch naya",
+    "kuch alag",
+    "not listening",
+    "sun nahi rahe",
+    "sun nahi raha",
+    "you are not listening"
+  ];
+  return repetitionPatterns.some((p) => lower.includes(p));
+}
+
+/**
  * Master Conversational Function: Search + Inference with Fallback & Anti-Looping Protection
  */
 export async function generateTherapeuticResponse(
@@ -262,6 +320,33 @@ export async function generateTherapeuticResponse(
     };
   }
 
+  // 1c. Repetition & Script Loop Interceptor (Breaks canned script output and forces direct active listening)
+  if (isRepetitionComplaintMessage(userMessage)) {
+    const activeLangCode = language || (locale ? locale.split("-")[0].split("_")[0] : null);
+    const detectedScriptLang = /[\u0900-\u097F]/.test(userMessage) ? "hi" : "en";
+    const normLang = normalizeLanguageCode(activeLangCode || detectedScriptLang);
+
+    let reply = "";
+    if (normLang === "hi") {
+      reply = "मैं आपकी बात पूरी संवेदनशीलता और ध्यान से सुन रहा हूँ। क्षमा करें कि पिछले उत्तर आपको बार-बार एक जैसे या स्क्रिप्टेड लगे। आइए किसी भी पूर्व-निर्धारित ढांचे को छोड़कर सीधे आपके मन की बात करते हैं। इस समय आपके भीतर क्या चल रहा है? अपनी उलझन या भावना को अपने शब्दों में कहें, मैं बिना किसी औपचारिकता के पूरी तरह से आपकी बात सुन रहा हूँ।";
+    } else if (normLang === "es") {
+      reply = "Te escucho con total claridad y empatía. Lamento profundamente si las respuestas anteriores sonaron repetitivas o esquemáticas. Dejemos a un lado cualquier estructura rígida y hablemos de forma directa y humana. ¿Qué estás experimentando exactamente en este momento? Cuéntamelo con tus propias palabras, te escucho plenamente.";
+    } else if (normLang === "fr") {
+      reply = "Je vous écoute avec une attention totale. Je vous prie de m'excuser si les réponses précédentes ont semblé répétitives ou automatiques. Laissons de côté tout cadre figé et parlons simplement d'être humain à être humain. Que traversez-vous précisément en ce moment ? Exprimez-le avec vos propres mots, je vous écoute pleinement.";
+    } else if (normLang === "de") {
+      reply = "Ich höre Ihnen aufmerksam zu und entschuldige mich aufrichtig, falls die vorherigen Antworten repetitiv gewirkt haben. Lassen Sie uns starre Schemata ablegen und ganz direkt sprechen. Was beschäftigt Sie in diesem Augenblick am meisten? Schildern Sie es bitte in Ihren eigenen Worten – ich bin ganz für Sie da.";
+    } else {
+      reply = "I hear you completely and apologize that previous responses sounded repetitive. Let us step away from structured templates and speak plainly and directly. Tell me in your own words what you are experiencing right now—what feels stuck or unresolved? I am listening to you fully.";
+    }
+
+    return {
+      reply,
+      sources: [],
+      providerUsed: "Conversational Attunement & Reset Responder",
+      isCrisis: false,
+    };
+  }
+
   // 2. Search for verified clinical context + Psychoeducational Library RAG + Gita & Trataka
   const [clinicalEvidence, libraryRag] = await Promise.all([
     searchMentalHealthEvidence(userMessage),
@@ -272,7 +357,8 @@ export async function generateTherapeuticResponse(
   const detectedEmotion = emotionDiagnostic.dimensionId;
   const conditionId = libraryRag?.condition?.id;
 
-  const gitaItem = findGitaWisdom(userMessage, detectedEmotion, conditionId);
+  const citedShlokaIds = extractCitedGitaIdsFromHistory(history);
+  const gitaItem = findGitaWisdom(userMessage, detectedEmotion, conditionId, citedShlokaIds);
   const tratakPrescription = resolveTratakaPrescription(
     userMessage,
     detectedEmotion,
@@ -447,7 +533,7 @@ Keep the Sanskrit Shloka in Devanagari script wrapped in [GITA_SHLOKA] and [/GIT
     // Fallback to Free Open Inference / Companion
   }
 
-  // 4. Free Open Inference (Validates full tri-pillar presence before accepting)
+  // 4. Free Open Inference (Validates content before accepting, random seed to prevent identical outputs)
   try {
     const messagesPayload = [
       { role: "system", content: systemPrompt },
@@ -460,40 +546,41 @@ Keep the Sanskrit Shloka in Devanagari script wrapped in [GITA_SHLOKA] and [/GIT
     const pollRes = await fetch("https://text.pollinations.ai/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messages: messagesPayload, model: "openai", seed: 42 }),
-      signal: AbortSignal.timeout(3500)
+      body: JSON.stringify({
+        messages: messagesPayload,
+        model: "openai",
+        seed: Math.floor(Math.random() * 10000000)
+      }),
+      signal: AbortSignal.timeout(7000)
     });
-      const text = await pollRes.text();
-      const cleaned = text.trim();
-      const lower = cleaned.toLowerCase();
-      const isUpstreamError =
-        cleaned.startsWith("{") ||
-        lower.includes("error") ||
-        lower.includes("credit") ||
-        lower.includes("quota") ||
-        lower.includes("api key") ||
-        lower.includes("top up") ||
-        lower.includes("rate limit") ||
-        lower.includes("queue") ||
-        lower.includes("unauthorized");
+    const text = await pollRes.text();
+    const cleaned = text.trim();
+    const lower = cleaned.toLowerCase();
+    const isUpstreamError =
+      cleaned.startsWith("{") ||
+      lower.includes("error") ||
+      lower.includes("credit") ||
+      lower.includes("quota") ||
+      lower.includes("api key") ||
+      lower.includes("top up") ||
+      lower.includes("rate limit") ||
+      lower.includes("queue") ||
+      lower.includes("unauthorized");
 
-      const hasGita = cleaned.includes("[GITA_SHLOKA]") || lower.includes("gita") || lower.includes("गीता");
-      const hasClinical = lower.includes("clinical") || lower.includes("cognitive") || lower.includes("cbt") || lower.includes("क्लिनिकल");
-      const hasTratak = lower.includes("tratak") || lower.includes("gazing") || lower.includes("त्राटक");
-
-      if (cleaned && cleaned.length > 80 && !isUpstreamError && hasGita && hasClinical && hasTratak) {
-        return {
-          reply: ensureDiagnosticAndGita(cleaned, gitaBlock),
-          sources: allSources,
-          providerUsed: "Free Edge AI",
-          isCrisis: false,
-          recommended_trataka: syncTratakaWithReply(cleaned, defaultRecTrataka),
-        };
-      }
+    if (cleaned && cleaned.length > 60 && !isUpstreamError) {
+      return {
+        reply: ensureDiagnosticAndGita(cleaned, gitaBlock),
+        sources: allSources,
+        providerUsed: "Free Edge AI",
+        isCrisis: false,
+        recommended_trataka: syncTratakaWithReply(cleaned, defaultRecTrataka),
+      };
+    }
   } catch {}
 
   // 5. Infallible Tier 5: Pure Deterministic Healer Synthesis (Zero External Dependency, 100% Offline)
   const targetLanguage = normLang;
+  const isFollowUp = Boolean(history && history.length >= 2);
 
   let fallbackReply = "";
 
@@ -502,7 +589,9 @@ Keep the Sanskrit Shloka in Devanagari script wrapped in [GITA_SHLOKA] and [/GIT
     fallbackReply = formatHumanTherapeuticMessage(
       libraryRag.condition,
       targetLanguage,
-      userMessage
+      userMessage,
+      citedShlokaIds,
+      isFollowUp
     );
 
     // Also update libraryRag source with localized clinical text
@@ -515,7 +604,13 @@ Keep the Sanskrit Shloka in Devanagari script wrapped in [GITA_SHLOKA] and [/GIT
       };
     }
   } else {
-    fallbackReply = getLocalizedGeneralAdvice(detectedEmotion || "anxiety", targetLanguage, userMessage);
+    fallbackReply = getLocalizedGeneralAdvice(
+      detectedEmotion || "anxiety",
+      targetLanguage,
+      userMessage,
+      citedShlokaIds,
+      isFollowUp
+    );
   }
 
   return {

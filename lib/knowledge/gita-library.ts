@@ -357,10 +357,13 @@ export const CONDITION_TO_GITA_MAP: Record<string, string> = {
 export function findGitaWisdom(
   userQuery: string,
   detectedEmotion?: string,
-  conditionId?: string
+  conditionId?: string,
+  excludeIds?: string[]
 ): GitaShlokaItem {
+  const excluded = new Set(excludeIds || []);
+
   if (!userQuery || !userQuery.trim()) {
-    return GITA_LIBRARY[0];
+    return GITA_LIBRARY.find((s) => !excluded.has(s.id)) || GITA_LIBRARY[0];
   }
 
   const clean = userQuery.toLowerCase().trim();
@@ -377,7 +380,7 @@ export function findGitaWisdom(
   }
 
   let bestMatch: GitaShlokaItem | null = null;
-  let maxScore = 0;
+  let maxScore = -999;
 
   for (const item of GITA_LIBRARY) {
     let score = 0;
@@ -400,33 +403,53 @@ export function findGitaWisdom(
       score += 7;
     }
 
+    // Heavy penalty for already used Shlokas in this session
+    if (excluded.has(item.id)) {
+      score -= 50;
+    }
+
     if (score > maxScore) {
       maxScore = score;
       bestMatch = item;
     }
   }
 
-  // If score earned, return top matched Shloka
-  if (bestMatch && maxScore > 0) {
+  // If positive score earned on a non-excluded item, return it
+  if (bestMatch && maxScore > 0 && !excluded.has(bestMatch.id)) {
     return bestMatch;
   }
 
-  // Fallback: Map directly by classified emotional distress
+  // Fallback 1: Map directly by classified emotional distress if not excluded
   if (effectiveEmotion && EMOTION_TO_GITA_MAP[effectiveEmotion]) {
     const targetId = EMOTION_TO_GITA_MAP[effectiveEmotion];
-    const found = GITA_LIBRARY.find((s) => s.id === targetId);
-    if (found) return found;
+    if (!excluded.has(targetId)) {
+      const found = GITA_LIBRARY.find((s) => s.id === targetId);
+      if (found) return found;
+    }
   }
 
-  // Fallback: Map directly by clinical condition ID
+  // Fallback 2: Map directly by clinical condition ID if not excluded
   if (conditionId && CONDITION_TO_GITA_MAP[conditionId]) {
     const targetId = CONDITION_TO_GITA_MAP[conditionId];
-    const found = GITA_LIBRARY.find((s) => s.id === targetId);
-    if (found) return found;
+    if (!excluded.has(targetId)) {
+      const found = GITA_LIBRARY.find((s) => s.id === targetId);
+      if (found) return found;
+    }
   }
 
-  // Final fallback
-  return GITA_LIBRARY[0];
+  // Fallback 3: Return best candidate even with lower score if non-excluded
+  const nonExcludedCandidates = GITA_LIBRARY.filter((s) => !excluded.has(s.id));
+  if (nonExcludedCandidates.length > 0) {
+    // If emotion or condition is known, try finding one with common emotion
+    if (effectiveEmotion) {
+      const emoMatch = nonExcludedCandidates.find((s) => s.associated_emotions.includes(effectiveEmotion));
+      if (emoMatch) return emoMatch;
+    }
+    return nonExcludedCandidates[0];
+  }
+
+  // Final fallback (all exhausted)
+  return bestMatch || GITA_LIBRARY[0];
 }
 
 /**

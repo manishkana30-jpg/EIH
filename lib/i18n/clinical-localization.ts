@@ -1885,10 +1885,42 @@ export function buildDiagnosticSufferingAssessment(
 export function buildTriPillarSynergyResolution(
   languageCode?: string,
   tratakName?: string,
-  gitaTheme?: string
+  gitaTheme?: string,
+  isFollowUp?: boolean
 ): string {
   const norm = normalizeLanguageCode(languageCode);
   const tName = tratakName || "Tratak Gazing";
+
+  if (isFollowUp) {
+    if (norm === 'hi') {
+      return `**4. सतत अभ्यास एवं अगला व्यावहारिक कदम:**
+• **वर्तमान पर केंद्रित रहें:** गीता का साक्षी भाव धारण करते हुए इस क्षण में रहें; परिणाम की व्यर्थ चिंता छोड़ें।
+• **शरीर और दृष्टि का संतुलन:** जब भी मन विचलित हो, 2 मिनट के लिए ${tName} और गहरी शांत सांसों का सहारा लें।
+• **संवाद जारी रखें:** यदि कोई विशेष विचार या शारीरिक बेचैनी अब भी परेशान कर रही है, तो बताएं ताकि हम उस पर सीधे काम कर सकें।`;
+    }
+    if (norm === 'es') {
+      return `**4. PASO PRÁCTICO SIGUIENTE Y CONTINUIDAD:**
+• **Enfócate en el presente:** Abraza la actitud del testigo consciente (Sakshi Bhava), soltando el control ansioso del futuro.
+• **Micro-pausa reguladora:** Si surge tensión, recurre a 2 minutos de ${tName} y respiración consciente.
+• **Seguimiento abierto:** Comparte conmigo qué sensación o pensamiento persiste para profundizar con precisión.`;
+    }
+    if (norm === 'fr') {
+      return `**4. ÉTAPE SUIVANTE ET INTÉGRATION PRATIQUE :**
+• **Présence immédiate :** Adoptez la posture de témoin conscient, libéré de l'obsession des résultats.
+• **Micro-régulation :** Dès que la tension monte, prenez 2 minutes de ${tName} et de respiration profonde.
+• **Dialogue continu :** Dites-moi ce qui reste le plus difficile pour vous en ce moment pour adapter notre démarche.`;
+    }
+    if (norm === 'de') {
+      return `**4. NÄCHSTER SCHRITT & PRAKTISCHE VERTIEFUNG:**
+• **Gegenwärtig bleiben:** Üben Sie die Haltung des achtsamen Beobachters und lassen Sie die Sorge um Ergebnisse los.
+• **Kurze Erdung:** Nutzen Sie bei aufkommender Anspannung 2 Minuten ${tName} und ruhige Bauchatmung.
+• **Offener Austausch:** Teilen Sie mir mit, welcher Gedanke oder welche körperliche Unruhe aktuell am stärksten ist.`;
+    }
+    return `**4. FOCUSED STEP-BY-STEP PROGRESSION (आगे का कदम):**
+• **Present Grounding:** Maintain the detached witness awareness (Sakshi Bhava); release urgent grasping for outcomes.
+• **Micro-Regulation:** Whenever tension spikes, take a 2-minute pause with ${tName} and deep belly breathing.
+• **Ongoing Support:** Let me know which specific thought or somatic tightness feels most stubborn so we can focus directly on it.`;
+  }
 
   if (norm === 'hi') {
     return `**4. एकीकृत त्रिवेणी उपचार योजना (गीता + CBT + त्राटक मिलकर आपकी पीड़ा कैसे दूर करेंगे):**
@@ -1996,7 +2028,9 @@ Here is how these three disciplines operate in unified synergy to permanently re
 export function formatHumanTherapeuticMessage(
   conditionIdOrObject: any,
   languageCode?: string,
-  userMessage?: string
+  userMessage?: string,
+  excludeGitaIds?: string[],
+  isFollowUp?: boolean
 ): string {
   const norm = normalizeLanguageCode(languageCode);
 
@@ -2011,7 +2045,7 @@ export function formatHumanTherapeuticMessage(
 
   const intervention = getLocalizedClinicalIntervention(condId, norm, condObj);
   const contextText = `${userMessage || ''} ${intervention.conditionName} ${condId}`;
-  const gitaItem = findGitaWisdom(contextText, undefined, condId);
+  const gitaItem = findGitaWisdom(contextText, undefined, condId, excludeGitaIds);
   const tratakItem = condObj?.recommended_trataka_mode
     ? (TRATAKA_PRESCRIPTIONS[condObj.recommended_trataka_mode as TratakaModeId] || resolveTratakaPrescription(contextText))
     : resolveTratakaPrescription(contextText);
@@ -2021,7 +2055,7 @@ export function formatHumanTherapeuticMessage(
   const locTratak = getLocalizedTratakaItem(tratakItem, norm);
 
   const diagnosticAssessment = buildDiagnosticSufferingAssessment(userMessage, condId, intervention.conditionName, norm);
-  const synergyResolution = buildTriPillarSynergyResolution(norm, locTratak.name, gitaItem.theme);
+  const synergyResolution = buildTriPillarSynergyResolution(norm, locTratak.name, gitaItem.theme, isFollowUp);
 
   if (norm === 'hi') {
     return `${diagnosticAssessment.markdown}
@@ -2169,7 +2203,9 @@ ${synergyResolution}`;
 export function getLocalizedGeneralAdvice(
   emotion: string,
   languageCode?: string,
-  userMessage?: string
+  userMessage?: string,
+  excludeGitaIds?: string[],
+  isFollowUp?: boolean
 ): string {
   const norm = normalizeLanguageCode(languageCode);
   const localeTable = GENERAL_LOCALIZED_ADVICE[norm] || GENERAL_LOCALIZED_ADVICE.en;
@@ -2187,7 +2223,7 @@ export function getLocalizedGeneralAdvice(
   }
 
   const contextText = `${userMessage || ''} ${emotion}`;
-  const gitaItem = findGitaWisdom(contextText);
+  const gitaItem = findGitaWisdom(contextText, undefined, undefined, excludeGitaIds);
   const tratakItem = resolveTratakaPrescription(contextText);
   const gitaBlock = formatGitaShlokaBlock(gitaItem);
 
@@ -2195,7 +2231,7 @@ export function getLocalizedGeneralAdvice(
   const locTratak = getLocalizedTratakaItem(tratakItem, norm);
 
   const diagnosticAssessment = buildDiagnosticSufferingAssessment(userMessage, emotion, undefined, norm);
-  const synergyResolution = buildTriPillarSynergyResolution(norm, locTratak.name, gitaItem.theme);
+  const synergyResolution = buildTriPillarSynergyResolution(norm, locTratak.name, gitaItem.theme, isFollowUp);
 
   if (norm === 'hi') {
     return `${diagnosticAssessment.markdown}

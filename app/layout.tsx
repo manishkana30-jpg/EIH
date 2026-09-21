@@ -5,7 +5,8 @@ import { Brain } from 'lucide-react';
 import { GlobalFooter } from '@/components/navigation/GlobalFooter';
 import './globals.css';
 
-export const revalidate = 3600; // Cache for 1 hour at the Edge
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 const inter = Inter({
   subsets: ['latin'],
@@ -163,30 +164,35 @@ export default function RootLayout({
           <GlobalFooter />
         </div>
 
-        {/* Service worker registration */}
+        {/* Service worker registration with instant deployment pickup */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
               if ('caches' in window) {
                 caches.keys().then(function(names) {
                   for (var i = 0; i < names.length; i++) {
-                    if (names[i] !== 'eih-pwa-v4' && names[i] !== 'eih-static-v4' && names[i] !== 'eih-fonts-v1') {
+                    if (names[i] !== 'eih-pwa-v5' && names[i] !== 'eih-static-v5' && names[i] !== 'eih-fonts-v1') {
                       caches.delete(names[i]);
                     }
                   }
                 });
               }
               if ('serviceWorker' in navigator) {
+                var refreshing = false;
+                navigator.serviceWorker.addEventListener('controllerchange', function() {
+                  if (!refreshing) {
+                    refreshing = true;
+                    window.location.reload();
+                  }
+                });
                 window.addEventListener('load', function() {
-                  navigator.serviceWorker.getRegistrations().then(function(regs) {
-                    for (var r of regs) { r.update(); }
-                  });
                   navigator.serviceWorker.register('/sw.js').then(
                     function(registration) {
                       registration.update();
+                      setInterval(function() { registration.update(); }, 60000);
                     },
                     function(err) {
-                      console.log('EIH ServiceWorker registration failed: ', err);
+                      console.warn('EIH ServiceWorker registration notice: ', err);
                     }
                   );
                 });

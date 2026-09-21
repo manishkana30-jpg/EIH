@@ -6,8 +6,8 @@
  *   - Network First: API routes
  */
 
-const CACHE_NAME = 'eih-pwa-v4';
-const STATIC_CACHE = 'eih-static-v4';
+const CACHE_NAME = 'eih-pwa-v5';
+const STATIC_CACHE = 'eih-static-v5';
 const FONT_CACHE = 'eih-fonts-v1';
 
 const PRECACHE_URLS = [
@@ -19,7 +19,7 @@ const PRECACHE_URLS = [
   '/icons/icon-512x512.png',
 ];
 
-/* ─── Install: Precache critical shell ─── */
+/* ─── Install: Precache critical shell & activate immediately ─── */
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -28,7 +28,7 @@ self.addEventListener('install', (event) => {
   );
 });
 
-/* ─── Activate: Clean stale caches ─── */
+/* ─── Activate: Clean stale caches immediately & claim clients ─── */
 self.addEventListener('activate', (event) => {
   const currentCaches = [CACHE_NAME, STATIC_CACHE, FONT_CACHE];
   event.waitUntil(
@@ -109,7 +109,32 @@ self.addEventListener('fetch', (event) => {
     return; // Let the browser handle it normally
   }
 
-  // 4. STALE WHILE REVALIDATE — HTML pages, manifest, etc.
+  // 4. NETWORK FIRST — HTML pages & navigation (always load latest deployment when online)
+  const isNavigation =
+    event.request.mode === 'navigate' ||
+    event.request.destination === 'document' ||
+    url.pathname === '/' ||
+    !url.pathname.includes('.');
+
+  if (isNavigation) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          if (response.status === 200) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          }
+          return response;
+        })
+        .catch(() => {
+          // If network fails (offline), serve from cache
+          return caches.match(event.request).then((cached) => cached || caches.match('/'));
+        })
+    );
+    return;
+  }
+
+  // 5. STALE WHILE REVALIDATE — Images, audio worklets, other media
   event.respondWith(
     caches.match(event.request).then((cached) => {
       const fetchPromise = fetch(event.request)
@@ -120,13 +145,8 @@ self.addEventListener('fetch', (event) => {
           }
           return response;
         })
-        .catch(() => {
-          // If network fails and we have no cache, serve the offline shell
-          if (cached) return cached;
-          return caches.match('/');
-        });
+        .catch(() => cached);
 
-      // Return cached immediately, update in background
       return cached || fetchPromise;
     })
   );

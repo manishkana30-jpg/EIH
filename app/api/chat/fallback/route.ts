@@ -10,7 +10,7 @@ import {
   getLocalizedIncompleteUtteranceResponse,
   queryPsychologyLibrary,
 } from '@/lib/knowledge/psychology-library-rag';
-import { findGitaWisdom, formatGitaShlokaBlock } from '@/lib/knowledge/gita-library';
+import { findGitaWisdom, formatGitaShlokaBlock, GITA_LIBRARY } from '@/lib/knowledge/gita-library';
 import { resolveTratakaPrescription } from '@/lib/knowledge/trataka-recommendations';
 import {
   formatHumanTherapeuticMessage,
@@ -173,6 +173,50 @@ export async function POST(req: NextRequest) {
     const detectedScriptLang = cleanPrompt.match(/[\u0900-\u097F]/) ? 'hi' : undefined;
     const targetLang = normalizeLanguageCode(requestedLanguage || detectedScriptLang || 'en');
 
+    // Anti-repetition check for user expressing frustration with canned or looped scripts
+    const lowerPrompt = cleanPrompt.toLowerCase();
+    const isRepetitionComplaint = [
+      "repeat", "repeating", "same script", "same thing", "again and again",
+      "stop repeating", "you keep saying the same", "phir wahi", "wahi bol rahe ho",
+      "wahi baat", "baar baar", "ek hi cheez", "kuch naya", "kuch alag",
+      "not listening", "sun nahi rahe", "sun nahi raha", "you are not listening"
+    ].some((p) => lowerPrompt.includes(p));
+
+    if (isRepetitionComplaint) {
+      let resetReply = "I hear you completely and apologize that previous responses sounded repetitive. Let us step away from structured templates and speak plainly and directly. Tell me in your own words what you are experiencing right now—what feels stuck or unresolved? I am listening to you fully.";
+      if (targetLang === 'hi') {
+        resetReply = "मैं आपकी बात पूरी संवेदनशीलता और ध्यान से सुन रहा हूँ। क्षमा करें कि पिछले उत्तर आपको बार-बार एक जैसे या स्क्रिप्टेड लगे। आइए किसी भी पूर्व-निर्धारित ढांचे को छोड़कर सीधे आपके मन की बात करते हैं। इस समय आपके भीतर क्या चल रहा है? अपनी उलझन या भावना को अपने शब्दों में कहें, मैं बिना किसी औपचारिकता के पूरी तरह से आपकी बात सुन रहा हूँ।";
+      } else if (targetLang === 'es') {
+        resetReply = "Te escucho con total claridad y empatía. Lamento profundamente si las respuestas anteriores sonaron repetitivas o esquemáticas. Dejemos a un lado cualquier estructura rígida y hablemos de forma directa y humana. ¿Qué estás experimentando exactamente en este momento? Cuéntamelo con tus propias palabras, te escucho plenamente.";
+      } else if (targetLang === 'fr') {
+        resetReply = "Je vous écoute avec une attention totale. Je vous prie de m'excuser si les réponses précédentes ont semblé répétitives ou automatiques. Laissons de côté tout cadre figé et parlons simplement d'être humain à être humain. Que traversez-vous précisément en ce moment ? Exprimez-le avec vos propres mots, je vous écoute pleinement.";
+      } else if (targetLang === 'de') {
+        resetReply = "Ich höre Ihnen aufmerksam zu und entschuldige mich aufrichtig, falls die vorherigen Antworten repetitiv gewirkt haben. Lassen Sie uns starre Schemata ablegen und ganz direkt sprechen. Was beschäftigt Sie in diesem Augenblick am meisten? Schildern Sie es bitte in Ihren eigenen Worten – ich bin ganz für Sie da.";
+      }
+      return NextResponse.json({
+        reply: resetReply,
+        provider: 'conversational_attunement_reset',
+      });
+    }
+
+    // Extract already cited Gita shlokas from history
+    const citedGitaIds: string[] = [];
+    if (history && history.length > 0) {
+      for (const h of history) {
+        const text = (h.text || '').toLowerCase();
+        for (const sh of GITA_LIBRARY) {
+          if (
+            text.includes(sh.id.toLowerCase()) ||
+            (text.includes(`chapter ${sh.chapter}`) && text.includes(`verse ${sh.verse}`)) ||
+            (text.includes(`अध्याय ${sh.chapter}`) && text.includes(`${sh.verse}`)) ||
+            text.includes(sh.verse)
+          ) {
+            if (!citedGitaIds.includes(sh.id)) citedGitaIds.push(sh.id);
+          }
+        }
+      }
+    }
+
     const languageNames: Record<string, string> = {
       hi: 'Hindi (हिंदी)',
       es: 'Spanish (Español)',
@@ -196,8 +240,6 @@ Keep the Sanskrit Gita Shloka in Devanagari script wrapped in [GITA_SHLOKA] and 
     const geminiKey = userKey.startsWith('AIza') ? userKey : process.env.GEMINI_API_KEY;
     const openaiKey = userKey.startsWith('sk-') ? userKey : process.env.OPENAI_API_KEY;
 
-    const lowerPrompt = cleanPrompt.toLowerCase();
-
     // Optional Live Web Search Grounding for factual, clinical, or open-ended inquiries
     let webContextSnippet = '';
     const needsSearch =
@@ -217,7 +259,7 @@ Keep the Sanskrit Gita Shloka in Devanagari script wrapped in [GITA_SHLOKA] and 
     }
 
     const libRes = queryPsychologyLibrary(cleanPrompt);
-    const gitaItem = findGitaWisdom(cleanPrompt, effectiveDiag?.dimensionId, libRes?.condition?.id);
+    const gitaItem = findGitaWisdom(cleanPrompt, effectiveDiag?.dimensionId, libRes?.condition?.id, citedGitaIds);
     const tratakItem = resolveTratakaPrescription(
       cleanPrompt,
       effectiveDiag?.dimensionId,
@@ -523,9 +565,10 @@ ${webContextSnippet}`;
     }
 
     // 5. Infallible Deterministic Fallback: Gita + Clinical CBT + Tratak
+    const isFollowUp = Boolean(history && history.length >= 2);
     const fallbackReply = libRes
-      ? formatHumanTherapeuticMessage(libRes.condition, targetLang, cleanPrompt)
-      : getLocalizedGeneralAdvice(effectiveDiag?.dimensionId || 'anxiety', targetLang, cleanPrompt);
+      ? formatHumanTherapeuticMessage(libRes.condition, targetLang, cleanPrompt, citedGitaIds, isFollowUp)
+      : getLocalizedGeneralAdvice(effectiveDiag?.dimensionId || 'anxiety', targetLang, cleanPrompt, citedGitaIds, isFollowUp);
 
     return NextResponse.json({
       reply: fallbackReply,
