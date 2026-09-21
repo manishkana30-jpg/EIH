@@ -14,6 +14,11 @@ export async function POST(req: NextRequest) {
     const groqKey = process.env.GROQ_API_KEY;
     const openaiKey = process.env.OPENAI_API_KEY;
 
+    const reqLanguage = formData.get('language') as string | null;
+    const requestedLang = reqLanguage && reqLanguage !== 'auto'
+      ? reqLanguage.split('-')[0].split('_')[0].toLowerCase()
+      : null;
+
     // 1. Try Groq Whisper (Ultra-Fast ~120ms Latency) if key is provided
     if (groqKey) {
       try {
@@ -21,7 +26,9 @@ export async function POST(req: NextRequest) {
         const filename = (file as any).name || (file.type?.includes('mp4') ? 'audio.mp4' : 'audio.webm');
         groqFormData.append('file', file, filename);
         groqFormData.append('model', 'whisper-large-v3-turbo');
-        groqFormData.append('language', 'en');
+        if (requestedLang) {
+          groqFormData.append('language', requestedLang);
+        }
         groqFormData.append('response_format', 'json');
 
         const groqRes = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
@@ -51,7 +58,9 @@ export async function POST(req: NextRequest) {
         const filename = (file as any).name || (file.type?.includes('mp4') ? 'audio.mp4' : 'audio.webm');
         oaiFormData.append('file', file, filename);
         oaiFormData.append('model', 'whisper-1');
-        oaiFormData.append('language', 'en');
+        if (requestedLang) {
+          oaiFormData.append('language', requestedLang);
+        }
 
         const oaiRes = await fetch('https://api.openai.com/v1/audio/transcriptions', {
           method: 'POST',
@@ -84,6 +93,9 @@ export async function POST(req: NextRequest) {
       const backendFormData = new FormData();
       const filename = (file as any).name || (file.type?.includes('mp4') ? 'audio.mp4' : 'audio.webm');
       backendFormData.append('file', file, filename);
+      if (requestedLang) {
+        backendFormData.append('language', requestedLang);
+      }
 
       const backendRes = await fetch(`${backendUrl}/api/stt`, {
         method: 'POST',

@@ -124,8 +124,8 @@ export class BrowserSpeechController {
   private ttsResumeInterval: ReturnType<typeof setInterval> | null = null;
   private keepAliveInterval: ReturnType<typeof setInterval> | null = null;
 
-  // Adaptive silence threshold (2400ms gives user generous breathing room to complete thoughts)
-  private silenceTimeoutMs = 2400;
+  // Adaptive silence threshold (2800ms gives user generous breathing room to complete thoughts)
+  private silenceTimeoutMs = 2800;
   private currentLanguageLocale = 'en-US';
 
   private constructor() {
@@ -428,8 +428,8 @@ export class BrowserSpeechController {
           this.callbacks.onInterimTranscript?.(candidate);
         }
 
-        // Adaptive silence detection: Give users generous room (2200ms) to pause and breathe between phrases
-        const silenceDelay = newFinalText.trim() ? 2200 : this.silenceTimeoutMs;
+        // Adaptive silence detection: Give users generous room (2800ms) to pause and breathe between phrases
+        const silenceDelay = 2800;
         if (this.speechSilenceTimer) {
           clearTimeout(this.speechSilenceTimer);
         }
@@ -454,9 +454,11 @@ export class BrowserSpeechController {
       };
 
       recognition.onend = () => {
-        // Critical Mobile Fix: On iOS and Android, the browser engine terminates the recognition turn on pause.
-        // If we have any buffered transcript, commit and send it immediately!
-        if (!this.isSpeaking && !this.isProcessingUtterance && (this.liveInterimTranscript.trim().length > 0 || this.accumulatedFinalText.trim().length > 0)) {
+        // Critical Fix: Do NOT prematurely terminate user speech if continuous listening is active.
+        // Web Speech engines (Chrome desktop & mobile) trigger onend during short 500ms breath pauses.
+        // If the user explicitly stopped listening (!this.shouldBeListening), finalize immediately.
+        // Otherwise, restart recognition to keep buffering so the user can complete their sentence!
+        if (!this.isSpeaking && !this.isProcessingUtterance && !this.shouldBeListening && (this.liveInterimTranscript.trim().length > 0 || this.accumulatedFinalText.trim().length > 0)) {
           this.handleEndOfUserSpeech();
           return;
         }
@@ -469,7 +471,7 @@ export class BrowserSpeechController {
               this.isListening = true;
               this.callbacks.onRecognitionState?.(true);
             }
-          }, 250);
+          }, 150);
         }
       };
 
@@ -546,6 +548,9 @@ export class BrowserSpeechController {
         if (audioBlob.size > 1200) {
           const formData = new FormData();
           formData.append('file', audioBlob, `speech.${ext}`);
+          if (this.currentLanguageLocale) {
+            formData.append('language', this.currentLanguageLocale);
+          }
 
           const res = await fetch('/api/audio/transcribe', {
             method: 'POST',

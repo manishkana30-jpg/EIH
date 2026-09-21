@@ -7,7 +7,7 @@
  * synthesizing and indexing them into the Psychology Library RAG whenever a new user query arrives.
  */
 
-import type { PsychologyCondition, ClinicalSolutions } from './psychology-library-rag.ts';
+import { isIncompleteUtterance, type PsychologyCondition, type ClinicalSolutions } from './psychology-library-rag.ts';
 import initialLearnedData from '../../data/learned_psychology_documents.json' with { type: 'json' };
 
 export interface ClinicalEvidenceItem {
@@ -383,9 +383,30 @@ export function getLearnedDocuments(): LearnedPsychologyDocument[] {
  * and indexes it into the Psychology Library RAG for the given user query.
  */
 export async function learnAndIndexQuery(userQuery: string): Promise<LearnedPsychologyDocument | null> {
-  if (!userQuery || !userQuery.trim() || userQuery.trim().length < 4) return null;
+  if (!userQuery || !userQuery.trim()) return null;
 
   const cleanQuery = userQuery.trim().toLowerCase();
+
+  // Guardrail 1: Minimum length check (must be at least 15 chars to represent a meaningful clinical dilemma/query)
+  if (cleanQuery.length < 15) return null;
+
+  // Guardrail 2: Reject incomplete speech fragments, cutoffs, dangling pronouns, greetings, or test phrases
+  if (isIncompleteUtterance(userQuery)) return null;
+
+  // Guardrail 3: Must contain substantive words (length >= 4, excluding generic stopwords)
+  const commonStopwords = new Set([
+    'the', 'and', 'with', 'for', 'that', 'this', 'have', 'feel', 'feeling',
+    'from', 'about', 'what', 'when', 'where', 'some', 'you', 'your', 'are',
+    'was', 'will', 'today', 'very', 'much', 'mein', 'main', 'hum', 'meri', 'mera'
+  ]);
+  const substantiveWords = cleanQuery
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .split(/\s+/)
+    .filter((w) => w.length >= 4 && !commonStopwords.has(w));
+
+  if (substantiveWords.length < 2) {
+    return null;
+  }
 
   // Avoid running duplicate learning tasks for the same query concurrently
   if (activeLearningJobs.has(cleanQuery)) {

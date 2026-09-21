@@ -315,13 +315,137 @@ export function getLocalizedTestResponse(text?: string, lang?: string, locale?: 
 }
 
 /**
+ * Detects if user input is an incomplete speech fragment, dangling pronoun, or cut-off utterance.
+ * In a therapeutic setting, responding with full clinical diagnoses, Gita shlokas, and Trataka
+ * to isolated fragments (e.g. "mein", "I...", "actually", "and then") is completely invalid.
+ * The system must instead gently acknowledge what was heard and invite the user to finish their thought.
+ */
+export function isIncompleteUtterance(text: string): boolean {
+  if (!text || !text.trim()) return false;
+  const clean = text.toLowerCase().replace(/[^\w\s\u0900-\u097F]/g, ' ').replace(/\s+/g, ' ').trim();
+  if (!clean) return false;
+
+  // Greetings and test messages are handled by their respective dedicated fast paths
+  if (isGreetingMessage(text) || isTestMessage(text)) return false;
+
+  // Common conversational affirmations/negations that are complete short answers
+  const validShortAnswers = new Set([
+    'yes', 'no', 'yeah', 'yep', 'nope', 'ok', 'okay', 'sure', 'fine',
+    'thanks', 'thank you', 'bye', 'goodbye', 'done', 'stop', 'help', 'help me',
+    'haan', 'ha', 'nahi', 'theek hai', 'shukriya', 'dhanyawad', 'alvida',
+    'si', 'sí', 'non', 'oui', 'merci', 'ja', 'nein', 'danke'
+  ]);
+  if (validShortAnswers.has(clean)) return false;
+
+  const words = clean.split(' ').filter((w) => w.length > 0);
+
+  // Single word utterances that are dangling pronouns, conjunctions, or non-substantive words
+  const danglingSingleWords = new Set([
+    // Hindi / Hinglish pronouns & particles
+    'mein', 'main', 'mai', 'hum', 'ham', 'me', 'mujhe', 'mera', 'meri', 'mere',
+    'apna', 'apni', 'apne', 'aap', 'tum', 'tu', 'woh', 'yeh', 'kuch', 'koi',
+    'aur', 'lekin', 'par', 'kyunki', 'kyuki', 'toh', 'to', 'ya', 'ki', 'jaise',
+    'sirf', 'bas', 'bhi', 'hi', 'ab', 'tab', 'jab', 'phir', 'fir', 'kya', 'kyun', 'kaise',
+    // Devanagari Hindi
+    'मैं', 'हम', 'मुझे', 'मेरा', 'मेरी', 'मेरे', 'अपना', 'अपनी', 'अपने', 'आप', 'तुम', 'तू', 'वह', 'यह', 'कुछ', 'कोई',
+    'और', 'लेकिन', 'पर', 'क्योंकि', 'तो', 'या', 'कि', 'जैसे', 'सिर्फ', 'बस', 'भी', 'ही', 'अब', 'तब', 'जब', 'फिर', 'क्या', 'क्यों', 'कैसे',
+    // English pronouns, conjunctions & fillers
+    'i', 'im', 'i\'m', 'me', 'my', 'mine', 'myself',
+    'we', 'us', 'our', 'ours',
+    'you', 'your', 'yours',
+    'he', 'him', 'his', 'she', 'her', 'hers', 'it', 'its', 'they', 'them', 'their',
+    'and', 'or', 'but', 'so', 'then', 'because', 'cause', 'cuz', 'actually', 'well',
+    'just', 'like', 'really', 'also', 'too', 'very', 'somewhat', 'maybe',
+    'the', 'a', 'an', 'that', 'this', 'there', 'here',
+    'when', 'where', 'why', 'how', 'what', 'who',
+    'is', 'am', 'are', 'was', 'were', 'be', 'been', 'being',
+    // Spanish / French / German fragments
+    'yo', 'mi', 'me', 'y', 'pero', 'je', 'moi', 'mon', 'et', 'mais', 'ich', 'mich', 'mir', 'und', 'aber'
+  ]);
+
+  // If 1 word and in dangling words list OR under 4 chars (e.g. "a", "um", "uh")
+  if (words.length === 1) {
+    if (danglingSingleWords.has(words[0]) || words[0].length < 4) {
+      return true;
+    }
+  }
+
+  // Two-word dangling phrases like "mein toh", "i was", "actually i", "and then", "mujhe laga"
+  if (words.length === 2) {
+    const isFirstDangling = danglingSingleWords.has(words[0]);
+    const isSecondDangling = danglingSingleWords.has(words[1]);
+    if (isFirstDangling && isSecondDangling) {
+      return true;
+    }
+    const danglingVerbs = new Set([
+      'feel', 'am', 'was', 'were', 'have', 'had', 'think', 'thought', 'want', 'wanted',
+      'laga', 'lagaa', 'lagi', 'lage', 'lag', 'raha', 'rahi', 'rahe',
+      'chahta', 'chahti', 'chahte', 'hoon', 'hun', 'tha', 'thi', 'the',
+      'gaya', 'gayi', 'gaye', 'hua', 'hui', 'hue', 'karta', 'karti',
+      'लगा', 'लगी', 'लगे', 'रहा', 'रही', 'रहे', 'चाहता', 'चाहती', 'हूँ', 'था', 'थी', 'थे', 'गया', 'गई', 'हुआ'
+    ]);
+    if (isFirstDangling && danglingVerbs.has(words[1])) {
+      return true;
+    }
+  }
+
+  // Any phrase with 0 substantive words (words length >= 3 not in dangling list) and total words <= 3
+  const substantiveWords = words.filter((w) => w.length >= 3 && !danglingSingleWords.has(w));
+  if (substantiveWords.length === 0 && words.length <= 3) {
+    return true;
+  }
+
+  return false;
+}
+
+export function getLocalizedIncompleteUtteranceResponse(text?: string, lang?: string, locale?: string): string {
+  const cleanSnippet = (text || '').trim().slice(0, 30);
+  const isHi =
+    (text && /[\u0900-\u097F]/.test(text)) ||
+    (text && /\b(mein|main|mai|hum|mujhe|mera|meri|mere|aur|lekin|toh|kya|kyun|kaise)\b/i.test(text)) ||
+    lang === 'hi' ||
+    locale?.toLowerCase().startsWith('hi');
+
+  if (isHi) {
+    return cleanSnippet
+      ? `मैंने केवल "${cleanSnippet}" सुना, शायद आपकी बात अधूरी रह गई या माइक जल्दी रुक गया। कृपया थोड़ा विस्तार से बताएं कि आप क्या महसूस कर रहे हैं, मैं ध्यान से सुन रहा हूँ।`
+      : 'शायद आपकी बात अधूरी रह गई। कृपया थोड़ा विस्तार से बताएं कि आप क्या महसूस कर रहे हैं, मैं ध्यान से सुन रहा हूँ।';
+  }
+
+  const isEs = lang === 'es' || locale?.toLowerCase().startsWith('es');
+  if (isEs) {
+    return cleanSnippet
+      ? `Solo alcancé a escuchar "${cleanSnippet}", parece que la frase quedó incompleta o el micrófono se detuvo. Cuéntame un poco más sobre lo que estás experimentando, te escucho con atención.`
+      : 'Parece que tu mensaje quedó incompleto. Cuéntame con más detalle lo que sientes, te escucho con atención.';
+  }
+
+  const isFr = lang === 'fr' || locale?.toLowerCase().startsWith('fr');
+  if (isFr) {
+    return cleanSnippet
+      ? `Je n'ai capté que "${cleanSnippet}", votre phrase semble avoir été interrompue. Pourriez-vous m'en dire un peu plus sur ce que vous ressentez ? Je vous écoute attentivement.`
+      : 'Votre message semble incomplet. Dites-m\'en un peu plus sur ce que vous ressentez, je vous écoute attentivement.';
+  }
+
+  const isDe = lang === 'de' || locale?.toLowerCase().startsWith('de');
+  if (isDe) {
+    return cleanSnippet
+      ? `Ich habe nur "${cleanSnippet}" gehört, anscheinend wurde der Satz unterbrochen. Könnten Sie mir ein wenig mehr darüber erzählen, was Sie fühlen? Ich höre aufmerksam zu.`
+      : 'Ihre Nachricht scheint unvollständig zu sein. Erzählen Sie mir gerne mehr darüber, was Sie empfinden, ich höre aufmerksam zu.';
+  }
+
+  return cleanSnippet
+    ? `I only caught "${cleanSnippet}", before the audio paused. Could you tell me a little more about what you're experiencing or feeling? I am listening attentively.`
+    : `It seems your thought was cut off. Could you share a bit more about what you're experiencing or going through? I am listening attentively.`;
+}
+
+/**
  * Semantic & Keyword-Weighted Matcher for Clinical Conditions
  */
 export function queryPsychologyLibrary(userText: string): LibraryRAGResult | null {
   if (!userText || !userText.trim()) return null;
 
-  // Immediate interceptor: greetings and test messages do not warrant clinical therapy or trataka
-  if (isGreetingMessage(userText) || isTestMessage(userText)) {
+  // Immediate interceptor: greetings, test messages, and incomplete utterances do not warrant clinical therapy or trataka
+  if (isGreetingMessage(userText) || isTestMessage(userText) || isIncompleteUtterance(userText)) {
     return null;
   }
 

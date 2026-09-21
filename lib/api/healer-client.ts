@@ -5,10 +5,12 @@ import {
   queryPsychologyLibrary,
   isGreetingMessage,
   isTestMessage,
+  isIncompleteUtterance,
   GREETING_RESPONSE,
   TEST_RESPONSE,
   getLocalizedGreetingResponse,
   getLocalizedTestResponse,
+  getLocalizedIncompleteUtteranceResponse,
 } from '../knowledge/psychology-library-rag';
 import { getResearchedAdviceForEmotion } from '../knowledge/authenticated-research-bank';
 import {
@@ -218,6 +220,23 @@ class HealerBackendClient {
           cbt_distortion: 'None',
           percentages: { Calmness: 90, Receptivity: 85 },
           strategy: 'Warm compassionate reception and clinical readiness.',
+        },
+      };
+    }
+
+    if (isIncompleteUtterance(cleanMessage)) {
+      const incompleteReply = getLocalizedIncompleteUtteranceResponse(cleanMessage, language, locale);
+      return {
+        reply: incompleteReply,
+        sources: [],
+        engine: 'Active Listening & Clarification Interceptor',
+        is_crisis: false,
+        telemetry: {
+          dominant_emotion: 'Receptivity',
+          polyvagal_state: 'Ventral Vagal (Safe)',
+          cbt_distortion: 'None',
+          percentages: { Receptivity: 95, Attentiveness: 90 },
+          strategy: 'Active listening and gentle clarification prompt for incomplete speech.',
         },
       };
     }

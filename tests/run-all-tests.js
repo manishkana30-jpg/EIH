@@ -45,6 +45,7 @@ async function main() {
     await testGitaClinicalTratakTrio();
     await testTriPillarSynergyDiagnostic();
     await import('./test-greeting-and-mic-test.js');
+    await import('./test-incomplete-utterance-guardrails.js');
     console.log('================================================================');
     console.log('🎉 ALL SYSTEM TESTS PASSED WITH 100% SUCCESS RATE');
     console.log('================================================================');

@@ -4,8 +4,10 @@ import { getResearchedAdviceForEmotion } from '@/lib/knowledge/authenticated-res
 import {
   isGreetingMessage,
   isTestMessage,
+  isIncompleteUtterance,
   GREETING_RESPONSE,
   TEST_RESPONSE,
+  getLocalizedIncompleteUtteranceResponse,
   queryPsychologyLibrary,
 } from '@/lib/knowledge/psychology-library-rag';
 import { findGitaWisdom, formatGitaShlokaBlock } from '@/lib/knowledge/gita-library';
@@ -155,6 +157,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         reply: GREETING_RESPONSE,
         provider: 'conversational_empathy',
+      });
+    }
+
+    if (isIncompleteUtterance(cleanPrompt)) {
+      const incompleteReply = getLocalizedIncompleteUtteranceResponse(cleanPrompt, language, locale);
+      return NextResponse.json({
+        reply: incompleteReply,
+        provider: 'active_listening_interceptor',
       });
     }
 

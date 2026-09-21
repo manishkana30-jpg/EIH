@@ -5,8 +5,10 @@ import {
   queryPsychologyLibrary,
   isGreetingMessage,
   isTestMessage,
+  isIncompleteUtterance,
   GREETING_RESPONSE,
   TEST_RESPONSE,
+  getLocalizedIncompleteUtteranceResponse,
 } from "../knowledge/psychology-library-rag.ts";
 import { GLOBAL_LANGUAGE_CATALOG, getLanguageByCode } from "../i18n/language-catalog.ts";
 import {
@@ -246,6 +248,16 @@ export async function generateTherapeuticResponse(
       reply: GREETING_RESPONSE,
       sources: [],
       providerUsed: "Conversational Empathy Responder",
+      isCrisis: false,
+    };
+  }
+
+  if (isIncompleteUtterance(userMessage)) {
+    const incompleteReply = getLocalizedIncompleteUtteranceResponse(userMessage, language, locale);
+    return {
+      reply: incompleteReply,
+      sources: [],
+      providerUsed: "Active Listening & Clarification Interceptor",
       isCrisis: false,
     };
   }
