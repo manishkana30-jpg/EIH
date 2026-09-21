@@ -216,7 +216,7 @@ export const CBTKnowledgeModal: React.FC<CBTKnowledgeModalProps> = ({ isOpen, on
                     </div>
                     <p className="text-xs text-slate-300 line-clamp-2 mb-2">{distortion.description}</p>
                     <div className="text-[11px] text-emerald-400/90 italic bg-emerald-950/30 p-2 rounded-lg border border-emerald-900/40">
-                      "{distortion.example_thought}"
+                      &ldquo;{distortion.example_thought}&rdquo;
                     </div>
                   </div>
                 ))}
@@ -271,7 +271,7 @@ export const CBTKnowledgeModal: React.FC<CBTKnowledgeModalProps> = ({ isOpen, on
           {activeTab === 'schemas' && (
             <div className="space-y-4">
               <p className="text-xs text-slate-400">
-                Dr. Jeffrey Young's 18 Early Maladaptive Schemas: Longstanding, self-defeating cognitive and emotional patterns formed during early development.
+                Dr. Jeffrey Young&apos;s 18 Early Maladaptive Schemas: Longstanding, self-defeating cognitive and emotional patterns formed during early development.
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {schemas.map((schema) => (
@@ -283,7 +283,7 @@ export const CBTKnowledgeModal: React.FC<CBTKnowledgeModalProps> = ({ isOpen, on
                       </span>
                     </div>
                     <div className="text-xs text-slate-200">
-                      <strong>Core Belief:</strong> <span className="italic text-slate-300">"{schema.core_belief}"</span>
+                      <strong>Core Belief:</strong> <span className="italic text-slate-300">&ldquo;{schema.core_belief}&rdquo;</span>
                     </div>
                     <div className="text-xs text-slate-300">
                       <strong>Behavioral Pattern:</strong> {schema.behavioral_pattern}
@@ -374,7 +374,7 @@ export const CBTKnowledgeModal: React.FC<CBTKnowledgeModalProps> = ({ isOpen, on
                   <div className="space-y-1 text-xs">
                     <span className="font-semibold text-slate-200">Reframing Directive:</span>
                     <p className="text-slate-300 italic p-3 rounded-xl bg-emerald-950/30 border border-emerald-900/50">
-                      "{analysisResult.reframing_insight}"
+                      &ldquo;{analysisResult.reframing_insight}&rdquo;
                     </p>
                   </div>
 

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Globe,
   MapPin,
@@ -49,15 +49,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
   const [isDetecting, setIsDetecting] = useState<boolean>(false);
   const [isAutoMode, setIsAutoMode] = useState<boolean>(true);
 
-  // Initialize and run auto GPS/IP location detection
-  useEffect(() => {
-    const { isAuto } = getStoredLanguage();
-    setIsAutoMode(isAuto);
-
-    runLocationDetection();
-  }, []);
-
-  const runLocationDetection = async () => {
+  const runLocationDetection = useCallback(async () => {
     setIsDetecting(true);
     try {
       const loc = await detectLocationAndLanguage();
@@ -73,7 +65,15 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
     } finally {
       setIsDetecting(false);
     }
-  };
+  }, [onLanguageChange]);
+
+  // Initialize and run auto GPS/IP location detection
+  useEffect(() => {
+    const { isAuto } = getStoredLanguage();
+    setIsAutoMode(isAuto);
+
+    runLocationDetection();
+  }, [runLocationDetection]);
 
   const handleSelectLanguage = (lang: LanguageItem) => {
     setIsAutoMode(false);

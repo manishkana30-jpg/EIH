@@ -59,10 +59,20 @@ export function getAudioContext(): AudioContext {
       );
     }
 
-    globalAudioContext = new AudioCtx({
-      latencyHint: 'interactive',
-      sampleRate: 24000,
-    });
+    try {
+      globalAudioContext = new AudioCtx({
+        latencyHint: 'interactive',
+        sampleRate: 24000,
+      });
+    } catch {
+      try {
+        globalAudioContext = new AudioCtx({
+          latencyHint: 'interactive',
+        });
+      } catch {
+        globalAudioContext = new AudioCtx();
+      }
+    }
   }
 
   return globalAudioContext;

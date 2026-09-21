@@ -357,6 +357,12 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
     }
   }, [currentStageId, isAudioEnabled, hasAnnouncedStage4, isOpen, defaultReframe, userLocale, tratakaMode]);
 
+  const handleForceExit = useCallback(() => {
+    browserSpeechController.stop();
+    if (timerRef.current) clearInterval(timerRef.current);
+    onClose();
+  }, [onClose]);
+
   // Escape key handler for instantaneous safe force-exit
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -366,13 +372,7 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen]);
-
-  const handleForceExit = useCallback(() => {
-    browserSpeechController.stop();
-    if (timerRef.current) clearInterval(timerRef.current);
-    onClose();
-  }, [onClose]);
+  }, [isOpen, handleForceExit]);
 
   const handleSelectMode = (modeId: TratakaModeId) => {
     setTratakaMode(modeId);

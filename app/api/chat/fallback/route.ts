@@ -419,6 +419,50 @@ ${webContextSnippet}`;
       }
     }
 
+    // 3.5 Prioritize OpenAI if key is provided
+    if (openaiKey) {
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 4000);
+        const oaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${openaiKey}`,
+            'Content-Type': 'application/json',
+          },
+          signal: controller.signal,
+          body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            messages: [
+              { role: 'system', content: systemPrompt },
+              ...history.slice(-4).map((h) => ({
+                role: h.role === 'assistant' ? 'assistant' : 'user',
+                content: h.text,
+              })),
+              { role: 'user', content: cleanPrompt },
+            ],
+            temperature: 0.7,
+            max_tokens: 1200,
+          }),
+        });
+        clearTimeout(timeout);
+
+        if (oaiRes.ok) {
+          const data = await oaiRes.json();
+          const reply = data.choices?.[0]?.message?.content?.trim();
+          if (reply) {
+            return NextResponse.json({
+              reply: ensureDiagnosticAndGita(reply),
+              provider: 'openai_gpt4o_mini',
+              recommended_trataka: tratakItem.mode,
+            });
+          }
+        }
+      } catch (e) {
+        console.warn('OpenAI edge notice:', e);
+      }
+    }
+
     // 4. Free Edge AI Model (Zero API key required)
     try {
       const controller = new AbortController();

@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -125,8 +124,8 @@ function cleanMessageForSpeech(text: string): string {
   return text
     // 1. Strip [GITA_SHLOKA]...[/GITA_SHLOKA]
     .replace(/\[GITA_SHLOKA\][\s\S]*?\[\/GITA_SHLOKA\]/gi, '')
-    // 2. Strip section headers like **1. ...**, **2. ...**, **SUMMARY...**
-    .replace(/^\*\*(?:[1234]\.\s+|SUMMARY[^*]*|आपकी स्थिति[^*]*|स्थिति व कष्ट[^*]*|TRI-PILLAR[^*]*|एकीकृत[^*]*)[^*]*\*\*\s*:?\s*/gim, '')
+    // 2. Strip section headers like **1. ...**, **2. ...**, **SUMMARY...**, **RESUMEN...**
+    .replace(/^\*\*(?:[1234]\.\s+|SUMMARY[^*]*|आपकी स्थिति[^*]*|स्थिति व कष्ट[^*]*|RESUMEN[^*]*|SYNTHÈSE[^*]*|ZUSAMMENFASSUNG[^*]*|TRI-PILLAR[^*]*|एकीकृत[^*]*)[^*]*\*\*\s*:?\s*/gim, '')
     // 3. Keep markdown images as clean inline text: ![alt](url) -> alt
     .replace(/!\[(.*?)\]\([^\)]*\)/g, '$1')
     // 4. Keep diagram tags as clean text: [diagram: label] -> label
@@ -144,7 +143,7 @@ function renderFormattedMarkdown(
   // Strip leading header line if present e.g. **1. ...** or **SUMMARY ...** or **4. ...**
   // Keep visual references and diagrams as clean inline text (NO cards or transformed boxes)
   const cleaned = content
-    .replace(/^\*\*(?:[1234]\.\s+|SUMMARY[^*]*|आपकी स्थिति[^*]*|स्थिति व कष्ट[^*]*|TRI-PILLAR[^*]*|एकीकृत[^*]*)[^*]*\*\*\s*:?\s*/i, '')
+    .replace(/^\*\*(?:[1234]\.\s+|SUMMARY[^*]*|आपकी स्थिति[^*]*|स्थिति व कष्ट[^*]*|RESUMEN[^*]*|SYNTHÈSE[^*]*|ZUSAMMENFASSUNG[^*]*|TRI-PILLAR[^*]*|एकीकृत[^*]*)[^*]*\*\*\s*:?\s*/im, '')
     .replace(/!\[(.*?)\]\([^\)]*\)/g, '$1')
     .replace(/\[(?:diagram|visual|flow):\s*(.*?)\]/gi, '$1');
 
@@ -504,6 +503,7 @@ export default function SanctuarySessionPage() {
   const isPlayingAudioRef = useRef(false);
   const isEchoLockedRef = useRef(false);
   const isVoiceModeActiveRef = useRef(false);
+  const startContinuousVoiceListeningRef = useRef<() => Promise<void>>();
   const isAiMutedRef = useRef(false);
   const activeAudioRef = useRef<HTMLAudioElement | null>(null);
   const activeSpeakingMessageIdRef = useRef<string | null>(null);
@@ -732,7 +732,7 @@ export default function SanctuarySessionPage() {
         isEchoLockedRef.current = false;
         setIsEchoLocked(false);
         if (isVoiceModeActiveRef.current) {
-          startContinuousVoiceListening();
+          startContinuousVoiceListeningRef.current?.();
         }
       }, 200);
     };
@@ -915,6 +915,7 @@ export default function SanctuarySessionPage() {
 
   // ─── Continuous Voice Capture ───
   const startContinuousVoiceListening = async () => {
+    startContinuousVoiceListeningRef.current = startContinuousVoiceListening;
     if (isPlayingAudioRef.current || isEchoLockedRef.current) return;
 
     try {

@@ -148,7 +148,7 @@ export function EditorialGuide() {
             </h2>
           </div>
           <p className="text-sm sm:text-base text-zinc-300 leading-relaxed">
-            At the foundation of EIH is the Neuro-Vedantic Calibration Principle—a unified diagnostic model synthesizing Stephen Porges' Polyvagal Theory with classical Ayurvedic Sattvavajaya Chikitsa (mind-balancing therapy). Modern neurobiology establishes that the autonomic nervous system evaluates environmental risk through neuroception across three evolutionary circuits:
+            At the foundation of EIH is the Neuro-Vedantic Calibration Principle—a unified diagnostic model synthesizing Stephen Porges&apos; Polyvagal Theory with classical Ayurvedic Sattvavajaya Chikitsa (mind-balancing therapy). Modern neurobiology establishes that the autonomic nervous system evaluates environmental risk through neuroception across three evolutionary circuits:
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

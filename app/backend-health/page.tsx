@@ -460,7 +460,7 @@ export default function BackendHealthPage() {
                       <span className="text-[10px] font-mono text-[#688a77] shrink-0">
                         {new Date(turn.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
-                      <strong className="text-white truncate">"{turn.trigger}"</strong>
+                      <strong className="text-white truncate">&ldquo;{turn.trigger}&rdquo;</strong>
                     </div>
                     <div className="flex items-center gap-2 shrink-0 text-[11px]">
                       <span className="text-[#e9c46a]">{turn.distortion}</span>

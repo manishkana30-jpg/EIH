@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Play, Pause, RotateCcw, Volume2, VolumeX, Eye, Sparkles, CheckCircle2, ChevronRight } from "lucide-react";
 
 export interface TratakaStage {
@@ -79,7 +79,7 @@ export const TratakaTimer: React.FC<TratakaTimerProps> = ({
   const progressPercent = ((totalStageSeconds - secondsRemaining) / totalStageSeconds) * 100;
 
   // Beep sound cue for stage transition using Web Audio API
-  const playChime = () => {
+  const playChime = useCallback(() => {
     if (!soundEnabled || typeof window === "undefined") return;
     try {
       if (!audioCtxRef.current) {
@@ -106,7 +106,7 @@ export const TratakaTimer: React.FC<TratakaTimerProps> = ({
       osc.start();
       osc.stop(ctx.currentTime + 1.2);
     } catch (_) {}
-  };
+  }, [soundEnabled]);
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | null = null;
@@ -129,7 +129,7 @@ export const TratakaTimer: React.FC<TratakaTimerProps> = ({
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isActive, secondsRemaining, currentStageIdx, stages, onComplete]);
+  }, [isActive, secondsRemaining, currentStageIdx, stages, onComplete, playChime]);
 
   const toggleTimer = () => {
     if (sessionFinished) {
