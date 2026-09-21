@@ -122,7 +122,10 @@ export const GitaShlokaCard: React.FC<GitaShlokaCardProps> = ({
   if (variant === "inline") {
     return (
       <div
-        className={`my-2.5 p-3 sm:p-3.5 rounded-lg bg-amber-950/25 border-l-2 border-amber-500/60 font-sans space-y-1.5 text-left ${className}`}
+        data-tts-silent="true"
+        data-tts-skip="true"
+        aria-label="Bhagavad Gita Shloka"
+        className={`my-2.5 p-3.5 sm:p-4 rounded-xl bg-slate-900 border border-amber-500/30 font-sans space-y-2 text-left select-text shadow-sm ${className}`}
       >
         {/* Sanskrit Devanagari */}
         {devanagariLines.length > 0 && (
@@ -130,7 +133,8 @@ export const GitaShlokaCard: React.FC<GitaShlokaCardProps> = ({
             {devanagariLines.map((line, idx) => (
               <p
                 key={idx}
-                className="font-serif text-sm sm:text-base font-semibold text-amber-100 leading-relaxed tracking-wide"
+                lang="sa"
+                className="font-serif text-sm sm:text-base font-semibold text-amber-100 leading-relaxed tracking-wide select-text"
               >
                 {line}
               </p>
@@ -144,7 +148,7 @@ export const GitaShlokaCard: React.FC<GitaShlokaCardProps> = ({
             {romanLines.map((line, idx) => (
               <p
                 key={idx}
-                className="font-sans text-xs sm:text-sm text-amber-200/80 italic leading-normal"
+                className="font-sans text-xs sm:text-sm text-amber-200/80 italic leading-normal select-text"
               >
                 {line}
               </p>
@@ -153,7 +157,7 @@ export const GitaShlokaCard: React.FC<GitaShlokaCardProps> = ({
         )}
 
         {/* Subtle Plain-Text Attribution Line */}
-        <p className="text-[11px] font-mono font-medium text-amber-400/90 pt-0.5">
+        <p className="text-[11px] font-mono font-medium text-amber-400/90 pt-1 border-t border-amber-500/15 select-text">
           — श्रीमद्भगवद्गीता ({referenceHeader})
         </p>
       </div>
@@ -162,7 +166,9 @@ export const GitaShlokaCard: React.FC<GitaShlokaCardProps> = ({
 
   return (
     <article
-      className={`p-5 sm:p-6 rounded-xl bg-slate-950/80 border border-amber-500/20 text-slate-100 shadow-sm transition-all duration-200 hover:border-amber-500/40 text-left ${className}`}
+      data-tts-silent="true"
+      data-tts-skip="true"
+      className={`p-5 sm:p-6 rounded-xl bg-slate-900 border border-amber-500/30 text-slate-100 shadow-sm transition-all duration-200 hover:border-amber-500/50 text-left select-text ${className}`}
     >
       {/* Top Header: Reference & Plain Text Actions */}
       <div className="flex items-center justify-between gap-3 pb-3 border-b border-amber-500/15">
@@ -203,7 +209,8 @@ export const GitaShlokaCard: React.FC<GitaShlokaCardProps> = ({
         {devanagariLines.map((line, idx) => (
           <p
             key={idx}
-            className="font-serif text-base sm:text-lg font-medium text-amber-100 leading-relaxed tracking-wide"
+            lang="sa"
+            className="font-serif text-base sm:text-lg font-medium text-amber-100 leading-relaxed tracking-wide select-text"
           >
             {line}
           </p>
@@ -214,7 +221,7 @@ export const GitaShlokaCard: React.FC<GitaShlokaCardProps> = ({
       {romanLines.length > 0 && (
         <div className="my-3 space-y-0.5 text-center sm:text-left">
           {romanLines.map((line, idx) => (
-            <p key={idx} className="font-sans text-xs sm:text-sm text-amber-200/80 italic leading-relaxed">
+            <p key={idx} className="font-sans text-xs sm:text-sm text-amber-200/80 italic leading-relaxed select-text">
               {line}
             </p>
           ))}
@@ -223,7 +230,7 @@ export const GitaShlokaCard: React.FC<GitaShlokaCardProps> = ({
 
       {/* Plain Language Translation */}
       {translationText && (
-        <div className="mt-3 pt-3 border-t border-slate-800/80 text-xs sm:text-sm text-slate-300 leading-relaxed">
+        <div className="mt-3 pt-3 border-t border-slate-800/80 text-xs sm:text-sm text-slate-300 leading-relaxed select-text">
           <span className="font-medium text-amber-300/90 mr-1.5 font-sans">Translation:</span>
           <span>{translationText}</span>
         </div>
@@ -231,14 +238,14 @@ export const GitaShlokaCard: React.FC<GitaShlokaCardProps> = ({
 
       {/* Psychological / Somatic Mapping */}
       {clinicalMapping && (
-        <div className="mt-3 text-xs text-amber-400/95 font-sans font-medium bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
+        <div className="mt-3 text-xs text-amber-400/95 font-sans font-medium bg-slate-950/80 p-2.5 rounded-lg border border-amber-500/20 select-text">
           {clinicalMapping}
         </div>
       )}
 
       {/* Cognitive Tags */}
       {tags && tags.length > 0 && (
-        <div className="mt-3.5 pt-2.5 border-t border-white/5 flex flex-wrap items-center gap-1.5">
+        <div className="mt-3.5 pt-2.5 border-t border-white/5 flex flex-wrap items-center gap-1.5 select-text">
           {tags.map((tag, idx) => (
             <span
               key={idx}

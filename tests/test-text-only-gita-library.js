@@ -112,6 +112,23 @@ function runTests() {
 
   console.log('  ✓ Verified Shloka is rendered in plain-text inside Shreemadh Bhagwatgita section and NOT at top of chat');
 
+  // ─── 8. Verify Semantic <p lang="sa">, Dark CSS Tokens, Selectable Text & TTS Separation ───
+  assert(cardCode.includes('lang="sa"'), 'GitaShlokaCard must render Sanskrit verses inside semantic <p lang="sa"> elements');
+  assert(cardCode.includes('bg-slate-900'), 'GitaShlokaCard container must use dark solid background bg-slate-900');
+  assert(cardCode.includes('border-amber-500/30'), 'GitaShlokaCard container must use subtle border border-amber-500/30');
+  assert(cardCode.includes('select-text'), 'GitaShlokaCard must enforce selectable text with select-text');
+  assert(cardCode.includes('data-tts-silent="true"'), 'GitaShlokaCard must mark container with data-tts-silent="true"');
+  assert(cardCode.includes('data-tts-skip="true"'), 'GitaShlokaCard must mark container with data-tts-skip="true"');
+  assert(karaokeMsgCode.includes('data-tts-silent="true"'), 'KaraokeMessage must wrap Gita shloka in data-tts-silent container');
+
+  // Assert NO background images or canvas
+  assert(!cardCode.includes('bg-[url'), 'GitaShlokaCard must NOT contain background URL classes');
+  assert(!cardCode.includes('background-image'), 'GitaShlokaCard must NOT contain background-image style');
+  assert(!cardCode.includes('<canvas'), 'GitaShlokaCard must NOT contain <canvas> tags');
+  assert(!cardCode.includes('data:image'), 'GitaShlokaCard must NOT contain base64 image data');
+
+  console.log('  ✓ Verified semantic <p lang="sa">, bg-slate-900, border-amber-500/30, select-text, and TTS silent skipping');
+
   console.log('\nAll 100% Text-Only Bhagavad Gita Architecture Tests Passed Successfully!\n');
 }
 

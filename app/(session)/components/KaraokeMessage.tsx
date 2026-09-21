@@ -353,7 +353,9 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
         {parts.length <= 1 ? (
           <div className="space-y-1.5 text-slate-100 text-xs sm:text-sm">
             {gitaParsed.isGita && gitaParsed.shlokaBlock && (
-              <GitaShlokaCard shlokaContent={gitaParsed.shlokaBlock} variant="inline" />
+              <div data-tts-silent="true" data-tts-skip="true" className="tts-skip select-text my-2">
+                <GitaShlokaCard shlokaContent={gitaParsed.shlokaBlock} variant="inline" />
+              </div>
             )}
             {renderFormattedMarkdown(therapeuticBody, isSpeaking, activeKaraoke, activeWordRef, counter)}
           </div>
@@ -469,12 +471,14 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
                       )}
                     </div>
                   )}
-                  {/* Shloka in plain text format inside Shreemadh Bhagwatgita Aatam Darshan */}
+                  {/* Shloka in plain text format inside Shreemadh Bhagwatgita Aatam Darshan (Silent to TTS) */}
                   {isGita && gitaParsed.isGita && gitaParsed.shlokaBlock && (
-                    <GitaShlokaCard
-                      shlokaContent={gitaParsed.shlokaBlock}
-                      variant="inline"
-                    />
+                    <div data-tts-silent="true" data-tts-skip="true" className="tts-skip select-text my-2">
+                      <GitaShlokaCard
+                        shlokaContent={gitaParsed.shlokaBlock}
+                        variant="inline"
+                      />
+                    </div>
                   )}
                   <div className="leading-relaxed text-slate-100 text-xs sm:text-sm font-sans space-y-1">
                     {renderFormattedMarkdown(trimmed, isSpeaking, activeKaraoke, activeWordRef, counter)}
