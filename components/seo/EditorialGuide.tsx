@@ -314,3 +314,5 @@ export function EditorialGuide() {
     </article>
   );
 }
+
+export default EditorialGuide;

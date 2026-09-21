@@ -35,9 +35,9 @@ import { LanguageSelector } from "./components/LanguageSelector";
 import { GitaShlokaCard, parseGitaShloka } from "./components/GitaShlokaCard";
 import { KaraokeMessage } from "./components/KaraokeMessage";
 import { tokenizeForKaraoke } from "@/lib/audio/karaoke-tokenizer";
-import { EditorialGuide } from "@/components/seo/EditorialGuide";
 
-/* ─── Lazy-loaded heavy components (only fetched when user interacts) ─── */
+/* ─── Lazy-loaded heavy components (only fetched when user interacts or reaches fold) ─── */
+const EditorialGuide = dynamic(() => import("@/components/seo/EditorialGuide"), { ssr: false });
 const CBTKnowledgeModal = dynamic(() => import("./components/CBTKnowledgeModal").then(m => m.CBTKnowledgeModal ? { default: m.CBTKnowledgeModal } : m), { ssr: false });
 const PranayamaGuide = dynamic(() => import("./components/PranayamaGuide").then(m => m.PranayamaGuide ? { default: m.PranayamaGuide } : m), { ssr: false });
 const EncryptedHistoryModal = dynamic(() => import("./components/EncryptedHistoryModal").then(m => m.EncryptedHistoryModal ? { default: m.EncryptedHistoryModal } : m), { ssr: false });
