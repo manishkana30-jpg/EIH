@@ -374,17 +374,48 @@ class HealerBackendClient {
       const gitaItem = findGitaWisdom(cleanMessage);
 
       const targetLang = cleanMessage.match(/[\u0900-\u097F]/) ? 'hi' : (language || locale || 'en');
-      let fallbackReply = '';
+      const hasDistressKeywords = /(?:distress|anxious|anxiety|depress|sad|fear|scared|panic|stress|overwhelm|worry|worried|grief|pain|burnout|lonely|loneliness|angry|anger|trauma|shame|guilt|fail|terrif|crying|tears|breakup|heartbreak|chinta|tanaav|udas|gussa|troubled|need help|please help me|help me please|someone help me|help me i'm|help me i am|दर्द|रोना|रो |रोने|रोऊ|दुःख|दुख|तनाव|चिंता|उदासी|डर|घबराहट|घबरा|ब्रेकअप|परेशान|पीड़ा|कष्ट|क्रोध|अकेला|हार|असफल|टूटा)/i.test(cleanMessage);
 
-      if (libraryResult) {
-        fallbackReply = formatHumanTherapeuticMessage(libraryResult.condition, targetLang, cleanMessage);
-      } else if (study) {
-        fallbackReply = getLocalizedGeneralAdvice(diag.dimensionName || 'anxiety', targetLang, cleanMessage);
+      const isPositiveOrNeutral =
+        !hasDistressKeywords &&
+        (diag.dimensionId === 'joy' ||
+         diag.dimensionId === 'calmness' ||
+         (diag.coreAffect?.valence !== undefined && diag.coreAffect.valence >= 0.25) ||
+         /(happy|great|excited|peaceful|wonderful|grateful|joy|glad|blessed|प्रसन्न|खुश|आनंद|शांति|बढ़िया)/i.test(cleanMessage));
+
+      const hasClinicalDistress =
+        !isPositiveOrNeutral &&
+        Boolean(
+          libraryResult ||
+          hasDistressKeywords ||
+          (diag.coreAffect?.valence !== undefined && diag.coreAffect.valence < -0.15) ||
+          (diag.coreAffect?.arousal !== undefined && diag.coreAffect.arousal > 0.65)
+        );
+
+      let fallbackReply = '';
+      if (hasClinicalDistress) {
+        if (libraryResult) {
+          fallbackReply = formatHumanTherapeuticMessage(libraryResult.condition, targetLang, cleanMessage);
+        } else if (study) {
+          fallbackReply = getLocalizedGeneralAdvice(diag.dimensionName || 'anxiety', targetLang, cleanMessage);
+        } else {
+          fallbackReply = getLocalizedGeneralAdvice('default', targetLang, cleanMessage);
+        }
       } else {
-        fallbackReply = getLocalizedGeneralAdvice('default', targetLang, cleanMessage);
+        if (targetLang === 'hi') {
+          fallbackReply = "मैं आपकी बात ध्यान से सुन रहा हूँ। मैं आपके साथ पूरी शांति और सजगता से उपस्थित हूँ। बताएं कि आज आपके मन में क्या विचार या प्रश्न है?";
+        } else if (targetLang === 'es') {
+          fallbackReply = "Te escucho con serenidad y atención plena. Cuéntame, ¿qué tienes en mente hoy o cómo puedo acompañarte?";
+        } else if (targetLang === 'fr') {
+          fallbackReply = "Je vous écoute en toute sérénité. Je suis pleinement présent avec vous. Dites-moi, que traversez-vous aujourd'hui ou sur quoi aimeriez-vous échanger ?";
+        } else if (targetLang === 'de') {
+          fallbackReply = "Ich höre Ihnen in Ruhe zu und bin ganz für Sie da. Worüber möchten Sie heute sprechen oder wie kann ich Sie unterstützen?";
+        } else {
+          fallbackReply = "I am listening to you with calm awareness. What is on your mind today, or what would you like to explore together?";
+        }
       }
 
-      const sources: ClinicalSource[] = [
+      const sources: ClinicalSource[] = hasClinicalDistress ? [
         {
           title: `Bhagavad Gita: Ch. ${gitaItem.chapter}, Verse ${gitaItem.verse} (${gitaItem.theme})`,
           summary: `${gitaItem.philosophical_meaning} | Clinical Reframe: ${gitaItem.clinical_reframe}`,
@@ -395,9 +426,9 @@ class HealerBackendClient {
           summary: `Focus: ${tratakPrescription.focalTarget} | Neuro: ${tratakPrescription.neuroMechanism}`,
           source: 'Trataka Sacred Gazing Protocol',
         },
-      ];
+      ] : [];
 
-      if (libraryResult) {
+      if (hasClinicalDistress && libraryResult) {
         sources.push({
           title: `${libraryResult.condition.name} (${libraryResult.condition.triguna_balance})`,
           summary: `CBT: ${libraryResult.condition.solutions.cbt_reframing} | Somatic: ${libraryResult.condition.solutions.somatic_anchor}`,
@@ -405,7 +436,7 @@ class HealerBackendClient {
             ? (libraryResult.structuredCard.sourcePlatform || 'NCBI PubMed & Wikipedia Clinical Knowledge')
             : 'Clinical & Psychoeducational Library',
         });
-      } else if (study) {
+      } else if (hasClinicalDistress && study) {
         sources.push({
           title: study.citation,
           summary: study.scientificActionProtocol,
@@ -414,30 +445,36 @@ class HealerBackendClient {
       }
 
       const detectedFromReply = detectTratakaModeFromText(fallbackReply);
-      const recTrataka =
-        detectedFromReply ||
-        (libraryResult?.condition?.recommended_trataka_mode
-          ? normalizeTratakaMode(libraryResult.condition.recommended_trataka_mode)
-          : tratakPrescription.mode);
+      const recTrataka = hasClinicalDistress
+        ? (detectedFromReply ||
+          (libraryResult?.condition?.recommended_trataka_mode
+            ? normalizeTratakaMode(libraryResult.condition.recommended_trataka_mode)
+            : tratakPrescription.mode))
+        : 'bindu';
       const trigunaAnalysis = parseClientTriguna(libraryResult?.condition?.triguna_balance);
 
       return {
         reply: fallbackReply,
-        engine: 'Keyless Healer (Client-Side Standalone Fallback)',
+        engine: hasClinicalDistress ? 'Keyless Healer (Client-Side Standalone Fallback)' : 'Conversational Empathy Responder',
         sources,
         is_crisis: false,
         recommended_trataka: recTrataka,
-        triguna_analysis: trigunaAnalysis,
+        triguna_analysis: hasClinicalDistress ? trigunaAnalysis : undefined,
         telemetry: {
-          dominant_emotion: diag.dimensionName || 'Calmness',
-          polyvagal_state: polyvagalState,
+          dominant_emotion: hasClinicalDistress ? (diag.dimensionName || 'Calmness') : 'Calmness',
+          polyvagal_state: hasClinicalDistress ? polyvagalState : 'Ventral Vagal (Safe)',
           cbt_distortion: 'None',
-          percentages: {
+          percentages: hasClinicalDistress ? {
             [diag.dimensionName || 'Calmness']: Math.round(arousal * 100),
             Relief: 65,
             Grounding: 80,
+          } : {
+            Calmness: 95,
+            Receptivity: 90,
           },
-          strategy: `Somatic stabilization and evidence-based grounding for ${diag.dimensionName || 'emotional resilience'}.`,
+          strategy: hasClinicalDistress
+            ? `Somatic stabilization and evidence-based grounding for ${diag.dimensionName || 'emotional resilience'}.`
+            : 'Calm supportive listening and clinical readiness.',
         },
       };
     } catch (finalErr) {

@@ -438,6 +438,15 @@ export function getLocalizedIncompleteUtteranceResponse(text?: string, lang?: st
     : `It seems your thought was cut off. Could you share a bit more about what you're experiencing or going through? I am listening attentively.`;
 }
 
+const STOP_WORDS = new Set([
+  'what', 'this', 'that', 'with', 'from', 'your', 'have', 'they', 'will',
+  'more', 'about', 'into', 'some', 'when', 'make', 'like', 'just', 'know',
+  'take', 'than', 'them', 'their', 'there', 'here', 'were', 'been', 'being',
+  'help', 'good', 'well', 'much', 'very', 'even', 'also', 'most', 'only',
+  'does', 'doing', 'done', 'should', 'would', 'could', 'which', 'where',
+  'work', 'works', 'working'
+]);
+
 /**
  * Semantic & Keyword-Weighted Matcher for Clinical Conditions
  */
@@ -507,7 +516,7 @@ export function queryPsychologyLibrary(userText: string): LibraryRAGResult | nul
     // 3. Condition Name matching (+4)
     const nameWords = condition.name.toLowerCase().split(/[\s,&]+/);
     for (const nw of nameWords) {
-      if (nw.length >= 4 && rawLower.includes(nw)) {
+      if (nw.length >= 4 && !STOP_WORDS.has(nw) && words.includes(nw)) {
         score += 4;
         currentMatched.push(nw);
       }
@@ -516,7 +525,7 @@ export function queryPsychologyLibrary(userText: string): LibraryRAGResult | nul
     // 4. Category matching (+3)
     const catWords = condition.category.toLowerCase().split(/[\s,&]+/);
     for (const cw of catWords) {
-      if (cw.length >= 4 && rawLower.includes(cw)) {
+      if (cw.length >= 4 && !STOP_WORDS.has(cw) && words.includes(cw)) {
         score += 3;
         currentMatched.push(cw);
       }
@@ -527,7 +536,7 @@ export function queryPsychologyLibrary(userText: string): LibraryRAGResult | nul
       const symWords = symptom.toLowerCase().split(/\s+/);
       let symOverlap = 0;
       for (const sw of symWords) {
-        if (sw.length >= 4 && words.includes(sw)) {
+        if (sw.length >= 4 && !STOP_WORDS.has(sw) && words.includes(sw)) {
           symOverlap += 1;
         }
       }
@@ -541,7 +550,8 @@ export function queryPsychologyLibrary(userText: string): LibraryRAGResult | nul
 
     // 6. Cognitive Distortions matching (+7)
     for (const distortion of condition.cognitive_distortions) {
-      if (rawLower.includes(distortion.toLowerCase())) {
+      const distLower = distortion.toLowerCase();
+      if (!STOP_WORDS.has(distLower) && rawLower.includes(distLower)) {
         score += 7;
         currentMatched.push(distortion);
       }
@@ -555,7 +565,9 @@ export function queryPsychologyLibrary(userText: string): LibraryRAGResult | nul
   }
 
   // Fallback to Neuroscience Emotion Classifier ONLY when there is actual emotional distress and sufficient context
-  if ((!bestMatch || highestScore < 4) && words.length >= 3) {
+  const hasDistressSignal = /(?:distress|anxious|anxiety|depress|sad|fear|scared|panic|stress|overwhelm|worry|worried|grief|pain|burnout|lonely|loneliness|angry|anger|trauma|shame|guilt|fail|terrif|crying|tears|breakup|heartbreak|chinta|tanaav|udas|gussa|troubled|need help|please help|help me|दर्द|रोना|रो |रोने|रोऊ|दुःख|दुख|तनाव|चिंता|उदासी|डर|घबराहट|घबरा|ब्रेकअप|परेशान|पीड़ा|कष्ट|क्रोध|अकेला|हार|असफल|टूटा)/i.test(rawLower);
+
+  if ((!bestMatch || highestScore < 4) && words.length >= 3 && hasDistressSignal) {
     try {
       const diag = emotionClassifier.classifyText(userText);
       const dimId = diag.dimensionId || '';

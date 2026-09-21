@@ -57,7 +57,7 @@ import {
 } from "@/lib/i18n/language-catalog";
 import { saveLivePsychologyTelemetry } from "@/lib/telemetry/psychology-store";
 import { getConditionById, queryPsychologyLibrary } from "@/lib/knowledge/psychology-library-rag";
-import { saveSessionMessage } from "@/lib/db/indexed-db";
+import { saveSessionMessage, resetActiveSessionId } from "@/lib/db/indexed-db";
 import {
   normalizeTratakaMode,
   detectTratakaModeFromText,
@@ -422,22 +422,22 @@ export default function SanctuarySessionPage() {
   const [recommendedTrataka, setRecommendedTrataka] = useState<string>("bindu");
   const [activeTriguna, setActiveTriguna] = useState<TrigunaAnalysis | null>(null);
 
-  // Dynamically resolve active CBT Reframe for Trataka Neuroplastic Phase
+  // Dynamically resolve active CBT Reframe for Trataka Neuroplastic Phase (current turn only, avoiding ghost reframes)
   const activeCbtReframe = React.useMemo(() => {
-    for (let i = messages.length - 1; i >= 0; i--) {
-      const msg = messages[i];
-      if (msg.sender === "ai" && msg.sources && msg.sources.length > 0) {
-        const cbtSource = msg.sources.find((s) => s.summary?.includes("CBT:") || s.title?.toLowerCase().includes("cbt"));
-        if (cbtSource && cbtSource.summary) {
-          const match = cbtSource.summary.match(/CBT:\s*([^|]+)/i);
-          if (match && match[1]) return match[1].trim();
-          return cbtSource.summary;
-        }
+    const lastMsg = messages[messages.length - 1];
+    if (lastMsg && lastMsg.sender === "ai" && lastMsg.sources && lastMsg.sources.length > 0) {
+      const cbtSource = lastMsg.sources.find((s) => s.summary?.includes("CBT:") || s.title?.toLowerCase().includes("cbt"));
+      if (cbtSource && cbtSource.summary) {
+        const match = cbtSource.summary.match(/CBT:\s*([^|]+)/i);
+        if (match && match[1]) return match[1].trim();
+        return cbtSource.summary;
       }
     }
-    const match = queryPsychologyLibrary(telemetry.cbt_distortion !== "None" ? telemetry.cbt_distortion : telemetry.dominant_emotion);
-    if (match && match.condition.solutions.cbt_reframing) {
-      return match.condition.solutions.cbt_reframing.split("[Wikipedia Context]")[0].trim();
+    if (telemetry.cbt_distortion !== "None" && telemetry.dominant_emotion !== "Calmness") {
+      const match = queryPsychologyLibrary(telemetry.cbt_distortion !== "None" ? telemetry.cbt_distortion : telemetry.dominant_emotion);
+      if (match && match.condition.solutions.cbt_reframing) {
+        return match.condition.solutions.cbt_reframing.split("[Wikipedia Context]")[0].trim();
+      }
     }
     return undefined;
   }, [messages, telemetry]);
@@ -1053,10 +1053,35 @@ export default function SanctuarySessionPage() {
     setIsPlayingAudio(false);
     isVoiceModeActiveRef.current = false;
 
+    const executeReset = () => {
+      setMessages([]);
+      setTelemetry({
+        dominant_emotion: "Calmness",
+        polyvagal_state: "Ventral Vagal (Safe)",
+        cbt_distortion: "None",
+        percentages: { Calmness: 100, Receptivity: 90 },
+        strategy: "Sanctuary baseline active.",
+      });
+      setRecommendedTrataka("bindu");
+      setActiveTriguna(null);
+      setActiveCrisisData(null);
+      setIsCrisisModalOpen(false);
+      setIsCBTModalOpen(false);
+      setIsPranayamaOpen(false);
+      setIsTratakaOpen(false);
+      setIsHistoryOpen(false);
+      setActiveKaraoke(null);
+      setInputVal("");
+      setErrorMessage(null);
+      resetActiveSessionId();
+    };
+
     if (messages.length > 0) {
-      if (window.confirm("End this active session and clear stage? Session is saved to your encrypted local vault.")) {
-        setMessages([]);
+      if (window.confirm("End this active session and clear sanctuary stage? Your session is saved to your encrypted local vault.")) {
+        executeReset();
       }
+    } else {
+      executeReset();
     }
   };
 

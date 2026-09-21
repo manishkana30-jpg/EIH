@@ -4,7 +4,7 @@
  * encrypted via WebCrypto AES-GCM-256 with full HIPAA/GDPR data isolation and right-to-purge.
  */
 
-import { encryptData, decryptData, EncryptedPayload } from './crypto';
+import { encryptData, decryptData, type EncryptedPayload } from './crypto.ts';
 
 export interface EmotionalProfile {
   id: string;
@@ -139,6 +139,18 @@ export async function purgeAllEncryptedData(): Promise<boolean> {
 export const getStoredSessionRecords = getAllSessions;
 
 let activeSessionId = `session_${Date.now()}`;
+
+/**
+ * Resets and creates a fresh session ID for a new conversation session
+ */
+export function resetActiveSessionId(): string {
+  activeSessionId = `session_${Date.now()}`;
+  return activeSessionId;
+}
+
+export function getActiveSessionId(): string {
+  return activeSessionId;
+}
 
 /**
  * Appends a message to the active session in IndexedDB

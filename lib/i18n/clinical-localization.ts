@@ -1664,14 +1664,23 @@ export function buildDiagnosticSufferingAssessment(
   const diag = emotionClassifier.classifyText(text);
   const activeEmotionId = emotionHint || diag.dimensionId || 'anxiety';
 
+  const directPositiveAssertion =
+    /\b(i am|i'm|i feel|feeling)\s+(?:very\s+|so\s+|really\s+|quite\s+)?(happy|joyful|great|delighted|ecstatic|wonderful|fantastic|elated|cheerful|calm|peaceful|serene|relaxed)\b|\b(i am|i'm)\s+(good|fine|doing good|so happy|very happy)\b|(?:^|\s)(मैं\s+(?:काफी\s+|बहुत\s+)?(?:खुश|प्रसन्न|शांत|स्थिर)\s+हूँ|सब\s+ठीक\s+है)|(\b(estoy|me siento)\s+(?:muy\s+)?(feliz|bien|contento|alegre|tranquilo)\b)|(\b(je suis|je me sens)\s+(?:très\s+)?(heureux|bien|joyeux|calme)\b)|(\b(ich bin|ich fühle mich)\s+(?:sehr\s+)?(glücklich|gut|froh|ruhig)\b)/i.test(text);
+
+  const hasDistressKeywords =
+    !directPositiveAssertion &&
+    /(?:distress|anxious|anxiety|depress|sad|fear|scared|panic|stress|overwhelm|worry|worried|grief|pain|burnout|lonely|loneliness|angry|anger|trauma|shame|guilt|fail|terrif|crying|tears|breakup|heartbreak|chinta|tanaav|udas|gussa|troubled|need help|please help me|help me please|someone help me|help me i'm|help me i am|दर्द|रोना|रो |रोने|रोऊ|दुःख|दुख|तनाव|चिंता|उदासी|डर|घबराहट|घबरा|ब्रेकअप|परेशान|पीड़ा|कष्ट|क्रोध|अकेला|हार|असफल|टूटा)/i.test(text);
+
   const isPositive =
-    activeEmotionId === 'joy' ||
-    activeEmotionId === 'calmness' ||
-    activeEmotionId === 'satisfaction' ||
-    activeEmotionId === 'relief' ||
-    activeEmotionId === 'adoration' ||
-    activeEmotionId === 'amusement' ||
-    diag.coreAffect.valence >= 0.3;
+    directPositiveAssertion ||
+    (!hasDistressKeywords &&
+     (activeEmotionId === 'joy' ||
+      activeEmotionId === 'calmness' ||
+      activeEmotionId === 'satisfaction' ||
+      activeEmotionId === 'relief' ||
+      activeEmotionId === 'adoration' ||
+      activeEmotionId === 'amusement' ||
+      diag.coreAffect.valence >= 0.3));
 
   // Calculate distress score (1-10) based on valence, arousal and intensity
   let distressScore = 7;
@@ -1684,7 +1693,9 @@ export function buildDiagnosticSufferingAssessment(
     lower.includes('panic') ||
     lower.includes('heartbreak') ||
     lower.includes('cannot bear') ||
-    lower.includes('furious')
+    lower.includes('furious') ||
+    lower.includes('ब्रेकअप') ||
+    lower.includes('रोना')
   ) {
     distressScore = 8 + (Math.abs(diag.coreAffect.valence) > 0.88 || diag.coreAffect.arousal > 0.8 ? 1 : 0);
   } else if (diag.coreAffect.valence <= -0.55 || diag.coreAffect.arousal >= 0.65) {
@@ -1776,12 +1787,12 @@ export function buildDiagnosticSufferingAssessment(
   let matchedKey = 'anxiety';
   if (isPositive) {
     matchedKey = activeEmotionId.includes('calm') || activeEmotionId.includes('relief') ? 'calmness' : 'joy';
-  } else if (activeEmotionId.includes('sad') || activeEmotionId.includes('grief') || lower.includes('heartbreak') || lower.includes('broke up')) matchedKey = 'sadness';
-  else if (activeEmotionId.includes('ang') || activeEmotionId.includes('rage') || lower.includes('yelled') || lower.includes('furious')) matchedKey = 'anger';
-  else if (activeEmotionId.includes('panic') || activeEmotionId.includes('fear') || lower.includes('terrified')) matchedKey = 'fear';
-  else if (activeEmotionId.includes('sham') || activeEmotionId.includes('guilt') || lower.includes('fake') || lower.includes('imposter') || lower.includes('failure')) matchedKey = 'shame';
-  else if (activeEmotionId.includes('dilemma') || activeEmotionId.includes('confus') || lower.includes('cannot decide') || lower.includes("can't decide")) matchedKey = 'confusion';
-  else if (activeEmotionId.includes('overwhelm') || activeEmotionId.includes('burnout') || lower.includes('racing thoughts') || lower.includes('hurricane')) matchedKey = 'overwhelm';
+  } else if (activeEmotionId.includes('sad') || activeEmotionId.includes('grief') || lower.includes('heartbreak') || lower.includes('broke up') || lower.includes('ब्रेकअप') || lower.includes('रोना') || lower.includes('दर्द')) matchedKey = 'sadness';
+  else if (activeEmotionId.includes('ang') || activeEmotionId.includes('rage') || lower.includes('yelled') || lower.includes('furious') || lower.includes('क्रोध') || lower.includes('गुस्सा')) matchedKey = 'anger';
+  else if (activeEmotionId.includes('panic') || activeEmotionId.includes('fear') || lower.includes('terrified') || lower.includes('डर') || lower.includes('घबराहट')) matchedKey = 'fear';
+  else if (activeEmotionId.includes('sham') || activeEmotionId.includes('guilt') || lower.includes('fake') || lower.includes('imposter') || lower.includes('failure') || lower.includes('हीनभावना')) matchedKey = 'shame';
+  else if (activeEmotionId.includes('dilemma') || activeEmotionId.includes('confus') || lower.includes('cannot decide') || lower.includes("can't decide") || lower.includes('असमंजस') || lower.includes('समझ नहीं')) matchedKey = 'confusion';
+  else if (activeEmotionId.includes('overwhelm') || activeEmotionId.includes('burnout') || lower.includes('racing thoughts') || lower.includes('hurricane') || lower.includes('तनाव')) matchedKey = 'overwhelm';
 
   const emotionName = emotionLabels[matchedKey]?.[norm] || (conditionName || diag.dimensionName);
 
@@ -1964,35 +1975,25 @@ export function buildDiagnosticSufferingAssessment(
 • **Empathic Summary of Your Experience:** ${inputSummary}`;
     }
   } else if (norm === 'hi') {
-    markdown = `**आपकी स्थिति का सारांश एवं मानसिक पीड़ा का मूल्यांकन:**
-• **पहचाना गया मनोभाव एवं मुख्य संघर्ष:** ${emotionName}
-• **पीड़ा का स्तर एवं तंत्रिका तंत्र स्थिति:** ${severityLabel} (कष्ट सूचकांक: ${distressScore}/10) | ${nervousSystem}
-• **शारीरिक संवेदनाएं व आंतरिक तनाव:** ${bodilyMarkers}
-• **आपकी स्थिति का संवेदनशील सारांश:** ${inputSummary}`;
+    markdown = `**आपकी स्थिति का संक्षिप्त सारांश एवं मूल्यांकन:**
+• **स्थिति व पीड़ा का स्तर (कष्ट सूचकांक):** ${emotionName} (${severityLabel}, ${distressScore}/10) | ${nervousSystem}
+• **मुख्य बिंदु:** ${inputSummary}`;
   } else if (norm === 'es') {
-    markdown = `**RESUMEN DIAGNÓSTICO Y EVALUACIÓN DEL SUFRIMIENTO:**
-• **Emoción y Conflicto Central:** ${emotionName}
-• **Nivel de Sufrimiento y Estado Autonómico:** ${severityLabel} (Índice de aflicción: ${distressScore}/10) | ${nervousSystem}
-• **Manifestación Somática Corporal:** ${bodilyMarkers}
-• **Resumen Empático de tu Situación:** ${inputSummary}`;
+    markdown = `**RESUMEN DIAGNÓSTICO:**
+• **Estado y Nivel de Sufrimiento:** ${emotionName} (${severityLabel}, ${distressScore}/10) | ${nervousSystem}
+• **Enfoque:** ${inputSummary}`;
   } else if (norm === 'fr') {
-    markdown = `**SYNTHÈSE CLINIQUE ET ÉVALUATION DE LA SOUFFRANCE:**
-• **Émotion Identifiée et Conflit Central :** ${emotionName}
-• **Niveau de Souffrance et État Neurovégétatif :** ${severityLabel} (Indice de détresse : ${distressScore}/10) | ${nervousSystem}
-• **Charge Somatique Corporelle :** ${bodilyMarkers}
-• **Synthèse Empathique de votre Situation :** ${inputSummary}`;
+    markdown = `**SYNTHÈSE CLINIQUE :**
+• **État et Niveau de Souffrance :** ${emotionName} (${severityLabel}, ${distressScore}/10) | ${nervousSystem}
+• **Focus :** ${inputSummary}`;
   } else if (norm === 'de') {
-    markdown = `**KLINISCHE ZUSAMMENFASSUNG & BELASTUNGSEVALUATION:**
-• **Identifizierter Gefühlszustand & Konflikt:** ${emotionName}
-• **Schweregrad des Leidens & Vegetativer Status:** ${severityLabel} (Belastungsindex: ${distressScore}/10) | ${nervousSystem}
-• **Körperlich-somatische Belastung:** ${bodilyMarkers}
-• **Empathische Zusammenfassung Ihrer Situation:** ${inputSummary}`;
+    markdown = `**KLINISCHE ZUSAMMENFASSUNG:**
+• **Status und Leidensgrad:** ${emotionName} (${severityLabel}, ${distressScore}/10) | ${nervousSystem}
+• **Fokus:** ${inputSummary}`;
   } else {
-    markdown = `**SUMMARY OF YOUR INPUT & EMOTIONAL SUFFERING ASSESSMENT (स्थिति व कष्ट का विश्लेषण):**
-• **Identified Emotional State:** ${emotionName}
-• **Suffering Severity & Autonomic State:** ${severityLabel} (Distress Index: ${distressScore}/10) | ${nervousSystem}
-• **Interoceptive Bodily Burden:** ${bodilyMarkers}
-• **Empathic Summary of Your Experience:** ${inputSummary}`;
+    markdown = `**SUMMARY & CLINICAL ASSESSMENT:**
+• **State & Suffering Severity Level (Distress Index):** ${emotionName} (${severityLabel}, ${distressScore}/10) | ${nervousSystem}
+• **Focus:** ${inputSummary}`;
   }
 
   return {
@@ -2019,134 +2020,30 @@ export function buildTriPillarSynergyResolution(
   const norm = normalizeLanguageCode(languageCode);
   const tName = tratakName || "Tratak Gazing";
 
-  if (isFollowUp) {
-    if (norm === 'hi') {
-      return `**4. सतत अभ्यास एवं अगला व्यावहारिक कदम:**
-• **वर्तमान पर केंद्रित रहें:** गीता का साक्षी भाव धारण करते हुए इस क्षण में रहें; परिणाम की व्यर्थ चिंता छोड़ें।
-• **शरीर और दृष्टि का संतुलन:** जब भी मन विचलित हो, 2 मिनट के लिए ${tName} और गहरी शांत सांसों का सहारा लें।
-• **संवाद जारी रखें:** यदि कोई विशेष विचार या शारीरिक बेचैनी अब भी परेशान कर रही है, तो बताएं ताकि हम उस पर सीधे काम कर सकें।`;
-    }
-    if (norm === 'es') {
-      return `**4. PASO PRÁCTICO SIGUIENTE Y CONTINUIDAD:**
-• **Enfócate en el presente:** Abraza la actitud del testigo consciente (Sakshi Bhava), soltando el control ansioso del futuro.
-• **Micro-pausa reguladora:** Si surge tensión, recurre a 2 minutos de ${tName} y respiración consciente.
-• **Seguimiento abierto:** Comparte conmigo qué sensación o pensamiento persiste para profundizar con precisión.`;
-    }
-    if (norm === 'fr') {
-      return `**4. ÉTAPE SUIVANTE ET INTÉGRATION PRATIQUE :**
-• **Présence immédiate :** Adoptez la posture de témoin conscient, libéré de l'obsession des résultats.
-• **Micro-régulation :** Dès que la tension monte, prenez 2 minutes de ${tName} et de respiration profonde.
-• **Dialogue continu :** Dites-moi ce qui reste le plus difficile pour vous en ce moment pour adapter notre démarche.`;
-    }
-    if (norm === 'de') {
-      return `**4. NÄCHSTER SCHRITT & PRAKTISCHE VERTIEFUNG:**
-• **Gegenwärtig bleiben:** Üben Sie die Haltung des achtsamen Beobachters und lassen Sie die Sorge um Ergebnisse los.
-• **Kurze Erdung:** Nutzen Sie bei aufkommender Anspannung 2 Minuten ${tName} und ruhige Bauchatmung.
-• **Offener Austausch:** Teilen Sie mir mit, welcher Gedanke oder welche körperliche Unruhe aktuell am stärksten ist.`;
-    }
-    return `**4. FOCUSED STEP-BY-STEP PROGRESSION (आगे का कदम):**
-• **Present Grounding:** Maintain the detached witness awareness (Sakshi Bhava); release urgent grasping for outcomes.
-• **Micro-Regulation:** Whenever tension spikes, take a 2-minute pause with ${tName} and deep belly breathing.
-• **Ongoing Support:** Let me know which specific thought or somatic tightness feels most stubborn so we can focus directly on it.`;
-  }
-
   if (norm === 'hi') {
-    return `**4. एकीकृत त्रिवेणी उपचार योजना (गीता + CBT + त्राटक मिलकर आपकी पीड़ा कैसे दूर करेंगे):**
-यह तीनों दिव्य एवं वैज्ञानिक पद्धतियाँ एक साथ मिलकर आपकी व्यथा का संपूर्ण समाधान इस प्रकार करती हैं:
-
-1. **आत्मिक व दार्शनिक संबल (श्रीमद्भगवद्गीता):**
-   गीता का अमर उपदेश आपके मन को काल्पनिक भविष्य के डर और परिणामों की चिंता से मुक्त कर 'साक्षी भाव' में स्थिर करता है। जब आप परिणाम की आसक्ति छोड़कर केवल अपने कर्तव्य पर ध्यान केंद्रित करते हैं, तो असफलता का भय और अनिर्णय की पीड़ा स्वतः विलीन हो जाती है।
-
-2. **संज्ञानात्मक पुनर्विचार एवं शारीरिक संतुलन (CBT व सोमैटिक विज्ञान):**
-   जहाँ गीता आत्मिक चेतना को ऊंचा उठाती है, वहीं CBT आपके मन में उठने वाले नकारात्मक विचारों (जैसे अनहोनी की आशंका या आत्म-दोष) को तार्किक रूप से ठीक करता है। इसके साथ ही दिया गया प्राणायाम और सोमैटिक ग्राउंडिंग आपके तंत्रिका तंत्र को तुरंत शांत करके शरीर में सुरक्षा और स्थिरता का संचार करते हैं।
-
-3. **न्यूरो-ऑक्युलर दृष्टि स्थिरीकरण (त्राटक ध्यान):**
-   त्राटक इन दोनों उपायों को जैविक आधार प्रदान करता है। जब मन अशांत होता है, तो आँखें तेजी से फड़कती और भटकती हैं, जिससे मस्तिष्क का तनाव केंद्र (एमीग्डाला) भड़क उठता है। ${tName} द्वारा दृष्टि को एक बिंदु पर टिकाने से आँखों की यह चंचलता रुक जाती है, जिससे विचारों का तूफ़ान तुरंत थम जाता है।
-
-4. **आपका समन्वित दैनिक अभ्यास क्रम:**
-   • **पहला चरण (दृष्टि स्थिरीकरण):** 3 से 5 मिनट ${tName} का अभ्यास करें ताकि मस्तिष्क के तनाव केंद्र को शांति मिले।
-   • **दूसरा चरण (प्राणायाम व विश्राम):** निर्धारित प्राणायाम करें जिससे हृदय गति और सीने का खिंचाव सामान्य हो सके।
-   • **तीसरा चरण (सकारात्मक विचार):** CBT द्वारा सुझाए गए नए विचार को मन में दोहराकर नकारात्मक सोच को बदलें।
-   • **चौथा चरण (सच्चा कर्तव्य):** गीता के संदेश के अनुसार परिणाम की चिंता छोड़ केवल अपने वर्तमान कर्तव्य में पूरी निष्ठा से लग जाएं।`;
+    return `**4. सारांश: एकीकृत त्रिवेणी उपचार योजना (मिलकर आपकी पीड़ा कैसे दूर करेंगे):**
+गीता का साक्षी भाव फल की चिंता हटाता है, CBT नकारात्मक विचारों को बदलता है, और ${tName} तंत्रिका तंत्र को शांत करता है।
+- संक्षिप्त अभ्यास क्रम: पहला चरण (गीता दृष्टि) → दूसरा चरण (CBT रिफ्रेम) → तीसरा चरण (${tName})।`;
   }
-
   if (norm === 'es') {
-    return `**4. RESOLUCIÓN SINÉRGICA TRIPLE (Cómo la Gita + TCC + Tratak se combinan para sanar tu sufrimiento):**
-Estas tres disciplinas sagradas y científicas operan en sinergia unificada para disolver de raíz tu malestar:
-
-1. **Ancla Espiritual y Existencial (Bhagavad Gita):**
-   La sabiduría de la Gita traslada tu conciencia desde la obsesión por el resultado hacia el 'Sakshi Bhava' (el testigo sereno). Al soltar el apego al futuro incierto, te liberas de la parálisis y actúas con propósito presente.
-
-2. **Reestructuración Cognitiva y Somática (TCC y Polivagal):**
-   La TCC desmantela las distorsiones que alimentan tu mente (catastrofismo o culpa). Al mismo tiempo, el anclaje somático y el pranayama activan el freno vagal parasimpático, disipando la adrenalina y devolviendo seguridad a tu cuerpo.
-
-3. **Estabilización Neuro-Ocular (Meditación Tratak):**
-   Tratak proporciona la base biológica indispensable. Las sacadas oculares involuntarias hiperactivan la amígdala cerebral. Al fijar la mirada en ${tName}, detienes la agitación visual y estabilizas el ritmo cardíaco.
-
-4. **Secuencia Práctica Integrada:**
-   • **Paso 1 (Calma Ocular):** Realiza 3–5 min de ${tName} para sosegar la amígdala.
-   • **Paso 2 (Regulación Fisiológica):** Aplica la respiración prescrita para aflojar el pecho y abdomen.
-   • **Paso 3 (Reencuadre Mental):** Internaliza el pensamiento adaptativo de la TCC.
-   • **Paso 4 (Acción Serena):** Ejecuta tu deber presente sin temor al desenlace.`;
+    return `**4. RESUMEN: RESOLUCIÓN SINÉRGICA TRI-PILAR:**
+Cómo actúan en combinación: La Gita te libera del apego a resultados, la TCC desmonta distorsiones y ${tName} sosiega el sistema nervioso.
+- Secuencia de Recuperación: Paso 1 (Gita) → Paso 2 (TCC) → Paso 3 (${tName}).`;
   }
-
   if (norm === 'fr') {
-    return `**4. RÉSOLUTION THÉRAPEUTIQUE SYNERGIQUE (Comment la Gita + TCC + Tratak agissent ensemble pour guérir votre épreuve):**
-Ces trois piliers spirituels et neuroscientifiques s'unissent pour transformer votre souffrance en paix stable :
-
-1. **Ancrage Spirituel et Métacognitif (Bhagavad Gita) :**
-   La Gita élève votre conscience au-delà de l'obsession du résultat vers le 'Sakshi Bhava' (la posture de témoin). Vous vous affranchissez de l'angoisse de l'avenir pour vous consacrer pleinement à l'action juste.
-
-2. **Restructuration Cognitive et Régulation Somatique (TCC & Polyvagal) :**
-   La TCC désamorce les distorsions qui empoisonnent vos pensées. Simultanément, le pranayama et l'ancrage somatique réactivent le nerf vague et rétablissent la sécurité physiologique dans votre poitrine.
-
-3. **Stabilisation Neuro-Oculaire (Méditation Tratak) :**
-   Tratak stabilise directement l'axe œil-cerveau. Les micromouvements saccadiques nourrissent l'amygdale cérébrale. En fixant un point unique avec ${tName}, vous suspendez mécaniquement la tempête mentale.
-
-4. **Votre Protocole Quotidien Intégré :**
-   • **Étape 1 (Apaisement Oculaire) :** 3 à 5 min de ${tName} pour calmer l'amygdale.
-   • **Étape 2 (Frein Vagal) :** Pratiquez la respiration indiquée pour libérer la cage thoracique.
-   • **Étape 3 (Restructuration TCC) :** Adoptez la pensée restructurée face au doute.
-   • **Étape 4 (Action Juste) :** Engagez-vous dans votre devoir présent avec détachement.`;
+    return `**4. SYNTHÈSE : RÉSOLUTION SYNERGIQUE TRI-PILIERS :**
+Comment ils agissent en combinaison : La Gita apaise l'attente du résultat, la TCC désamorce les distorsions et ${tName} régule le système nerveux.
+- Séquence de Récupération : Étape 1 (Gita) → Étape 2 (TCC) → Étape 3 (${tName}).`;
   }
-
   if (norm === 'de') {
-    return `**4. DREI-SÄULEN-SYNERGIEPLAN (Wie Gita + CBT + Tratak gemeinsam Ihre Belastung auflösen):**
-Diese drei Disziplinen greifen nahtlos ineinander, um Ihr seelisches und körperliches Gleichgewicht wiederherzustellen:
-
-1. **Spirituell-existenzieller Anker (Bhagavad Gita):**
-   Die Gita befreit Ihren Geist von der Fixierung auf unkontrollierbare Ergebnisse und verankert Sie im 'Sakshi Bhava' (Zeugenbewusstsein). Aus Zukunftsangst wird zielgerichtetes gegenwärtiges Handeln.
-
-2. **Kognitive Umstrukturierung & Somatische Regulation (CBT & Vagusnerv):**
-   CBT entlarvt katastrophisierende Denkmuster. Parallel dazu aktiviert die Atemübung Ihren Vagusnerv, senkt das Stresslevel und signalisiert Ihrem Körper Sicherheit.
-
-3. **Neuro-Okulare Blickzentrierung (Tratak-Meditation):**
-   Tratak beruhigt die neurobiologische Basis. Unruhige Augensakkaden befeuern die Amygdala. Durch die Fixierung auf ${tName} wird der visuelle Reizstrom gebremst und der Geist beruhigt.
-
-4. **Integrierte Handlungsabfolge:**
-   • **Schritt 1 (Blickfokussierung):** 3–5 Min ${tName} zur Dämpfung der Amygdala.
-   • **Schritt 2 (Vegetative Erdung):** Atemübung zur Entlastung von Herz und Brustraum.
-   • **Schritt 3 (Kognitive Neuausrichtung):** Verinnerlichung des heilsamen CBT-Gedankens.
-   • **Schritt 4 (Pflicht im Hier und Jetzt):** Entschlossenes Handeln ohne Angst vor dem Ausgang.`;
+    return `**4. ZUSAMMENFASSUNG: SYNERGISTISCHE DREISÄULEN-LÖSUNG:**
+Zusammenwirken: Die Gita löst Ergebnissorgen, CBT entkräftet Gedankenfallen und ${tName} beruhigt das Nervensystem.
+- Genesungssequenz: Schritt 1 (Gita) → Schritt 2 (CBT) → Schritt 3 (${tName}).`;
   }
 
-  return `**4. TRI-PILLAR SYNERGISTIC RESOLUTION (How Gita + CBT + Tratak Work in Combination to Heal You):**
-Here is how these three disciplines operate in unified synergy to permanently resolve your suffering:
-
-1. **Spiritual & Existential Anchor (Bhagavad Gita):**
-   The Gita shifts your conscious awareness from outcome obsession and catastrophic helplessness into *Sakshi Bhava* (the calm, detached witness). By releasing attachment to uncertain futures, your mind breaks free from mental paralysis and steps into present-moment purposeful action (*Nishkama Karma*).
-
-2. **Cognitive & Somatic Restructuring (CBT & Polyvagal Science):**
-   While the Gita elevates your spiritual perspective, CBT systematically dismantles the cognitive distortions (such as catastrophizing, mind-reading, or toxic self-blame) keeping you trapped. Simultaneously, the somatic anchor and pranayama activate your parasympathetic vagal brake, physically clearing adrenaline and signaling safety to your heart.
-
-3. **Neuro-Ocular Stabilization (Tratak Gazing Meditation):**
-   Tratak provides the physiological foundation for both Gita and CBT. Involuntary micro-saccadic eye movements directly stimulate the brain's alarm center (the amygdala). By fixing your gaze on a single point (${tName}), Tratak mechanically stops ocular flutter, locking your autonomic nervous system into stability and clearing mental static.
-
-4. **Your Integrated Recovery Sequence:**
-   • **Phase 1 (Stabilize Brainstem):** Practice ${tName} for 3–5 minutes to arrest rapid eye saccades and de-escalate amygdala hyperarousal.
-   • **Phase 2 (Regulate Physiology):** Perform your prescribed somatic breathwork to release visceral tension from your chest and gut.
-   • **Phase 3 (Reframe the Mind):** Internalize the CBT cognitive reframe to replace automatic catastrophic thoughts with objective truth.
-   • **Phase 4 (Soul-Centered Action):** Execute the Gita's actionable guidance immediately, focusing entirely on your present duty without fear of results.`;
+  return `**4. SUMMARY: TRI-PILLAR SYNERGISTIC RESOLUTION (How They Work in Combination to Heal You):**
+The Gita grounds you in detached present action, CBT dismantles catastrophic thought loops, and ${tName} mechanically quiets amygdala alarm.
+- Recovery Sequence: Step 1 (Gita wisdom) → Step 2 (CBT reframe) → Step 3 (${tName} focus).`;
 }
 
 /**
@@ -2190,25 +2087,16 @@ export function formatHumanTherapeuticMessage(
 
 **1. श्रीमद्भगवद्गीता का आत्मिक मार्गदर्शन (अध्याय ${gitaItem.chapter}, श्लोक ${gitaItem.verse}):**
 ${gitaBlock}
-भगवान श्रीकृष्ण इस पावन श्लोक में हमें समझाते हैं कि ${locGita.meaning}
-
-इस संदेश को अपने वर्तमान जीवन में उतारें: ${locGita.reflection}
-
-इस समय आपका कर्तव्य: ${locGita.what_to_do} और विशेष रूप से इस भूल से बचें: ${locGita.what_not_to_do}
+भगवान श्रीकृष्ण समझाते हैं: ${locGita.meaning}
+कर्तव्य: ${locGita.what_to_do}
 
 **2. क्लिनिकल संज्ञानात्मक विज्ञान एवं मन की शांति (CBT):**
-${intervention.validation}
-
-अपने विचारों को एक नई, सच्ची दिशा दें: ${intervention.cbt_reframing}
-
-अपने तंत्रिका तंत्र को इस क्षण में स्थिर करने के लिए: ${intervention.somatic_anchor} इसके साथ ही ${intervention.pranayama}
+${intervention.cbt_reframing}
+अभ्यास: ${intervention.somatic_anchor} (${intervention.pranayama})
 
 **3. त्राटक न्यूरो-ऑक्युलर ध्यान विधि (${locTratak.name}):**
-इस समय आपके मन और मस्तिष्क को शांत करने के लिए ${locTratak.name} सबसे उत्तम है।
-
 • **एकाग्रता का केंद्र:** ${locTratak.focalTarget}
-• **मस्तिष्क पर शांत प्रभाव:** ${locTratak.neuroMechanism}
-• **अभ्यास की सरल विधि (${tratakItem.durationMinutes} मिनट):** ${locTratak.guidance}
+• **अभ्यास (${tratakItem.durationMinutes} मिनट):** ${locTratak.guidance}
 
 ${synergyResolution}`;
   }
@@ -2218,24 +2106,15 @@ ${synergyResolution}`;
 
 **1. SABIDURÍA DEL BHAGAVAD GITA (Capítulo ${gitaItem.chapter}, Verso ${gitaItem.verse}):**
 ${gitaBlock}
-La sabiduría trascendente de la Gita nos recuerda: ${locGita.meaning}
-
-Reflexión para tu momento actual: ${locGita.reflection}
-
-Tu camino de acción consciente: ${locGita.what_to_do} (Evita: ${locGita.what_not_to_do})
+La Gita nos recuerda: ${locGita.meaning}
+Acción consciente: ${locGita.what_to_do}
 
 **2. NEUROCIENCIA CLÍNICA COGNITIVA (TCC y Anclaje Somático):**
-${intervention.validation}
-
-Reestructurando tu narrativa mental: ${intervention.cbt_reframing}
-
-Para serenar tu sistema nervioso en este instante: ${intervention.somatic_anchor} junto con ${intervention.pranayama}
+${intervention.cbt_reframing}
+Anclaje somático: ${intervention.somatic_anchor} (${intervention.pranayama})
 
 **3. PROTOCOLO NEURO-OCULAR TRATAK (${locTratak.name}):**
-Para calmar la sobreexcitación y recuperar el enfoque, practica ${locTratak.name}:
-
 • **Foco de Mirada:** ${locTratak.focalTarget}
-• **Efecto Neurológico:** ${locTratak.neuroMechanism}
 • **Instrucciones (${tratakItem.durationMinutes} min):** ${locTratak.guidance}
 
 ${synergyResolution}`;
@@ -2246,25 +2125,16 @@ ${synergyResolution}`;
 
 **1. SAGESSE DE LA BHAGAVAD GITA (Chapitre ${gitaItem.chapter}, Verset ${gitaItem.verse}):**
 ${gitaBlock}
-La sagesse intemporelle de la Gita nous enseigne : ${locGita.meaning}
-
-Réflexion pour votre situation présente : ${locGita.reflection}
-
-Votre chemin d'action juste : ${locGita.what_to_do} (À éviter : ${locGita.what_not_to_do})
+La Gita nous enseigne : ${locGita.meaning}
+Action juste : ${locGita.what_to_do}
 
 **2. NEUROSCIENCE CLINIQUE COGNITIVE (TCC et Ancrage Somatique):**
-${intervention.validation}
-
-Restructuration de votre pensée : ${intervention.cbt_reframing}
-
-Pour apaiser votre système nerveux dès maintenant : ${intervention.somatic_anchor} ainsi que ${intervention.pranayama}
+${intervention.cbt_reframing}
+Ancrage somatique : ${intervention.somatic_anchor} (${intervention.pranayama})
 
 **3. PROTOCOLE NEURO-OCULAIRE TRATAK (${locTratak.name}):**
-Pour désamorcer la tension et apaiser l'esprit, pratiquez ${locTratak.name} :
-
 • **Point Focal :** ${locTratak.focalTarget}
-• **Effet Neurologique :** ${locTratak.neuroMechanism}
-• **Pratique guidée (${tratakItem.durationMinutes} min) :** ${locTratak.guidance}
+• **Pratique (${tratakItem.durationMinutes} min) :** ${locTratak.guidance}
 
 ${synergyResolution}`;
   }
@@ -2274,24 +2144,15 @@ ${synergyResolution}`;
 
 **1. WEISHEIT DER BHAGAVAD GITA (Kapitel ${gitaItem.chapter}, Vers ${gitaItem.verse}):**
 ${gitaBlock}
-Die zeitlose Lehre der Gita erinnert uns: ${locGita.meaning}
-
-Heilsame Reflexion für Ihre Situation: ${locGita.reflection}
-
-Ihr klarer Handlungsschritt: ${locGita.what_to_do} (Zu meiden: ${locGita.what_not_to_do})
+Die Gita lehrt: ${locGita.meaning}
+Handlungsschritt: ${locGita.what_to_do}
 
 **2. KLINISCHE KOGNITIVE NEUROWISSENSCHAFT (CBT & Somatische Erdung):**
-${intervention.validation}
-
-Kognitive Neuausrichtung Ihrer Gedanken: ${intervention.cbt_reframing}
-
-Zur sofortigen Beruhigung Ihres Nervensystems: ${intervention.somatic_anchor} sowie ${intervention.pranayama}
+${intervention.cbt_reframing}
+Somatische Erdung: ${intervention.somatic_anchor} (${intervention.pranayama})
 
 **3. TRATAK NEURO-OKULARES PROTOKOLL (${locTratak.name}):**
-Um das Nervensystem sanft zu regulieren, üben Sie ${locTratak.name}:
-
 • **Blickfokus:** ${locTratak.focalTarget}
-• **Neurologische Wirkung:** ${locTratak.neuroMechanism}
 • **Anleitung (${tratakItem.durationMinutes} Min):** ${locTratak.guidance}
 
 ${synergyResolution}`;
@@ -2303,23 +2164,14 @@ ${synergyResolution}`;
 **1. BHAGAVAD GITA REFRAMING (Chapter ${gitaItem.chapter}, Verse ${gitaItem.verse}):**
 ${gitaBlock}
 The timeless wisdom of the Gita reminds us: ${gitaItem.philosophical_meaning}
-
-Reflecting on your present struggle: ${gitaItem.clinical_reframe}
-
-Your immediate actionable path (Karma): ${gitaItem.actionable_guidance.what_to_do} (Trap to avoid: ${gitaItem.actionable_guidance.what_not_to_do})
+Actionable path: ${gitaItem.actionable_guidance.what_to_do}
 
 **2. CLINICAL COGNITIVE NEUROSCIENCE (CBT & Somatic Grounding):**
-${intervention.validation}
-
-Reframing your cognitive narrative: ${intervention.cbt_reframing}
-
-Grounding your autonomic nervous system: ${intervention.somatic_anchor} alongside ${intervention.pranayama}
+${intervention.cbt_reframing}
+Somatic anchor: ${intervention.somatic_anchor} (${intervention.pranayama})
 
 **3. TRATAK NEURO-OCULAR PROTOCOL (${tratakItem.name}):**
-To down-regulate sympathetic arousal and quiet the wandering mind, engage in ${tratakItem.name}:
-
 • **Sacred Gazing Target:** ${tratakItem.focalTarget}
-• **Neuro-Ocular Calming Mechanism:** ${tratakItem.neuroMechanism}
 • **Practice Guidance (${tratakItem.durationMinutes} Minutes):** ${tratakItem.stepByStepGuidance.join(' ')}
 
 ${synergyResolution}`;
@@ -2366,19 +2218,15 @@ export function getLocalizedGeneralAdvice(
 
 **1. श्रीमद्भगवद्गीता का आत्मिक मार्गदर्शन (अध्याय ${gitaItem.chapter}, श्लोक ${gitaItem.verse}):**
 ${gitaBlock}
-भगवान श्रीकृष्ण इस पावन श्लोक में समझाते हैं कि ${locGita.meaning}
-
-इस संदेश को अपने जीवन में उतारें: ${locGita.reflection}
+भगवान श्रीकृष्ण समझाते हैं: ${locGita.meaning}
+मार्गदर्शन: ${locGita.reflection}
 
 **2. क्लिनिकल संज्ञानात्मक विज्ञान एवं मन की शांति (CBT):**
 ${advice}
 
 **3. त्राटक न्यूरो-ऑक्युलर ध्यान विधि (${locTratak.name}):**
-इस समय आपके मन को शांत करने के लिए ${locTratak.name} सर्वोत्तम है।
-
 • **एकाग्रता का केंद्र:** ${locTratak.focalTarget}
-• **मस्तिष्क पर शांत प्रभाव:** ${locTratak.neuroMechanism}
-• **अभ्यास की सरल विधि (${tratakItem.durationMinutes} मिनट):** ${locTratak.guidance}
+• **अभ्यास (${tratakItem.durationMinutes} मिनट):** ${locTratak.guidance}
 
 ${synergyResolution}`;
   }
@@ -2388,18 +2236,14 @@ ${synergyResolution}`;
 
 **1. SABIDURÍA DEL BHAGAVAD GITA (Capítulo ${gitaItem.chapter}, Verso ${gitaItem.verse}):**
 ${gitaBlock}
-La enseñanza de la Gita nos recuerda: ${locGita.meaning}
-
-Reflexión para tu bienestar: ${locGita.reflection}
+La enseñanza de la Gita: ${locGita.meaning}
+Reflexión: ${locGita.reflection}
 
 **2. NEUROCIENCIA CLÍNICA COGNITIVA (TCC y Anclaje Somático):**
 ${advice}
 
 **3. PROTOCOLO NEURO-OCULAR TRATAK (${locTratak.name}):**
-Para recuperar la serenidad y la presencia:
-
 • **Foco de Mirada:** ${locTratak.focalTarget}
-• **Efecto Neurológico:** ${locTratak.neuroMechanism}
 • **Instrucciones (${tratakItem.durationMinutes} min):** ${locTratak.guidance}
 
 ${synergyResolution}`;
@@ -2410,19 +2254,15 @@ ${synergyResolution}`;
 
 **1. SAGESSE DE LA BHAGAVAD GITA (Chapitre ${gitaItem.chapter}, Verset ${gitaItem.verse}):**
 ${gitaBlock}
-La parole de la Gita nous éclaire : ${locGita.meaning}
-
-Méditation pour votre esprit : ${locGita.reflection}
+La parole de la Gita : ${locGita.meaning}
+Méditation : ${locGita.reflection}
 
 **2. NEUROSCIENCE CLINIQUE COGNITIVE (TCC et Ancrage Somatique):**
 ${advice}
 
 **3. PROTOCOLE NEURO-OCULAIRE TRATAK (${locTratak.name}):**
-Pour apaiser le mental et retrouver l'équilibre :
-
 • **Point Focal :** ${locTratak.focalTarget}
-• **Effet Neurologique :** ${locTratak.neuroMechanism}
-• **Pratique guidée (${tratakItem.durationMinutes} min) :** ${locTratak.guidance}
+• **Pratique (${tratakItem.durationMinutes} min) :** ${locTratak.guidance}
 
 ${synergyResolution}`;
   }
@@ -2432,18 +2272,14 @@ ${synergyResolution}`;
 
 **1. WEISHEIT DER BHAGAVAD GITA (Kapitel ${gitaItem.chapter}, Vers ${gitaItem.verse}):**
 ${gitaBlock}
-Die Weisheit der Gita besagt: ${locGita.meaning}
-
-Heilsamer Gedanke für Ihren Geist: ${locGita.reflection}
+Die Weisheit der Gita: ${locGita.meaning}
+Heilsamer Gedanke: ${locGita.reflection}
 
 **2. KLINISCHE KOGNITIVE NEUROWISSENSCHAFT (CBT & Somatische Erdung):**
 ${advice}
 
 **3. TRATAK NEURO-OKULARES PROTOKOLL (${locTratak.name}):**
-Zur Beruhigung und Neuausrichtung des Geistes:
-
 • **Blickfokus:** ${locTratak.focalTarget}
-• **Neurologische Wirkung:** ${locTratak.neuroMechanism}
 • **Anleitung (${tratakItem.durationMinutes} Min):** ${locTratak.guidance}
 
 ${synergyResolution}`;
@@ -2454,15 +2290,13 @@ ${synergyResolution}`;
 **1. BHAGAVAD GITA REFRAMING (Chapter ${gitaItem.chapter}, Verse ${gitaItem.verse}):**
 ${gitaBlock}
 The timeless wisdom of the Gita reminds us: ${gitaItem.philosophical_meaning}
-
-Reflecting on your present struggle: ${gitaItem.clinical_reframe}
+Reflecting on your situation: ${gitaItem.clinical_reframe}
 
 **2. CLINICAL COGNITIVE NEUROSCIENCE (CBT & Somatic Grounding):**
 ${advice}
 
 **3. TRATAK NEURO-OCULAR PROTOCOL (${tratakItem.name}):**
 • **Sacred Gazing Target:** ${tratakItem.focalTarget}
-• **Neuro-Ocular Mechanism:** ${tratakItem.neuroMechanism}
 • **Practice Guidance (${tratakItem.durationMinutes} Minutes):** ${tratakItem.stepByStepGuidance.join(' ')}
 
 ${synergyResolution}`;

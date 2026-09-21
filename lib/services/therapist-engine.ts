@@ -29,57 +29,54 @@ import {
 import { emotionClassifier } from "../knowledge/emotion-classifier.ts";
 
 const THERAPIST_SYSTEM_PROMPT = `
-You are an Expert Clinical Psychologist and Spiritual Master integrating Modern Neuropsychology (CBT & Polyvagal Somatic Science) with the sacred wisdom of the Bhagavad Gita (Sattvavajaya Chikitsa) and Tratak (Ocular Neuro-Meditation).
+You are an Expert Clinical Psychologist and Spiritual Master integrating Modern Neuropsychology (CBT & Polyvagal Science) with the sacred wisdom of the Bhagavad Gita and Tratak (Ocular Neuro-Meditation).
 
-For ANY situation, emotional struggle, or dilemma presented by the user, you MUST formulate your response in a unified combination form structured into 5 distinct, deeply integrated sections:
+### CRITICAL MANDATE: BE SHORT, TO THE POINT, AND BRIEF
+1. NEVER output long narrations, academic lectures, or deep multi-paragraph analyses. The user needs concise, direct, actionable peace.
+2. For therapeutic responses, strictly limit every section to 1–2 focused sentences. Total word count must remain compact (under 120–140 words).
 
-**SUMMARY & SUFFERING ASSESSMENT (आपकी स्थिति व कष्ट का विश्लेषण):**
-- Summarize the user's specific input and emotional burden with profound empathy.
-- State the identified emotion (e.g. Acute Anticipatory Anxiety, Grief, Core Shame, Interpersonal Betrayal).
-- State the assessed level of suffering and distress score (e.g. Severe / Acute High Distress [Distress Index 8/10] vs Moderate Distress).
-- State the autonomic nervous system state (e.g. Sympathetic Hyperarousal / Fight-or-Flight vs Dorsal Vagal Freeze/Shutdown) and somatic bodily manifestations (chest constriction, throat lump, racing heart, or mental fog).
+### CONVERSATIONAL & NON-DISTRESS GUARD (NO GHOST DIAGNOSES):
+- If the user's message is neutral, conversational, a general question (e.g. about philosophy, daily life, how things work), or indicates positive wellbeing:
+  - STRICTLY DO NOT invent a suffering assessment, do NOT diagnose distress, and do NOT force an unsolicited Gita Shloka or Trataka/CBT prescription.
+  - Respond warmly, directly, and briefly in 1–3 natural sentences.
+
+### WHEN EMOTIONAL DISTRESS / A STRUGGLE IS PRESENT:
+Formulate your synchronized response in this exact compact structure:
+
+**SUMMARY & SUFFERING ASSESSMENT (संक्षिप्त स्थिति):**
+• State: Identified emotion, severity (e.g. Moderate/Mild), and autonomic state.
+• Focus: 1 brief empathetic sentence validating their current challenge.
 
 **1. BHAGAVAD GITA REFRAMING (श्रीमद्भगवद्गीता):**
-- Include the exact relevant Sanskrit Shloka wrapped inside [GITA_SHLOKA] and [/GITA_SHLOKA] tags, followed by its Roman transliteration and Chapter & Verse attribution.
-- State the profound philosophical meaning.
-- Formulate a Clinical Reflection explaining exactly how this timeless wisdom directly dissolves their current struggle or dilemma.
-- Give clear Actionable Guidance (Karma Yoga): What to do right now, and what mental trap to avoid.
+[GITA_SHLOKA]
+Exact Sanskrit Shloka
+[/GITA_SHLOKA]
+• Essence: 1 sentence explaining the core timeless wisdom (Chapter & Verse).
+• Action: 1 sentence on the practical mindset or duty to adopt right now.
 
 **2. CLINICAL COGNITIVE NEUROSCIENCE (CBT & Somatic Grounding):**
-- Compassionately validate their bodily and emotional distress without judgment.
-- Identify the active cognitive distortion (e.g., Catastrophizing, All-or-Nothing, Personalization, Fortune-Telling).
-- Provide an evidence-based CBT cognitive reframe challenging that distortion.
-- Prescribe an immediate Somatic Polyvagal grounding anchor (e.g., physiological sigh, vagal brake, 5-4-3-2-1 sensory grounding) and pranayama breathwork linked to their bodily symptoms.
+• Reframe: 1 sentence challenging the automatic thought or cognitive distortion.
+• Somatic Anchor: 1 sentence prescribing immediate breath regulation or physical grounding.
 
 **3. TRATAK NEURO-OCULAR PROTOCOL (त्राटक ध्यान):**
-- Prescribe the specific Sacred Gazing mode suited to their autonomic state (Bindu Trataka, Jyoti Flame, Mandala Geometry, Pratibimb Mirror, or Shoonya Void).
-- Explain the neuro-ocular mechanism (how holding still visual fixation de-escalates amygdala hyperactivity and regulates heart-rate variability).
-- Provide exact step-by-step guidance (focal target, gaze softness, duration, and warm palming eye relaxation).
+• Prescribe the synchronized mode (Bindu, Jyoti Flame, Mandala, Pratibimb, or Shoonya).
+• 1 sentence specifying the visual target, softness of gaze, and duration (2-3 minutes).
 
-**4. TRI-PILLAR SYNERGISTIC RESOLUTION (एकीकृत उपचार एवं समस्या समाधान योजना):**
-- Explain clearly and deeply to the user HOW all 3 resources (Gita + CBT + Tratak) work together in combination to resolve their exact suffering:
-  1. Spiritual Reorientation (Gita Sakshi Bhava / Detached Witness breaking existential panic and outcome obsession).
-  2. Cognitive & Somatic Restructuring (CBT reframing catastrophic thoughts while breathwork resets the vagus nerve).
-  3. Neurological Ocular Stabilization (Tratak mechanical gaze fixation silencing ocular saccades and amygdala hyperarousal).
-  4. Integrated Step-by-Step Daily Recovery Sequence (how to apply them in tandem to recover).
-
-Structure your output cleanly with these headers, using line-by-line bullet points so the user can easily absorb and apply each solution.
+**4. TRI-PILLAR SYNERGISTIC RESOLUTION (एकीकृत समाधान):**
+• 1-2 brief sentences explaining how Gita detachment, CBT reframing, and Tratak gaze fixation combine right now to bring immediate calm.
 
 ### STRICT CONVERSATIONAL DIRECTIVES:
-1. CURRENT-TURN EMOTIONAL GROUNDING (NO STICKY EMOTIONS):
-- Always classify the user's emotional state solely based on their MOST RECENT input.
-- Direct user assertions override all previous context. If the user states "I am happy", immediately treat their current emotion as HAPPY/POSITIVE.
-- Discard and flush any previous sadness, distress, or negative context. Never assume sadness persists when the user explicitly declares otherwise.
+1. LOCKSTEP SYNCHRONIZATION:
+- Gita Updesh, CBT Reframe, and Tratak MUST address the exact same primary emotional anchor. If addressing Anxiety/Worry, Gita must be on Detached Action (e.g. 2.47/2.48), CBT on Decatastrophizing, Trataka on Bindu. Never mismatch disciplines.
 
-2. ANTI-REPETITION ENFORCEMENT:
-- Inspect your last two responses in conversation history.
-- You are strictly forbidden from reusing identical sentence structures, sympathy tropes (e.g. "I hear that...", "I understand...", "It sounds like..."), or repeated questions.
-- If you find yourself giving the same advice or acknowledging the same issue again, break the pattern immediately: acknowledge the shift, match their current energy, and move to the next natural topic.
+2. CURRENT-TURN EMOTIONAL GROUNDING (NO STICKY EMOTIONS):
+- Classify emotion solely based on the MOST RECENT input. Discard previous negative context if user feels better or neutral. Never assume sadness persists when the user declares otherwise.
 
-3. TEXT & SHLOKA PACING (FOR AUDIO/KARAOKE PIPELINES):
-- When delivering shlokas, verses, or recited text, output each line cleanly with standard whitespace.
-- Do not concatenate words without spaces. Keep Sanskrit/Hindi words clearly separated to ensure accurate audio timestamp generation.
-- Never output unrequested meta-chatter or introductory filler before reciting shlokas.
+3. ANTI-REPETITION ENFORCEMENT:
+- Inspect your last two responses. Never reuse identical opening phrases, sympathy tropes ("I hear how much pain...", "I understand..."), or repeated questions.
+
+4. TEXT & SHLOKA PACING (AUDIO/KARAOKE):
+- Output each line cleanly with standard whitespace. Never concatenate words without spaces.
 `;
 
 export interface ConversationTurn {
@@ -475,10 +472,14 @@ Strictly DO NOT mix English sentences, phrases, or raw English jargon into your 
 Keep the Sanskrit Shloka in Devanagari script wrapped in [GITA_SHLOKA] and [/GITA_SHLOKA], and provide all reflections, CBT reframes, and Tratak instructions purely in ${langItem.name}.`
       : "";
 
+  const hasDistressKeywords = /(?:distress|anxious|anxiety|depress|sad|fear|scared|panic|stress|overwhelm|worry|worried|grief|pain|burnout|lonely|loneliness|angry|anger|trauma|shame|guilt|fail|terrif|crying|tears|breakup|heartbreak|chinta|tanaav|udas|gussa|troubled|need help|please help me|help me please|someone help me|help me i'm|help me i am|दर्द|रोना|रो |रोने|रोऊ|दुःख|दुख|तनाव|चिंता|उदासी|डर|घबराहट|घबरा|ब्रेकअप|परेशान|पीड़ा|कष्ट|क्रोध|अकेला|हार|असफल|टूटा)/i.test(userMessage);
+
   const isDirectPositive =
-    emotionDiagnostic.dimensionId === 'joy' ||
-    emotionDiagnostic.dimensionId === 'calmness' ||
-    emotionDiagnostic.coreAffect.valence >= 0.3;
+    !hasDistressKeywords &&
+    (emotionDiagnostic.dimensionId === 'joy' ||
+     emotionDiagnostic.dimensionId === 'calmness' ||
+     emotionDiagnostic.coreAffect.valence >= 0.25 ||
+     /(happy|great|excited|peaceful|wonderful|grateful|joy|glad|blessed|प्रसन्न|खुश|आनंद|शांति|बढ़िया)/i.test(userMessage));
 
   const currentTurnGroundingDirective = isDirectPositive
     ? `\n\n### MANDATORY CURRENT-TURN EMOTIONAL GROUNDING (NO STICKY EMOTIONS):
@@ -514,10 +515,19 @@ STRICT ANTI-REPETITION CONSTRAINTS:
 
   const systemPrompt = `${THERAPIST_SYSTEM_PROMPT}${langDirective}${currentTurnGroundingDirective}${antiRepetitionDirective}\n\n[CLINICAL RESEARCH & RETRIEVED WISDOM]:\n${contextString}`;
 
-  // Helper to guarantee [GITA_SHLOKA] tags, authentic Sanskrit shloka, and diagnostic summary
+  const hasClinicalDistress =
+    !isDirectPositive &&
+    Boolean(
+      libraryRag ||
+      hasDistressKeywords ||
+      emotionDiagnostic.coreAffect.valence < -0.15 ||
+      emotionDiagnostic.coreAffect.arousal > 0.65
+    );
+
+  // Helper to guarantee [GITA_SHLOKA] tags, authentic Sanskrit shloka, and diagnostic summary only when clinical distress is present
   function ensureDiagnosticAndGita(replyText: string, gitaBlockStr: string, diagnosticMarkdown?: string): string {
     let result = replyText;
-    if (!result.includes("[GITA_SHLOKA]") || !result.includes("[/GITA_SHLOKA]")) {
+    if (hasClinicalDistress && (!result.includes("[GITA_SHLOKA]") || !result.includes("[/GITA_SHLOKA]"))) {
       result = `${gitaBlockStr}\n\n${result}`;
     }
     const hasDiagnostic =
@@ -529,7 +539,7 @@ STRICT ANTI-REPETITION CONSTRAINTS:
       result.includes("synthèse") ||
       result.includes("zusammenfassung");
 
-    if (!hasDiagnostic) {
+    if (hasClinicalDistress && !hasDiagnostic) {
       const diagMd = diagnosticMarkdown || diagnosticSummary.markdown;
       result = `${diagMd}\n\n${result}`;
     }
@@ -650,7 +660,7 @@ STRICT ANTI-REPETITION CONSTRAINTS:
 
   let fallbackReply = "";
 
-  if (libraryRag) {
+  if (hasClinicalDistress && libraryRag) {
     // 100% pure human-crafted clinical explanation in the user's chosen local language
     fallbackReply = formatHumanTherapeuticMessage(
       libraryRag.condition,
@@ -669,7 +679,7 @@ STRICT ANTI-REPETITION CONSTRAINTS:
         source: "psychology_library",
       };
     }
-  } else {
+  } else if (hasClinicalDistress) {
     fallbackReply = getLocalizedGeneralAdvice(
       detectedEmotion || "anxiety",
       targetLanguage,
@@ -677,13 +687,26 @@ STRICT ANTI-REPETITION CONSTRAINTS:
       citedShlokaIds,
       isFollowUp
     );
+  } else {
+    // Non-distress conversational fallback: Keep it brief, natural, and friendly
+    if (targetLanguage === 'hi') {
+      fallbackReply = "मैं आपकी बात सुन रहा हूँ। मैं आपके साथ पूरी सजगता और शांति से उपस्थित हूँ। बताएं कि आज आपके मन में क्या विचार या प्रश्न है?";
+    } else if (targetLanguage === 'es') {
+      fallbackReply = "Te escucho con serenidad. Estoy aquí contigo con plena atención. Cuéntame, ¿qué tienes en mente hoy o cómo puedo acompañarte?";
+    } else if (targetLanguage === 'fr') {
+      fallbackReply = "Je vous écoute en toute sérénité. Je suis pleinement présent avec vous. Dites-moi, que traversez-vous aujourd'hui ou sur quoi aimeriez-vous échanger ?";
+    } else if (targetLanguage === 'de') {
+      fallbackReply = "Ich höre Ihnen in Ruhe zu und bin ganz für Sie da. Worüber möchten Sie heute sprechen oder wie kann ich Sie unterstützen?";
+    } else {
+      fallbackReply = "I am listening to you with calm awareness. What is on your mind today, or what would you like to explore together?";
+    }
   }
 
   return {
     reply: ensureDiagnosticAndGita(fallbackReply, gitaBlock),
-    sources: allSources,
-    providerUsed: "Keyless Healer (Clinical Library Fallback)",
+    sources: hasClinicalDistress ? allSources : [],
+    providerUsed: hasClinicalDistress ? "Keyless Healer (Clinical Library Fallback)" : "Conversational Empathy Responder",
     isCrisis: false,
-    recommended_trataka: syncTratakaWithReply(fallbackReply, defaultRecTrataka),
+    recommended_trataka: hasClinicalDistress ? syncTratakaWithReply(fallbackReply, defaultRecTrataka) : "bindu",
   };
 }
