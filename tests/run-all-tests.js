@@ -27,6 +27,7 @@ require('./edge_caching_and_asset_bundle.test.js');
 require('./test-diverse-shloka-selection.js');
 require('./test-cbt-trataka-multilingual-fixes.js');
 require('./test-language-and-vocal-selection.js');
+require('./test-seo-verification.js');
 
 
 console.log('================================================================');

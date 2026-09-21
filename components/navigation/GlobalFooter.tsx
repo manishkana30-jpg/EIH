@@ -2,17 +2,9 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { Brain } from 'lucide-react';
 
 export function GlobalFooter() {
-  const pathname = usePathname();
-
-  // Do not render marketing footer on live interactive chat/therapy session stage
-  if (pathname === '/') {
-    return null;
-  }
-
   return (
     <footer className="bg-[#09090b] border-t border-zinc-900 text-zinc-400 text-xs py-10 px-4 sm:px-8 mt-auto shrink-0">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">

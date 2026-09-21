@@ -27,12 +27,14 @@ import {
   Check,
   Menu,
   X,
+  Compass,
 } from "lucide-react";
 
 import { healerClient, PsychologicalTelemetry, ClinicalSource, ChatHistoryItem, TrigunaAnalysis } from "@/lib/api/healer-client";
 import { AudioWaveform } from "./components/AudioWaveform";
 import { LanguageSelector } from "./components/LanguageSelector";
 import { GitaShlokaCard, parseGitaShloka } from "./components/GitaShlokaCard";
+import { EditorialGuide } from "@/components/seo/EditorialGuide";
 
 /* ─── Lazy-loaded heavy components (only fetched when user interacts) ─── */
 const CBTKnowledgeModal = dynamic(() => import("./components/CBTKnowledgeModal").then(m => m.CBTKnowledgeModal ? { default: m.CBTKnowledgeModal } : m), { ssr: false });
@@ -759,8 +761,14 @@ export default function SanctuarySessionPage() {
   const isSessionActive = isRecording || isPlayingAudio || isVoiceModeActiveRef.current;
 
   return (
-    <div className="flex flex-col flex-1 h-full min-h-0 w-full bg-[#09090b] text-slate-100 font-sans overflow-hidden select-none">
-      <div className="relative flex flex-1 h-full min-h-0 w-full bg-slate-950 overflow-hidden">
+    <div className="flex flex-col w-full bg-[#09090b] text-slate-100 font-sans select-none">
+      {/* ─────────────────────────────────────────────────────────────
+          1. INTERACTIVE SANCTUARY WORKSPACE (Full Viewport Stage)
+      ───────────────────────────────────────────────────────────── */}
+      <section
+        aria-label="Interactive Mind Sanctuary Workspace"
+        className="relative flex w-full h-[calc(100dvh-53px)] min-h-[620px] bg-slate-950 overflow-hidden shrink-0"
+      >
       {/* ─────────────────────────────────────────────────────────────
           MOBILE NAVIGATION DRAWER (Slide-over from left)
       ───────────────────────────────────────────────────────────── */}
@@ -829,6 +837,20 @@ export default function SanctuarySessionPage() {
                       Clinical Library
                     </span>
                   </Link>
+
+                  <a
+                    href="#clinical-guide"
+                    onClick={() => {
+                      setIsMobileNavOpen(false);
+                      document.getElementById('clinical-guide')?.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                    className="flex items-center gap-3 w-full p-3 rounded-xl text-slate-300 hover:text-amber-300 hover:bg-slate-800/80 border border-slate-800/60 transition-all duration-200"
+                  >
+                    <Compass className="w-5 h-5 shrink-0 text-amber-400" />
+                    <span className="text-sm font-medium tracking-wide">
+                      Clinical Guide
+                    </span>
+                  </a>
 
                   <button
                     onClick={() => {
@@ -1029,6 +1051,21 @@ export default function SanctuarySessionPage() {
                 Clinical Library
               </span>
             </Link>
+
+            <a
+              href="#clinical-guide"
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById('clinical-guide')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="flex items-center gap-3 w-full p-2.5 rounded-xl text-slate-400 hover:text-amber-300 hover:bg-slate-800/80 border border-transparent hover:border-slate-700/60 transition-all duration-300 group cursor-pointer"
+              title="AI Somatic Therapy & Neuro-Vedantic Clinical Guide"
+            >
+              <Compass className="w-5 h-5 shrink-0 group-hover:scale-110 transition-transform text-amber-400" />
+              <span className="hidden md:inline text-xs font-medium tracking-wide">
+                Clinical Guide
+              </span>
+            </a>
 
             <button
               onClick={() => setIsCBTModalOpen(true)}
@@ -2103,7 +2140,12 @@ export default function SanctuarySessionPage() {
         isInstalled={isAppInstalled}
         onInstallSuccess={() => setIsAppInstalled(true)}
       />
-      </div>
+      </section>
+
+      {/* ─────────────────────────────────────────────────────────────
+          2. TOPICAL EDITORIAL CONTENT ENGINE (<article>)
+      ───────────────────────────────────────────────────────────── */}
+      <EditorialGuide />
     </div>
   );
 }

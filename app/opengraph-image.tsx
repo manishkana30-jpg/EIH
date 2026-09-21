@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 
 export const runtime = 'edge';
-export const alt = 'Emotional Intelligence Healer — Neuro-Vedantic Mind Sanctuary';
+export const alt = 'AI Somatic Therapy & Neuro-Vedantic Healing — Emotional Intelligence Healer';
 export const size = {
   width: 1200,
   height: 630,
@@ -45,7 +45,7 @@ export default async function Image() {
           }}
         >
           <span>🧠</span>
-          <span>Neuro-Vedantic Mind Sanctuary</span>
+          <span>AI Somatic Therapy & Neuro-Vedantic Healing</span>
           <span>🧠</span>
         </div>
 
@@ -70,12 +70,12 @@ export default async function Image() {
             fontSize: '24px',
             color: '#a1a1aa',
             textAlign: 'center',
-            maxWidth: '900px',
+            maxWidth: '960px',
             margin: '0 0 36px 0',
             lineHeight: 1.4,
           }}
         >
-          Evidence-Based Clinical Psychotherapy • Bhagavad Gita Cognitive Therapy • 5-Stage Trataka Ocular Gazing • Polyvagal Regulation
+          Polyvagal State Tracker • Clinical Trataka Protocol • Triguna Equilibrium • Encrypted Emotion Telemetry
         </p>
 
         {/* Telemetry Indicator Pills */}

@@ -21,13 +21,24 @@ const outfit = Outfit({
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://eih-chi.vercel.app'),
-  title: 'Emotional Intelligence Healer | Neuro-Vedantic Mind Sanctuary',
-  description: 'Autonomous clinical psychotherapy and somatic regulation bridging CBT, Polyvagal Theory, and Bhagavad Gita cognitive therapy.',
+  title: {
+    default: 'AI Somatic Therapy & Neuro-Vedantic Healing | EIH',
+    template: '%s | EIH Sanctuary',
+  },
+  description:
+    'AI somatic therapy & neuro-Vedantic healing. Polyvagal state tracker, clinical trataka protocol, and zero-knowledge encrypted emotion telemetry.',
   applicationName: 'Emotional Intelligence Healer (EIH)',
   alternates: {
-    canonical: 'https://eih-chi.vercel.app/',
+    canonical: 'https://eih-chi.vercel.app',
   },
   keywords: [
+    'AI Somatic Therapy & Neuro-Vedantic Healing',
+    'polyvagal state tracker',
+    'clinical trataka protocol',
+    'triguna equilibrium gauge',
+    'cognitive distortion detector',
+    'real-time emotion telemetry',
+    'zero-knowledge encrypted mental health',
     'AI Emotional Intelligence Healer',
     'Bhagavad Gita Cognitive Therapy',
     'Trataka Ocular Meditation',
@@ -47,23 +58,25 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://eih-chi.vercel.app/',
+    url: 'https://eih-chi.vercel.app',
     siteName: 'Emotional Intelligence Healer (EIH)',
-    title: 'Emotional Intelligence Healer | Neuro-Vedantic Mind Sanctuary',
-    description: 'Autonomous clinical psychotherapy and somatic regulation bridging CBT, Polyvagal Theory, and Bhagavad Gita cognitive therapy.',
+    title: 'AI Somatic Therapy & Neuro-Vedantic Healing | EIH',
+    description:
+      'AI somatic therapy & neuro-Vedantic healing. Polyvagal state tracker, clinical trataka protocol, and zero-knowledge encrypted emotion telemetry.',
     images: [
       {
         url: 'https://eih-chi.vercel.app/opengraph-image',
         width: 1200,
         height: 630,
-        alt: 'Emotional Intelligence Healer - Neuro-Vedantic Mind Sanctuary',
+        alt: 'AI Somatic Therapy & Neuro-Vedantic Healing — Emotional Intelligence Healer',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Emotional Intelligence Healer | Neuro-Vedantic Sanctuary',
-    description: 'Evidence-based clinical psychotherapy bridging modern neuroscience with ancient mind sciences.',
+    title: 'AI Somatic Therapy & Neuro-Vedantic Healing | EIH',
+    description:
+      'AI somatic therapy & neuro-Vedantic healing. Polyvagal state tracker, clinical trataka protocol, and zero-knowledge encrypted emotion telemetry.',
     images: ['https://eih-chi.vercel.app/opengraph-image'],
     creator: '@eih_sanctuary',
   },
@@ -146,10 +159,9 @@ export default function RootLayout({
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col min-h-0 overflow-y-auto">
           {children}
+          {/* Global Authoritative Footer */}
+          <GlobalFooter />
         </div>
-
-        {/* Global Authoritative Footer (hidden automatically on live / session stage) */}
-        <GlobalFooter />
 
         {/* Service worker registration */}
         <script
