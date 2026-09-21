@@ -120,6 +120,21 @@ function isWordActive(
   return currentWordIndex === karaoke.wordIndex;
 }
 
+function cleanMessageForSpeech(text: string): string {
+  if (!text) return '';
+  return text
+    // 1. Strip [GITA_SHLOKA]...[/GITA_SHLOKA]
+    .replace(/\[GITA_SHLOKA\][\s\S]*?\[\/GITA_SHLOKA\]/gi, '')
+    // 2. Strip section headers like **1. ...**, **2. ...**, **SUMMARY...**
+    .replace(/^\*\*(?:[1234]\.\s+|SUMMARY[^*]*|आपकी स्थिति[^*]*|स्थिति व कष्ट[^*]*|TRI-PILLAR[^*]*|एकीकृत[^*]*)[^*]*\*\*\s*:?\s*/gim, '')
+    // 3. Keep markdown images as clean inline text: ![alt](url) -> alt
+    .replace(/!\[(.*?)\]\([^\)]*\)/g, '$1')
+    // 4. Keep diagram tags as clean text: [diagram: label] -> label
+    .replace(/\[(?:diagram|visual|flow):\s*(.*?)\]/gi, '$1')
+    // 5. Clean arrows to natural conversational rhythm
+    .replace(/\s*(?:->|→|-->)\s*/g, ', then ');
+}
+
 function renderFormattedMarkdown(
   content: string,
   isSpeaking: boolean = false,
@@ -127,96 +142,18 @@ function renderFormattedMarkdown(
   counter: RenderCounter = { wordIndex: 0, sentenceIndex: 0 }
 ) {
   // Strip leading header line if present e.g. **1. ...** or **SUMMARY ...** or **4. ...**
-  const cleaned = content.replace(/^\*\*(?:[1234]\.\s+|SUMMARY[^*]*|आपकी स्थिति[^*]*|स्थिति व कष्ट[^*]*|TRI-PILLAR[^*]*|एकीकृत[^*]*)[^*]*\*\*\s*:?\s*/i, '');
+  // Keep visual references and diagrams as clean inline text (NO cards or transformed boxes)
+  const cleaned = content
+    .replace(/^\*\*(?:[1234]\.\s+|SUMMARY[^*]*|आपकी स्थिति[^*]*|स्थिति व कष्ट[^*]*|TRI-PILLAR[^*]*|एकीकृत[^*]*)[^*]*\*\*\s*:?\s*/i, '')
+    .replace(/!\[(.*?)\]\([^\)]*\)/g, '$1')
+    .replace(/\[(?:diagram|visual|flow):\s*(.*?)\]/gi, '$1');
+
   const lines = cleaned.split('\n');
 
   return lines.map((line, lIdx) => {
     const trimmedLine = line.trim();
     if (!trimmedLine) return <span key={lIdx} className="block h-2" />;
 
-    // ─── 1. Contextual Text-First Visual: Markdown Image ![alt](url) ───
-    const imgMatch = trimmedLine.match(/^!\[(.*?)\]\((.*?)\)$/);
-    if (imgMatch) {
-      const altText = imgMatch[1] || "Clinical Visual Reference";
-      return (
-        <div
-          key={lIdx}
-          className="my-2.5 px-3.5 py-2.5 rounded-xl bg-slate-900/90 border border-teal-500/35 flex items-center gap-3 text-xs shadow-md backdrop-blur-sm"
-        >
-          <div className="w-7 h-7 rounded-lg bg-teal-500/20 text-teal-300 flex items-center justify-center shrink-0">
-            <Eye className="w-4 h-4 text-teal-400" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-teal-400 font-bold block">
-              Contextual Visual Guide
-            </span>
-            <span className="text-slate-200 font-medium break-words">
-              {altText}
-            </span>
-          </div>
-        </div>
-      );
-    }
-
-    // ─── 2. Contextual Text-First Visual: Diagram / Visual Tag [diagram: ...] ───
-    const diagMatch = trimmedLine.match(/^\[(?:diagram|visual|flow):\s*(.*?)\]$/i);
-    if (diagMatch) {
-      const label = diagMatch[1] || "Therapeutic Pathway";
-      return (
-        <div
-          key={lIdx}
-          className="my-2.5 px-3.5 py-2.5 rounded-xl bg-slate-900/90 border border-emerald-500/35 flex items-center gap-3 text-xs shadow-md backdrop-blur-sm"
-        >
-          <div className="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-300 flex items-center justify-center shrink-0">
-            <Activity className="w-4 h-4 text-emerald-400" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-400 font-bold block">
-              Clinical Neural Pathway
-            </span>
-            <span className="text-slate-200 font-medium break-words">
-              {label}
-            </span>
-          </div>
-        </div>
-      );
-    }
-
-    // ─── 3. Contextual Text-First Visual: Step-by-Step Flow Arrow Sequence ───
-    if (
-      (trimmedLine.includes(' -> ') || trimmedLine.includes(' → ') || trimmedLine.includes(' --> ')) &&
-      !trimmedLine.startsWith('http')
-    ) {
-      const steps = trimmedLine
-        .split(/\s*(?:->|→|-->)\s*/)
-        .map((s) => s.trim())
-        .filter(Boolean);
-
-      if (steps.length >= 2) {
-        return (
-          <div
-            key={lIdx}
-            className="my-2.5 p-3 rounded-xl bg-slate-900/90 border border-teal-500/25 shadow-md overflow-x-auto"
-          >
-            <div className="flex items-center gap-2 min-w-max">
-              {steps.map((step, idx) => (
-                <React.Fragment key={idx}>
-                  <span className="px-2.5 py-1 rounded-lg bg-teal-950/80 border border-teal-500/40 text-teal-200 text-xs font-medium shadow-sm flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-teal-400" />
-                    <span>{step}</span>
-                  </span>
-                  {idx < steps.length - 1 && (
-                    <span className="text-teal-400/80 text-xs font-bold px-0.5">→</span>
-                  )}
-                </React.Fragment>
-              ))}
-            </div>
-          </div>
-        );
-      }
-    }
-
-    // ─── 4. Standard Paragraph / Sentence with Karaoke Highlighting ───
     const segments = trimmedLine.split(/(\*\*[^*]+\*\*)/g);
 
     return (
@@ -695,10 +632,17 @@ export default function SanctuarySessionPage() {
   const playVoice = useCallback((text: string, audioBase64?: string, messageId?: string) => {
     if (isAiMutedRef.current) return;
 
-    const cleanText = browserSpeechController.cleanTextForSpeech(text);
-    if (!cleanText && !audioBase64) return;
+    // 1. Strip section headers and metadata to ensure 1:1 match with rendered markdown words
+    const strippedText = cleanMessageForSpeech(text);
+    const hasDevanagari = /[\u0900-\u097F]/.test(strippedText || text);
+    const targetLocale = hasDevanagari
+      ? 'hi-IN'
+      : currentLanguageRef.current.speechLocale || userLocaleRef.current || 'en-US';
 
-    const effectiveClean = cleanText || text;
+    const cleanText = browserSpeechController.cleanTextForSpeech(strippedText, targetLocale);
+    if (!cleanText && !strippedText && !audioBase64) return;
+
+    const effectiveClean = cleanText || strippedText || text;
     activeSpeakingMessageIdRef.current = messageId || null;
 
     // Precompute words and sentences for exact boundary mapping
@@ -756,11 +700,6 @@ export default function SanctuarySessionPage() {
       onWordBoundary: handleWordBoundary,
     });
 
-    const hasDevanagari = /[\u0900-\u097F]/.test(text);
-    const targetLocale = hasDevanagari
-      ? 'hi-IN'
-      : currentLanguageRef.current.speechLocale || userLocaleRef.current || 'en-US';
-
     browserSpeechController.stopRecognition();
     setIsRecording(false);
 
@@ -808,6 +747,22 @@ export default function SanctuarySessionPage() {
       }
     }, maxSafetyMs);
 
+    // 1. Primary Engine: SpeechSynthesisUtterance.onboundary for millisecond-exact word & sentence tracking
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window && window.speechSynthesis) {
+      try {
+        browserSpeechController.speakWithWebSpeechSynth(
+          effectiveClean,
+          undefined,
+          handleAudioEnd,
+          targetLocale
+        );
+        return;
+      } catch (synthErr) {
+        console.warn("SpeechSynthesisUtterance failed, fallback to direct audio/stream:", synthErr);
+      }
+    }
+
+    // 2. Fallback: Direct base64 MP3 audio playback if SpeechSynthesis is unavailable
     if (audioBase64) {
       try {
         const audio = new Audio(`data:audio/mp3;base64,${audioBase64}`);
@@ -826,14 +781,14 @@ export default function SanctuarySessionPage() {
         audio.onended = handleAudioEnd;
         audio.onerror = (e) => {
           console.warn("Direct base64 audio failed, fallback to browser speech:", e);
-          browserSpeechController.speak(cleanText || text, undefined, handleAudioEnd, targetLocale);
+          browserSpeechController.speak(effectiveClean, undefined, handleAudioEnd, targetLocale);
         };
 
         const playPromise = audio.play();
         if (playPromise !== undefined) {
           playPromise.catch((err) => {
             console.warn("Audio autoplay blocked, fallback to browser speech:", err);
-            browserSpeechController.speak(cleanText || text, undefined, handleAudioEnd, targetLocale);
+            browserSpeechController.speak(effectiveClean, undefined, handleAudioEnd, targetLocale);
           });
         }
         return;
@@ -842,7 +797,8 @@ export default function SanctuarySessionPage() {
       }
     }
 
-    browserSpeechController.speak(cleanText || text, undefined, handleAudioEnd, targetLocale);
+    // 3. Fallback: Edge Neural Voice API
+    browserSpeechController.speak(effectiveClean, undefined, handleAudioEnd, targetLocale);
   }, []);
 
   // ─── Send Message Handler ───

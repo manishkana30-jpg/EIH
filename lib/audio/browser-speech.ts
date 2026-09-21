@@ -744,13 +744,19 @@ export class BrowserSpeechController {
     const baseLang = cleanLocaleKey.split('-')[0];
     const selectedVoice = REGIONAL_NEURAL_VOICE_MAP[cleanLocaleKey] || REGIONAL_NEURAL_VOICE_MAP[baseLang] || 'en-US-AriaNeural';
 
+    // 1. Primary: Real-Time Word & Sentence Boundary Highlighting (Karaoke Mode)
+    // Uses native SpeechSynthesisUtterance.onboundary for millisecond-accurate boundary events!
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window && this.speechSynth) {
+      return this.speakWithWebSpeechSynth(cleanText, onStart, onEnd, effectiveLocale);
+    }
+
     this.stopListeningInternals();
     this.cancelSpeech();
     this.isSpeaking = true;
     this.callbacks.onAssistantStart?.();
     onStart?.();
 
-    // 1. Primary: High-Fidelity Microsoft Edge Neural Voice Streaming (/api/voice or Vercel Backend)
+    // 2. Fallback: High-Fidelity Microsoft Edge Neural Voice Streaming with synchronized tracking
     try {
       const backendUrl = typeof window !== 'undefined' && process.env.NEXT_PUBLIC_BACKEND_URL 
         ? process.env.NEXT_PUBLIC_BACKEND_URL.replace(/\/$/, '') 
@@ -948,10 +954,10 @@ export class BrowserSpeechController {
   }
 
   /**
-   * Fallback Web Speech Synthesis (Client-side offline fallback)
+   * Primary Web Speech Synthesis for Real-Time Karaoke Mode
    * Hardened against Chrome's silent cancel/pause stall on subsequent utterances.
    */
-  private async speakWithWebSpeechSynth(
+  public async speakWithWebSpeechSynth(
     cleanText: string,
     onStart?: () => void,
     onEnd?: () => void,
@@ -1071,10 +1077,16 @@ export class BrowserSpeechController {
 
     let chunkIdx = 0;
     const chunkOffsets: number[] = [];
-    let runningOffset = 0;
+    let searchPos = 0;
     for (const chunk of sentenceChunks) {
-      chunkOffsets.push(runningOffset);
-      runningOffset += chunk.length + 1;
+      const idx = cleanText.indexOf(chunk, searchPos);
+      if (idx >= 0) {
+        chunkOffsets.push(idx);
+        searchPos = idx + chunk.length;
+      } else {
+        chunkOffsets.push(searchPos);
+        searchPos += chunk.length + 1;
+      }
     }
 
     const speakNextChunk = () => {
@@ -1103,6 +1115,7 @@ export class BrowserSpeechController {
 
       // Real-Time Word & Sentence Boundary Highlighting (Karaoke Mode)
       utterance.onboundary = (event: any) => {
+        if (event.name && event.name !== 'word') return;
         const relativeCharIndex = event.charIndex || 0;
         const charLength = event.charLength || 0;
         const absoluteCharIndex = currentChunkOffset + relativeCharIndex;

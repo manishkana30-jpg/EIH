@@ -1,8 +1,9 @@
 /**
  * tests/test-karaoke-and-text-visuals.js
  * 
- * Unit Test Suite for Real-Time Karaoke Mode, Word/Sentence Highlighting,
- * Auto-Scroll Centering, and Contextual Text-First Visual Badges.
+ * Unit Test Suite for Real-Time Karaoke Mode, Word/Sentence Highlighting via
+ * SpeechSynthesisUtterance.onboundary, Auto-Scroll Centering, and Clean Text-First Visuals
+ * (no cards, no transformed diagram boxes, clean inline text placement).
  */
 
 const assert = require('assert');
@@ -80,54 +81,26 @@ function isWordActive(currentWordIndex, wordStr, activeKaraoke) {
   return currentWordIndex === activeKaraoke.wordIndex;
 }
 
-// ─── 2. Contextual Text-First Visuals Parser Logic ───
-function parseTextFirstVisual(line) {
-  const trimmed = line.trim();
+// ─── 2. Clean Text-First Visuals Parser Logic (No Cards or Transforming Boxes) ───
+function cleanMarkdownForRender(content) {
+  return content
+    .replace(/^\*\*(?:[1234]\.\s+|SUMMARY[^*]*|आपकी स्थिति[^*]*|स्थिति व कष्ट[^*]*|TRI-PILLAR[^*]*|एकीकृत[^*]*)[^*]*\*\*\s*:?\s*/i, '')
+    .replace(/!\[(.*?)\]\([^\)]*\)/g, '$1')
+    .replace(/\[(?:diagram|visual|flow):\s*(.*?)\]/gi, '$1');
+}
 
-  // A. Markdown Image: ![alt](url) -> Text-First Contextual Visual Guide
-  const imgMatch = trimmed.match(/^!\[(.*?)\]\((.*?)\)$/);
-  if (imgMatch) {
-    return {
-      type: 'image_badge',
-      badgeType: 'Contextual Visual Guide',
-      altText: imgMatch[1] || 'Clinical Visual Reference',
-      urlStripped: true,
-    };
-  }
-
-  // B. Diagram tag: [diagram: ...] -> Clinical Neural Pathway
-  const diagMatch = trimmed.match(/^\[(?:diagram|visual|flow):\s*(.*?)\]$/i);
-  if (diagMatch) {
-    return {
-      type: 'diagram_badge',
-      badgeType: 'Clinical Neural Pathway',
-      label: diagMatch[1] || 'Therapeutic Pathway',
-    };
-  }
-
-  // C. Step-by-Step Flow Arrows: A -> B -> C
-  if (
-    (trimmed.includes(' -> ') || trimmed.includes(' → ') || trimmed.includes(' --> ')) &&
-    !trimmed.startsWith('http')
-  ) {
-    const steps = trimmed
-      .split(/\s*(?:->|→|-->)\s*/)
-      .map((s) => s.trim())
-      .filter(Boolean);
-
-    if (steps.length >= 2) {
-      return {
-        type: 'flowchart_sequence',
-        steps,
-      };
-    }
-  }
-
-  return null;
+function cleanMessageForSpeech(text) {
+  if (!text) return '';
+  return text
+    .replace(/\[GITA_SHLOKA\][\s\S]*?\[\/GITA_SHLOKA\]/gi, '')
+    .replace(/^\*\*(?:[1234]\.\s+|SUMMARY[^*]*|आपकी स्थिति[^*]*|स्थिति व कष्ट[^*]*|TRI-PILLAR[^*]*|एकीकृत[^*]*)[^*]*\*\*\s*:?\s*/gim, '')
+    .replace(/!\[(.*?)\]\([^\)]*\)/g, '$1')
+    .replace(/\[(?:diagram|visual|flow):\s*(.*?)\]/gi, '$1')
+    .replace(/\s*(?:->|→|-->)\s*/g, ', then ');
 }
 
 async function runKaraokeAndTextVisualsTests() {
-  console.log('\n--- Running Real-Time Karaoke & Contextual Text-First Visuals Test Suite ---');
+  console.log('\n--- Running Real-Time Karaoke & Clean Text-First Visuals Test Suite ---');
 
   // Test 1: Word & Sentence Boundary Precomputation & Resolution
   const sampleCleanText = "Take a deep breath and center your awareness. Notice how the breath calms the nervous system.";
@@ -165,41 +138,35 @@ async function runKaraokeAndTextVisualsTests() {
 
   console.log('  ✓ Resilient word matching with Unicode normalizer and proximity window');
 
-  // Test 3: Contextual Text-First Visuals Parsing
-  // Image markdown must NOT render broken image tags
+  // Test 3: Clean Text-First Visuals (No cards, clean text inline where required)
   const imgLine = '![Autonomic Ladder - Ventral Vagal State](https://cdn.example.com/ladder.png)';
-  const imgResult = parseTextFirstVisual(imgLine);
-  assert(imgResult !== null, 'Must parse markdown image line');
-  assert.strictEqual(imgResult.type, 'image_badge');
-  assert.strictEqual(imgResult.altText, 'Autonomic Ladder - Ventral Vagal State');
-  assert.strictEqual(imgResult.urlStripped, true, 'Image URLs must be stripped to prevent broken 404 image icons');
+  const renderedImg = cleanMarkdownForRender(imgLine);
+  assert.strictEqual(renderedImg, 'Autonomic Ladder - Ventral Vagal State', 'Image URLs must be stripped leaving clean inline text');
+  assert(!renderedImg.includes('http'), 'Rendered text must not contain broken image links');
 
-  // Diagram tag
   const diagLine = '[diagram: Cognitive Restructuring Feedback Loop]';
-  const diagResult = parseTextFirstVisual(diagLine);
-  assert(diagResult !== null, 'Must parse diagram tag line');
-  assert.strictEqual(diagResult.type, 'diagram_badge');
-  assert.strictEqual(diagResult.label, 'Cognitive Restructuring Feedback Loop');
+  const renderedDiag = cleanMarkdownForRender(diagLine);
+  assert.strictEqual(renderedDiag, 'Cognitive Restructuring Feedback Loop', 'Diagram tags must be stripped leaving clean inline text');
 
-  // Flowchart arrow sequence
-  const flowLine = 'Trigger -> Negative Automatic Thought -> Physiological Arousal -> Behavioral Response';
-  const flowResult = parseTextFirstVisual(flowLine);
-  assert(flowResult !== null, 'Must parse flowchart sequence');
-  assert.strictEqual(flowResult.type, 'flowchart_sequence');
-  assert.strictEqual(flowResult.steps.length, 4, 'Must extract 4 sequence steps');
-  assert.strictEqual(flowResult.steps[0], 'Trigger');
-  assert.strictEqual(flowResult.steps[3], 'Behavioral Response');
+  const flowLine = 'Trigger -> Automatic Thought -> Emotional Reaction';
+  const renderedFlow = cleanMarkdownForRender(flowLine);
+  assert.strictEqual(renderedFlow, 'Trigger -> Automatic Thought -> Emotional Reaction', 'Flowchart arrow text is preserved inline as clean text');
 
-  // Unicode arrow flowchart
-  const unicodeFlowLine = 'Inhale (4s) → Retention (4s) → Exhale (8s)';
-  const unicodeFlowResult = parseTextFirstVisual(unicodeFlowLine);
-  assert(unicodeFlowResult !== null, 'Must parse Unicode arrow flowchart');
-  assert.strictEqual(unicodeFlowResult.steps.length, 3);
-  assert.strictEqual(unicodeFlowResult.steps[1], 'Retention (4s)');
+  // 1-to-1 Speech and Render Word Alignment
+  const fullMessage = `**1. Bhagavad Gita Wisdom: (Chapter 2, Verse 70)**
+Like the ocean remains still while waters enter it, maintain equanimity.
+![Ventral Vagal Breathing](https://cdn.example.com/breath.png)
+[diagram: Somatic Grounding]`;
 
-  console.log('  ✓ Successfully parsed Markdown images into contextual text-first visual badges');
-  console.log('  ✓ Parsed [diagram: ...] tags into clinical neural pathway badges');
-  console.log('  ✓ Parsed ASCII and Unicode arrow sequences into structured flowchart node chains');
+  const speechText = cleanMessageForSpeech(fullMessage);
+  assert(!speechText.includes('**1. Bhagavad Gita'), 'Section header must be stripped from speech to prevent word offset');
+  assert(!speechText.includes('https://'), 'URL must be stripped from speech');
+  assert(speechText.includes('Like the ocean remains still'), 'Body text must be preserved');
+  assert(speechText.includes('Ventral Vagal Breathing'), 'Image alt text is read naturally');
+  assert(speechText.includes('Somatic Grounding'), 'Diagram label is read naturally');
+
+  console.log('  ✓ Verified images and diagrams render as clean text inline without cards or boxes');
+  console.log('  ✓ Verified cleanMessageForSpeech strips headers to maintain 1:1 word alignment with rendered UI');
 
   // Test 4: Verify page.tsx and browser-speech.ts Code Implementation
   const pagePath = path.join(__dirname, '..', 'app', '(session)', 'page.tsx');
@@ -209,16 +176,19 @@ async function runKaraokeAndTextVisualsTests() {
   assert(pageContent.includes('id="active-karaoke-word"'), 'page.tsx must assign id="active-karaoke-word" to current word');
   assert(pageContent.includes('onWordBoundary'), 'page.tsx must wire onWordBoundary to browserSpeechController');
   assert(pageContent.includes('container.scrollBy') || pageContent.includes('chatContainerRef.current.scrollBy'), 'page.tsx must use smooth scrollBy to center spoken word');
-  assert(pageContent.includes('Contextual Visual Guide'), 'page.tsx must render Contextual Visual Guide badge');
-  assert(pageContent.includes('Clinical Neural Pathway'), 'page.tsx must render Clinical Neural Pathway badge');
+  assert(pageContent.includes('speakWithWebSpeechSynth'), 'page.tsx must prioritize speakWithWebSpeechSynth for SpeechSynthesisUtterance.onboundary');
+  assert(!pageContent.includes('Contextual Visual Guide'), 'page.tsx must NOT contain Contextual Visual Guide card wrappers');
+  assert(!pageContent.includes('Clinical Neural Pathway'), 'page.tsx must NOT contain Clinical Neural Pathway card wrappers');
 
   const speechPath = path.join(__dirname, '..', 'lib', 'audio', 'browser-speech.ts');
   const speechContent = fs.readFileSync(speechPath, 'utf8');
 
   assert(speechContent.includes('utterance.onboundary'), 'browser-speech.ts must listen to utterance.onboundary');
   assert(speechContent.includes('onWordBoundary?:'), 'browser-speech.ts must declare onWordBoundary in callbacks');
+  assert(speechContent.includes('public async speakWithWebSpeechSynth'), 'browser-speech.ts must export speakWithWebSpeechSynth as public');
 
   console.log('  ✓ Verified page.tsx has active-karaoke-word ID and auto-scroll centering implementation');
+  console.log('  ✓ Verified page.tsx prioritizes SpeechSynthesisUtterance and avoids card wrappers');
   console.log('  ✓ Verified browser-speech.ts has SpeechSynthesisUtterance.onboundary integration');
 
   console.log('\nKaraoke & Text Visuals Tests: All Passed Successfully!\n');
