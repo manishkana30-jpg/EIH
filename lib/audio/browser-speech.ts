@@ -20,6 +20,7 @@ export interface BrowserSpeechCallbacks {
   onInterimTranscript?: (text: string) => void;
   onRecognitionState?: (isListening: boolean) => void;
   onAudioLevel?: (level: number) => void;
+  onWordBoundary?: (charIndex: number, charLength: number, wordText?: string) => void;
 }
 
 export interface SpeechRecognitionResultItem {
@@ -166,8 +167,8 @@ export class BrowserSpeechController {
     } catch (_) {}
   }
 
-  public setCallbacks(callbacks: BrowserSpeechCallbacks): void {
-    this.callbacks = callbacks;
+  public setCallbacks(callbacks: Partial<BrowserSpeechCallbacks>): void {
+    this.callbacks = { ...this.callbacks, ...callbacks };
   }
 
   /**
@@ -792,6 +793,7 @@ export class BrowserSpeechController {
         this.isSpeaking = false;
         this.isProcessingUtterance = false;
 
+        this.callbacks.onWordBoundary?.(-1, 0, '');
         this.callbacks.onAssistantEnd?.();
         onEnd?.();
 
@@ -858,6 +860,16 @@ export class BrowserSpeechController {
         audio.onplay = () => {
           this.isSpeaking = true;
           this.callbacks.onAssistantStart?.();
+        };
+
+        audio.ontimeupdate = () => {
+          if (!audio.duration || audio.duration === 0) return;
+          const progress = Math.min(1, Math.max(0, audio.currentTime / audio.duration));
+          const charIndex = Math.min(cleanText.length - 1, Math.floor(progress * cleanText.length));
+          const prefix = cleanText.slice(0, charIndex);
+          const words = prefix.trim().split(/\s+/).filter(Boolean);
+          const currentWord = words[words.length - 1] || '';
+          this.callbacks.onWordBoundary?.(charIndex, currentWord.length, currentWord);
         };
 
         audio.onended = finishSpeech;
@@ -1018,6 +1030,7 @@ export class BrowserSpeechController {
       (window as any).__activeUtterance = null;
       this.currentUtterance = null;
 
+      this.callbacks.onWordBoundary?.(-1, 0, '');
       this.callbacks.onAssistantEnd?.();
       onEnd?.();
 
@@ -1057,6 +1070,13 @@ export class BrowserSpeechController {
     }, 2500);
 
     let chunkIdx = 0;
+    const chunkOffsets: number[] = [];
+    let runningOffset = 0;
+    for (const chunk of sentenceChunks) {
+      chunkOffsets.push(runningOffset);
+      runningOffset += chunk.length + 1;
+    }
+
     const speakNextChunk = () => {
       if (isFinished || !this.speechSynth) return;
       if (chunkIdx >= sentenceChunks.length) {
@@ -1064,6 +1084,7 @@ export class BrowserSpeechController {
         return;
       }
 
+      const currentChunkOffset = chunkOffsets[chunkIdx] || 0;
       const chunkText = sentenceChunks[chunkIdx++];
       const utterance = new SpeechSynthesisUtterance(chunkText);
       utterance.rate = 0.94;
@@ -1079,6 +1100,21 @@ export class BrowserSpeechController {
 
       (window as any).__activeUtterance = utterance;
       this.currentUtterance = utterance;
+
+      // Real-Time Word & Sentence Boundary Highlighting (Karaoke Mode)
+      utterance.onboundary = (event: any) => {
+        const relativeCharIndex = event.charIndex || 0;
+        const charLength = event.charLength || 0;
+        const absoluteCharIndex = currentChunkOffset + relativeCharIndex;
+        let word = '';
+        if (charLength > 0) {
+          word = chunkText.slice(relativeCharIndex, relativeCharIndex + charLength);
+        } else {
+          const match = chunkText.slice(relativeCharIndex).match(/^\S+/);
+          word = match ? match[0] : '';
+        }
+        this.callbacks.onWordBoundary?.(absoluteCharIndex, charLength || word.length, word);
+      };
 
       utterance.onstart = () => {
         if (chunkIdx === 1) {
@@ -1159,6 +1195,7 @@ export class BrowserSpeechController {
     this.isProcessingUtterance = false;
     this.currentUtterance = null;
     (window as any).__activeUtterance = null;
+    this.callbacks.onWordBoundary?.(-1, 0, '');
     this.callbacks.onAssistantEnd?.();
   }
 

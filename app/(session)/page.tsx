@@ -84,36 +84,244 @@ const getFormattedTime = () => {
   return `${hours}:${minutes} ${ampm}`;
 };
 
-function renderFormattedMarkdown(content: string) {
+interface KaraokeState {
+  messageId: string;
+  wordIndex: number;
+  sentenceIndex: number;
+  wordText?: string;
+}
+
+interface RenderCounter {
+  wordIndex: number;
+  sentenceIndex: number;
+}
+
+function cleanWordForMatch(str: string): string {
+  return str.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
+}
+
+function isWordActive(
+  currentWordIndex: number,
+  wordStr: string,
+  karaoke: KaraokeState | null
+): boolean {
+  if (!karaoke) return false;
+
+  if (karaoke.wordText) {
+    const cleanWord = cleanWordForMatch(wordStr);
+    const cleanTarget = cleanWordForMatch(karaoke.wordText);
+    if (cleanWord && cleanTarget && cleanWord === cleanTarget) {
+      if (Math.abs(currentWordIndex - karaoke.wordIndex) <= 8) {
+        return true;
+      }
+    }
+  }
+
+  return currentWordIndex === karaoke.wordIndex;
+}
+
+function renderFormattedMarkdown(
+  content: string,
+  isSpeaking: boolean = false,
+  activeKaraoke: KaraokeState | null = null,
+  counter: RenderCounter = { wordIndex: 0, sentenceIndex: 0 }
+) {
   // Strip leading header line if present e.g. **1. ...** or **SUMMARY ...** or **4. ...**
   const cleaned = content.replace(/^\*\*(?:[1234]\.\s+|SUMMARY[^*]*|आपकी स्थिति[^*]*|स्थिति व कष्ट[^*]*|TRI-PILLAR[^*]*|एकीकृत[^*]*)[^*]*\*\*\s*:?\s*/i, '');
   const lines = cleaned.split('\n');
+
   return lines.map((line, lIdx) => {
     const trimmedLine = line.trim();
     if (!trimmedLine) return <span key={lIdx} className="block h-2" />;
+
+    // ─── 1. Contextual Text-First Visual: Markdown Image ![alt](url) ───
+    const imgMatch = trimmedLine.match(/^!\[(.*?)\]\((.*?)\)$/);
+    if (imgMatch) {
+      const altText = imgMatch[1] || "Clinical Visual Reference";
+      return (
+        <div
+          key={lIdx}
+          className="my-2.5 px-3.5 py-2.5 rounded-xl bg-slate-900/90 border border-teal-500/35 flex items-center gap-3 text-xs shadow-md backdrop-blur-sm"
+        >
+          <div className="w-7 h-7 rounded-lg bg-teal-500/20 text-teal-300 flex items-center justify-center shrink-0">
+            <Eye className="w-4 h-4 text-teal-400" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-teal-400 font-bold block">
+              Contextual Visual Guide
+            </span>
+            <span className="text-slate-200 font-medium break-words">
+              {altText}
+            </span>
+          </div>
+        </div>
+      );
+    }
+
+    // ─── 2. Contextual Text-First Visual: Diagram / Visual Tag [diagram: ...] ───
+    const diagMatch = trimmedLine.match(/^\[(?:diagram|visual|flow):\s*(.*?)\]$/i);
+    if (diagMatch) {
+      const label = diagMatch[1] || "Therapeutic Pathway";
+      return (
+        <div
+          key={lIdx}
+          className="my-2.5 px-3.5 py-2.5 rounded-xl bg-slate-900/90 border border-emerald-500/35 flex items-center gap-3 text-xs shadow-md backdrop-blur-sm"
+        >
+          <div className="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-300 flex items-center justify-center shrink-0">
+            <Activity className="w-4 h-4 text-emerald-400" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-400 font-bold block">
+              Clinical Neural Pathway
+            </span>
+            <span className="text-slate-200 font-medium break-words">
+              {label}
+            </span>
+          </div>
+        </div>
+      );
+    }
+
+    // ─── 3. Contextual Text-First Visual: Step-by-Step Flow Arrow Sequence ───
+    if (
+      (trimmedLine.includes(' -> ') || trimmedLine.includes(' → ') || trimmedLine.includes(' --> ')) &&
+      !trimmedLine.startsWith('http')
+    ) {
+      const steps = trimmedLine
+        .split(/\s*(?:->|→|-->)\s*/)
+        .map((s) => s.trim())
+        .filter(Boolean);
+
+      if (steps.length >= 2) {
+        return (
+          <div
+            key={lIdx}
+            className="my-2.5 p-3 rounded-xl bg-slate-900/90 border border-teal-500/25 shadow-md overflow-x-auto"
+          >
+            <div className="flex items-center gap-2 min-w-max">
+              {steps.map((step, idx) => (
+                <React.Fragment key={idx}>
+                  <span className="px-2.5 py-1 rounded-lg bg-teal-950/80 border border-teal-500/40 text-teal-200 text-xs font-medium shadow-sm flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-teal-400" />
+                    <span>{step}</span>
+                  </span>
+                  {idx < steps.length - 1 && (
+                    <span className="text-teal-400/80 text-xs font-bold px-0.5">→</span>
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
+          </div>
+        );
+      }
+    }
+
+    // ─── 4. Standard Paragraph / Sentence with Karaoke Highlighting ───
     const segments = trimmedLine.split(/(\*\*[^*]+\*\*)/g);
+
     return (
       <span key={lIdx} className="block leading-relaxed">
         {segments.map((seg, sIdx) => {
-          if (seg.startsWith('**') && seg.endsWith('**')) {
+          const isBold = seg.startsWith('**') && seg.endsWith('**');
+          const rawText = isBold ? seg.slice(2, -2) : seg;
+
+          if (!isSpeaking || !activeKaraoke) {
+            if (isBold) {
+              return (
+                <strong key={sIdx} className="font-semibold text-slate-50">
+                  {rawText}
+                </strong>
+              );
+            }
+            return <React.Fragment key={sIdx}>{rawText}</React.Fragment>;
+          }
+
+          // Active Karaoke rendering: Tokenize into words and spaces
+          const tokens = rawText.split(/(\s+)/);
+          const renderedTokens = tokens.map((token, tIdx) => {
+            if (/^\s+$/.test(token)) {
+              return <React.Fragment key={tIdx}> </React.Fragment>;
+            }
+            if (!token) return null;
+
+            const thisWordIdx = counter.wordIndex++;
+            const thisSentenceIdx = counter.sentenceIndex;
+            const isSentenceEnd = /[.!?।]\s*$/.test(token);
+            if (isSentenceEnd) {
+              counter.sentenceIndex++;
+            }
+
+            const activeWord = isWordActive(thisWordIdx, token, activeKaraoke);
+            const activeSentence = thisSentenceIdx === activeKaraoke.sentenceIndex;
+
+            if (activeWord) {
+              return (
+                <span
+                  key={tIdx}
+                  id="active-karaoke-word"
+                  className="bg-emerald-400 text-slate-950 font-bold px-1.5 py-0.5 rounded shadow-[0_0_12px_rgba(52,211,153,0.95)] scale-105 inline-block mx-0.5 transition-all duration-100 ring-2 ring-emerald-300"
+                >
+                  {token}
+                </span>
+              );
+            }
+
+            if (activeSentence) {
+              return (
+                <span
+                  key={tIdx}
+                  className="text-emerald-200 bg-emerald-500/15 rounded px-0.5 transition-colors duration-150 font-medium"
+                >
+                  {token}
+                </span>
+              );
+            }
+
+            if (thisWordIdx < activeKaraoke.wordIndex) {
+              return (
+                <span key={tIdx} className="text-slate-100">
+                  {token}
+                </span>
+              );
+            }
+
+            return (
+              <span key={tIdx} className="text-slate-300/80">
+                {token}
+              </span>
+            );
+          });
+
+          if (isBold) {
             return (
               <strong key={sIdx} className="font-semibold text-slate-50">
-                {seg.slice(2, -2)}
+                {renderedTokens}
               </strong>
             );
           }
-          return seg;
+
+          return <React.Fragment key={sIdx}>{renderedTokens}</React.Fragment>;
         })}
       </span>
     );
   });
 }
 
-function formatTherapeuticMessage(text: string) {
+function formatTherapeuticMessage(
+  text: string,
+  isSpeaking: boolean = false,
+  activeKaraoke: KaraokeState | null = null
+) {
   if (!text) return null;
   const parts = text.split(/(?=\*\*(?:[1234]\.\s+|SUMMARY|आपकी स्थिति|स्थिति व कष्ट|RESUMEN|SYNTHÈSE|ZUSAMMENFASSUNG|TRI-PILLAR|एकीकृत))/i);
+  const counter: RenderCounter = { wordIndex: 0, sentenceIndex: 0 };
+
   if (parts.length <= 1) {
-    return <div className="space-y-1.5 text-slate-100">{renderFormattedMarkdown(text)}</div>;
+    return (
+      <div className="space-y-1.5 text-slate-100">
+        {renderFormattedMarkdown(text, isSpeaking, activeKaraoke, counter)}
+      </div>
+    );
   }
 
   return (
@@ -192,7 +400,7 @@ function formatTherapeuticMessage(text: string) {
               </div>
             )}
             <div className="leading-relaxed text-slate-100 text-xs sm:text-sm font-sans space-y-1">
-              {renderFormattedMarkdown(trimmed)}
+              {renderFormattedMarkdown(trimmed, isSpeaking, activeKaraoke, counter)}
             </div>
           </div>
         );
@@ -211,6 +419,7 @@ export default function SanctuarySessionPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isBackendHealthy, setIsBackendHealthy] = useState<boolean | null>(null);
   const [isAiMuted, setIsAiMuted] = useState(false);
+  const [activeKaraoke, setActiveKaraoke] = useState<KaraokeState | null>(null);
 
   // ─── Modal Visibility States ───
   const [isCBTModalOpen, setIsCBTModalOpen] = useState(false);
@@ -360,6 +569,7 @@ export default function SanctuarySessionPage() {
   const isVoiceModeActiveRef = useRef(false);
   const isAiMutedRef = useRef(false);
   const activeAudioRef = useRef<HTMLAudioElement | null>(null);
+  const activeSpeakingMessageIdRef = useRef<string | null>(null);
   const hasInitializedRef = useRef(false);
   const messagesRef = useRef<Message[]>(messages);
   const currentLanguageRef = useRef<LanguageItem>(currentLanguage);
@@ -387,6 +597,8 @@ export default function SanctuarySessionPage() {
       browserSpeechController.cancelSpeech();
       setIsPlayingAudio(false);
       isPlayingAudioRef.current = false;
+      setActiveKaraoke(null);
+      activeSpeakingMessageIdRef.current = null;
     }
   }, [isAiMuted]);
 
@@ -457,12 +669,92 @@ export default function SanctuarySessionPage() {
     return () => clearTimeout(timer);
   }, [messages, isLoading]);
 
-  // ─── Voice Playback with Echo Avoidance ───
-  const playVoice = useCallback((text: string, audioBase64?: string) => {
+  // ─── Auto-Scroll Tracking: Center Active Spoken Word ───
+  useEffect(() => {
+    if (!activeKaraoke || !chatContainerRef.current) return;
+    const activeEl = document.getElementById("active-karaoke-word");
+    if (!activeEl) return;
+
+    const container = chatContainerRef.current;
+    const containerRect = container.getBoundingClientRect();
+    const wordRect = activeEl.getBoundingClientRect();
+
+    const wordCenter = wordRect.top + wordRect.height / 2;
+    const containerCenter = containerRect.top + containerRect.height / 2;
+    const diff = wordCenter - containerCenter;
+
+    if (Math.abs(diff) > 40) {
+      container.scrollBy({
+        top: diff,
+        behavior: "smooth",
+      });
+    }
+  }, [activeKaraoke]);
+
+  // ─── Voice Playback with Real-Time Karaoke & Echo Avoidance ───
+  const playVoice = useCallback((text: string, audioBase64?: string, messageId?: string) => {
     if (isAiMutedRef.current) return;
 
     const cleanText = browserSpeechController.cleanTextForSpeech(text);
     if (!cleanText && !audioBase64) return;
+
+    const effectiveClean = cleanText || text;
+    activeSpeakingMessageIdRef.current = messageId || null;
+
+    // Precompute words and sentences for exact boundary mapping
+    const sentences = effectiveClean.split(/(?<=[.!?।])\s+/).filter(Boolean);
+    const cleanWordList: { word: string; sentenceIdx: number; startChar: number; endChar: number }[] = [];
+    let charCursor = 0;
+    sentences.forEach((sent, sentIdx) => {
+      const sentWords = sent.trim().split(/\s+/).filter(Boolean);
+      sentWords.forEach((w) => {
+        const startChar = effectiveClean.indexOf(w, charCursor);
+        const endChar = startChar >= 0 ? startChar + w.length : charCursor + w.length;
+        charCursor = Math.max(charCursor, endChar);
+        cleanWordList.push({
+          word: w,
+          sentenceIdx: sentIdx,
+          startChar: startChar >= 0 ? startChar : charCursor,
+          endChar,
+        });
+      });
+    });
+
+    const handleWordBoundary = (charIndex: number, charLength: number, wordText?: string) => {
+      if (charIndex < 0 || !activeSpeakingMessageIdRef.current) {
+        setActiveKaraoke(null);
+        return;
+      }
+      if (cleanWordList.length === 0) return;
+
+      let activeWordIdx = cleanWordList.findIndex(
+        (w) => charIndex >= w.startChar && charIndex <= w.endChar
+      );
+      if (activeWordIdx < 0) {
+        let minD = Infinity;
+        cleanWordList.forEach((w, idx) => {
+          const d = Math.abs(w.startChar - charIndex);
+          if (d < minD) {
+            minD = d;
+            activeWordIdx = idx;
+          }
+        });
+      }
+      activeWordIdx = Math.max(0, activeWordIdx);
+      const activeWord = cleanWordList[activeWordIdx];
+      const activeSentenceIdx = activeWord ? activeWord.sentenceIdx : 0;
+
+      setActiveKaraoke({
+        messageId: activeSpeakingMessageIdRef.current,
+        wordIndex: activeWordIdx,
+        sentenceIndex: activeSentenceIdx,
+        wordText: wordText || activeWord?.word,
+      });
+    };
+
+    browserSpeechController.setCallbacks({
+      onWordBoundary: handleWordBoundary,
+    });
 
     const hasDevanagari = /[\u0900-\u097F]/.test(text);
     const targetLocale = hasDevanagari
@@ -494,6 +786,8 @@ export default function SanctuarySessionPage() {
       isPlayingAudioRef.current = false;
       setIsPlayingAudio(false);
       activeAudioRef.current = null;
+      setActiveKaraoke(null);
+      activeSpeakingMessageIdRef.current = null;
 
       setTimeout(() => {
         isEchoLockedRef.current = false;
@@ -505,7 +799,7 @@ export default function SanctuarySessionPage() {
     };
 
     // Failsafe watchdog: ensure audio locks are never permanently stuck on browser glitches
-    const wordCount = (cleanText || text).split(/\s+/).length;
+    const wordCount = effectiveClean.split(/\s+/).length;
     const maxSafetyMs = Math.max(6000, (wordCount / 2.0) * 1000 + 5000);
     safetyTimer = setTimeout(() => {
       if (isPlayingAudioRef.current) {
@@ -518,6 +812,16 @@ export default function SanctuarySessionPage() {
       try {
         const audio = new Audio(`data:audio/mp3;base64,${audioBase64}`);
         activeAudioRef.current = audio;
+
+        audio.ontimeupdate = () => {
+          if (!audio.duration || audio.duration === 0) return;
+          const progress = Math.min(1, Math.max(0, audio.currentTime / audio.duration));
+          const charIndex = Math.min(effectiveClean.length - 1, Math.floor(progress * effectiveClean.length));
+          const prefix = effectiveClean.slice(0, charIndex);
+          const words = prefix.trim().split(/\s+/).filter(Boolean);
+          const currentWord = words[words.length - 1] || '';
+          handleWordBoundary(charIndex, currentWord.length, currentWord);
+        };
 
         audio.onended = handleAudioEnd;
         audio.onerror = (e) => {
@@ -556,6 +860,8 @@ export default function SanctuarySessionPage() {
       setIsPlayingAudio(false);
     }
     browserSpeechController.cancelSpeech();
+    setActiveKaraoke(null);
+    activeSpeakingMessageIdRef.current = null;
 
     setErrorMessage(null);
     isSendingRef.current = true;
@@ -641,7 +947,7 @@ export default function SanctuarySessionPage() {
         saveLivePsychologyTelemetry(response.telemetry, messageText);
       }
 
-      playVoice(response.reply, response.audio_base64);
+      playVoice(response.reply, response.audio_base64, aiMsg.id);
     } catch (error) {
       console.error("Chat communication notice:", error);
       setErrorMessage("Unable to reach the clinical reasoning engine. Please check your connection and retry.");
@@ -1496,7 +1802,11 @@ export default function SanctuarySessionPage() {
                       }`}
                     >
                       {m.sender === "ai" ? (
-                        formatTherapeuticMessage(gitaParsed.isGita ? gitaParsed.remainingText : m.text)
+                        formatTherapeuticMessage(
+                          gitaParsed.isGita ? gitaParsed.remainingText : m.text,
+                          activeKaraoke?.messageId === m.id,
+                          activeKaraoke?.messageId === m.id ? activeKaraoke : null
+                        )
                       ) : (
                         <p className="whitespace-pre-wrap">{m.text}</p>
                       )}
@@ -1553,6 +1863,37 @@ export default function SanctuarySessionPage() {
                       )}
                       {m.engine && (
                         <span className="text-[9px] text-emerald-400/70 font-mono">[{m.engine}]</span>
+                      )}
+                      {m.sender === "ai" && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (activeKaraoke?.messageId === m.id) {
+                              browserSpeechController.cancelSpeech();
+                              if (activeAudioRef.current) {
+                                try {
+                                  activeAudioRef.current.pause();
+                                  activeAudioRef.current.src = "";
+                                } catch (_) {}
+                                activeAudioRef.current = null;
+                              }
+                              setIsPlayingAudio(false);
+                              setActiveKaraoke(null);
+                              activeSpeakingMessageIdRef.current = null;
+                            } else {
+                              playVoice(m.text, undefined, m.id);
+                            }
+                          }}
+                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-all ${
+                            activeKaraoke?.messageId === m.id
+                              ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-[0_0_8px_rgba(52,211,153,0.3)] animate-pulse"
+                              : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 border border-transparent"
+                          }`}
+                          title={activeKaraoke?.messageId === m.id ? "Stop voice" : "Listen aloud with real-time word highlighting"}
+                        >
+                          <Volume2 className={`w-3 h-3 ${activeKaraoke?.messageId === m.id ? "text-emerald-400 animate-bounce" : ""}`} />
+                          <span>{activeKaraoke?.messageId === m.id ? "Speaking..." : "Listen"}</span>
+                        </button>
                       )}
                     </div>
                   </motion.div>

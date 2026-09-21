@@ -6,6 +6,7 @@ const { runTtsSanitizerTests } = require('./test_tts_sanitizer.js');
 const { runSelfLearningTests } = require('./self_learning_documents.test.js');
 const { testGitaClinicalTratakTrio } = require('./test-gita-clinical-tratak-trio.js');
 const { testTriPillarSynergyDiagnostic } = require('./test-tri-pillar-synergy-diagnostic.js');
+const { runKaraokeAndTextVisualsTests } = require('./test-karaoke-and-text-visuals.js');
 require('./test-trataka-remedy-launch-sync.js');
 require('./language-catalog.test.js');
 require('./remedies-matrix.test.js');
@@ -44,6 +45,7 @@ async function main() {
     await runSelfLearningTests();
     await testGitaClinicalTratakTrio();
     await testTriPillarSynergyDiagnostic();
+    await runKaraokeAndTextVisualsTests();
     await import('./test-greeting-and-mic-test.js');
     await import('./test-incomplete-utterance-guardrails.js');
     console.log('================================================================');
