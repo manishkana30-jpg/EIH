@@ -385,3 +385,31 @@
   backface-visibility: hidden;
 }
 
+/* ─── Zero-Reflow Real-Time Karaoke Highlighting ─── */
+/* Inactive word container */
+.karaoke-word {
+  display: inline-block;
+  white-space: pre;
+  transition: background-color 0.12s ease, color 0.12s ease;
+  /* Never add margin, padding, font-size, or scale transforms here */
+}
+
+/* Active highlighted word */
+.karaoke-word.active {
+  background-color: rgba(239, 68, 68, 0.45); /* Luminous red marker glow */
+  color: #ffffff;
+  border-radius: 4px;
+  /* If emphasis is required without layout reflow, use text-shadow: */
+  text-shadow: 0 0 0.5px currentColor, 0 0 8px rgba(239, 68, 68, 0.85);
+}
+
+/* Soft yellow marker glow variant */
+.karaoke-word.active.yellow,
+.karaoke-word.active-yellow {
+  background-color: rgba(255, 220, 0, 0.4); /* Soft yellow marker glow */
+  color: inherit;
+  border-radius: 4px;
+  text-shadow: 0 0 0.5px currentColor;
+}
+
+

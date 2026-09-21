@@ -85,14 +85,14 @@ function renderProcessFlowLine(
                 key={wIdx}
                 id="active-karaoke-word"
                 ref={activeWordRef}
-                className="bg-red-600 text-white font-extrabold px-1.5 py-0.5 rounded shadow-[0_0_14px_rgba(239,68,68,0.95)] scale-105 inline-block mx-0.5 transition-all duration-100 ring-2 ring-red-400"
+                className="karaoke-word active"
               >
                 {word}
               </span>
             );
           }
           return (
-            <span key={wIdx} className="mx-0.5">
+            <span key={wIdx} className="karaoke-word">
               {word}
             </span>
           );
@@ -153,14 +153,14 @@ function renderInlineBadgesAndText(
               key={bIdx}
               id="active-karaoke-word"
               ref={activeWordRef}
-              className="bg-red-600 text-white font-extrabold px-1.5 py-0.5 rounded shadow-[0_0_14px_rgba(239,68,68,0.95)] scale-105 inline-block mx-0.5 ring-2 ring-red-400"
+              className="karaoke-word active"
             >
               {word}
             </span>
           );
         }
         return (
-          <span key={bIdx} className="mx-0.5">
+          <span key={bIdx} className="karaoke-word">
             {word}
           </span>
         );
@@ -221,7 +221,7 @@ function renderInlineBadgesAndText(
                   key={tIdx}
                   id="active-karaoke-word"
                   ref={activeWordRef}
-                  className="bg-red-600 text-white font-extrabold px-1.5 py-0.5 rounded shadow-[0_0_14px_rgba(239,68,68,0.95)] scale-105 inline-block mx-0.5 transition-all duration-100 ring-2 ring-red-400"
+                  className="karaoke-word active"
                 >
                   {token}
                 </span>
@@ -232,7 +232,7 @@ function renderInlineBadgesAndText(
               return (
                 <span
                   key={tIdx}
-                  className="text-red-100 bg-red-500/15 rounded px-0.5 transition-colors duration-150 font-medium"
+                  className="karaoke-word text-red-100 bg-red-500/15 font-medium"
                 >
                   {token}
                 </span>
@@ -241,14 +241,14 @@ function renderInlineBadgesAndText(
 
             if (activeKaraoke && thisWordIdx < activeKaraoke.wordIndex) {
               return (
-                <span key={tIdx} className="text-slate-100">
+                <span key={tIdx} className="karaoke-word text-slate-100">
                   {token}
                 </span>
               );
             }
 
             return (
-              <span key={tIdx} className="text-slate-300/80">
+              <span key={tIdx} className="karaoke-word text-slate-300/80">
                 {token}
               </span>
             );
