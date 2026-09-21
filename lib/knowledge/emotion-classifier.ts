@@ -144,6 +144,18 @@ export class NeuroscienceEmotionClassifier {
     const raw = text.trim();
     const lower = raw.toLowerCase();
 
+    // 0a. CURRENT-TURN EMOTIONAL GROUNDING (NO STICKY EMOTIONS)
+    // Direct user assertions in the current turn strictly override past context and semantic ambiguity.
+    const directJoyRegex = /\b(i am|i'm|i feel|feeling)\s+(?:very\s+|so\s+|really\s+|quite\s+)?(happy|joyful|great|delighted|ecstatic|wonderful|fantastic|elated|cheerful)\b|\b(i am|i'm|i feel)\s+doing\s+(well|great|fine)\b|\b(i am|i'm)\s+(good|fine|doing good|so happy|very happy)\b|(?:^|\s)(मैं\s+(?:काफी\s+|बहुत\s+)?(?:खुश|प्रसन्न|आनंदित|अच्छा|ठीक)\s+हूँ|सब\s+ठीक\s+है|अच्छा\s+लग\s+रहा\s+है)(?:\s|[.,!?;:।॥]|$)|(\b(estoy|me siento)\s+(?:muy\s+)?(feliz|bien|contento|alegre)\b)|(\b(je suis|je me sens)\s+(?:très\s+)?(heureux|bien|joyeux)\b)|(\b(ich bin|ich fühle mich)\s+(?:sehr\s+)?(glücklich|gut|froh)\b)/i;
+    const directCalmRegex = /\b(i am|i'm|i feel|feeling)\s+(?:very\s+|so\s+|really\s+)?(calm|peaceful|serene|relaxed|centered|grounded|tranquil|at ease|at peace|relieved)\b|(?:^|\s)(मैं\s+(?:काफी\s+|बहुत\s+)?(?:शांत|स्थिर)\s+हूँ|मन\s+शांत\s+है)(?:\s|[.,!?;:।॥]|$)|(\b(estoy|me siento)\s+(?:muy\s+)?(tranquilo|en paz|relajado)\b)|(\b(je suis|je me sens)\s+(?:très\s+)?(calme|en paix|détendu)\b)|(\b(ich bin|ich fühle mich)\s+(?:sehr\s+)?(ruhig|entspannt|gelassen)\b)/i;
+
+    if (directJoyRegex.test(lower) || directJoyRegex.test(raw)) {
+      return this.getDimensionById('joy', 'moderate');
+    }
+    if (directCalmRegex.test(lower) || directCalmRegex.test(raw)) {
+      return this.getDimensionById('calmness', 'moderate');
+    }
+
     // 0. Meta-intent detection
     const isRepetitionComplaint =
       lower.includes('stop repeating') ||

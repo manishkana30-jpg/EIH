@@ -1664,9 +1664,20 @@ export function buildDiagnosticSufferingAssessment(
   const diag = emotionClassifier.classifyText(text);
   const activeEmotionId = emotionHint || diag.dimensionId || 'anxiety';
 
+  const isPositive =
+    activeEmotionId === 'joy' ||
+    activeEmotionId === 'calmness' ||
+    activeEmotionId === 'satisfaction' ||
+    activeEmotionId === 'relief' ||
+    activeEmotionId === 'adoration' ||
+    activeEmotionId === 'amusement' ||
+    diag.coreAffect.valence >= 0.3;
+
   // Calculate distress score (1-10) based on valence, arousal and intensity
   let distressScore = 7;
-  if (
+  if (isPositive) {
+    distressScore = 1;
+  } else if (
     diag.intensity === 'peak' ||
     diag.coreAffect.valence <= -0.8 ||
     lower.includes('terrified') ||
@@ -1686,16 +1697,31 @@ export function buildDiagnosticSufferingAssessment(
 
   // Determine nervous system state
   const isDorsal =
-    diag.polyvagalState?.toLowerCase().includes('dorsal') ||
-    diag.coreAffect.arousal < -0.3 ||
-    lower.includes('numb') ||
-    lower.includes('hopeless') ||
-    lower.includes('empty') ||
-    lower.includes('exhaust');
-  const isSympathetic = !isDorsal;
+    !isPositive &&
+    (diag.polyvagalState?.toLowerCase().includes('dorsal') ||
+      diag.coreAffect.arousal < -0.3 ||
+      lower.includes('numb') ||
+      lower.includes('hopeless') ||
+      lower.includes('empty') ||
+      lower.includes('exhaust'));
+  const isSympathetic = !isPositive && !isDorsal;
 
   // Emotion labels
   const emotionLabels: Record<string, Record<SupportedLocaleKey, string>> = {
+    joy: {
+      en: "Joy, Gratitude & Ventral Vagal Safety",
+      hi: "आनंद, कृतज्ञता एवं वेन्ट्रल वेगल सुरक्षा",
+      es: "Alegría, Gratitud y Seguridad Vagal",
+      fr: "Joie, Gratitude et Sécurité Vagale",
+      de: "Freude, Dankbarkeit & Ventrale Vagale Sicherheit"
+    },
+    calmness: {
+      en: "Calmness, Presence & Parasympathetic Regulation",
+      hi: "मानसिक शांति, स्थिरता एवं समत्व भाव",
+      es: "Calma, Presencia y Equilibrio Emocional",
+      fr: "Calme, Sérénité et Régulation Parasympathique",
+      de: "Ruhe, Gelassenheit & Parasympathische Balance"
+    },
     anxiety: {
       en: "Anticipatory Anxiety & Fear of Negative Outcomes",
       hi: "भविष्य की अनहोनी का भय एवं अत्यधिक चिंता",
@@ -1748,7 +1774,9 @@ export function buildDiagnosticSufferingAssessment(
   };
 
   let matchedKey = 'anxiety';
-  if (activeEmotionId.includes('sad') || activeEmotionId.includes('grief') || lower.includes('heartbreak') || lower.includes('broke up')) matchedKey = 'sadness';
+  if (isPositive) {
+    matchedKey = activeEmotionId.includes('calm') || activeEmotionId.includes('relief') ? 'calmness' : 'joy';
+  } else if (activeEmotionId.includes('sad') || activeEmotionId.includes('grief') || lower.includes('heartbreak') || lower.includes('broke up')) matchedKey = 'sadness';
   else if (activeEmotionId.includes('ang') || activeEmotionId.includes('rage') || lower.includes('yelled') || lower.includes('furious')) matchedKey = 'anger';
   else if (activeEmotionId.includes('panic') || activeEmotionId.includes('fear') || lower.includes('terrified')) matchedKey = 'fear';
   else if (activeEmotionId.includes('sham') || activeEmotionId.includes('guilt') || lower.includes('fake') || lower.includes('imposter') || lower.includes('failure')) matchedKey = 'shame';
@@ -1759,7 +1787,19 @@ export function buildDiagnosticSufferingAssessment(
 
   // Severity Label
   let severityLabel = "";
-  if (norm === 'hi') {
+  if (isPositive) {
+    if (norm === 'hi') {
+      severityLabel = "संतुलित एवं सुरक्षित अवस्था (Regulated / Ventral Vagal Safe [Distress 1/10])";
+    } else if (norm === 'es') {
+      severityLabel = "Estado Regulado y Seguro (Regulated / Ventral Vagal Safe [Distress 1/10])";
+    } else if (norm === 'fr') {
+      severityLabel = "État Régulé et Apaisé (Regulated / Ventral Vagal Safe [Distress 1/10])";
+    } else if (norm === 'de') {
+      severityLabel = "Regulierter & Sicherer Zustand (Regulated / Ventral Vagal Safe [Distress 1/10])";
+    } else {
+      severityLabel = "Harmonious & Regulated State (Ventral Vagal Safe [Distress 1/10])";
+    }
+  } else if (norm === 'hi') {
     severityLabel = distressScore >= 8 ? "अत्यधिक तीव्र कष्ट (Severe / Acute Dysregulation)" : (distressScore >= 6 ? "मध्यम से गंभीर मानसिक तनाव (Moderate / High Strain)" : "हल्का से मध्यम तनाव (Mild / Moderate Tension)");
   } else if (norm === 'es') {
     severityLabel = distressScore >= 8 ? "Détresse Grave / Aguda (Severe Dysregulation)" : (distressScore >= 6 ? "Tensión Moderada a Alta (Moderate Strain)" : "Malestar Leve a Moderado (Mild Strain)");
@@ -1773,7 +1813,19 @@ export function buildDiagnosticSufferingAssessment(
 
   // Nervous System State
   let nervousSystem = "";
-  if (norm === 'hi') {
+  if (isPositive) {
+    if (norm === 'hi') {
+      nervousSystem = "वेन्ट्रल वेगल सुरक्षा व सामाजिक सहभागिता (शांत, सुरक्षित एवं संतुलित मनःस्थिति / Parasympathetic Ease)";
+    } else if (norm === 'es') {
+      nervousSystem = "Seguridad Vagal Ventral y Conexión Social (Estado de Calma y Equilibrio)";
+    } else if (norm === 'fr') {
+      nervousSystem = "Sécurité Vagale Ventrale et Connexion Sociale (État Apaisé et Équilibré)";
+    } else if (norm === 'de') {
+      nervousSystem = "Ventral-Vagale Sicherheit & Soziales Engagement (Parasympathische Balance)";
+    } else {
+      nervousSystem = "Ventral Vagal Social Engagement & Deep Physiological Safety (Parasympathetic Regulated)";
+    }
+  } else if (norm === 'hi') {
     nervousSystem = isSympathetic
       ? "सिम्पैथेटिक तंत्रिका तंत्र की अति-सक्रियता (लड़ो या भागो / Fight-or-Flight Hyperarousal)"
       : "डॉर्सल वेगल शटडाउन (भावशून्यता, अत्यधिक थकान व अवसाद / Dorsal Vagal Freeze)";
@@ -1797,7 +1849,19 @@ export function buildDiagnosticSufferingAssessment(
 
   // Bodily Markers
   let bodilyMarkers = "";
-  if (norm === 'hi') {
+  if (isPositive) {
+    if (norm === 'hi') {
+      bodilyMarkers = "खिंचाव-मुक्त कंधे, खुला हृदय, सहज व गहरी सांसें, और शरीर में हल्कापन";
+    } else if (norm === 'es') {
+      bodilyMarkers = "Hombros relajados, pecho abierto, respiración profunda y ligereza física";
+    } else if (norm === 'fr') {
+      bodilyMarkers = "Épaules détendues, poitrine ouverte, respiration ample et légèreté corporelle";
+    } else if (norm === 'de') {
+      bodilyMarkers = "Gelöste Schultern, freier Brustraum, ruhige tiefe Atmung und körperliche Leichtigkeit";
+    } else {
+      bodilyMarkers = "Relaxed shoulders, open chest, natural unhurried breathing, and whole-body somatic lightness";
+    }
+  } else if (norm === 'hi') {
     bodilyMarkers = isSympathetic
       ? "सीने में जकड़न, तेज़ सांसें, गले में भारीपन और मांसपेशियों में खिंचाव"
       : "शरीर में भारीपन, ऊर्जा का पूर्ण अभाव, सिर में धुंधलापन और सुन्नता";
@@ -1821,7 +1885,13 @@ export function buildDiagnosticSufferingAssessment(
 
   // User input summary
   let inputSummary = "";
-  if (lower.includes('interview') || lower.includes('exam') || lower.includes('test') || lower.includes('failing') || lower.includes('career')) {
+  if (isPositive) {
+    if (norm === 'hi') inputSummary = "आप इस समय आंतरिक प्रसन्नता, मानसिक स्पष्टता और शांत संतुलन का अनुभव कर रहे हैं; आपकी चेतना सकारात्मक ऊर्जा और वेन्ट्रल वेगल सुरक्षा में स्थिर है।";
+    else if (norm === 'es') inputSummary = "Estás experimentando una sensación genuina de alegría, serenidad y claridad mental; tu sistema nervioso se encuentra en un estado de profunda seguridad y bienestar.";
+    else if (norm === 'fr') inputSummary = "Vous ressentez une joie sincère, de la sérénité et une belle clarté d'esprit ; votre physiologie repose dans une sécurité vagale apaisante.";
+    else if (norm === 'de') inputSummary = "Sie erleben echte Freude, Gelassenheit und innere Klarheit; Ihr Nervensystem ruht in einem Zustand von Sicherheit und Harmonie.";
+    else inputSummary = "You are experiencing genuine happiness, presence, and somatic ease; your nervous system is anchored in deep ventral vagal safety and clarity.";
+  } else if (lower.includes('interview') || lower.includes('exam') || lower.includes('test') || lower.includes('failing') || lower.includes('career')) {
     if (norm === 'hi') inputSummary = "आप आने वाली परीक्षा या साक्षात्कार को लेकर अत्यधिक आशंकित हैं, असफलता का डर आपको सता रहा है और अनिर्णय की स्थिति आपको मानसिक रूप से थका रही है।";
     else if (norm === 'es') inputSummary = "Te enfrentas a una prueba o entrevista decisiva, experimentando un temor abrumador al fracaso y parálisis para tomar decisiones de estudio.";
     else if (norm === 'fr') inputSummary = "Vous affrontez une échéance importante avec une angoisse vive liée à la peur de l'échec et une hésitation paralysante.";
@@ -1861,7 +1931,39 @@ export function buildDiagnosticSufferingAssessment(
 
   // Full section Markdown
   let markdown = "";
-  if (norm === 'hi') {
+  if (isPositive) {
+    if (norm === 'hi') {
+      markdown = `**आपकी वर्तमान स्थिति एवं सकारात्मक मनःस्थिति का मूल्यांकन:**
+• **पहचाना गया मनोभाव:** ${emotionName}
+• **संतुलन स्तर एवं तंत्रिका तंत्र स्थिति:** ${severityLabel} | ${nervousSystem}
+• **शारीरिक संवेदनाएं:** ${bodilyMarkers}
+• **संवेदनशील सारांश:** ${inputSummary}`;
+    } else if (norm === 'es') {
+      markdown = `**RESUMEN DIAGNÓSTICO Y EVALUACIÓN DEL BIENESTAR:**
+• **Emoción y Estado Central:** ${emotionName}
+• **Nivel de Regulación y Estado Autonómico:** ${severityLabel} | ${nervousSystem}
+• **Sensación Somática Corporal:** ${bodilyMarkers}
+• **Resumen Empático de tu Situación:** ${inputSummary}`;
+    } else if (norm === 'fr') {
+      markdown = `**SYNTHÈSE CLINIQUE ET ÉVALUATION DU BIEN-ÊTRE:**
+• **Émotion Identifiée et État Émotionnel :** ${emotionName}
+• **Niveau de Régulation et État Neurovégétatif :** ${severityLabel} | ${nervousSystem}
+• **Ressenti Somatique Corporel :** ${bodilyMarkers}
+• **Synthèse Empathique de votre Situation :** ${inputSummary}`;
+    } else if (norm === 'de') {
+      markdown = `**KLINISCHE ZUSAMMENFASSUNG & WOHLBEFINDENSEVALUATION:**
+• **Identifizierter Gefühlszustand:** ${emotionName}
+• **Regulierungsgrad & Vegetativer Status:** ${severityLabel} | ${nervousSystem}
+• **Körperlich-somatisches Erleben:** ${bodilyMarkers}
+• **Empathische Zusammenfassung Ihrer Situation:** ${inputSummary}`;
+    } else {
+      markdown = `**SUMMARY & EMOTIONAL WELLBEING ASSESSMENT (वर्तमान स्थिति एवं संतुलन का विश्लेषण):**
+• **Identified Emotional State:** ${emotionName}
+• **Autonomic & Regulatory State:** ${severityLabel} | ${nervousSystem}
+• **Interoceptive Bodily Experience:** ${bodilyMarkers}
+• **Empathic Summary of Your Experience:** ${inputSummary}`;
+    }
+  } else if (norm === 'hi') {
     markdown = `**आपकी स्थिति का सारांश एवं मानसिक पीड़ा का मूल्यांकन:**
 • **पहचाना गया मनोभाव एवं मुख्य संघर्ष:** ${emotionName}
 • **पीड़ा का स्तर एवं तंत्रिका तंत्र स्थिति:** ${severityLabel} (कष्ट सूचकांक: ${distressScore}/10) | ${nervousSystem}

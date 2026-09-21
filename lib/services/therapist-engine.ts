@@ -446,7 +446,24 @@ Strictly DO NOT mix English sentences, phrases, or raw English jargon into your 
 Keep the Sanskrit Shloka in Devanagari script wrapped in [GITA_SHLOKA] and [/GITA_SHLOKA], and provide all reflections, CBT reframes, and Tratak instructions purely in ${langItem.name}.`
       : "";
 
-  const systemPrompt = `${THERAPIST_SYSTEM_PROMPT}${langDirective}\n\n[CLINICAL RESEARCH & RETRIEVED WISDOM]:\n${contextString}`;
+  const isDirectPositive =
+    emotionDiagnostic.dimensionId === 'joy' ||
+    emotionDiagnostic.dimensionId === 'calmness' ||
+    emotionDiagnostic.coreAffect.valence >= 0.3;
+
+  const currentTurnGroundingDirective = isDirectPositive
+    ? `\n\n### MANDATORY CURRENT-TURN EMOTIONAL GROUNDING (NO STICKY EMOTIONS):
+The user explicitly states their current emotional state in this turn: "${userMessage}".
+1. Discard and flush ANY previous sadness, distress, panic, or negative context from earlier conversation turns.
+2. Direct user assertions override all past context. NEVER assume sadness or distress persists when the user explicitly declares happiness, calm, or relief.
+3. In Section 1 (SUMMARY & SUFFERING ASSESSMENT), celebrate their positive ventral vagal state (Distress Index: 1/10, Ventral Vagal Safe), acknowledge their genuine wellbeing, and do NOT prescribe crisis or trauma reframing.
+4. For Gita wisdom, present teachings on sustaining equanimity, gratitude, and detached joy (Sakshi Bhava / Shanta Rasa).
+5. For CBT, highlight gratitude anchoring and positive neuroplasticity savoring (holding positive sensations for 20 seconds).`
+    : `\n\n### CURRENT-TURN EMOTIONAL GROUNDING DIRECTIVE:
+Ground your response solely in the user's MOST RECENT input ("${userMessage}").
+Direct user assertions override past context; if the user's emotional state has shifted, discard previous negative assumptions.`;
+
+  const systemPrompt = `${THERAPIST_SYSTEM_PROMPT}${langDirective}${currentTurnGroundingDirective}\n\n[CLINICAL RESEARCH & RETRIEVED WISDOM]:\n${contextString}`;
 
   // Helper to guarantee [GITA_SHLOKA] tags, authentic Sanskrit shloka, and diagnostic summary
   function ensureDiagnosticAndGita(replyText: string, gitaBlockStr: string, diagnosticMarkdown?: string): string {
