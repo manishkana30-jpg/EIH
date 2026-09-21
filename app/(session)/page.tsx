@@ -336,7 +336,7 @@ function formatTherapeuticMessage(
         const badgeText = isDiagnostic
           ? (isHindi ? "📋 स्थिति व मानसिक पीड़ा का मूल्यांकन" : isSpanish ? "📋 Evaluación del Sufrimiento" : isFrench ? "📋 Évaluation de la Souffrance" : isGerman ? "📋 Belastungsanalyse" : "📋 Diagnostic & Suffering Assessment")
           : (isSynergy || isLastCard)
-          ? "✨ Summary"
+          ? (isHindi ? "✨ सारांश: एकीकृत त्रिवेणी उपचार योजना" : isSpanish ? "✨ Resumen: Resolución Sinérgica Tri-Pilar" : isFrench ? "✨ Synthèse : Résolution Synergique Tri-Piliers" : isGerman ? "✨ Zusammenfassung: Synergistische Dreisäulen-Lösung" : "✨ Summary: Tri-Pillar Synergistic Resolution")
           : isGita
           ? (isHindi ? "🕉️ श्रीमद्भगवद्गीता आत्मिक दर्शन" : isSpanish ? "🕉️ Sabiduría del Bhagavad Gita" : isFrench ? "🕉️ Sagesse de la Bhagavad Gita" : isGerman ? "🕉️ Weisheit der Bhagavad Gita" : "🕉️ Bhagavad Gita Wisdom")
           : isClinical

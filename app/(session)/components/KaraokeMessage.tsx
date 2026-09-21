@@ -29,6 +29,7 @@ export interface KaraokeMessageProps {
     text: string;
     timestamp?: string;
     engine?: string;
+    locale?: string;
     recommended_trataka?: string;
     cbt_distortion?: string;
   };
@@ -425,15 +426,15 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
                 ? "border-cyan-500/35 bg-gradient-to-br from-cyan-950/40 via-cyan-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(6,182,212,0.08)]"
                 : "border-slate-800/80 bg-slate-900/60";
 
-              const isHindi = /[\u0900-\u097F]/.test(trimmed);
-              const isSpanish = /\b(sabiduría|verso|capítulo|mente|atención|respiración)\b/i.test(trimmed);
-              const isFrench = /\b(sagesse|verset|chapitre|respiration|pensée)\b/i.test(trimmed);
-              const isGerman = /\b(weisheit|kapitel|nervensystem|atmung|gedanken)\b/i.test(trimmed);
+              const isHindi = /[\u0900-\u097F]/.test(trimmed) || (message.locale ? message.locale.startsWith("hi") : false);
+              const isSpanish = /\b(sabiduría|verso|capítulo|mente|atención|respiración|resumen)\b/i.test(trimmed) || (message.locale ? message.locale.startsWith("es") : false);
+              const isFrench = /\b(sagesse|verset|chapitre|respiration|pensée|synthèse)\b/i.test(trimmed) || (message.locale ? message.locale.startsWith("fr") : false);
+              const isGerman = /\b(weisheit|kapitel|nervensystem|atmung|gedanken|zusammenfassung)\b/i.test(trimmed) || (message.locale ? message.locale.startsWith("de") : false);
 
               const badgeText = isDiagnostic
                 ? (isHindi ? "📋 स्थिति व मानसिक पीड़ा का मूल्यांकन" : isSpanish ? "📋 Evaluación del Sufrimiento" : isFrench ? "📋 Évaluation de la Souffrance" : isGerman ? "📋 Belastungsanalyse" : "📋 Diagnostic & Suffering Assessment")
                 : (isSynergy || isLastCard)
-                ? "✨ Summary"
+                ? (isHindi ? "✨ सारांश: एकीकृत त्रिवेणी उपचार योजना" : isSpanish ? "✨ Resumen: Resolución Sinérgica Tri-Pilar" : isFrench ? "✨ Synthèse : Résolution Synergique Tri-Piliers" : isGerman ? "✨ Zusammenfassung: Synergistische Dreisäulen-Lösung" : "✨ Summary: Tri-Pillar Synergistic Resolution")
                 : isGita
                 ? (isHindi ? "🕉️ श्रीमद्भगवद्गीता आत्मिक दर्शन" : isSpanish ? "🕉️ Sabiduría del Bhagavad Gita" : isFrench ? "🕉️ Sagesse de la Bhagavad Gita" : isGerman ? "🕉️ Weisheit der Bhagavad Gita" : "🕉️ Bhagavad Gita Wisdom")
                 : isClinical

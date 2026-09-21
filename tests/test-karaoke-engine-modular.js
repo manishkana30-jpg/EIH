@@ -130,9 +130,11 @@ Inhale (4s) → Hold (7s) → Exhale (8s)`;
   assert(compCode.includes('Speaking...'), 'KaraokeMessage must render Speaking state indicator');
   assert(compCode.includes('Listen'), 'KaraokeMessage must render Listen button');
 
-  // Test 5: Verify Last Card is called Summary and never Gita badge
+  // Test 5: Verify Last Card is called Summary / सारांश according to webapp language rules and never Gita badge
   assert(compCode.includes('isLastCard'), 'KaraokeMessage must detect isLastCard');
-  assert(compCode.includes('"✨ Summary"'), 'KaraokeMessage must label synergy / last card with "✨ Summary"');
+  assert(compCode.includes('"✨ सारांश: एकीकृत त्रिवेणी उपचार योजना"'), 'KaraokeMessage must translate Summary to सारांश in Hindi');
+  assert(compCode.includes('"✨ Summary: Tri-Pillar Synergistic Resolution"'), 'KaraokeMessage must label Summary in English');
+  assert(compCode.includes('"✨ Resumen: Resolución Sinérgica Tri-Pilar"'), 'KaraokeMessage must translate Summary to Resumen in Spanish');
   assert(compCode.includes('!isLastCard &&'), 'Gita badge and shloka card must explicitly exclude isLastCard');
 
   // Test Card classification simulation
