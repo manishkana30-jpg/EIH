@@ -1267,31 +1267,6 @@ export default function SanctuarySessionPage() {
                     </span>
                   </button>
 
-                  {/* Trataka Module Card */}
-                  <div className="p-3 rounded-2xl bg-gradient-to-br from-amber-950/40 via-slate-900/80 to-slate-900/95 border border-amber-500/40 space-y-2 mt-2">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-amber-400 font-semibold flex items-center gap-1.5">
-                        <Eye className="w-4 h-4 text-amber-400" />
-                        <span>Clinical Trataka</span>
-                      </span>
-                      <span className="text-[10px] font-mono font-bold text-amber-400/90 bg-amber-500/15 border border-amber-500/40 px-1.5 py-0.5 rounded-full">
-                        {recommendedTrataka ? `${getTratakaModeLabel(recommendedTrataka)} Prescribed` : '5-Stage'}
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-400 leading-snug">
-                      Neuroplastic attention training: 2-min safe gazing, DMN quieting &amp; active CBT reframe.
-                    </p>
-                    <button
-                      onClick={() => {
-                        setIsMobileNavOpen(false);
-                        setIsTratakaOpen(true);
-                      }}
-                      className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 text-amber-200 text-xs font-semibold transition-all shadow-[0_0_15px_rgba(245,158,11,0.25)] active:scale-[0.98]"
-                    >
-                      <Eye className="w-4 h-4" />
-                      <span>Begin {recommendedTrataka ? `${getTratakaModeLabel(recommendedTrataka)} Gazing` : 'Gazing Session'}</span>
-                    </button>
-                  </div>
 
                   {/* App Utilities Divider */}
                   <div className="pt-2 pb-1">
@@ -1476,41 +1451,6 @@ export default function SanctuarySessionPage() {
               </span>
             </button>
 
-            {/* Clinical Trataka (Gazing) Focus Module Card - Left Side Column */}
-            <div className="p-2.5 md:p-3 rounded-2xl bg-gradient-to-br from-amber-950/30 via-slate-900/70 to-slate-900/90 border border-amber-500/40 hover:border-amber-400/70 transition-all duration-300 shadow-[0_0_20px_rgba(245,158,11,0.12)] group mt-1">
-              {/* Desktop Full Card */}
-              <div className="hidden md:block">
-                <div className="flex items-center justify-between text-xs mb-1.5">
-                  <span className="text-amber-400 font-semibold flex items-center gap-1.5">
-                    <Eye className="w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition-transform" />
-                    <span>Clinical Trataka</span>
-                  </span>
-                  <span className="text-[10px] font-mono font-bold text-amber-400/90 bg-amber-500/15 border border-amber-500/40 px-1.5 py-0.5 rounded-full">
-                    {recommendedTrataka ? `${getTratakaModeLabel(recommendedTrataka)} Prescribed` : '5-Stage'}
-                  </span>
-                </div>
-                <p className="text-[11px] text-slate-400 leading-snug mb-2">
-                  Neuroplastic attention training: 2-min safe gazing, DMN quieting &amp; active CBT reframe.
-                </p>
-                <button
-                  onClick={() => setIsTratakaOpen(true)}
-                  className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 text-amber-200 text-xs font-semibold transition-all shadow-[0_0_15px_rgba(245,158,11,0.25)] hover:shadow-[0_0_20px_rgba(245,158,11,0.4)] active:scale-[0.98]"
-                >
-                  <Eye className="w-3.5 h-3.5" />
-                  <span>Begin {recommendedTrataka ? `${getTratakaModeLabel(recommendedTrataka)} Gazing` : 'Gazing Session'}</span>
-                </button>
-              </div>
-
-              {/* Compact / Mobile Icon Button */}
-              <button
-                onClick={() => setIsTratakaOpen(true)}
-                className="md:hidden flex flex-col items-center justify-center w-full p-1.5 rounded-xl text-amber-400 hover:text-amber-200 hover:bg-amber-950/40 transition-all"
-                title={`Clinical Trataka (${recommendedTrataka}) Module`}
-              >
-                <Eye className="w-5 h-5" />
-                <span className="text-[9px] font-mono font-bold mt-1 text-amber-400/90">Trataka</span>
-              </button>
-            </div>
 
             {/* Divider for App Access & Utilities */}
             <div className="pt-2 pb-1">
