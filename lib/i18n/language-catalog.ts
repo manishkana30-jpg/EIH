@@ -779,11 +779,28 @@ export function resolveSpokenLanguageWithGpsOverride(
   const maxScore = Math.max(enScore, hiScore, esScore, frScore, deScore);
 
   if (maxScore > 0) {
-    if (deScore === maxScore) return { langCode: 'de', speechLocale: 'de-DE', name: 'German', isOverridden: true };
-    if (frScore === maxScore) return { langCode: 'fr', speechLocale: 'fr-FR', name: 'French', isOverridden: true };
-    if (esScore === maxScore) return { langCode: 'es', speechLocale: 'es-ES', name: 'Spanish', isOverridden: true };
+    const scores: Record<string, number> = {
+      hi: hiScore,
+      en: enScore,
+      es: esScore,
+      fr: frScore,
+      de: deScore,
+    };
+    const normGps = (gpsLanguageCode || '').toLowerCase().split('-')[0];
+    if (normGps && scores[normGps] === maxScore) {
+      const match = GLOBAL_LANGUAGE_CATALOG.find((l) => l.code === normGps);
+      return {
+        langCode: normGps,
+        speechLocale: gpsSpeechLocale || match?.speechLocale || `${normGps}-${normGps.toUpperCase()}`,
+        name: match?.name || normGps,
+        isOverridden: false,
+      };
+    }
     if (hiScore === maxScore) return { langCode: 'hi', speechLocale: 'hi-IN', name: 'Hinglish / Hindi', isOverridden: true };
     if (enScore === maxScore) return { langCode: 'en', speechLocale: 'en-US', name: 'English', isOverridden: true };
+    if (esScore === maxScore) return { langCode: 'es', speechLocale: 'es-ES', name: 'Spanish', isOverridden: true };
+    if (frScore === maxScore) return { langCode: 'fr', speechLocale: 'fr-FR', name: 'French', isOverridden: true };
+    if (deScore === maxScore) return { langCode: 'de', speechLocale: 'de-DE', name: 'German', isOverridden: true };
   }
 
   // 3. Fallback to GPS / Stored language only if utterance is neutral or empty

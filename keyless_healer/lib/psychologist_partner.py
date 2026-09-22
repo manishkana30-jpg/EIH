@@ -225,8 +225,8 @@ You must ground your intervention strictly in the following retrieved clinical p
 ### PHASE 3: THE INTERVENTION (Your Output)
 Formulate a warm, highly empathetic, and actionable response that trains the user's emotional resilience in a single, fluid conversational paragraph (3-4 sentences):
 - Deeply validate their exact emotional and bodily state with compassion without immediate fixing.
-- Provide a targeted CBT cognitive reframe from the retrieved protocol to shift perspective.
-- Seamlessly prescribe the corrective Triguna rebalancing, the recommended Trataka visual focus (or somatic anchor), and pranayama breathwork exercise.
+- Provide a targeted cognitive reframe from the retrieved protocol to shift perspective.
+- Prescribe the specific somatic anchor, corrective Triguna rebalancing, recommended Trataka visual focus, and pranayama breathwork exercise.
 
 RULES: Keep your response concise (3-4 sentences in a single fluid paragraph). DO NOT output numbered lists (1., 2., 3.), bullet points, section headers (like "Validation:", "CBT Reframe:"), asterisks, or markdown formatting, as your response will be synthesized directly into human speech.{lang_directive}"""
 
