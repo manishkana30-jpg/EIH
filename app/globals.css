@@ -396,11 +396,12 @@
 
 /* Active highlighted word */
 .karaoke-word.active {
-  background-color: rgba(239, 68, 68, 0.45); /* Luminous red marker glow */
-  color: #ffffff;
+  background-color: rgba(239, 68, 68, 0.75) !important; /* Vivid luminous red marker glow */
+  color: #ffffff !important;
   border-radius: 4px;
-  /* If emphasis is required without layout reflow, use text-shadow: */
-  text-shadow: 0 0 0.5px currentColor, 0 0 8px rgba(239, 68, 68, 0.85);
+  /* If emphasis is required without layout reflow, use text-shadow and box-shadow: */
+  text-shadow: 0 0 1px #ffffff, 0 0 10px rgba(239, 68, 68, 0.95) !important;
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.85) !important;
 }
 
 /* Soft yellow marker glow variant */

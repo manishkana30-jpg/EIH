@@ -1016,6 +1016,9 @@ export class BrowserSpeechController {
       return;
     }
 
+    this.stopListeningInternals();
+    this.cancelSpeech();
+
     // 1. Clear any stuck utterance in Chrome's speech engine
     try {
       if (this.speechSynth.speaking || this.speechSynth.pending) {
@@ -1058,6 +1061,7 @@ export class BrowserSpeechController {
     if (sentenceChunks.length === 0) sentenceChunks.push(cleanText);
 
     const speechGeneration = ++this.activeSpeechGeneration;
+    this.isSpeaking = true;
     let isFinished = false;
     const finishSpeech = () => {
       if (isFinished) return;
@@ -1267,6 +1271,13 @@ export class BrowserSpeechController {
           this.speechSynth.resume();
         }
         this.speechSynth.resume();
+        setTimeout(() => {
+          if (!isFinished && this.speechSynth && this.speechSynth.paused) {
+            try {
+              this.speechSynth.resume();
+            } catch (_) {}
+          }
+        }, 60);
       } catch (err) {
         console.warn("Speech synthesis speak error:", err);
         finishSpeech();
