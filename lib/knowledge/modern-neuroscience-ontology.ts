@@ -798,7 +798,13 @@ export const neuroscienceData: any = {
         "pity",
         "aching for",
         "feeling for someone",
-        "empathy"
+        "empathy",
+        "hurts my heart",
+        "hurts my own heart",
+        "hurts so deeply",
+        "feel their grief",
+        "shared pain",
+        "weeping in agony"
       ],
       "doshic_nervous_system_state": "Dorsal Vagal Freeze / High Tarpaka Kapha",
       "scientific_remedy": "Behavioral activation (2-minute micro-tasks), bilateral stimulation / EMDR tapping",

@@ -129,13 +129,18 @@ export interface CowenDimension {
 
 export class NeuroscienceEmotionClassifier {
   private static instance: NeuroscienceEmotionClassifier;
-  private dimensions: CowenDimension[] = neuroscienceData.cowen_dimensions;
+  public dimensions: CowenDimension[] = neuroscienceData.cowen_dimensions;
 
   public static getInstance(): NeuroscienceEmotionClassifier {
     if (!NeuroscienceEmotionClassifier.instance) {
       NeuroscienceEmotionClassifier.instance = new NeuroscienceEmotionClassifier();
     }
     return NeuroscienceEmotionClassifier.instance;
+  }
+
+  public getDimensionName(id: string): string {
+    const d = this.dimensions.find((x) => x.id === id);
+    return d ? d.name : id;
   }
 
   /**

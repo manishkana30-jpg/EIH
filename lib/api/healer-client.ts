@@ -328,6 +328,21 @@ class HealerBackendClient {
             tratakPrescription.mode;
           const trigunaAnalysis = parseClientTriguna(libRes?.condition?.triguna_balance);
 
+          const compositePercentages: Record<string, number> = {
+            [diag.dimensionName || 'Calmness']: Math.round(arousal * 100),
+          };
+          if (diag.dimensionScores) {
+            const sorted = Object.entries(diag.dimensionScores)
+              .filter(([id]) => id !== diag.dimensionId)
+              .sort(([, a], [, b]) => b - a)
+              .slice(0, 3);
+            for (const [id, score] of sorted) {
+              if (score > 0.15) {
+                compositePercentages[emotionClassifier.getDimensionName(id)] = Math.round(score * 100);
+              }
+            }
+          }
+
           return {
             reply: data.reply,
             engine: data.providerUsed || 'Edge Cognitive Reasoning Engine',
@@ -344,11 +359,7 @@ class HealerBackendClient {
               dominant_emotion: diag.dimensionName || 'Calmness',
               polyvagal_state: polyvagalState,
               cbt_distortion: distortion,
-              percentages: {
-                [diag.dimensionName || 'Calmness']: Math.round(arousal * 100),
-                Relief: 60,
-                Grounding: 75,
-              },
+              percentages: compositePercentages,
               strategy: `Regulate ${polyvagalState} and apply targeted clinical grounding for ${diag.dimensionName || 'emotional balance'}.`,
             },
           };
@@ -477,6 +488,21 @@ class HealerBackendClient {
         : 'bindu';
       const trigunaAnalysis = parseClientTriguna(libraryResult?.condition?.triguna_balance);
 
+      const compositePercentages: Record<string, number> = {
+        [diag.dimensionName || 'Calmness']: Math.round(arousal * 100),
+      };
+      if (diag.dimensionScores) {
+        const sorted = Object.entries(diag.dimensionScores)
+          .filter(([id]) => id !== diag.dimensionId)
+          .sort(([, a], [, b]) => b - a)
+          .slice(0, 3);
+        for (const [id, score] of sorted) {
+          if (score > 0.15) {
+            compositePercentages[emotionClassifier.getDimensionName(id)] = Math.round(score * 100);
+          }
+        }
+      }
+
       return {
         reply: fallbackReply,
         engine: hasClinicalDistress ? 'Keyless Healer (Client-Side Standalone Fallback)' : 'Conversational Empathy Responder',
@@ -485,20 +511,17 @@ class HealerBackendClient {
         recommended_trataka: recTrataka,
         triguna_analysis: hasClinicalDistress ? trigunaAnalysis : undefined,
         telemetry: {
-          dominant_emotion: hasClinicalDistress ? (diag.dimensionName || 'Calmness') : 'Calmness',
+          dominant_emotion: hasClinicalDistress ? (diag.dimensionName || 'Calmness') : (diag.dimensionName || 'Calmness'),
           polyvagal_state: hasClinicalDistress ? polyvagalState : 'Ventral Vagal (Safe)',
           cbt_distortion: 'None',
-          percentages: hasClinicalDistress ? {
+          percentages: Object.keys(compositePercentages).length > 0 ? compositePercentages : {
             [diag.dimensionName || 'Calmness']: Math.round(arousal * 100),
             Relief: 65,
             Grounding: 80,
-          } : {
-            Calmness: 95,
-            Receptivity: 90,
           },
           strategy: hasClinicalDistress
             ? `Somatic stabilization and evidence-based grounding for ${diag.dimensionName || 'emotional resilience'}.`
-            : 'Calm supportive listening and clinical readiness.',
+            : `Supportive presence and attuned awareness for ${diag.dimensionName || 'calmness'}.`,
         },
       };
     } catch (finalErr) {

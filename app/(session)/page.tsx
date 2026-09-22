@@ -2124,6 +2124,22 @@ export default function SanctuarySessionPage() {
                   </span>
                 </div>
 
+                {/* Composite Emotional Dimensions */}
+                {telemetry.percentages && Object.entries(telemetry.percentages).filter(([k]) => k !== telemetry.dominant_emotion && k !== 'Relief' && k !== 'Grounding' && k !== 'Receptivity').length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 pt-0.5">
+                    {Object.entries(telemetry.percentages)
+                      .filter(([k]) => k !== telemetry.dominant_emotion && k !== 'Relief' && k !== 'Grounding' && k !== 'Receptivity')
+                      .slice(0, 3)
+                      .map(([emo, pct]) => (
+                        <span key={emo} className="text-[10px] px-2 py-0.5 rounded-full bg-slate-800/80 text-slate-300 border border-slate-700/60 font-mono flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-teal-400/80" />
+                          <span>{emo}</span>
+                          <span className="text-teal-300 font-semibold">{pct}%</span>
+                        </span>
+                      ))}
+                  </div>
+                )}
+
                 <div className="space-y-1.5 pt-1 text-[11px]">
                   <div className="flex items-center justify-between text-slate-400">
                     <span>Polyvagal:</span>
