@@ -1045,6 +1045,7 @@ export default function SanctuarySessionPage() {
     if (isRecording) {
       isVoiceModeActiveRef.current = false;
       setIsRecording(false);
+      const pendingText = inputVal.trim();
       await browserSpeechController.finishCurrentUtterance();
       browserSpeechController.stopRecognition();
       if (activeStreamRef.current) {
@@ -1052,6 +1053,10 @@ export default function SanctuarySessionPage() {
         activeStreamRef.current = null;
       }
       setRecordingStream(null);
+      if (pendingText.length > 0) {
+        setInputVal("");
+        handleSendMessage(pendingText);
+      }
       return;
     }
 
@@ -1683,12 +1688,20 @@ export default function SanctuarySessionPage() {
           </button>
         </div>
 
-        {/* SERENE CLINICAL SANCTUARY BACKGROUND — GENTLE AMBIENT GLOW (ZERO SPIN, DISTRACTION-FREE) */}
+        {/* SERENE CLINICAL SANCTUARY BACKGROUND — GENTLE AMBIENT GLOW & ZERO-JITTER AUDIO AURA */}
         <div className="absolute inset-0 pointer-events-none -z-10 overflow-hidden select-none" aria-hidden="true">
           {/* Subtle diffused atmospheric aura glows for depth without any rotating lines or motion sickness */}
           <div className="absolute -top-[15%] left-1/2 -translate-x-1/2 w-[600px] sm:w-[800px] h-[350px] bg-gradient-to-b from-emerald-500/10 via-teal-600/5 to-transparent rounded-full blur-3xl opacity-60" />
           <div className="absolute -bottom-[20%] left-1/2 -translate-x-1/2 w-[550px] sm:w-[700px] h-[350px] bg-gradient-to-t from-emerald-950/20 via-teal-900/10 to-transparent rounded-full blur-3xl opacity-40" />
           <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-amber-500/5 rounded-full blur-3xl opacity-30" />
+
+          {/* AMBIENT BACKGROUND AUDIO WAVEFORM — ZERO LAYOUT SHIFT (ELIMINATES PAGE JITTER) */}
+          <AudioWaveform
+            stream={recordingStream}
+            isRecording={isRecording}
+            isPlayingAudio={isPlayingAudio}
+            isEchoLocked={isEchoLocked}
+          />
         </div>
 
         {/* CHAT STREAM — DIRECTLY ON MAIN STAGE LAYER */}
@@ -1943,6 +1956,46 @@ export default function SanctuarySessionPage() {
         {/* Bottom Area: Fixed Pinned Centered Input Dock */}
         <div className="px-2.5 sm:px-6 py-2.5 sm:py-3.5 shrink-0 flex justify-center bg-slate-950/95 border-t border-slate-800/60 backdrop-blur-2xl relative z-30 shadow-[0_-10px_35px_rgba(0,0,0,0.6)] pb-[max(0.75rem,env(safe-area-inset-bottom))]">
           <div className="max-w-2xl w-full mx-auto">
+            {/* Stable Voice Status Pill - Fixed height, zero layout jitter */}
+            <div className="h-6 flex items-center justify-center pointer-events-none mb-1 text-center select-none" aria-live="polite">
+              <AnimatePresence mode="wait">
+                {isPlayingAudio ? (
+                  <motion.div
+                    key="speaking"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-sky-950/80 border border-sky-800/60 text-sky-300 text-[11px] font-medium backdrop-blur-md shadow-sm"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse" />
+                    <span>Assistant Speaking • Mic Suspended</span>
+                  </motion.div>
+                ) : isEchoLocked ? (
+                  <motion.div
+                    key="echolock"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-950/80 border border-amber-800/60 text-amber-300 text-[11px] font-medium backdrop-blur-md shadow-sm"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+                    <span>Echo Shield Active (200ms)</span>
+                  </motion.div>
+                ) : isRecording ? (
+                  <motion.div
+                    key="recording"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-950/80 border border-emerald-800/60 text-emerald-300 text-[11px] font-medium backdrop-blur-md shadow-sm"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                    <span>Listening actively • Speak freely</span>
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
+            </div>
+
             <div className="rounded-full bg-slate-900/90 border border-slate-700/80 backdrop-blur-xl p-1.5 sm:p-2 flex items-center gap-1.5 sm:gap-2 shadow-[0_10px_35px_rgba(0,0,0,0.6)] focus-within:border-emerald-500/60 focus-within:shadow-[0_0_25px_rgba(16,185,129,0.25)] transition-all">
               {/* Pulsing Mic Button */}
               <button
@@ -2125,16 +2178,6 @@ export default function SanctuarySessionPage() {
                 >
                   {isAiMuted ? "Muted" : "Active"}
                 </button>
-              </div>
-
-              {/* Waveform */}
-              <div className="p-1 rounded-2xl bg-slate-900/40 border border-slate-800/60">
-                <AudioWaveform
-                  stream={recordingStream}
-                  isRecording={isRecording}
-                  isPlayingAudio={isPlayingAudio}
-                  isEchoLocked={isEchoLocked}
-                />
               </div>
 
               {/* Emotion Telemetry */}
@@ -2335,16 +2378,6 @@ export default function SanctuarySessionPage() {
             >
               {isAiMuted ? "Muted" : "Active"}
             </button>
-          </div>
-
-          {/* Real-Time Audio Volume Waveform */}
-          <div className="hidden md:block">
-            <AudioWaveform
-              stream={recordingStream}
-              isRecording={isRecording}
-              isPlayingAudio={isPlayingAudio}
-              isEchoLocked={isEchoLocked}
-            />
           </div>
 
           {/* Dominant Emotion & Diagnostic Card */}

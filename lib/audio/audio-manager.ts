@@ -231,9 +231,8 @@ export class AudioManager {
     const constraints: MediaTrackConstraints = {
       echoCancellation: true,
       noiseSuppression: true,
-      autoGainControl: false, // CRITICAL: Disable to prevent clipping quiet/emotional speech
+      autoGainControl: true,
       channelCount: 1,
-      sampleRate: 24000,
     };
 
     try {

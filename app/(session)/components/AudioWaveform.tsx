@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 
 interface AudioWaveformProps {
   stream: MediaStream | null;
@@ -9,6 +9,11 @@ interface AudioWaveformProps {
   isEchoLocked?: boolean;
 }
 
+/**
+ * Ambient Background Audio Visualizer
+ * Renders in the background with zero layout impact (0px shift, zero jitter).
+ * Smoothly visualizes microphone acoustics and assistant voice synthesis.
+ */
 export const AudioWaveform: React.FC<AudioWaveformProps> = ({
   stream,
   isRecording,
@@ -20,9 +25,6 @@ export const AudioWaveform: React.FC<AudioWaveformProps> = ({
   const analyserRef = useRef<AnalyserNode | null>(null);
   const sourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
   const animationFrameRef = useRef<number | null>(null);
-
-  const [volumeLevel, setVolumeLevel] = useState<number>(0);
-  const [isVoiceActive, setIsVoiceActive] = useState<boolean>(false);
 
   useEffect(() => {
     if (!isRecording || !stream) {
@@ -38,19 +40,19 @@ export const AudioWaveform: React.FC<AudioWaveformProps> = ({
       audioContextRef.current = null;
       analyserRef.current = null;
       sourceRef.current = null;
-      setVolumeLevel(0);
-      setIsVoiceActive(false);
       return;
     }
 
     try {
-      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const AudioCtx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       const audioCtx = new AudioCtx();
       audioContextRef.current = audioCtx;
 
       const analyser = audioCtx.createAnalyser();
       analyser.fftSize = 256;
-      analyser.smoothingTimeConstant = 0.8;
+      analyser.smoothingTimeConstant = 0.82;
       analyserRef.current = analyser;
 
       const source = audioCtx.createMediaStreamSource(stream);
@@ -61,14 +63,23 @@ export const AudioWaveform: React.FC<AudioWaveformProps> = ({
       const dataArray = new Uint8Array(bufferLength);
       const timeDomainArray = new Uint8Array(bufferLength);
 
+      let phase = 0;
+
       const renderWaveform = () => {
-        if (!canvasRef.current || !analyserRef.current) return;
+        if (!canvasRef.current) return;
         const canvas = canvasRef.current;
         const ctx = canvas.getContext("2d");
         if (!ctx) return;
 
-        analyserRef.current.getByteFrequencyData(dataArray);
-        analyserRef.current.getByteTimeDomainData(timeDomainArray);
+        const width = canvas.width;
+        const height = canvas.height;
+
+        ctx.clearRect(0, 0, width, height);
+
+        if (analyserRef.current) {
+          analyserRef.current.getByteFrequencyData(dataArray);
+          analyserRef.current.getByteTimeDomainData(timeDomainArray);
+        }
 
         // Calculate RMS Volume
         let sum = 0;
@@ -77,74 +88,66 @@ export const AudioWaveform: React.FC<AudioWaveformProps> = ({
           sum += val * val;
         }
         const rms = Math.sqrt(sum / bufferLength);
-        const normalizedVol = Math.min(Math.round(rms * 150), 100);
-        setVolumeLevel(normalizedVol);
-        setIsVoiceActive(normalizedVol > 12);
+        const intensity = Math.min(rms * 2.2, 1.0);
 
-        const width = canvas.width;
-        const height = canvas.height;
+        phase += 0.04;
 
-        ctx.clearRect(0, 0, width, height);
+        // Ambient flowing gradient background glow
+        const glowGrad = ctx.createRadialGradient(
+          width / 2,
+          height,
+          10,
+          width / 2,
+          height,
+          width * 0.45
+        );
 
-        // Background subtle glow
-        const bgGrad = ctx.createLinearGradient(0, 0, width, 0);
-        bgGrad.addColorStop(0, "rgba(20, 32, 26, 0.4)");
-        bgGrad.addColorStop(0.5, "rgba(27, 42, 35, 0.7)");
-        bgGrad.addColorStop(1, "rgba(20, 32, 26, 0.4)");
-        ctx.fillStyle = bgGrad;
+        if (isPlayingAudio) {
+          glowGrad.addColorStop(0, "rgba(56, 189, 248, 0.12)");
+          glowGrad.addColorStop(0.6, "rgba(14, 116, 144, 0.04)");
+          glowGrad.addColorStop(1, "transparent");
+        } else if (isEchoLocked) {
+          glowGrad.addColorStop(0, "rgba(245, 158, 11, 0.09)");
+          glowGrad.addColorStop(0.6, "rgba(180, 83, 9, 0.03)");
+          glowGrad.addColorStop(1, "transparent");
+        } else {
+          glowGrad.addColorStop(0, `rgba(16, 185, 129, ${0.06 + intensity * 0.14})`);
+          glowGrad.addColorStop(0.6, "rgba(13, 148, 136, 0.03)");
+          glowGrad.addColorStop(1, "transparent");
+        }
+
+        ctx.fillStyle = glowGrad;
         ctx.fillRect(0, 0, width, height);
 
-        // Draw dynamic audio waveform
-        ctx.lineWidth = 2.5;
-        const strokeGrad = ctx.createLinearGradient(0, 0, width, 0);
-        if (normalizedVol > 12) {
-          strokeGrad.addColorStop(0, "#4ade80");
-          strokeGrad.addColorStop(0.5, "#81a890");
-          strokeGrad.addColorStop(1, "#38bdf8");
-        } else {
-          strokeGrad.addColorStop(0, "#3d584a");
-          strokeGrad.addColorStop(0.5, "#647d70");
-          strokeGrad.addColorStop(1, "#3d584a");
-        }
-        ctx.strokeStyle = strokeGrad;
-        ctx.beginPath();
+        // Harmonic multi-layer ambient waveform lines
+        const layers = [
+          { freq: 0.015, amp: height * (0.15 + intensity * 0.35), color: "rgba(16, 185, 129, 0.4)", width: 2 },
+          { freq: 0.022, amp: height * (0.12 + intensity * 0.28), color: "rgba(45, 212, 191, 0.3)", width: 1.5 },
+          { freq: 0.008, amp: height * (0.08 + intensity * 0.2), color: "rgba(56, 189, 248, 0.2)", width: 1 },
+        ];
 
-        const sliceWidth = width / bufferLength;
-        let x = 0;
-
-        for (let i = 0; i < bufferLength; i++) {
-          const v = timeDomainArray[i] / 128.0;
-          const y = (v * height) / 2;
-
-          if (i === 0) {
-            ctx.moveTo(x, y);
-          } else {
-            ctx.lineTo(x, y);
-          }
-          x += sliceWidth;
-        }
-
-        ctx.lineTo(width, height / 2);
-        ctx.stroke();
-
-        // Draw frequency spectrum bars at the base
-        const barCount = 32;
-        const barWidth = (width / barCount) - 2;
-        const step = Math.floor(bufferLength / barCount);
-
-        for (let i = 0; i < barCount; i++) {
-          const barHeight = (dataArray[i * step] / 255) * (height / 2.2);
-          const barX = i * (barWidth + 2);
-          const barY = height - barHeight;
-
-          const barGrad = ctx.createLinearGradient(0, height, 0, 0);
-          barGrad.addColorStop(0, "rgba(88, 142, 115, 0.3)");
-          barGrad.addColorStop(1, normalizedVol > 12 ? "rgba(129, 168, 144, 0.85)" : "rgba(100, 125, 112, 0.4)");
-
-          ctx.fillStyle = barGrad;
+        for (const layer of layers) {
           ctx.beginPath();
-          ctx.roundRect(barX, barY, barWidth, barHeight, [2, 2, 0, 0]);
-          ctx.fill();
+          ctx.lineWidth = layer.width;
+          ctx.strokeStyle = layer.color;
+
+          const sliceWidth = width / bufferLength;
+          let x = 0;
+
+          for (let i = 0; i < bufferLength; i++) {
+            const audioVal = (timeDomainArray[i] - 128) / 128.0;
+            const sine = Math.sin(x * layer.freq + phase) * layer.amp;
+            const y = height * 0.65 + sine + audioVal * (height * 0.3);
+
+            if (i === 0) {
+              ctx.moveTo(x, y);
+            } else {
+              ctx.lineTo(x, y);
+            }
+            x += sliceWidth;
+          }
+
+          ctx.stroke();
         }
 
         animationFrameRef.current = requestAnimationFrame(renderWaveform);
@@ -152,7 +155,7 @@ export const AudioWaveform: React.FC<AudioWaveformProps> = ({
 
       renderWaveform();
     } catch (err) {
-      console.warn("Waveform AudioContext initialization notice:", err);
+      console.warn("Ambient Waveform AudioContext initialization note:", err);
     }
 
     return () => {
@@ -166,54 +169,25 @@ export const AudioWaveform: React.FC<AudioWaveformProps> = ({
         } catch (_) {}
       }
     };
-  }, [isRecording, stream]);
+  }, [isRecording, stream, isPlayingAudio, isEchoLocked]);
 
   if (!isRecording && !isPlayingAudio && !isEchoLocked) {
     return null;
   }
 
   return (
-    <div className="w-full bg-[#14201a]/95 border border-[#283c32] rounded-xl p-2.5 shadow-lg backdrop-blur-md transition-all animate-fadeIn">
-      <div className="flex items-center justify-between gap-2 mb-1.5 px-1 text-xs">
-        <div className="flex items-center gap-2">
-          {isPlayingAudio ? (
-            <>
-              <span className="w-2 h-2 rounded-full bg-[#38bdf8] animate-pulse" />
-              <span className="text-[#38bdf8] font-medium">Assistant Speaking • Mic Detached</span>
-            </>
-          ) : isEchoLocked ? (
-            <>
-              <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
-              <span className="text-amber-300 font-medium">VAD Echo Grace Period (200ms)...</span>
-            </>
-          ) : isRecording ? (
-            <>
-              <span className={`w-2 h-2 rounded-full ${isVoiceActive ? "bg-emerald-400 animate-ping" : "bg-[#81a890]"}`} />
-              <span className="text-[#9cb5a6] font-medium">
-                {isVoiceActive ? "Voice Active (Speech Captured)" : "Listening • Studio Noise Suppressed"}
-              </span>
-            </>
-          ) : null}
-        </div>
-
-        {isRecording && (
-          <div className="flex items-center gap-2 font-mono text-[11px] text-[#647d70]">
-            <span>Signal: {volumeLevel}%</span>
-            <span className="px-1.5 py-0.5 rounded bg-[#1b2a23] border border-[#283c32] text-[#81a890]">
-              48kHz 16-bit
-            </span>
-          </div>
-        )}
-      </div>
-
-      {isRecording && (
-        <canvas
-          ref={canvasRef}
-          width={640}
-          height={48}
-          className="w-full h-12 rounded-lg bg-[#0c1410] border border-[#22382c]"
-        />
-      )}
+    <div
+      className="pointer-events-none absolute inset-x-0 bottom-0 h-36 md:h-52 overflow-hidden select-none -z-10 transition-opacity duration-700 opacity-70"
+      aria-hidden="true"
+    >
+      <canvas
+        ref={canvasRef}
+        width={1280}
+        height={160}
+        className="w-full h-full object-cover"
+      />
     </div>
   );
 };
+
+export default AudioWaveform;

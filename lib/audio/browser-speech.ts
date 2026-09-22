@@ -242,7 +242,6 @@ export class BrowserSpeechController {
             noiseSuppression: true,
             autoGainControl: true,
             channelCount: 1,
-            sampleRate: 24000,
           },
           video: false,
         });
@@ -326,36 +325,7 @@ export class BrowserSpeechController {
       const avg = sum / bufferLength;
       const normalizedLevel = Math.min(1, avg / 128);
       this.callbacks.onAudioLevel?.(normalizedLevel);
-
-      // Sensitive RMS VAD Threshold (> 7 detects human voice across mobile and desktop)
-      if (avg > 7) {
-        if (!this.isUserSpeaking) {
-          this.isUserSpeaking = true;
-          this.speechStartTime = Date.now();
-        }
-
-        // Reset silence debouncer timer while user continues talking
-        if (this.speechSilenceTimer) {
-          clearTimeout(this.speechSilenceTimer);
-          this.speechSilenceTimer = null;
-        }
-
-        // Max continuous utterance safety cutoff (60 seconds allows full emotional paragraphs without premature cutoff)
-        if (this.speechStartTime && Date.now() - this.speechStartTime > 60000) {
-          if (!this.isProcessingUtterance) {
-            this.handleEndOfUserSpeech();
-          }
-        }
-      } else if (this.isUserSpeaking) {
-        // User stopped speaking: start adaptive silence debouncer
-        if (!this.speechSilenceTimer) {
-          this.speechSilenceTimer = setTimeout(() => {
-            if (this.isUserSpeaking && !this.isProcessingUtterance) {
-              this.handleEndOfUserSpeech();
-            }
-          }, this.silenceTimeoutMs);
-        }
-      }
+      this.isUserSpeaking = avg > 12;
 
       this.animFrameId = requestAnimationFrame(checkAudio);
     };
@@ -389,7 +359,7 @@ export class BrowserSpeechController {
         /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
       const recognition = new SpeechRec();
-      recognition.continuous = !isMobile;
+      recognition.continuous = true;
       recognition.interimResults = true;
       recognition.maxAlternatives = 1;
       const preferredLang =
@@ -429,8 +399,8 @@ export class BrowserSpeechController {
           this.callbacks.onInterimTranscript?.(candidate);
         }
 
-        // Adaptive silence detection: Give users generous room (2800ms) to pause and breathe between phrases
-        const silenceDelay = 2800;
+        // Responsive turn debouncer: 1000ms for finalized sentence boundary, 1500ms for interim pause
+        const silenceDelay = newFinalText.trim().length > 0 ? 1000 : 1500;
         if (this.speechSilenceTimer) {
           clearTimeout(this.speechSilenceTimer);
         }
