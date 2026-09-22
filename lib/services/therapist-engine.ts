@@ -526,15 +526,22 @@ STRICT ANTI-REPETITION CONSTRAINTS:
 
   const systemPrompt = `${THERAPIST_SYSTEM_PROMPT}${langDirective}${currentTurnGroundingDirective}${antiRepetitionDirective}\n\n[CLINICAL RESEARCH & RETRIEVED WISDOM]:\n${contextString}`;
 
+  const isNeutralOrInquiry =
+    !hasDistressKeywords &&
+    emotionDiagnostic.coreAffect.valence >= -0.05 &&
+    (/^(what|how|why|who|when|where|can you|could you|explain|tell me|is this|how does|what is|नमस्ते|प्रणाम)/i.test(userMessage.trim()) ||
+     ['interest', 'aesthetic_appreciation', 'calmness', 'joy', 'amusement', 'adoration', 'satisfaction', 'relief', 'awe', 'entrancement'].includes(emotionDiagnostic.dimensionId));
+
   const hasEmotionalDistressSignal =
-    hasDistressKeywords ||
-    libraryRag !== null ||
-    (emotionDiagnostic.dimensionId !== 'calmness' && emotionDiagnostic.dimensionId !== 'joy' && emotionDiagnostic.dimensionId !== 'amusement' && emotionDiagnostic.dimensionId !== 'adoration') ||
-    emotionDiagnostic.coreAffect.valence < -0.05 ||
-    (emotionDiagnostic.coreAffect.arousal > 0.55 && emotionDiagnostic.coreAffect.valence < 0.2);
+    !isNeutralOrInquiry &&
+    (hasDistressKeywords ||
+     (libraryRag !== null && hasDistressKeywords) ||
+     emotionDiagnostic.coreAffect.valence < -0.1 ||
+     (emotionDiagnostic.coreAffect.arousal > 0.55 && emotionDiagnostic.coreAffect.valence < 0.1));
 
   const hasClinicalDistress =
     !isDirectPositive &&
+    !isNeutralOrInquiry &&
     hasEmotionalDistressSignal;
 
   // Helper to guarantee [GITA_SHLOKA] tags, authentic Sanskrit shloka, and diagnostic summary only when clinical distress is present
@@ -733,7 +740,7 @@ STRICT ANTI-REPETITION CONSTRAINTS:
   }
 
   return {
-    reply: ensureDiagnosticAndGita(fallbackReply, gitaBlock),
+    reply: hasClinicalDistress ? ensureDiagnosticAndGita(fallbackReply, gitaBlock) : fallbackReply,
     sources: hasClinicalDistress ? allSources : [],
     providerUsed: hasClinicalDistress ? "Keyless Healer (Clinical Library Fallback)" : "Conversational Empathy Responder",
     isCrisis: false,

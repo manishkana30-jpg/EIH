@@ -350,11 +350,7 @@ export async function persistLearnedDocuments(): Promise<void> {
       // Non-fatal in Edge runtime or read-only serverless filesystem
     }
   } else {
-    try {
-      window.localStorage.setItem('eih_learned_psychology_docs', JSON.stringify(DYNAMIC_LEARNED_DOCUMENTS));
-    } catch {
-      // Storage quota or private mode
-    }
+    // In browser client runtime: 100% ephemeral in-memory, zero local disk/cache persistence
   }
 }
 

@@ -89,9 +89,9 @@ export const FAQAccordion: React.FC = () => {
         "No. Pratibimb camera processing occurs 100% locally in volatile browser memory using WebRTC. Zero frames, video feeds, or biometric data are transmitted to any external server. All media tracks are immediately destroyed when the session concludes.",
     },
     {
-      question: "How does the Zero-Knowledge Client Vault protect my privacy?",
+      question: "How does the Zero-Retention Ephemeral Privacy protect my confidentiality?",
       answer:
-        "All optional third-party API keys and session transcripts are encrypted client-side using AES-GCM-256 with a unique PBKDF2 device seed in local IndexedDB. Server daemons never receive raw plaintext credentials, and a 1-click panic button permanently wipes all stored data.",
+        "All conversations, audio syntheses, and emotional recognitions exist strictly in volatile RAM for the active turn. Zero chat transcripts or telemetry are saved to disk, IndexedDB, or remote servers, and everything is automatically purged when you close the app or end the session.",
     },
     {
       question: "What should I do if I am experiencing an acute psychological crisis?",

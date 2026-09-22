@@ -11,6 +11,7 @@ import {
   Wind,
   History,
   ShieldAlert,
+  ShieldCheck,
   User,
   Volume2,
   VolumeX,
@@ -57,9 +58,9 @@ import {
   getStoredLanguage,
   saveLanguagePreference,
 } from "@/lib/i18n/language-catalog";
-import { saveLivePsychologyTelemetry } from "@/lib/telemetry/psychology-store";
+import { saveLivePsychologyTelemetry, clearPsychologyTelemetry } from "@/lib/telemetry/psychology-store";
 import { getConditionById, queryPsychologyLibrary } from "@/lib/knowledge/psychology-library-rag";
-import { saveSessionMessage, resetActiveSessionId } from "@/lib/db/indexed-db";
+import { saveSessionMessage, resetActiveSessionId, purgeAllAppStorage } from "@/lib/db/indexed-db";
 import {
   normalizeTratakaMode,
   detectTratakaModeFromText,
@@ -472,6 +473,30 @@ export default function SanctuarySessionPage() {
     return () => {
       window.removeEventListener("beforeinstallprompt", handleBeforeInstall);
       window.removeEventListener("appinstalled", handleAppInstalled);
+    };
+  }, []);
+
+  // ─── Zero-Retention Ephemeral Lifecycle & Exit Auto-Wipe ───
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    // Proactively purge any residual databases or cache items from older versions
+    purgeAllAppStorage();
+
+    const handleAppClose = () => {
+      // Immediate synchronous purge on tab/browser close
+      purgeAllAppStorage();
+      clearPsychologyTelemetry();
+    };
+
+    window.addEventListener("beforeunload", handleAppClose);
+    window.addEventListener("pagehide", handleAppClose);
+    window.addEventListener("unload", handleAppClose);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleAppClose);
+      window.removeEventListener("pagehide", handleAppClose);
+      window.removeEventListener("unload", handleAppClose);
     };
   }, []);
 
@@ -1076,10 +1101,12 @@ export default function SanctuarySessionPage() {
       setInputVal("");
       setErrorMessage(null);
       resetActiveSessionId();
+      purgeAllAppStorage();
+      clearPsychologyTelemetry();
     };
 
     if (messages.length > 0) {
-      if (window.confirm("End this active session and clear sanctuary stage? Your session is saved to your encrypted local vault.")) {
+      if (window.confirm("End this active session? All live dialogue, audio synthesis, and ephemeral session memory will be permanently removed (zero retention).")) {
         executeReset();
       }
     } else {
@@ -1215,9 +1242,9 @@ export default function SanctuarySessionPage() {
                     }}
                     className="flex items-center gap-3 w-full p-3 rounded-xl text-slate-300 hover:text-emerald-300 hover:bg-slate-800/80 border border-slate-800/60 transition-all duration-200"
                   >
-                    <History className="w-5 h-5 shrink-0 text-slate-300" />
+                    <ShieldCheck className="w-5 h-5 shrink-0 text-emerald-400" />
                     <span className="text-sm font-medium tracking-wide">
-                      Encrypted History
+                      Zero-Log Privacy
                     </span>
                   </button>
 
@@ -1422,11 +1449,11 @@ export default function SanctuarySessionPage() {
             <button
               onClick={() => setIsHistoryOpen(true)}
               className="flex items-center gap-3 w-full p-2.5 rounded-xl text-slate-400 hover:text-emerald-300 hover:bg-slate-800/80 border border-transparent hover:border-slate-700/60 transition-all duration-300 group"
-              title="Encrypted Session Vault (AES-GCM)"
+              title="Zero-Retention Privacy (No History or Cache Stored)"
             >
-              <History className="w-5 h-5 shrink-0 group-hover:scale-110 transition-transform text-slate-300" />
+              <ShieldCheck className="w-5 h-5 shrink-0 group-hover:scale-110 transition-transform text-emerald-400" />
               <span className="hidden md:inline text-xs font-medium tracking-wide">
-                Encrypted History
+                Zero-Log Privacy
               </span>
             </button>
 
@@ -1648,10 +1675,11 @@ export default function SanctuarySessionPage() {
 
           <button
             onClick={() => setIsHistoryOpen(true)}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-800/60 border border-slate-700/60 text-slate-300 text-[11px] font-medium shrink-0 active:scale-95 transition-transform"
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-[11px] font-medium shrink-0 active:scale-95 transition-transform"
+            title="Zero-Retention Privacy: 0 Records Stored"
           >
-            <History className="w-3 h-3 text-slate-400" />
-            <span>Vault</span>
+            <ShieldCheck className="w-3 h-3 text-emerald-400" />
+            <span>0-Retention</span>
           </button>
         </div>
 

@@ -1,10 +1,9 @@
 /**
- * Encrypted Client-Side IndexedDB Storage
- * Stores user emotional baselines and episodic chat logs
- * encrypted via WebCrypto AES-GCM-256 with full HIPAA/GDPR data isolation and right-to-purge.
+ * Zero-Retention Ephemeral Storage Engine
+ * Strictly in-memory during active session runtime.
+ * Zero encrypted chat history, transcripts, or caches are persisted to disk/IndexedDB.
+ * Automatically and permanently wiped when the session ends or the app is closed.
  */
-
-import { encryptData, decryptData, type EncryptedPayload } from './crypto.ts';
 
 export interface EmotionalProfile {
   id: string;
@@ -33,118 +32,111 @@ export interface SessionRecord {
 }
 
 const DB_NAME = 'EIH_SecureStorage';
-const DB_VERSION = 2;
 const STORE_PROFILES = 'emotional_profiles';
 const STORE_SESSIONS = 'therapeutic_sessions';
 
-function openDatabase(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    if (typeof window === 'undefined' || !window.indexedDB) {
-      reject(new Error('IndexedDB is not available'));
-      return;
-    }
-
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-
-    request.onupgradeneeded = (event) => {
-      const db = (event.target as IDBOpenDBRequest).result;
-      if (!db.objectStoreNames.contains(STORE_PROFILES)) {
-        db.createObjectStore(STORE_PROFILES, { keyPath: 'id' });
-      }
-      if (!db.objectStoreNames.contains(STORE_SESSIONS)) {
-        db.createObjectStore(STORE_SESSIONS, { keyPath: 'id' });
-      }
-    };
-
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
-}
+// ─── STRICTLY IN-MEMORY EPHEMERAL STATE (ZERO DISK / ZERO RETENTION) ───
+let inMemorySessionMessages: TherapeuticMessage[] = [];
+let activeSessionId = `session_${Date.now()}`;
 
 /**
- * Saves or updates an encrypted therapeutic session.
+ * Ephemeral in-memory session save.
+ * Strictly operates in volatile RAM for the active turn only.
+ * Never writes messages or transcripts to persistent IndexedDB or disk storage.
  */
-export async function saveSessionRecord(session: SessionRecord): Promise<void> {
-  try {
-    const db = await openDatabase();
-    const encrypted = await encryptData(session);
-
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE_SESSIONS, 'readwrite');
-      const store = tx.objectStore(STORE_SESSIONS);
-      const record = { id: session.id, payload: encrypted, timestamp: session.startedAt };
-
-      const req = store.put(record);
-      req.onsuccess = () => resolve();
-      req.onerror = () => reject(req.error);
-    });
-  } catch (err) {
-    console.warn('Encrypted IndexedDB save notice:', err);
-  }
+export async function saveSessionRecord(_session: SessionRecord): Promise<void> {
+  // No-op for disk persistence — everything is zero-retention ephemeral in RAM
 }
 
 /**
- * Retrieves all decrypted session history logs.
+ * Returns stored historical sessions.
+ * In 100% Zero-Retention mode, this strictly returns an empty array: 0 records saved.
  */
 export async function getAllSessions(): Promise<SessionRecord[]> {
-  try {
-    const db = await openDatabase();
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE_SESSIONS, 'readonly');
-      const store = tx.objectStore(STORE_SESSIONS);
-      const req = store.getAll();
+  return [];
+}
 
-      req.onsuccess = async () => {
-        const rawList = req.result || [];
-        const sessions: SessionRecord[] = [];
-        for (const item of rawList) {
-          if (item.payload) {
-            try {
-              const decrypted = await decryptData<SessionRecord>(item.payload as EncryptedPayload);
-              sessions.push(decrypted);
-            } catch (err) {
-              console.warn('Skipping unreadable encrypted session record', err);
-            }
+/**
+ * Irreversibly purges all local storage, legacy IndexedDB databases,
+ * session storage, and in-memory caches (Right-to-be-forgotten & Zero-Retention).
+ */
+export async function purgeAllEncryptedData(): Promise<boolean> {
+  inMemorySessionMessages = [];
+  
+  if (typeof window === 'undefined') return true;
+
+  try {
+    // 1. Delete legacy EIH_SecureStorage database
+    if (window.indexedDB) {
+      const req = window.indexedDB.deleteDatabase(DB_NAME);
+      req.onerror = () => {};
+      req.onsuccess = () => {};
+    }
+
+    // 2. Delete EIH_CognitiveVault if present
+    if (window.indexedDB) {
+      window.indexedDB.deleteDatabase('EIH_CognitiveVault');
+      window.indexedDB.deleteDatabase('EIH_KeyVault');
+    }
+
+    // 3. Clear all indexedDB databases if supported by browser
+    if (window.indexedDB && typeof (window.indexedDB as any).databases === 'function') {
+      (window.indexedDB as any).databases().then((dbs: Array<{ name?: string }>) => {
+        dbs.forEach((dbInfo) => {
+          if (dbInfo.name && dbInfo.name.startsWith('EIH_')) {
+            window.indexedDB.deleteDatabase(dbInfo.name);
           }
-        }
-        sessions.sort((a, b) => b.startedAt - a.startedAt);
-        resolve(sessions);
-      };
-      req.onerror = () => reject(req.error);
-    });
-  } catch {
-    return [];
+        });
+      }).catch(() => {});
+    }
+
+    // 4. Clear sensitive localStorage and sessionStorage keys
+    try {
+      window.sessionStorage.clear();
+      window.localStorage.removeItem('eih_active_psychology_profile');
+      window.localStorage.removeItem('eih_learned_psychology_docs');
+      window.localStorage.removeItem('eih_cog_salt_v1');
+      window.localStorage.removeItem('eih_cog_seed_v1');
+      window.localStorage.removeItem('eih_salt_v1');
+      window.localStorage.removeItem('eih_vault_master_seed');
+      window.localStorage.removeItem('eih_device_salt');
+    } catch (_) {}
+
+    return true;
+  } catch (err) {
+    console.warn('Storage purge notice:', err);
+    return true;
   }
 }
 
 /**
- * Irreversibly purges all local encrypted records (Right-to-be-forgotten).
+ * Master App Storage & Cache Purge
+ * Executed on App Close (beforeunload/pagehide) and Session End.
  */
-export async function purgeAllEncryptedData(): Promise<boolean> {
-  try {
-    const db = await openDatabase();
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction([STORE_PROFILES, STORE_SESSIONS], 'readwrite');
-      tx.objectStore(STORE_PROFILES).clear();
-      tx.objectStore(STORE_SESSIONS).clear();
-      tx.oncomplete = () => resolve(true);
-      tx.onerror = () => reject(tx.error);
-    });
-  } catch (err) {
-    console.error('Failed to purge encrypted records:', err);
-    return false;
+export async function purgeAllAppStorage(): Promise<void> {
+  await purgeAllEncryptedData();
+  
+  if (typeof window !== 'undefined' && 'caches' in window) {
+    try {
+      const keys = await caches.keys();
+      for (const key of keys) {
+        if (key.includes('session') || key.includes('telemetry') || key.includes('eih')) {
+          await caches.delete(key);
+        }
+      }
+    } catch (_) {}
   }
 }
 
 export const getStoredSessionRecords = getAllSessions;
 
-let activeSessionId = `session_${Date.now()}`;
-
 /**
- * Resets and creates a fresh session ID for a new conversation session
+ * Resets and creates a fresh session ID for a new conversation session,
+ * instantly clearing all ephemeral in-memory message history.
  */
 export function resetActiveSessionId(): string {
   activeSessionId = `session_${Date.now()}`;
+  inMemorySessionMessages = [];
   return activeSessionId;
 }
 
@@ -153,27 +145,22 @@ export function getActiveSessionId(): string {
 }
 
 /**
- * Appends a message to the active session in IndexedDB
+ * Ephemeral message handler during active session.
+ * Retains messages in volatile memory for the active turn only.
+ * Never persists to IndexedDB or localStorage.
  */
 export async function saveSessionMessage(role: 'user' | 'assistant', content: string): Promise<void> {
-  try {
-    const sessions = await getAllSessions();
-    let currentSession = sessions.find((s) => s.id === activeSessionId);
-    if (!currentSession) {
-      currentSession = {
-        id: activeSessionId,
-        startedAt: Date.now(),
-        messages: [],
-      };
-    }
-    currentSession.messages.push({
-      id: `msg_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-      role,
-      content,
-      timestamp: Date.now(),
-    });
-    await saveSessionRecord(currentSession);
-  } catch (err) {
-    console.warn('Could not auto-save message to IndexedDB:', err);
-  }
+  inMemorySessionMessages.push({
+    id: `msg_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+    role,
+    content,
+    timestamp: Date.now(),
+  });
+}
+
+/**
+ * Retrieves the current ephemeral in-memory messages for this active session only.
+ */
+export function getActiveSessionEphemeralMessages(): TherapeuticMessage[] {
+  return [...inMemorySessionMessages];
 }

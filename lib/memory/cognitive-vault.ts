@@ -225,171 +225,71 @@ export class CognitiveVault {
   }
 
   /**
-   * Encrypts and persists a new CBT Thought Record.
+   * Ephemeral thought record retention for active session only.
+   * Stored in volatile RAM, never written to disk/IndexedDB.
    */
   public async saveThoughtRecord(record: CBTThoughtRecord): Promise<void> {
-    if (typeof window === 'undefined') return;
-
     try {
       const sanitizedRecord: CBTThoughtRecord = {
         ...record,
         triggerEvent: sanitizeBreakthroughPhrase(record.triggerEvent),
         automaticThought: sanitizeBreakthroughPhrase(record.automaticThought),
       };
-
-      const encrypted = await encryptData(JSON.stringify(sanitizedRecord));
-
-      try {
-        const db = await openCognitiveDB();
-        await new Promise<void>((resolve, reject) => {
-          const tx = db.transaction(STORE_RECORDS, 'readwrite');
-          const store = tx.objectStore(STORE_RECORDS);
-          const req = store.put({ id: sanitizedRecord.id, payload: encrypted, timestamp: sanitizedRecord.timestamp });
-          req.onsuccess = () => resolve();
-          req.onerror = () => reject(req.error);
-        });
-      } catch (idbErr) {
-        // Quota or private browsing fallback
-        inMemoryFallbackStore.set(`record_${sanitizedRecord.id}`, sanitizedRecord);
-      }
+      inMemoryFallbackStore.set(`record_${sanitizedRecord.id}`, sanitizedRecord);
     } catch (e) {
-      console.warn('CognitiveVault: Thought record save note:', e);
+      console.warn('CognitiveVault: Thought record note:', e);
     }
   }
 
   /**
-   * Decrypts and retrieves stored CBT Thought Records.
+   * Retrieves all recent thought records from active in-memory session.
    */
-  public async getThoughtRecords(limit = 20): Promise<CBTThoughtRecord[]> {
-    if (typeof window === 'undefined') return [];
-
-    try {
-      let rawRecords: Array<{ payload?: unknown; [key: string]: unknown }> = [];
-      try {
-        const db = await openCognitiveDB();
-        rawRecords = await new Promise((resolve, reject) => {
-          const tx = db.transaction(STORE_RECORDS, 'readonly');
-          const store = tx.objectStore(STORE_RECORDS);
-          const req = store.getAll();
-          req.onsuccess = () => resolve((req.result as Array<{ payload?: unknown }>) || []);
-          req.onerror = () => reject(req.error);
-        });
-      } catch (_) {
-        // Use in-memory fallback
-        return Array.from(inMemoryFallbackStore.values())
-          .filter((v): v is CBTThoughtRecord => Boolean(v && typeof v === 'object' && 'id' in v && 'triggerEvent' in v))
-          .slice(-limit);
+  public async getRecentThoughtRecords(limit = 10): Promise<CBTThoughtRecord[]> {
+    const records: CBTThoughtRecord[] = [];
+    for (const [k, v] of inMemoryFallbackStore.entries()) {
+      if (k.startsWith('record_')) {
+        records.push(v as CBTThoughtRecord);
       }
-
-      const decryptedList: CBTThoughtRecord[] = [];
-      for (const item of rawRecords.slice(-limit)) {
-        if (item.payload && typeof item.payload === 'object' && 'ciphertext' in item.payload) {
-          try {
-            const jsonStr = await decryptData(item.payload as EncryptedPayload);
-            decryptedList.push(JSON.parse(jsonStr) as CBTThoughtRecord);
-          } catch (_) {}
-        }
-      }
-      return decryptedList;
-    } catch (e) {
-      console.warn('CognitiveVault: getThoughtRecords note:', e);
-      return [];
     }
+    records.sort((a, b) => b.timestamp - a.timestamp);
+    return records.slice(0, limit);
   }
 
   /**
-   * Retrieves the active decrypted User Cognitive Profile.
+   * Decrypts and retrieves the User Cognitive Profile strictly from volatile RAM.
    */
   public async getCognitiveProfile(): Promise<UserCognitiveProfile> {
     if (this.memoryCacheProfile) {
       return this.memoryCacheProfile;
     }
-
-    if (typeof window === 'undefined') {
-      return { ...DEFAULT_PROFILE };
-    }
-
-    try {
-      let rawProfile: { payload?: unknown } | null = null;
-      try {
-        const db = await openCognitiveDB();
-        rawProfile = await new Promise((resolve, reject) => {
-          const tx = db.transaction(STORE_PROFILE, 'readonly');
-          const store = tx.objectStore(STORE_PROFILE);
-          const req = store.get(PROFILE_KEY);
-          req.onsuccess = () => resolve(req.result as { payload?: unknown } | null);
-          req.onerror = () => reject(req.error);
-        });
-      } catch (_) {
-        rawProfile = inMemoryFallbackStore.get(PROFILE_KEY) as { payload?: unknown } | null;
-      }
-
-      if (!rawProfile || !rawProfile.payload) {
-        this.memoryCacheProfile = { ...DEFAULT_PROFILE };
-        return this.memoryCacheProfile;
-      }
-
-      const jsonStr = await decryptData(rawProfile.payload as EncryptedPayload);
-      const parsed = JSON.parse(jsonStr) as UserCognitiveProfile;
-      this.memoryCacheProfile = parsed;
-      return parsed;
-    } catch (e) {
-      console.warn('CognitiveVault: Profile retrieval note:', e);
-      return { ...DEFAULT_PROFILE };
-    }
+    this.memoryCacheProfile = { ...DEFAULT_PROFILE };
+    return this.memoryCacheProfile;
   }
 
   /**
-   * Updates and re-encrypts the User Cognitive Profile with newly learned insights.
+   * Updates User Cognitive Profile in volatile memory for the active turn only.
    */
   public async updateProfileWithLearning(delta: Partial<UserCognitiveProfile>): Promise<void> {
-    // Prevent concurrency race conditions
-    if (this.isWriting) {
-      await new Promise((r) => setTimeout(r, 40));
+    const current = await this.getCognitiveProfile();
+    const updated: UserCognitiveProfile = {
+      ...current,
+      ...delta,
+      lastUpdated: Date.now(),
+    };
+
+    if (updated.breakthroughAnchors) {
+      updated.breakthroughAnchors = updated.breakthroughAnchors.map((b) => ({
+        ...b,
+        insightPhrase: sanitizeBreakthroughPhrase(b.insightPhrase),
+        contextTrigger: sanitizeBreakthroughPhrase(b.contextTrigger),
+      }));
     }
-    this.isWriting = true;
 
-    try {
-      const current = await this.getCognitiveProfile();
-      const updated: UserCognitiveProfile = {
-        ...current,
-        ...delta,
-        lastUpdated: Date.now(),
-      };
-
-      // Sanitize all breakthrough phrases
-      if (updated.breakthroughAnchors) {
-        updated.breakthroughAnchors = updated.breakthroughAnchors.map((b) => ({
-          ...b,
-          insightPhrase: sanitizeBreakthroughPhrase(b.insightPhrase),
-          contextTrigger: sanitizeBreakthroughPhrase(b.contextTrigger),
-        }));
-      }
-
-      this.memoryCacheProfile = updated;
-
-      if (typeof window !== 'undefined') {
-        const encrypted = await encryptData(JSON.stringify(updated));
-        try {
-          const db = await openCognitiveDB();
-          await new Promise<void>((resolve, reject) => {
-            const tx = db.transaction(STORE_PROFILE, 'readwrite');
-            const store = tx.objectStore(STORE_PROFILE);
-            const req = store.put({ id: PROFILE_KEY, payload: encrypted, timestamp: Date.now() });
-            req.onsuccess = () => resolve();
-            req.onerror = () => reject(req.error);
-          });
-        } catch (_) {
-          inMemoryFallbackStore.set(PROFILE_KEY, { id: PROFILE_KEY, payload: encrypted });
-        }
-      }
-    } finally {
-      this.isWriting = false;
-    }
+    this.memoryCacheProfile = updated;
   }
 
   /**
-   * Erases all encrypted memory from IndexedDB and clears memory cache (Zero-Knowledge Purge).
+   * Erases all ephemeral memory from volatile RAM and deletes any legacy IndexedDB databases.
    */
   public async purgeAllMemory(): Promise<void> {
     this.memoryCacheProfile = { ...DEFAULT_PROFILE };
@@ -400,17 +300,10 @@ export class CognitiveVault {
     if (typeof window === 'undefined') return;
 
     try {
-      const db = await openCognitiveDB();
-      await new Promise<void>((resolve, reject) => {
-        const tx = db.transaction([STORE_RECORDS, STORE_PROFILE], 'readwrite');
-        tx.objectStore(STORE_RECORDS).clear();
-        tx.objectStore(STORE_PROFILE).clear();
-        tx.oncomplete = () => resolve();
-        tx.onerror = () => reject(tx.error);
-      });
-    } catch (e) {
-      console.warn('CognitiveVault: Memory purge note:', e);
-    }
+      if (window.indexedDB) {
+        window.indexedDB.deleteDatabase(DB_NAME);
+      }
+    } catch (_) {}
   }
 }
 
