@@ -49,6 +49,7 @@ const GitaContemplationModal = dynamic(() => import("./components/GitaContemplat
 const PwaInstallModal = dynamic(() => import("./components/PwaInstallModal").then(m => m.PwaInstallModal ? { default: m.PwaInstallModal } : m), { ssr: false });
 
 import { browserSpeechController } from "@/lib/audio/browser-speech";
+import { VoiceAcousticState } from "@/lib/types/emotions";
 import { getCleanAudioStream } from "@/lib/audio/audio-manager";
 import {
   GLOBAL_LANGUAGE_CATALOG,
@@ -424,6 +425,11 @@ export default function SanctuarySessionPage() {
   });
   const [recommendedTrataka, setRecommendedTrataka] = useState<string>("bindu");
   const [activeTriguna, setActiveTriguna] = useState<TrigunaAnalysis | null>(null);
+  const [activeVoiceState, setActiveVoiceState] = useState<VoiceAcousticState | null>(null);
+  const activeVoiceStateRef = useRef<VoiceAcousticState | null>(null);
+  useEffect(() => {
+    activeVoiceStateRef.current = activeVoiceState;
+  }, [activeVoiceState]);
 
   // Dynamically resolve active CBT Reframe for Trataka Neuroplastic Phase (current turn only, avoiding ghost reframes)
   const activeCbtReframe = React.useMemo(() => {
@@ -750,6 +756,9 @@ export default function SanctuarySessionPage() {
 
     browserSpeechController.setCallbacks({
       onWordBoundary: handleWordBoundary,
+      onVoiceStateUpdate: (vs) => {
+        setActiveVoiceState(vs);
+      },
     });
 
     browserSpeechController.stopRecognition();
@@ -867,7 +876,7 @@ export default function SanctuarySessionPage() {
   }, []);
 
   // ─── Send Message Handler ───
-  const handleSendMessage = async (textToSend?: string) => {
+  const handleSendMessage = async (textToSend?: string, voiceState?: VoiceAcousticState) => {
     const messageText = (textToSend !== undefined ? textToSend : inputVal).trim();
     if (!messageText || isSendingRef.current) return;
 
@@ -925,7 +934,8 @@ export default function SanctuarySessionPage() {
         historyPayload,
         true,
         currentLanguageRef.current.code,
-        userLocaleRef.current
+        userLocaleRef.current,
+        voiceState || activeVoiceStateRef.current || undefined
       );
 
       const detectedTrataka = detectTratakaModeFromText(response.reply);
@@ -1004,13 +1014,16 @@ export default function SanctuarySessionPage() {
       isVoiceModeActiveRef.current = true;
 
       await browserSpeechController.startListening(
-        (transcript, isFinal) => {
+        (transcript, isFinal, voiceState) => {
+          if (voiceState) {
+            setActiveVoiceState(voiceState);
+          }
           if (isFinal && transcript.trim().length > 0) {
             setInputVal("");
             if (typeof document !== "undefined" && document.activeElement instanceof HTMLElement) {
               document.activeElement.blur();
             }
-            handleSendMessage(transcript.trim());
+            handleSendMessage(transcript.trim(), voiceState || activeVoiceStateRef.current || undefined);
           } else if (transcript.trim().length > 0) {
             setInputVal(transcript);
           }
@@ -1930,7 +1943,15 @@ export default function SanctuarySessionPage() {
                     className="flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-950/80 border border-emerald-800/60 text-emerald-300 text-[11px] font-medium backdrop-blur-md shadow-sm"
                   >
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                    <span>Listening actively • Speak freely</span>
+                    <span>
+                      {activeVoiceState && activeVoiceState.state === 'trembling_distress'
+                        ? "Attuned listening • Vocal tremor detected, take your time"
+                        : activeVoiceState && activeVoiceState.state === 'acute_hyperarousal'
+                        ? "Active listening • Elevated vocal tension, breathe softly"
+                        : activeVoiceState && activeVoiceState.state === 'hypoarousal_depressed'
+                        ? "Gentle listening • Flat vocal energy, no hurry at all"
+                        : "Listening word-by-word • Speak freely at your own pace"}
+                    </span>
                   </motion.div>
                 ) : null}
               </AnimatePresence>
@@ -2168,6 +2189,12 @@ export default function SanctuarySessionPage() {
                       {telemetry.cbt_distortion}
                     </span>
                   </div>
+                  <div className="flex items-center justify-between text-slate-400">
+                    <span>Voice State:</span>
+                    <span className="text-sky-300 font-medium truncate max-w-[150px]" title={activeVoiceState?.description || telemetry.voice_state || "Stable vocal resonance"}>
+                      {activeVoiceState?.description || telemetry.voice_state || "Stable resonance"}
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -2350,6 +2377,12 @@ export default function SanctuarySessionPage() {
                 <span>Distortion:</span>
                 <span className="text-amber-300 font-medium truncate max-w-[140px]">
                   {telemetry.cbt_distortion}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-slate-400">
+                <span>Voice State:</span>
+                <span className="text-sky-300 font-medium truncate max-w-[140px]" title={activeVoiceState?.description || telemetry.voice_state || "Stable vocal resonance"}>
+                  {activeVoiceState?.description || telemetry.voice_state || "Stable resonance"}
                 </span>
               </div>
             </div>

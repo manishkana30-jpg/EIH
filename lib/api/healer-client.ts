@@ -25,6 +25,8 @@ import {
   normalizeTratakaMode,
 } from '../knowledge/trataka-recommendations';
 
+import { VoiceAcousticState } from '../types/emotions';
+
 export interface ClinicalSource {
   title: string;
   summary?: string;
@@ -38,6 +40,7 @@ export interface PsychologicalTelemetry {
   cbt_distortion: string;
   percentages: Record<string, number>;
   strategy: string;
+  voice_state?: string;
 }
 
 export interface TrigunaAnalysis {
@@ -163,7 +166,8 @@ class HealerBackendClient {
     history?: ChatHistoryItem[],
     voiceMode: boolean = true,
     language?: string,
-    locale?: string
+    locale?: string,
+    voiceState?: VoiceAcousticState
   ): Promise<ChatResponse> {
     const cleanMessage = message.trim();
 
@@ -185,6 +189,7 @@ class HealerBackendClient {
           cbt_distortion: 'Catastrophizing',
           percentages: { Distress: 95, Anxiety: 85, Calmness: 5 },
           strategy: 'Emergency Crisis De-escalation Protocol',
+          voice_state: voiceState?.description || 'Acoustic crisis biomarker detected',
         },
       };
     }
@@ -203,6 +208,7 @@ class HealerBackendClient {
           cbt_distortion: 'None',
           percentages: { Calmness: 100 },
           strategy: 'Audio hardware validated successfully.',
+          voice_state: voiceState?.description || 'Microphone diagnostic active',
         },
       };
     }
@@ -220,6 +226,7 @@ class HealerBackendClient {
           cbt_distortion: 'None',
           percentages: { Calmness: 90, Receptivity: 85 },
           strategy: 'Warm compassionate reception and clinical readiness.',
+          voice_state: voiceState?.description || 'Attuned vocal connection',
         },
       };
     }
@@ -237,6 +244,7 @@ class HealerBackendClient {
           cbt_distortion: 'None',
           percentages: { Receptivity: 95, Attentiveness: 90 },
           strategy: 'Active listening and gentle clarification prompt for incomplete speech.',
+          voice_state: voiceState?.description || 'Attentive listening pause',
         },
       };
     }
@@ -263,6 +271,7 @@ class HealerBackendClient {
             voice_mode: voiceMode,
             language: hasDevanagari ? 'hi' : (language || undefined),
             locale: resolvedLocale,
+            voice_state: voiceState,
           }),
           signal: controller.signal,
         });
@@ -302,6 +311,7 @@ class HealerBackendClient {
           history: history?.map((h) => ({ role: h.sender === 'ai' ? 'assistant' : 'user', content: h.text })),
           language: hasDevanagari ? 'hi' : (language || undefined),
           locale: resolvedLocale,
+          voice_state: voiceState,
         }),
         signal: controller.signal,
       });
@@ -310,7 +320,7 @@ class HealerBackendClient {
       if (res.ok) {
         const data = await res.json();
         if (data.reply) {
-          const diag = emotionClassifier.classifyText(cleanMessage);
+          const diag = emotionClassifier.classifyText(cleanMessage, voiceState);
           const libRes = queryPsychologyLibrary(cleanMessage);
           const arousal = diag.coreAffect?.arousal || 0.5;
           const polyvagalState = arousal > 0.6 ? 'Sympathetic (Fight/Flight)' : (diag.coreAffect?.valence && diag.coreAffect.valence < -0.4) ? 'Dorsal Vagal (Shutdown)' : 'Ventral Vagal (Safe)';
@@ -361,6 +371,7 @@ class HealerBackendClient {
               cbt_distortion: distortion,
               percentages: compositePercentages,
               strategy: `Regulate ${polyvagalState} and apply targeted clinical grounding for ${diag.dimensionName || 'emotional balance'}.`,
+              voice_state: voiceState?.description || 'Stable vocal resonance',
             },
           };
         }
@@ -371,7 +382,7 @@ class HealerBackendClient {
 
     // TIER 3: Pure Keyless Client-Side Fallback (100% Offline & Network Resilient)
     try {
-      const diag = emotionClassifier.classifyText(cleanMessage);
+      const diag = emotionClassifier.classifyText(cleanMessage, voiceState);
       const libraryResult = queryPsychologyLibrary(cleanMessage);
       const study = getResearchedAdviceForEmotion(diag.dimensionId || 'calmness');
       const arousal = diag.coreAffect?.arousal || 0.5;
@@ -405,8 +416,15 @@ class HealerBackendClient {
          diag.dimensionId === 'interest' ||
          (diag.coreAffect?.valence !== undefined && diag.coreAffect.valence >= 0.15));
 
+      const hasAcousticDistress =
+        voiceState?.state === 'trembling_distress' ||
+        voiceState?.tremorDetected ||
+        voiceState?.state === 'acute_hyperarousal' ||
+        (voiceState?.state === 'hypoarousal_depressed' && !isPositiveOrNeutral);
+
       const hasEmotionalDistressSignal =
         hasDistressKeywords ||
+        hasAcousticDistress ||
         libraryResult !== null ||
         (diag.dimensionId !== 'calmness' && diag.dimensionId !== 'joy' && diag.dimensionId !== 'amusement' && diag.dimensionId !== 'adoration') ||
         (diag.coreAffect?.valence !== undefined && diag.coreAffect.valence < -0.05) ||
@@ -424,6 +442,35 @@ class HealerBackendClient {
           fallbackReply = getLocalizedGeneralAdvice(diag.dimensionName || 'anxiety', targetLang, cleanMessage);
         } else {
           fallbackReply = getLocalizedGeneralAdvice('default', targetLang, cleanMessage);
+        }
+
+        // Empathetically attune to physiological vocal indicators (tremor, strain, flat exhaustion)
+        const hasVoiceTremble = voiceState?.tremorDetected || voiceState?.state === 'trembling_distress';
+        const hasVoiceHypo = voiceState?.state === 'hypoarousal_depressed';
+
+        let voiceWarmup = '';
+        if (hasVoiceTremble) {
+          if (targetLang === 'hi') {
+            voiceWarmup = "मैं आपकी आवाज़ में घबराहट और कंपकंपी महसूस कर सकता हूँ। बिल्कुल आराम से एक गहरी, धीमी सांस लें—आप यहाँ पूरी तरह सुरक्षित हैं।\n\n";
+          } else if (targetLang === 'es') {
+            voiceWarmup = "Puedo percibir el temblor y la tensión en tu voz. Toma una respiración suave y pausada conmigo; estás en un espacio seguro.\n\n";
+          } else if (targetLang === 'fr') {
+            voiceWarmup = "J'entends le tremblement et la tension dans votre voix. Prenez une inspiration lente et profonde avec moi ; vous êtes en sécurité.\n\n";
+          } else if (targetLang === 'de') {
+            voiceWarmup = "Ich spüre das Zittern und die Anspannung in Ihrer Stimme. Atmen Sie in aller Ruhe tief durch; Sie sind in Sicherheit.\n\n";
+          } else {
+            voiceWarmup = "I can hear the tremble and strain in your voice. Take a slow, gentle breath with me right now; you are in a safe, unhurried space.\n\n";
+          }
+        } else if (hasVoiceHypo) {
+          if (targetLang === 'hi') {
+            voiceWarmup = "मैं आपकी आवाज़ में गहरी थकान और भारीपन महसूस कर रहा हूँ। किसी भी चीज़ में जल्दबाज़ी करने की ज़रूरत नहीं है; आराम से अपनी बात कहें।\n\n";
+          } else {
+            voiceWarmup = "I hear the deep heaviness and exhaustion in your voice. You don't have to carry this alone or rush; take all the time you need.\n\n";
+          }
+        }
+
+        if (voiceWarmup && !fallbackReply.includes(voiceWarmup.trim())) {
+          fallbackReply = voiceWarmup + fallbackReply;
         }
       } else {
         const isCelebratoryOrRomance = /(girlfriend|boyfriend|dating|in love|new partner|promoted|won|passed|celebrat|खुशखबरी|गर्लफ्रेंड|बॉयफ्रेंड)/i.test(cleanMessage);
@@ -524,6 +571,7 @@ class HealerBackendClient {
           strategy: hasClinicalDistress
             ? `Somatic stabilization and evidence-based grounding for ${diag.dimensionName || 'emotional resilience'}.`
             : `Supportive presence and attuned awareness for ${diag.dimensionName || 'calmness'}.`,
+          voice_state: voiceState?.description || 'Stable vocal resonance',
         },
       };
     } catch (finalErr) {

@@ -11,15 +11,20 @@
 
 import { getBestTherapeuticVoice } from './voice-selector.ts';
 import { detectUserSpokenLanguage } from '../i18n/language-catalog.ts';
+import { voiceAcousticAnalyzer, type VoiceAcousticState } from './voice-acoustic-analyzer.ts';
+import { isIncompleteUtterance } from '../knowledge/psychology-library-rag.ts';
+
+export type { VoiceAcousticState };
 
 export interface BrowserSpeechCallbacks {
-  onUserSpeech?: (transcript: string, isFinal: boolean) => void;
+  onUserSpeech?: (transcript: string, isFinal: boolean, voiceState?: VoiceAcousticState) => void;
   onAssistantStart?: () => void;
   onAssistantEnd?: () => void;
   onError?: (error: string) => void;
   onInterimTranscript?: (text: string) => void;
   onRecognitionState?: (isListening: boolean) => void;
   onAudioLevel?: (level: number) => void;
+  onVoiceStateUpdate?: (state: VoiceAcousticState) => void;
   onWordBoundary?: (charIndex: number, charLength: number, wordText?: string) => void;
 }
 
@@ -261,7 +266,7 @@ export class BrowserSpeechController {
       if (this.audioCtx && this.mediaStream && !this.analyser) {
         const source = this.audioCtx.createMediaStreamSource(this.mediaStream);
         this.analyser = this.audioCtx.createAnalyser();
-        this.analyser.fftSize = 256;
+        this.analyser.fftSize = 1024;
         source.connect(this.analyser);
       }
 
@@ -307,8 +312,9 @@ export class BrowserSpeechController {
   private startVADLoop(): void {
     if (!this.analyser) return;
 
-    const bufferLength = this.analyser.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
+    const timeDataArray = new Float32Array(this.analyser.fftSize);
+    const byteFreqArray = new Uint8Array(this.analyser.frequencyBinCount);
+    let lastStateEmitTime = 0;
 
     const checkAudio = () => {
       if (!this.analyser || !this.shouldBeListening || this.isSpeaking) {
@@ -316,16 +322,32 @@ export class BrowserSpeechController {
         return;
       }
 
-      this.analyser.getByteFrequencyData(dataArray);
+      this.analyser.getFloatTimeDomainData(timeDataArray);
+      this.analyser.getByteFrequencyData(byteFreqArray);
 
+      // 1. Process voice acoustic biomarkers (Pitch F0, Vocal Jitter, RMS Energy)
+      const sampleRate = this.audioCtx ? this.audioCtx.sampleRate : 44100;
+      const frameResult = voiceAcousticAnalyzer.processFrame(timeDataArray, sampleRate);
+
+      // 2. Audio level calculation for visualizer
       let sum = 0;
-      for (let i = 0; i < bufferLength; i++) {
-        sum += dataArray[i];
+      for (let i = 0; i < byteFreqArray.length; i++) {
+        sum += byteFreqArray[i];
       }
-      const avg = sum / bufferLength;
-      const normalizedLevel = Math.min(1, avg / 128);
+      const avg = sum / byteFreqArray.length;
+      const normalizedLevel = Math.min(1, Math.max(avg / 128, frameResult.rms * 5));
       this.callbacks.onAudioLevel?.(normalizedLevel);
-      this.isUserSpeaking = avg > 12;
+
+      // VAD voiced indicator: user is actively vibrating vocal cords or speaking
+      this.isUserSpeaking = frameResult.isVoiced || avg > 14;
+
+      // 3. Periodically evaluate and broadcast live vocal prosody
+      const now = Date.now();
+      if (now - lastStateEmitTime > 350) {
+        lastStateEmitTime = now;
+        const currentVoiceState = voiceAcousticAnalyzer.evaluateState();
+        this.callbacks.onVoiceStateUpdate?.(currentVoiceState);
+      }
 
       this.animFrameId = requestAnimationFrame(checkAudio);
     };
@@ -396,19 +418,12 @@ export class BrowserSpeechController {
         const candidate = (this.accumulatedFinalText + (interimText ? ' ' + interimText : '')).trim();
         if (candidate) {
           this.liveInterimTranscript = candidate;
+          // Zero-latency word-by-word interim transcript streaming
           this.callbacks.onInterimTranscript?.(candidate);
         }
 
-        // Responsive turn debouncer: 1000ms for finalized sentence boundary, 1500ms for interim pause
-        const silenceDelay = newFinalText.trim().length > 0 ? 1000 : 1500;
-        if (this.speechSilenceTimer) {
-          clearTimeout(this.speechSilenceTimer);
-        }
-        this.speechSilenceTimer = setTimeout(() => {
-          if (!this.isSpeaking && !this.isProcessingUtterance && this.liveInterimTranscript.trim().length > 0) {
-            this.handleEndOfUserSpeech();
-          }
-        }, silenceDelay);
+        // Clinical turn-taking debouncer (never interrupts while user is speaking)
+        this.armSilenceDebouncer(candidate);
       };
 
       recognition.onerror = (e: SpeechRecognitionErrorEvent) => {
@@ -456,6 +471,41 @@ export class BrowserSpeechController {
   }
 
   /**
+   * Adaptive clinical turn-taking silence debouncer:
+   * 1. Grants 2600ms base silence delay to allow natural breathing and formulation of thoughts.
+   * 2. Automatically detects incomplete clauses, trailing conjunctions ("and", "because", "but", "so", "aur", "kyunki"),
+   *    or dangling pronouns and extends the delay to 3400ms.
+   * 3. VAD Voice Activity Guard: As long as the user's vocal cords produce acoustic energy (isUserSpeaking = true),
+   *    the debouncer re-arms and NEVER cuts off the user mid-thought!
+   */
+  private armSilenceDebouncer(candidateText: string): void {
+    if (this.speechSilenceTimer) {
+      clearTimeout(this.speechSilenceTimer);
+      this.speechSilenceTimer = null;
+    }
+
+    const clean = candidateText.trim();
+    if (!clean) return;
+
+    // Check for trailing conjunctions, prepositions, or dangling phrases
+    const isTrailingConjunction = /\b(and|or|but|because|cause|cuz|so|if|when|then|like|that|with|to|for|about|i|my|me|mein|main|mai|aur|lekin|par|kyunki|ki|toh|jaise|kuch|kya|kyun)\s*$/i.test(clean);
+    const isIncomplete = isTrailingConjunction || isIncompleteUtterance(clean);
+    const silenceDelay = isIncomplete ? 3400 : this.silenceTimeoutMs;
+
+    this.speechSilenceTimer = setTimeout(() => {
+      // VAD Voice Activity Guard: if microphone detects vocal energy, do NOT cut off!
+      if (this.isUserSpeaking) {
+        this.armSilenceDebouncer(this.liveInterimTranscript);
+        return;
+      }
+
+      if (!this.isSpeaking && !this.isProcessingUtterance && this.liveInterimTranscript.trim().length > 0) {
+        this.handleEndOfUserSpeech();
+      }
+    }, silenceDelay);
+  }
+
+  /**
    * Finalizes speech when user completes a sentence/phrase/paragraph after a natural pause.
    */
   private async handleEndOfUserSpeech(): Promise<void> {
@@ -494,9 +544,12 @@ export class BrowserSpeechController {
     this.accumulatedFinalText = '';
     this.liveInterimTranscript = '';
 
-    // 1. If Web Speech API captured text, finalize the paragraph immediately!
+    const finalVoiceState = voiceAcousticAnalyzer.evaluateState();
+    voiceAcousticAnalyzer.reset();
+
+    // 1. If Web Speech API captured text, finalize the paragraph with voice acoustic state!
     if (finalText.length > 0) {
-      this.callbacks.onUserSpeech?.(finalText, true);
+      this.callbacks.onUserSpeech?.(finalText, true, finalVoiceState);
       setTimeout(() => {
         if (this.isProcessingUtterance && !this.isSpeaking) {
           this.isProcessingUtterance = false;
@@ -531,7 +584,7 @@ export class BrowserSpeechController {
           if (res.ok) {
             const data = await res.json();
             if (data.text && data.text.trim()) {
-              this.callbacks.onUserSpeech?.(data.text.trim(), true);
+              this.callbacks.onUserSpeech?.(data.text.trim(), true, finalVoiceState);
               setTimeout(() => {
                 if (this.isProcessingUtterance && !this.isSpeaking) {
                   this.isProcessingUtterance = false;
@@ -607,7 +660,7 @@ export class BrowserSpeechController {
   }
 
   public async startListening(
-    onTranscript?: (transcript: string, isFinal: boolean) => void,
+    onTranscript?: (transcript: string, isFinal: boolean, voiceState?: VoiceAcousticState) => void,
     onError?: (err: string) => void,
     existingStream?: MediaStream
   ): Promise<boolean> {
@@ -615,10 +668,10 @@ export class BrowserSpeechController {
       this.callbacks = {
         ...this.callbacks,
         onUserSpeech: onTranscript
-          ? (text, isFinal) => onTranscript(text, isFinal)
+          ? (text, isFinal, voiceState) => onTranscript(text, isFinal, voiceState)
           : this.callbacks.onUserSpeech,
         onInterimTranscript: onTranscript
-          ? (text) => onTranscript(text, false)
+          ? (text) => onTranscript(text, false, voiceAcousticAnalyzer.evaluateState())
           : this.callbacks.onInterimTranscript,
         onError: onError || this.callbacks.onError,
       };

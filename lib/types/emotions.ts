@@ -215,3 +215,14 @@ export const COWEN_27_DIMENSIONS: Array<{
     defaultPrompt: 'My heart goes out to someone who is hurting right now.',
   },
 ];
+
+export interface VoiceAcousticState {
+  state: 'trembling_distress' | 'acute_hyperarousal' | 'hypoarousal_depressed' | 'regulated_calm' | 'neutral';
+  pitchHz: number;
+  rmsEnergy: number;
+  jitterTremor: number;
+  tremorDetected?: boolean;
+  speechRate: 'rapid' | 'moderate' | 'hesitant_slow';
+  confidence: number;
+  description: string;
+}

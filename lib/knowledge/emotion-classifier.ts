@@ -7,6 +7,7 @@
  */
 
 import neuroscienceData from './modern-neuroscience-ontology.ts';
+import type { VoiceAcousticState } from '../types/emotions.ts';
 
 export interface BodilyMapRegionActivation {
   head: number;
@@ -42,6 +43,7 @@ export interface NeuroscienceDiagnosticResult {
   ayurvedicRemedy: string;
   combinedRemedyAction: string;
   remedyPermutations: string[];
+  voiceAcousticState?: VoiceAcousticState;
   // Legacy aliases for backward-compatibility with UI widgets
   specificEmotion: string;
   axisName: string;
@@ -145,10 +147,11 @@ export class NeuroscienceEmotionClassifier {
 
   /**
    * Classifies user utterance into exact 27-D Cowen category, Barrett Core Affect vector, and Nummenmaa Bodily Map.
+   * Modulated by real-time Voice Acoustic Telemetry (pitch, vocal tremor, energy, cadence).
    */
-  public classifyText(text: string): NeuroscienceDiagnosticResult {
+  public classifyText(text: string, voiceState?: VoiceAcousticState): NeuroscienceDiagnosticResult {
     if (!text || !text.trim()) {
-      return this.getDimensionById('calmness', 'mild');
+      return this.getDimensionById('calmness', 'mild', voiceState);
     }
 
     const raw = text.trim();
@@ -161,13 +164,13 @@ export class NeuroscienceEmotionClassifier {
     const directRomanceRegex = /\b(?:made|got|have|found|met)\s+(?:a\s+)?new\s+(?:girlfriend|boyfriend|partner|date)\b|\b(?:have|got)\s+a\s+(?:girlfriend|boyfriend|partner)\b|\b(?:fell|in)\s+love\b|\bstarted\s+dating\b|\bnew\s+(?:girlfriend|boyfriend|relationship)\b|(?:नई\s+गर्लफ्रेंड|नया\s+बॉयफ्रेंड|नया\s+रिश्ता)/i;
 
     if (directJoyRegex.test(lower) || directJoyRegex.test(raw)) {
-      return this.getDimensionById('joy', 'moderate');
+      return this.getDimensionById('joy', 'moderate', voiceState);
     }
     if (directCalmRegex.test(lower) || directCalmRegex.test(raw)) {
-      return this.getDimensionById('calmness', 'moderate');
+      return this.getDimensionById('calmness', 'moderate', voiceState);
     }
     if (directRomanceRegex.test(lower) || directRomanceRegex.test(raw)) {
-      return this.getDimensionById('romance', 'moderate');
+      return this.getDimensionById('romance', 'moderate', voiceState);
     }
 
     // 0. Meta-intent detection
@@ -219,12 +222,61 @@ export class NeuroscienceEmotionClassifier {
         const kwLower = kw.toLowerCase();
         if (kwLower.includes(' ')) {
           if (lower.includes(kwLower)) {
-            score += 4.0;
+            score += 3.0;
           }
         } else {
           const regex = new RegExp(`\\b${escapeRegex(kwLower)}\\b`, 'i');
           if (regex.test(lower)) {
-            score += 2.5;
+            score += 1.5;
+          }
+        }
+      }
+
+      // Lexical trigger matches
+      if (dim.lexical_triggers) {
+        if (dim.lexical_triggers.primary) {
+          for (const pKw of dim.lexical_triggers.primary) {
+            const pKwLower = pKw.toLowerCase();
+            if (pKwLower.includes(' ')) {
+              if (lower.includes(pKwLower)) {
+                score += 3.5;
+              }
+            } else {
+              const regex = new RegExp(`\\b${escapeRegex(pKwLower)}\\b`, 'i');
+              if (regex.test(lower)) {
+                score += 2.0;
+              }
+            }
+          }
+        }
+        if (dim.lexical_triggers.secondary) {
+          for (const sKw of dim.lexical_triggers.secondary) {
+            const sKwLower = sKw.toLowerCase();
+            if (sKwLower.includes(' ')) {
+              if (lower.includes(sKwLower)) {
+                score += 2.0;
+              }
+            } else {
+              const regex = new RegExp(`\\b${escapeRegex(sKwLower)}\\b`, 'i');
+              if (regex.test(lower)) {
+                score += 1.0;
+              }
+            }
+          }
+        }
+        if (dim.lexical_triggers.synonyms) {
+          for (const nKw of dim.lexical_triggers.synonyms) {
+            const nKwLower = nKw.toLowerCase();
+            if (nKwLower.includes(' ')) {
+              if (lower.includes(nKwLower)) {
+                score += 0.6;
+              }
+            } else {
+              const regex = new RegExp(`\\b${escapeRegex(nKwLower)}\\b`, 'i');
+              if (regex.test(lower)) {
+                score += 0.6;
+              }
+            }
           }
         }
       }
@@ -314,12 +366,31 @@ export class NeuroscienceEmotionClassifier {
       scores.set('boredom', (scores.get('boredom') || 0) + 3);
     }
 
+    // 2b. Voice Acoustic Telemetry Modulations
+    if (voiceState) {
+      if (voiceState.state === 'trembling_distress') {
+        scores.set('sadness', (scores.get('sadness') || 0) + 5);
+        scores.set('anxiety', (scores.get('anxiety') || 0) + 4);
+        scores.set('empathic_pain', (scores.get('empathic_pain') || 0) + 4);
+      } else if (voiceState.state === 'acute_hyperarousal') {
+        scores.set('anxiety', (scores.get('anxiety') || 0) + 5);
+        scores.set('fear', (scores.get('fear') || 0) + 5);
+        scores.set('anger', (scores.get('anger') || 0) + 3);
+      } else if (voiceState.state === 'hypoarousal_depressed') {
+        scores.set('sadness', (scores.get('sadness') || 0) + 4);
+        scores.set('boredom', (scores.get('boredom') || 0) + 3);
+      } else if (voiceState.state === 'regulated_calm') {
+        scores.set('calmness', (scores.get('calmness') || 0) + 3);
+        scores.set('relief', (scores.get('relief') || 0) + 2);
+      }
+    }
+
     // 3. Determine Intensity
     let intensity: 'mild' | 'moderate' | 'peak' = 'moderate';
     const peakMarkers = ['extremely', 'unbearable', 'terrified', 'furious', 'overwhelmed', 'ecstatic', 'panic', 'intense', 'rage', 'deepest', 'unbearably', 'desperately', 'devastated'];
     const mildMarkers = ['a bit', 'slightly', 'kind of', 'mildly', 'little', 'somewhat', 'a touch', 'a little', 'sort of', 'maybe'];
 
-    if (peakMarkers.some((m) => lower.includes(m))) {
+    if (peakMarkers.some((m) => lower.includes(m)) || (voiceState && (voiceState.state === 'acute_hyperarousal' || voiceState.jitterTremor > 0.22))) {
       intensity = 'peak';
     } else if (mildMarkers.some((m) => lower.includes(m))) {
       intensity = 'mild';
@@ -380,6 +451,10 @@ export class NeuroscienceEmotionClassifier {
           bestDim = this.dimensions.find((d) => d.id === 'confusion') || bestDim;
         } else if (isBreathingStatusAnswer) {
           bestDim = this.dimensions.find((d) => d.id === 'calmness') || bestDim;
+        } else if (voiceState && voiceState.state === 'trembling_distress') {
+          bestDim = this.dimensions.find((d) => d.id === 'sadness') || bestDim;
+        } else if (voiceState && voiceState.state === 'acute_hyperarousal') {
+          bestDim = this.dimensions.find((d) => d.id === 'anxiety') || bestDim;
         } else {
           bestDim = this.dimensions.find((d) => d.id === 'calmness') || bestDim;
         }
@@ -403,7 +478,7 @@ export class NeuroscienceEmotionClassifier {
     });
 
     const confidence = Math.min(0.98, Math.max(0.65, 0.60 + Math.max(0, highestScore) * 0.08));
-    const result = this.buildResult(bestDim, intensity, confidence, dimensionScores);
+    const result = this.buildResult(bestDim, intensity, confidence, dimensionScores, voiceState);
 
     if (isRepetitionComplaint) {
       result.metaIntent = 'dialogue_complaint';
@@ -416,7 +491,11 @@ export class NeuroscienceEmotionClassifier {
     return result;
   }
 
-  public getDimensionById(id: string, intensity: 'mild' | 'moderate' | 'peak' = 'moderate'): NeuroscienceDiagnosticResult {
+  public getDimensionById(
+    id: string,
+    intensity: 'mild' | 'moderate' | 'peak' = 'moderate',
+    voiceState?: VoiceAcousticState
+  ): NeuroscienceDiagnosticResult {
     const dim = this.dimensions.find((d) => d.id === id) || this.dimensions.find((d) => d.id === 'calmness') || this.dimensions[0];
     
     const dimensionScores: Record<string, number> = {};
@@ -430,7 +509,7 @@ export class NeuroscienceEmotionClassifier {
       }
     });
 
-    return this.buildResult(dim, intensity, 0.9, dimensionScores);
+    return this.buildResult(dim, intensity, 0.9, dimensionScores, voiceState);
   }
 
   public getAllDimensions() {
@@ -441,7 +520,8 @@ export class NeuroscienceEmotionClassifier {
     dim: typeof neuroscienceData.cowen_dimensions[0],
     intensity: 'mild' | 'moderate' | 'peak',
     confidence: number,
-    dimensionScores?: Record<string, number>
+    dimensionScores?: Record<string, number>,
+    voiceState?: VoiceAcousticState
   ): NeuroscienceDiagnosticResult {
     const multiplier = intensity === 'peak' ? 1.25 : intensity === 'mild' ? 0.75 : 1.0;
 
@@ -449,7 +529,13 @@ export class NeuroscienceEmotionClassifier {
     const scaledArousal = Math.max(-1, Math.min(1, dim.core_affect.arousal * multiplier));
 
     let polyvagal = 'Ventral_Vagal_Safety';
-    if (scaledArousal > 0.4 && scaledValence < 0) {
+    if (voiceState && voiceState.state === 'trembling_distress') {
+      polyvagal = 'Sympathetic Dysregulation / Vocal Tremor';
+    } else if (voiceState && voiceState.state === 'acute_hyperarousal') {
+      polyvagal = 'Sympathetic Hyperarousal (High Vocal Arousal)';
+    } else if (voiceState && voiceState.state === 'hypoarousal_depressed') {
+      polyvagal = 'Dorsal Vagal Shutdown (Depressive Hypoarousal)';
+    } else if (scaledArousal > 0.4 && scaledValence < 0) {
       polyvagal = 'Sympathetic_Hyperarousal';
     } else if (scaledArousal < -0.3 && scaledValence < 0) {
       polyvagal = 'Dorsal_Vagal_Hypoactivation';
@@ -462,6 +548,17 @@ export class NeuroscienceEmotionClassifier {
       this.dimensions.forEach((d) => {
         defaultScores[d.id] = d.id === dim.id ? 0.85 : 0.10;
       });
+    }
+
+    let doshicState = (dim as any).doshic_nervous_system_state || 'Ventral Vagal Safe / High Sattva';
+    if (voiceState) {
+      if (voiceState.state === 'trembling_distress') {
+        doshicState = 'Acute Vata Aggravation / Tremor & Anxiety';
+      } else if (voiceState.state === 'acute_hyperarousal') {
+        doshicState = 'Pitta / Vata Agitation (Hyperarousal)';
+      } else if (voiceState.state === 'hypoarousal_depressed') {
+        doshicState = 'Dominant Tamas / Kapha Stagnation (Inertia)';
+      }
     }
 
     return {
@@ -488,11 +585,12 @@ export class NeuroscienceEmotionClassifier {
       confidence,
       intensity,
       dimensionScores: dimensionScores || defaultScores,
-      doshicState: (dim as any).doshic_nervous_system_state || 'Ventral Vagal Safe / High Sattva',
+      doshicState,
       scientificRemedy: (dim as any).scientific_remedy || 'Gratitude anchoring, prosocial connection',
       ayurvedicRemedy: (dim as any).ayurvedic_remedy || 'Cultivating Shanta Rasa, spiritual journaling',
       combinedRemedyAction: (dim as any).combined_remedy_action || dim.somatic_intervention,
       remedyPermutations: (dim as any).remedy_permutations || [],
+      voiceAcousticState: voiceState,
 
       // Compatibility Aliases
       specificEmotion: dim.name,
@@ -508,6 +606,6 @@ export class NeuroscienceEmotionClassifier {
 }
 
 export const emotionClassifier = NeuroscienceEmotionClassifier.getInstance();
-export const classifyNeuroscienceDimensions = (text: string) => emotionClassifier.classifyText(text);
-export const classifyEmotion = (text: string) => emotionClassifier.classifyText(text);
+export const classifyNeuroscienceDimensions = (text: string, voiceState?: VoiceAcousticState) => emotionClassifier.classifyText(text, voiceState);
+export const classifyEmotion = (text: string, voiceState?: VoiceAcousticState) => emotionClassifier.classifyText(text, voiceState);
 export default emotionClassifier;
