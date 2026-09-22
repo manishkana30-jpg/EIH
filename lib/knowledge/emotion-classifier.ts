@@ -79,6 +79,8 @@ const VALENCE_MAP: Record<string, number> = {
   funny: 0.7, inspired: 0.8, awestruck: 0.85, fascinated: 0.75, interested: 0.6,
   relieved: 0.75, healed: 0.8, steady: 0.65, grounded: 0.7, confident: 0.75,
   normal: 0.5, okay: 0.5, fine: 0.5, alright: 0.5, good: 0.6, 'doing well': 0.7,
+  girlfriend: 0.7, boyfriend: 0.7, partner: 0.7, dating: 0.7,
+  'new girlfriend': 0.85, 'new boyfriend': 0.85, 'in love': 0.9, love: 0.8,
 };
 
 const AROUSAL_MAP: Record<string, number> = {
@@ -148,12 +150,16 @@ export class NeuroscienceEmotionClassifier {
     // Direct user assertions in the current turn strictly override past context and semantic ambiguity.
     const directJoyRegex = /\b(i am|i'm|i feel|feeling)\s+(?:very\s+|so\s+|really\s+|quite\s+)?(happy|joyful|great|delighted|ecstatic|wonderful|fantastic|elated|cheerful)\b|\b(i am|i'm|i feel)\s+doing\s+(well|great|fine)\b|\b(i am|i'm)\s+(good|fine|doing good|so happy|very happy)\b|(?:^|\s)(मैं\s+(?:काफी\s+|बहुत\s+)?(?:खुश|प्रसन्न|आनंदित|अच्छा|ठीक)\s+हूँ|सब\s+ठीक\s+है|अच्छा\s+लग\s+रहा\s+है)(?:\s|[.,!?;:।॥]|$)|(\b(estoy|me siento)\s+(?:muy\s+)?(feliz|bien|contento|alegre)\b)|(\b(je suis|je me sens)\s+(?:très\s+)?(heureux|bien|joyeux)\b)|(\b(ich bin|ich fühle mich)\s+(?:sehr\s+)?(glücklich|gut|froh)\b)/i;
     const directCalmRegex = /\b(i am|i'm|i feel|feeling)\s+(?:very\s+|so\s+|really\s+)?(calm|peaceful|serene|relaxed|centered|grounded|tranquil|at ease|at peace|relieved)\b|(?:^|\s)(मैं\s+(?:काफी\s+|बहुत\s+)?(?:शांत|स्थिर)\s+हूँ|मन\s+शांत\s+है)(?:\s|[.,!?;:।॥]|$)|(\b(estoy|me siento)\s+(?:muy\s+)?(tranquilo|en paz|relajado)\b)|(\b(je suis|je me sens)\s+(?:très\s+)?(calme|en paix|détendu)\b)|(\b(ich bin|ich fühle mich)\s+(?:sehr\s+)?(ruhig|entspannt|gelassen)\b)/i;
+    const directRomanceRegex = /\b(?:made|got|have|found|met)\s+(?:a\s+)?new\s+(?:girlfriend|boyfriend|partner|date)\b|\b(?:have|got)\s+a\s+(?:girlfriend|boyfriend|partner)\b|\b(?:fell|in)\s+love\b|\bstarted\s+dating\b|\bnew\s+(?:girlfriend|boyfriend|relationship)\b|(?:नई\s+गर्लफ्रेंड|नया\s+बॉयफ्रेंड|नया\s+रिश्ता)/i;
 
     if (directJoyRegex.test(lower) || directJoyRegex.test(raw)) {
       return this.getDimensionById('joy', 'moderate');
     }
     if (directCalmRegex.test(lower) || directCalmRegex.test(raw)) {
       return this.getDimensionById('calmness', 'moderate');
+    }
+    if (directRomanceRegex.test(lower) || directRomanceRegex.test(raw)) {
+      return this.getDimensionById('romance', 'moderate');
     }
 
     // 0. Meta-intent detection
@@ -215,13 +221,21 @@ export class NeuroscienceEmotionClassifier {
         }
       }
 
-      // Boost from semantic neighbors
+      // Boost from semantic neighbors with strict word boundaries
       for (const neighborName of dim.semantic_neighbors) {
         const neighborDim = this.dimensions.find((d) => d.name.toLowerCase() === neighborName.toLowerCase());
         if (neighborDim) {
           for (const nKw of neighborDim.keywords.slice(0, 5)) {
-            if (lower.includes(nKw.toLowerCase())) {
-              score += 0.6;
+            const nKwLower = nKw.toLowerCase();
+            if (nKwLower.includes(' ')) {
+              if (lower.includes(nKwLower)) {
+                score += 0.6;
+              }
+            } else {
+              const regex = new RegExp(`\\b${escapeRegex(nKwLower)}\\b`, 'i');
+              if (regex.test(lower)) {
+                score += 0.6;
+              }
             }
           }
         }

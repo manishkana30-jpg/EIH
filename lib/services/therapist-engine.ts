@@ -478,8 +478,16 @@ Keep the Sanskrit Shloka in Devanagari script wrapped in [GITA_SHLOKA] and [/GIT
     !hasDistressKeywords &&
     (emotionDiagnostic.dimensionId === 'joy' ||
      emotionDiagnostic.dimensionId === 'calmness' ||
-     emotionDiagnostic.coreAffect.valence >= 0.25 ||
-     /(happy|great|excited|peaceful|wonderful|grateful|joy|glad|blessed|प्रसन्न|खुश|आनंद|शांति|बढ़िया)/i.test(userMessage));
+     emotionDiagnostic.dimensionId === 'romance' ||
+     emotionDiagnostic.dimensionId === 'amusement' ||
+     emotionDiagnostic.dimensionId === 'admiration' ||
+     emotionDiagnostic.dimensionId === 'adoration' ||
+     emotionDiagnostic.dimensionId === 'satisfaction' ||
+     emotionDiagnostic.dimensionId === 'relief' ||
+     emotionDiagnostic.dimensionId === 'awe' ||
+     emotionDiagnostic.dimensionId === 'interest' ||
+     emotionDiagnostic.coreAffect.valence >= 0.15 ||
+     /(happy|great|excited|peaceful|wonderful|grateful|joy|glad|blessed|girlfriend|boyfriend|in love|new partner|dating|प्रसन्न|खुश|आनंद|शांति|बढ़िया)/i.test(userMessage));
 
   const currentTurnGroundingDirective = isDirectPositive
     ? `\n\n### MANDATORY CURRENT-TURN EMOTIONAL GROUNDING (NO STICKY EMOTIONS):
@@ -689,7 +697,20 @@ STRICT ANTI-REPETITION CONSTRAINTS:
     );
   } else {
     // Non-distress conversational fallback: Keep it brief, natural, and friendly
-    if (targetLanguage === 'hi') {
+    const isCelebratoryOrRomance = /(girlfriend|boyfriend|dating|in love|new partner|promoted|won|passed|celebrat|खुशखबरी|गर्लफ्रेंड|बॉयफ्रेंड)/i.test(userMessage);
+    if (isCelebratoryOrRomance) {
+      if (targetLanguage === 'hi') {
+        fallbackReply = "यह तो बहुत सुंदर और सुखद बात है! नए रिश्ते की शुरुआत के लिए बहुत-बहुत बधाई। इस खास और प्यारे समय का आनंद लें—आप इस समय कैसा महसूस कर रहे हैं?";
+      } else if (targetLanguage === 'es') {
+        fallbackReply = "¡Qué maravillosa noticia! Muchas felicidades por esta nueva relación. Disfruta de esta hermosa etapa, ¿cómo te sientes al respecto?";
+      } else if (targetLanguage === 'fr') {
+        fallbackReply = "C'est une merveilleuse nouvelle ! Toutes mes félicitations pour cette nouvelle relation. Profitez de ces beaux moments—comment vous sentez-vous ?";
+      } else if (targetLanguage === 'de') {
+        fallbackReply = "Das sind wunderbare Neuigkeiten! Herzlichen Glückwunsch zu dieser neuen Beziehung. Genießen Sie diese schöne Zeit – wie fühlen Sie sich dabei?";
+      } else {
+        fallbackReply = "That is wonderful news! Congratulations on your new relationship. Enjoy this beautiful phase—how are you feeling about it?";
+      }
+    } else if (targetLanguage === 'hi') {
       fallbackReply = "मैं आपकी बात सुन रहा हूँ। मैं आपके साथ पूरी सजगता और शांति से उपस्थित हूँ। बताएं कि आज आपके मन में क्या विचार या प्रश्न है?";
     } else if (targetLanguage === 'es') {
       fallbackReply = "Te escucho con serenidad. Estoy aquí contigo con plena atención. Cuéntame, ¿qué tienes en mente hoy o cómo puedo acompañarte?";

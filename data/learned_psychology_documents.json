@@ -490,5 +490,32 @@
     "source_platform": "NCBI PubMed & Wikipedia Clinical Knowledge",
     "learned_timestamp": "2026-09-21T21:27:30.973Z",
     "query_trigger": "How does the sound meditation work?"
+  },
+  {
+    "id": "learned_i_made_new_girlfriend",
+    "name": "Learned: Made Girlfriend Protocol",
+    "category": "Cognitive & Neuro-Performance",
+    "triguna_balance": "Vata-Rajas Autonomic Agitation",
+    "core_symptoms": [
+      "I made new girlfriend",
+      "made",
+      "girlfriend"
+    ],
+    "cognitive_distortions": [
+      "Emotional Reasoning",
+      "Catastrophic Overgeneralization"
+    ],
+    "solutions": {
+      "cbt_reframing": "Acknowledge that feeling I made new girlfriend is a valid physiological signal, not an identity. Notice automatic thoughts predicting helplessness, and gently re-anchor in what is factually true right now.\n\n[Wikipedia Context]: Cognitive behavioral therapy (CBT) is a form of psychotherapy that combines basic principles from cognitive psychology and behaviorism. It aims to reduce symptoms of various mental health conditions by challenging and adjusting convictions and assumptions, while helping patients learn better-adapted behavior by trying and training new behaviours. While CBT has philosophical precursors in Stoicism, it developed in three waves in the 20th century.\n[PubMed Literature]: Clinical study on made girlfriend psychotherapy cbt somatic: A randomized effectiveness study comparing trauma-focused cognitive behavioral therapy with therapy as usual for youth.",
+      "somatic_anchor": "Drop your shoulders, unglue your tongue from the roof of your mouth, and ground both feet firmly onto the floor for 30 seconds.",
+      "pranayama": "Practice 4-4-4-4 Sama Vritti Box Breathing or Alternate Nostril Breathing (Nadi Shodhana) for 3 minutes to restore vagal balance.",
+      "micro_habit": "Take one single micro-action within your direct control right now, ignoring long-term overwhelm."
+    },
+    "severity_level": "Mild to Moderate",
+    "requires_immediate_crisis": false,
+    "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4037845/",
+    "source_platform": "NCBI PubMed & Wikipedia Clinical Knowledge",
+    "learned_timestamp": "2026-09-22T02:13:12.414Z",
+    "query_trigger": "I made new girlfriend"
   }
 ]
