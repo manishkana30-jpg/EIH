@@ -28,6 +28,13 @@ self.addEventListener('install', (event) => {
   );
 });
 
+/* ─── Message: Support programmatic instant activation from app ─── */
+self.addEventListener('message', (event) => {
+  if (event.data && (event.data.type === 'SKIP_WAITING' || event.data === 'skipWaiting')) {
+    self.skipWaiting();
+  }
+});
+
 /* ─── Activate: Clean stale caches immediately & claim clients ─── */
 self.addEventListener('activate', (event) => {
   const currentCaches = [CACHE_NAME, STATIC_CACHE, FONT_CACHE];

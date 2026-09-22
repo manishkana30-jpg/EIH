@@ -22,6 +22,10 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ['lucide-react', 'framer-motion'],
   },
+  env: {
+    NEXT_PUBLIC_BUILD_TIME: process.env.VERCEL_GIT_COMMIT_SHA || String(Date.now()),
+    NEXT_PUBLIC_APP_VERSION: '1.2.0',
+  },
   images: isExport
     ? { unoptimized: true }
     : {

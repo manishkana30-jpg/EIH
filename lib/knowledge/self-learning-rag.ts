@@ -361,14 +361,25 @@ export async function persistLearnedDocuments(): Promise<void> {
 /**
  * Adds a learned document to the live dynamic collection and persists it.
  */
-export function addLearnedDocument(doc: LearnedPsychologyDocument): Promise<void> {
+export async function addLearnedDocument(doc: LearnedPsychologyDocument): Promise<void> {
   const existingIdx = DYNAMIC_LEARNED_DOCUMENTS.findIndex((d) => d.id === doc.id);
   if (existingIdx >= 0) {
     DYNAMIC_LEARNED_DOCUMENTS[existingIdx] = doc;
   } else {
     DYNAMIC_LEARNED_DOCUMENTS.push(doc);
   }
-  return persistLearnedDocuments();
+  await persistLearnedDocuments();
+
+  // Background broadcast to cloud sync endpoint if in browser environment
+  if (typeof window !== 'undefined' && navigator.onLine) {
+    fetch('/api/library/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ document: doc }),
+    }).catch(() => {
+      // Non-blocking network sync
+    });
+  }
 }
 
 /**
@@ -376,6 +387,43 @@ export function addLearnedDocument(doc: LearnedPsychologyDocument): Promise<void
  */
 export function getLearnedDocuments(): LearnedPsychologyDocument[] {
   return DYNAMIC_LEARNED_DOCUMENTS;
+}
+
+/**
+ * Synchronizes client-side learned documents with the cloud server over the internet.
+ * Pulls latest peer-reviewed clinical documents discovered by other instances,
+ * and updates the in-memory RAG collection and local cache.
+ */
+export async function syncLearnedDocumentsFromCloud(): Promise<{ pulled: number; total: number }> {
+  if (typeof window === 'undefined') return { pulled: 0, total: DYNAMIC_LEARNED_DOCUMENTS.length };
+
+  try {
+    const res = await fetch('/api/library/sync', {
+      method: 'GET',
+      headers: { 'Cache-Control': 'no-cache' },
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data.learned_documents)) {
+        let pulledCount = 0;
+        for (const doc of data.learned_documents) {
+          const exists = DYNAMIC_LEARNED_DOCUMENTS.some((d) => d.id === doc.id);
+          if (!exists) {
+            DYNAMIC_LEARNED_DOCUMENTS.push(doc);
+            pulledCount++;
+          }
+        }
+        if (pulledCount > 0) {
+          await persistLearnedDocuments();
+        }
+        return { pulled: pulledCount, total: DYNAMIC_LEARNED_DOCUMENTS.length };
+      }
+    }
+  } catch (err) {
+    console.warn('Background clinical library internet sync notice:', err);
+  }
+  return { pulled: 0, total: DYNAMIC_LEARNED_DOCUMENTS.length };
 }
 
 /**

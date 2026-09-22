@@ -34,6 +34,7 @@ import { AudioWaveform } from "./components/AudioWaveform";
 import { LanguageSelector } from "./components/LanguageSelector";
 import { GitaShlokaCard, parseGitaShloka } from "./components/GitaShlokaCard";
 import { KaraokeMessage } from "./components/KaraokeMessage";
+import { AutoUpdateBanner } from "./components/AutoUpdateBanner";
 import { tokenizeForKaraoke } from "@/lib/audio/karaoke-tokenizer";
 
 /* ─── Lazy-loaded heavy components (only fetched when user interacts or reaches fold) ─── */
@@ -1089,6 +1090,7 @@ export default function SanctuarySessionPage() {
 
   return (
     <div className="flex flex-col w-full bg-[#09090b] text-slate-100 font-sans select-none">
+      <AutoUpdateBanner />
       {/* ─────────────────────────────────────────────────────────────
           1. INTERACTIVE SANCTUARY WORKSPACE (Full Viewport Stage)
       ───────────────────────────────────────────────────────────── */}
