@@ -6,9 +6,12 @@ import {
   isGreetingMessage,
   isTestMessage,
   isIncompleteUtterance,
+  isRepetitionComplaintMessage,
+  isExplicitSolutionOrTherapyRequest,
   getLocalizedGreetingResponse,
   getLocalizedTestResponse,
   getLocalizedIncompleteUtteranceResponse,
+  getLocalizedRepetitionSolutionResponse,
 } from '../knowledge/psychology-library-rag';
 import { getResearchedAdviceForEmotion } from '../knowledge/authenticated-research-bank';
 import {
@@ -246,6 +249,25 @@ class HealerBackendClient {
       };
     }
 
+    if (isRepetitionComplaintMessage(cleanMessage)) {
+      const repRes = getLocalizedRepetitionSolutionResponse(cleanMessage, language, locale);
+      return {
+        reply: repRes.reply,
+        sources: repRes.sources,
+        engine: 'Tri-Pillar Active Solution Protocol',
+        is_crisis: false,
+        recommended_trataka: 'bindu',
+        telemetry: {
+          dominant_emotion: 'Restlessness / Mental Loop',
+          polyvagal_state: 'Sympathetic (Fight/Flight)',
+          cbt_distortion: 'Catastrophizing / Repetitive Rumination',
+          percentages: { Rumination: 85, Agitation: 70, Calmness: 15 },
+          strategy: 'Active Tri-Pillar cognitive defusion, Bhagavad Gita 6.26, and Bindu Trataka neuro-ocular reset.',
+          voice_state: voiceState?.description || 'Repetition circuit interrupt engaged',
+        },
+      };
+    }
+
     // Resolve accurate locale
     const hasDevanagari = /[\u0900-\u097F]/.test(cleanMessage);
     const resolvedLocale = hasDevanagari
@@ -398,7 +420,10 @@ class HealerBackendClient {
       const hasPositiveOrCalmExplicit =
         /(happy|great|excited|peaceful|calm|relaxed|wonderful|grateful|joy|glad|blessed|good|doing well|girlfriend|boyfriend|in love|new partner|dating|promoted|celebrat|प्रसन्न|खुश|आनंद|शांत|शांति|बढ़िया|ठीक हूँ)/i.test(cleanMessage);
 
+      const isSolutionRequest = isExplicitSolutionOrTherapyRequest(cleanMessage);
+
       const isPositiveOrNeutral =
+        !isSolutionRequest &&
         !hasDistressKeywords &&
         hasPositiveOrCalmExplicit &&
         (diag.dimensionId === 'joy' ||
@@ -420,6 +445,7 @@ class HealerBackendClient {
         (voiceState?.state === 'hypoarousal_depressed' && !isPositiveOrNeutral);
 
       const hasEmotionalDistressSignal =
+        isSolutionRequest ||
         hasDistressKeywords ||
         hasAcousticDistress ||
         libraryResult !== null ||
@@ -484,15 +510,15 @@ class HealerBackendClient {
             fallbackReply = "That is wonderful news! Congratulations on your new relationship. Enjoy this beautiful phase—how are you feeling about it?";
           }
         } else if (targetLang === 'hi') {
-          fallbackReply = "मैं आपकी बात ध्यान से सुन रहा हूँ। मैं आपके साथ पूरी शांति और सजगता से उपस्थित हूँ। बताएं कि आज आपके मन में क्या विचार या प्रश्न है?";
+          fallbackReply = "मैं आपकी पूरी सहायता के लिए यहाँ उपस्थित हूँ। हम भगवद्गीता के दर्शन, संज्ञानात्मक सीबीटी (CBT) तकनीकों और त्राटक ध्यान के समन्वय से समाधान प्रस्तुत करते हैं। आप किस विशेष समस्या या परिस्थिति का समाधान चाहते हैं?";
         } else if (targetLang === 'es') {
-          fallbackReply = "Te escucho con serenidad y atención plena. Cuéntame, ¿qué tienes en mente hoy o cómo puedo acompañarte?";
+          fallbackReply = "Estoy aquí para ayudarte con calma y presencia. Integramos la sabiduría del Bhagavad Gita, ejercicios de TCC y meditación ocular Trataka. ¿Qué situación específica te gustaría resolver hoy?";
         } else if (targetLang === 'fr') {
-          fallbackReply = "Je vous écoute en toute sérénité. Je suis pleinement présent avec vous. Dites-moi, que traversez-vous aujourd'hui ou sur quoi aimeriez-vous échanger ?";
+          fallbackReply = "Je suis à votre écoute pour vous aider. Nous associons la sagesse de la Bhagavad-Gita, les exercices de TCC et la méditation Trataka. Quel sujet précis aimeriez-vous aborder ?";
         } else if (targetLang === 'de') {
-          fallbackReply = "Ich höre Ihnen in Ruhe zu und bin ganz für Sie da. Worüber möchten Sie heute sprechen oder wie kann ich Sie unterstützen?";
+          fallbackReply = "Ich bin für Sie da, um Ihnen gezielt zu helfen. Wir verbinden die Weisheit der Bhagavad Gita, kognitive Verhaltenstherapie und Trataka-Augenmeditation. Welches Thema möchten Sie heute angehen?";
         } else {
-          fallbackReply = "I am listening to you with calm awareness. What is on your mind today, or what would you like to explore together?";
+          fallbackReply = "I am here with you, ready to help. We integrate Bhagavad Gita wisdom, clinical CBT, and Trataka eye-gazing techniques to resolve challenges. What specific situation or challenge would you like us to solve together?";
         }
       }
 

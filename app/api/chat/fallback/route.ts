@@ -5,6 +5,8 @@ import {
   isGreetingMessage,
   isTestMessage,
   isIncompleteUtterance,
+  isRepetitionComplaintMessage,
+  getLocalizedRepetitionSolutionResponse,
   GREETING_RESPONSE,
   TEST_RESPONSE,
   getLocalizedIncompleteUtteranceResponse,
@@ -175,27 +177,13 @@ export async function POST(req: NextRequest) {
 
     // Anti-repetition check for user expressing frustration with canned or looped scripts
     const lowerPrompt = cleanPrompt.toLowerCase();
-    const isRepetitionComplaint = [
-      "repeat", "repeating", "same script", "same thing", "again and again",
-      "stop repeating", "you keep saying the same", "phir wahi", "wahi bol rahe ho",
-      "wahi baat", "baar baar", "ek hi cheez", "kuch naya", "kuch alag",
-      "not listening", "sun nahi rahe", "sun nahi raha", "you are not listening"
-    ].some((p) => lowerPrompt.includes(p));
-
-    if (isRepetitionComplaint) {
-      let resetReply = "I hear you completely and apologize that previous responses sounded repetitive. Let us step away from structured templates and speak plainly and directly. Tell me in your own words what you are experiencing right now—what feels stuck or unresolved? I am listening to you fully.";
-      if (targetLang === 'hi') {
-        resetReply = "मैं आपकी बात पूरी संवेदनशीलता और ध्यान से सुन रहा हूँ। क्षमा करें कि पिछले उत्तर आपको बार-बार एक जैसे या स्क्रिप्टेड लगे। आइए किसी भी पूर्व-निर्धारित ढांचे को छोड़कर सीधे आपके मन की बात करते हैं। इस समय आपके भीतर क्या चल रहा है? अपनी उलझन या भावना को अपने शब्दों में कहें, मैं बिना किसी औपचारिकता के पूरी तरह से आपकी बात सुन रहा हूँ।";
-      } else if (targetLang === 'es') {
-        resetReply = "Te escucho con total claridad y empatía. Lamento profundamente si las respuestas anteriores sonaron repetitivas o esquemáticas. Dejemos a un lado cualquier estructura rígida y hablemos de forma directa y humana. ¿Qué estás experimentando exactamente en este momento? Cuéntamelo con tus propias palabras, te escucho plenamente.";
-      } else if (targetLang === 'fr') {
-        resetReply = "Je vous écoute avec une attention totale. Je vous prie de m'excuser si les réponses précédentes ont semblé répétitives ou automatiques. Laissons de côté tout cadre figé et parlons simplement d'être humain à être humain. Que traversez-vous précisément en ce moment ? Exprimez-le avec vos propres mots, je vous écoute pleinement.";
-      } else if (targetLang === 'de') {
-        resetReply = "Ich höre Ihnen aufmerksam zu und entschuldige mich aufrichtig, falls die vorherigen Antworten repetitiv gewirkt haben. Lassen Sie uns starre Schemata ablegen und ganz direkt sprechen. Was beschäftigt Sie in diesem Augenblick am meisten? Schildern Sie es bitte in Ihren eigenen Worten – ich bin ganz für Sie da.";
-      }
+    if (isRepetitionComplaintMessage(cleanPrompt)) {
+      const repRes = getLocalizedRepetitionSolutionResponse(cleanPrompt, targetLang, locale);
       return NextResponse.json({
-        reply: resetReply,
-        provider: 'conversational_attunement_reset',
+        reply: repRes.reply,
+        sources: repRes.sources,
+        provider: 'tri_pillar_active_solution',
+        recommended_trataka: 'bindu',
       });
     }
 

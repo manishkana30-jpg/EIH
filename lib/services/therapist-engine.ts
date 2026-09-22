@@ -6,6 +6,9 @@ import {
   isGreetingMessage,
   isTestMessage,
   isIncompleteUtterance,
+  isRepetitionComplaintMessage,
+  isExplicitSolutionOrTherapyRequest,
+  getLocalizedRepetitionSolutionResponse,
   GREETING_RESPONSE,
   TEST_RESPONSE,
   getLocalizedIncompleteUtteranceResponse,
@@ -259,35 +262,6 @@ function extractRecentAssistantSnippets(history?: ConversationTurn[]): string[] 
 }
 
 /**
- * Detects meta-conversational user feedback complaining about repetition,
- * robotic scripts, or feeling not listened to.
- */
-function isRepetitionComplaintMessage(userMessage: string): boolean {
-  const lower = userMessage.toLowerCase().trim();
-  const repetitionPatterns = [
-    "repeat",
-    "repeating",
-    "same script",
-    "same thing",
-    "again and again",
-    "stop repeating",
-    "you keep saying the same",
-    "phir wahi",
-    "wahi bol rahe ho",
-    "wahi baat",
-    "baar baar",
-    "ek hi cheez",
-    "kuch naya",
-    "kuch alag",
-    "not listening",
-    "sun nahi rahe",
-    "sun nahi raha",
-    "you are not listening"
-  ];
-  return repetitionPatterns.some((p) => lower.includes(p));
-}
-
-/**
  * Master Conversational Function: Search + Inference with Fallback & Anti-Looping Protection
  */
 export async function generateTherapeuticResponse(
@@ -346,30 +320,15 @@ export async function generateTherapeuticResponse(
     };
   }
 
-  // 1c. Repetition & Script Loop Interceptor (Breaks canned script output and forces direct active listening)
+  // 1c. Repetition & Script Loop Interceptor (Delivers immediate actionable Tri-Pillar solution)
   if (isRepetitionComplaintMessage(userMessage)) {
-    const activeLangCode = language || (locale ? locale.split("-")[0].split("_")[0] : null);
-    const detectedScriptLang = /[\u0900-\u097F]/.test(userMessage) ? "hi" : "en";
-    const normLang = normalizeLanguageCode(activeLangCode || detectedScriptLang);
-
-    let reply = "";
-    if (normLang === "hi") {
-      reply = "मैं आपकी बात पूरी संवेदनशीलता और ध्यान से सुन रहा हूँ। क्षमा करें कि पिछले उत्तर आपको बार-बार एक जैसे या स्क्रिप्टेड लगे। आइए किसी भी पूर्व-निर्धारित ढांचे को छोड़कर सीधे आपके मन की बात करते हैं। इस समय आपके भीतर क्या चल रहा है? अपनी उलझन या भावना को अपने शब्दों में कहें, मैं बिना किसी औपचारिकता के पूरी तरह से आपकी बात सुन रहा हूँ।";
-    } else if (normLang === "es") {
-      reply = "Te escucho con total claridad y empatía. Lamento profundamente si las respuestas anteriores sonaron repetitivas o esquemáticas. Dejemos a un lado cualquier estructura rígida y hablemos de forma directa y humana. ¿Qué estás experimentando exactamente en este momento? Cuéntamelo con tus propias palabras, te escucho plenamente.";
-    } else if (normLang === "fr") {
-      reply = "Je vous écoute avec une attention totale. Je vous prie de m'excuser si les réponses précédentes ont semblé répétitives ou automatiques. Laissons de côté tout cadre figé et parlons simplement d'être humain à être humain. Que traversez-vous précisément en ce moment ? Exprimez-le avec vos propres mots, je vous écoute pleinement.";
-    } else if (normLang === "de") {
-      reply = "Ich höre Ihnen aufmerksam zu und entschuldige mich aufrichtig, falls die vorherigen Antworten repetitiv gewirkt haben. Lassen Sie uns starre Schemata ablegen und ganz direkt sprechen. Was beschäftigt Sie in diesem Augenblick am meisten? Schildern Sie es bitte in Ihren eigenen Worten – ich bin ganz für Sie da.";
-    } else {
-      reply = "I hear you completely and apologize that previous responses sounded repetitive. Let us step away from structured templates and speak plainly and directly. Tell me in your own words what you are experiencing right now—what feels stuck or unresolved? I am listening to you fully.";
-    }
-
+    const repRes = getLocalizedRepetitionSolutionResponse(userMessage, language, locale);
     return {
-      reply,
-      sources: [],
-      providerUsed: "Conversational Attunement & Reset Responder",
+      reply: repRes.reply,
+      sources: repRes.sources,
+      providerUsed: "Tri-Pillar Active Solution Protocol",
       isCrisis: false,
+      recommended_trataka: "bindu",
     };
   }
 
@@ -526,23 +485,26 @@ STRICT ANTI-REPETITION CONSTRAINTS:
 
   const systemPrompt = `${THERAPIST_SYSTEM_PROMPT}${langDirective}${currentTurnGroundingDirective}${antiRepetitionDirective}\n\n[CLINICAL RESEARCH & RETRIEVED WISDOM]:\n${contextString}`;
 
+  const isSolutionRequest = isExplicitSolutionOrTherapyRequest(userMessage);
+
   const isNeutralOrInquiry =
+    !isSolutionRequest &&
     !hasDistressKeywords &&
     emotionDiagnostic.coreAffect.valence >= -0.05 &&
     (/^(what|how|why|who|when|where|can you|could you|explain|tell me|is this|how does|what is|नमस्ते|प्रणाम)/i.test(userMessage.trim()) ||
      ['interest', 'aesthetic_appreciation', 'calmness', 'joy', 'amusement', 'adoration', 'satisfaction', 'relief', 'awe', 'entrancement'].includes(emotionDiagnostic.dimensionId));
 
   const hasEmotionalDistressSignal =
-    !isNeutralOrInquiry &&
+    isSolutionRequest ||
+    (!isNeutralOrInquiry &&
     (hasDistressKeywords ||
      (libraryRag !== null && hasDistressKeywords) ||
      emotionDiagnostic.coreAffect.valence < -0.1 ||
-     (emotionDiagnostic.coreAffect.arousal > 0.55 && emotionDiagnostic.coreAffect.valence < 0.1));
+     (emotionDiagnostic.coreAffect.arousal > 0.55 && emotionDiagnostic.coreAffect.valence < 0.1)));
 
   const hasClinicalDistress =
     !isDirectPositive &&
-    !isNeutralOrInquiry &&
-    hasEmotionalDistressSignal;
+    (isSolutionRequest || (!isNeutralOrInquiry && hasEmotionalDistressSignal));
 
   // Helper to guarantee [GITA_SHLOKA] tags, authentic Sanskrit shloka, and diagnostic summary only when clinical distress is present
   function ensureDiagnosticAndGita(replyText: string, gitaBlockStr: string, diagnosticMarkdown?: string): string {
@@ -727,15 +689,15 @@ STRICT ANTI-REPETITION CONSTRAINTS:
         fallbackReply = "That is wonderful news! Congratulations on your new relationship. Enjoy this beautiful phase—how are you feeling about it?";
       }
     } else if (targetLanguage === 'hi') {
-      fallbackReply = "मैं आपकी बात सुन रहा हूँ। मैं आपके साथ पूरी सजगता और शांति से उपस्थित हूँ। बताएं कि आज आपके मन में क्या विचार या प्रश्न है?";
+      fallbackReply = "मैं आपकी पूरी सहायता के लिए यहाँ उपस्थित हूँ। हम भगवद्गीता के दर्शन, संज्ञानात्मक सीबीटी (CBT) तकनीकों और त्राटक ध्यान के समन्वय से समाधान प्रस्तुत करते हैं। आप किस विशेष समस्या या परिस्थिति का समाधान चाहते हैं?";
     } else if (targetLanguage === 'es') {
-      fallbackReply = "Te escucho con serenidad. Estoy aquí contigo con plena atención. Cuéntame, ¿qué tienes en mente hoy o cómo puedo acompañarte?";
+      fallbackReply = "Estoy aquí para ayudarte con calma y presencia. Integramos la sabiduría del Bhagavad Gita, ejercicios de TCC y meditación ocular Trataka. ¿Qué situación específica te gustaría resolver hoy?";
     } else if (targetLanguage === 'fr') {
-      fallbackReply = "Je vous écoute en toute sérénité. Je suis pleinement présent avec vous. Dites-moi, que traversez-vous aujourd'hui ou sur quoi aimeriez-vous échanger ?";
+      fallbackReply = "Je suis à votre écoute pour vous aider. Nous associons la sagesse de la Bhagavad-Gita, les exercices de TCC et la méditation Trataka. Quel sujet précis aimeriez-vous aborder ?";
     } else if (targetLanguage === 'de') {
-      fallbackReply = "Ich höre Ihnen in Ruhe zu und bin ganz für Sie da. Worüber möchten Sie heute sprechen oder wie kann ich Sie unterstützen?";
+      fallbackReply = "Ich bin für Sie da, um Ihnen gezielt zu helfen. Wir verbinden die Weisheit der Bhagavad Gita, kognitive Verhaltenstherapie und Trataka-Augenmeditation. Welches Thema möchten Sie heute angehen?";
     } else {
-      fallbackReply = "I am listening to you with calm awareness. What is on your mind today, or what would you like to explore together?";
+      fallbackReply = "I am here with you, ready to help. We integrate Bhagavad Gita wisdom, clinical CBT, and Trataka eye-gazing techniques to resolve challenges. What specific situation or challenge would you like us to solve together?";
     }
   }
 

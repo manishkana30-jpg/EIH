@@ -315,6 +315,229 @@ export function getLocalizedTestResponse(text?: string, lang?: string, locale?: 
 }
 
 /**
+ * Detects meta-conversational user feedback complaining about repetition,
+ * robotic scripts, or feeling stuck without solutions.
+ */
+export function isRepetitionComplaintMessage(userMessage: string): boolean {
+  if (!userMessage || !userMessage.trim()) return false;
+  const lower = userMessage.toLowerCase().trim();
+  const repetitionPatterns = [
+    "repeat",
+    "repeating",
+    "repetitive",
+    "repetative",
+    "replay",
+    "replays",
+    "same script",
+    "same thing",
+    "again and again",
+    "stop repeating",
+    "you keep saying the same",
+    "not providing solution",
+    "no solution",
+    "give me solution",
+    "give solution",
+    "provide solution",
+    "only saying",
+    "share your feeling",
+    "share your feelings",
+    "i am with you",
+    "stuck in",
+    "stuck",
+    "loop",
+    "phir wahi",
+    "wahi bol rahe ho",
+    "wahi baat",
+    "baar baar",
+    "ek hi cheez",
+    "kuch naya",
+    "kuch alag",
+    "not listening",
+    "sun nahi rahe",
+    "sun nahi raha",
+    "you are not listening",
+    "why are you repeating",
+    "stop saying",
+    "give me actual solution",
+    "where is the solution",
+    "only saying i am with you",
+    "बार बार",
+    "वही बोल रहे हो",
+    "वही बात",
+    "एक ही बात",
+    "एक ही चीज़",
+    "दोहरा",
+    "समाधान नहीं",
+    "समाधान दो",
+    "समाधान बताओ",
+    "कोई समाधान",
+    "भावनाएं बताओ",
+    "भावना बताओ",
+    "सिर्फ कह रहे हो",
+    "कुछ नया",
+    "कुछ अलग",
+    "सुन नहीं रहे",
+    "सुन नहीं रहा",
+    "मैं आपके साथ हूँ",
+  ];
+  return repetitionPatterns.some((p) => lower.includes(p));
+}
+
+/**
+ * Detects explicit demands for solutions, interventions, or actions,
+ * ensuring they are never misclassified as casual/neutral inquiries.
+ */
+export function isExplicitSolutionOrTherapyRequest(userMessage: string): boolean {
+  if (!userMessage || !userMessage.trim()) return false;
+  const lower = userMessage.toLowerCase().trim();
+  if (isRepetitionComplaintMessage(userMessage)) return true;
+
+  // Informational inquiries about assistant capabilities or functions are NOT clinical distress solutions
+  if (/(what can you help|how can you help|what you can help|what do you do|how do you help|how does.*work|what is this app)/i.test(lower)) {
+    return false;
+  }
+
+  const solutionPatterns = [
+    /\b(solution|solutions|solve|how to solve|what to do|what should i do|cure|treatment|action plan|actionable|steps|give me steps|give solution|provide solution|not providing solution|no solution|stuck|fix this|advise me|need advice|repetition|repetitive|repetative|share your feeling|i am with you)\b/i,
+    /\b(help me please|please help me|need help|help me out)\b/i,
+    /(\b(उपाय|समाधान|मदद करो|क्या करूँ|क्या करूं|क्या करना चाहिए|रास्ता बताओ|हल बताओ|हल|सॉल्यूशन)\b)/i,
+  ];
+  return solutionPatterns.some((rx) => rx.test(lower));
+}
+
+export interface RepetitionSolutionResponse {
+  reply: string;
+  sources: Array<{ title: string; summary: string; source: string; url?: string }>;
+  providerUsed: string;
+  recommended_trataka: string;
+}
+
+export function getLocalizedRepetitionSolutionResponse(text?: string, lang?: string, locale?: string): RepetitionSolutionResponse {
+  const isHi = (text && /[\u0900-\u097F]/.test(text)) || lang === 'hi' || locale?.toLowerCase().startsWith('hi');
+  const isEs = lang === 'es' || locale?.toLowerCase().startsWith('es');
+  const isFr = lang === 'fr' || locale?.toLowerCase().startsWith('fr');
+  const isDe = lang === 'de' || locale?.toLowerCase().startsWith('de');
+
+  let reply = '';
+  if (isHi) {
+    reply =
+      "मैं आपकी बात पूरी स्पष्टता से समझ रहा हूँ। बार-बार अपनी भावनाएँ दोहराने या निष्क्रिय सहानुभूति के बजाय, आइए इस मानसिक चक्रव्यूह को तोड़ने के लिए सीधे ठोस त्रि-स्तरीय समाधान (Tri-Pillar Solution) पर कार्य करते हैं:\n\n" +
+      "**1. BHAGAVAD GITA REFRAMING (श्रीमद्भगवद्गीता - अध्याय 6, श्लोक 26):**\n" +
+      "[GITA_SHLOKA]\n" +
+      "यतो यतो निश्चरति मनश्चञ्चलमस्थिरम्।\n" +
+      "ततस्ततो नियम्यैतदात्मन्येव वशं नयेत्॥\n" +
+      "[/GITA_SHLOKA]\n" +
+      "• सार: जहाँ-जहाँ भी यह चंचल और अस्थिर मन भटके या बार-बार एक ही विचार चक्र में उलझे, इसे वहीं से रोककर विवेक और आत्मा के नियंत्रण में लाना चाहिए।\n" +
+      "• व्यावहारिक दृष्टि: 'साक्षी भाव' अपनाएं—यह पहचानें कि विचारों का यह दोहराव केवल मन की तरंगे हैं, आप स्वयं इससे परे शांत और स्थिर हैं।\n\n" +
+      "**2. CLINICAL COGNITIVE NEUROSCIENCE (CBT & Somatic Grounding):**\n" +
+      "• संज्ञानात्मक रीफ्रेम: दोहराते विचारों को 'न्यूरोकेमिकल लूप' के रूप में पहचानें। तुरंत विचार-विराम (Thought-Stopping) करें—मन में दृढ़ता से कहें 'रुकें / रिसेट'।\n" +
+      "• सोमैटिक एंकर (5-4-3-2-1): अपने तंत्रिका तंत्र को स्थिर करें—आसपास 5 वस्तुएं देखें, 4 को स्पर्श करें, 3 ध्वनियां सुनें, 2 गहरी सांसें नाभि से लें, और 1 घूंट पानी पिएं।\n\n" +
+      "**3. TRATAK NEURO-OCULAR PROTOCOL (त्राटक ध्यान):**\n" +
+      "• विधि: बिंदु त्राटक (Bindu Trataka) — स्क्रीन के केंद्रीय स्वर्ण बिंदु पर 3 मिनट तक बिना पलक झपकाए स्थिर दृष्टि रखें।\n" +
+      "• न्यूरो-मैकेनिज्म: आँखों की सूक्ष्म गतियों (Micro-saccades) को स्थिर करने से मस्तिष्क का तनाव केंद्र (Amygdala) शांत होता है और वेंट्रल वैगल तंत्र सक्रिय होता है।\n\n" +
+      "**4. तात्कालिक व्यावहारिक कदम:**\n" +
+      "• अगले 2 मिनट में अपनी शारीरिक मुद्रा बदलें: उठकर कमरे में टहलें, रीढ़ की हड्डी सीधी करें और केवल 1 छोटे कार्य को अभी पूरा करने का संकल्प लें।";
+  } else if (isEs) {
+    reply =
+      "Te escucho con total claridad. En lugar de pedirte que repitas tus sentimientos o darte empatía pasiva, pasemos de inmediato a nuestro protocolo terapéutico de tres pilares para romper este bucle:\n\n" +
+      "**1. BHAGAVAD GITA REFRAMING (Bhagavad Gita - Capítulo 6, Verso 26):**\n" +
+      "[GITA_SHLOKA]\n" +
+      "यतो यतो निश्चरति मनश्चञ्चलमस्थिरम्।\n" +
+      "ततस्ततो नियम्यैतदात्मन्येव वशं नयेत्॥\n" +
+      "[/GITA_SHLOKA]\n" +
+      "• Esencia: Dondequiera que la mente inquieta y errante se desvíe o quede atrapada en bucles repetitivos, uno debe refrenarla con paciencia y devolverla a la presencia del Ser.\n" +
+      "• Acción: Practica Sakshi Bhava (la conciencia testigo): observa los pensamientos repetitivos como oleaje mental transitorio sin identificarte con ellos.\n\n" +
+      "**2. CLINICAL COGNITIVE NEUROSCIENCE (TCC y Anclaje Somático):**\n" +
+      "• Reestructuración cognitiva: Etiqueta la rumiación como un 'bucle neuroquímico'. Aplica la detención del pensamiento: di internamente 'Alto / Reiniciar'.\n" +
+      "• Anclaje somático (5-4-3-2-1): Nombra 5 objetos que veas, 4 texturas que toques, 3 sonidos, haz 2 respiraciones diafragmáticas lentas y bebe 1 sorbo de agua.\n\n" +
+      "**3. TRATAK NEURO-OCULAR PROTOCOL (Trataka Ocular):**\n" +
+      "• Modo: Bindu Trataka (Punto Dorado Focal) durante 3 minutos.\n" +
+      "• Neuro-mecanismo: Fijar la mirada sin parpadear detiene los micro-sacádicos oculares, reduciendo la noradrenalina y desactivando la hiperactivación de la amígdala.\n\n" +
+      "**4. ACCIÓN PRÁCTICA INMEDIATA:**\n" +
+      "• Rompe la inercia ahora mismo: levántate por 2 minutos, estira la espalda o escribe una única tarea concreta para los próximos 10 minutos.";
+  } else if (isFr) {
+    reply =
+      "Je vous entends parfaitement. Plutôt que de vous demander de répéter vos ressentis ou de rester dans une empathie passive, passons immédiatement à notre protocole d'action à trois piliers pour briser cette boucle :\n\n" +
+      "**1. BHAGAVAD GITA REFRAMING (Bhagavad-Gita - Chapitre 6, Verset 26):**\n" +
+      "[GITA_SHLOKA]\n" +
+      "यतो यतो निश्चरति मनश्चञ्चलमस्थिरम्।\n" +
+      "ततस्ततो नियम्यैतदात्मन्येव वशं नयेत्॥\n" +
+      "[/GITA_SHLOKA]\n" +
+      "• Essence : Partout où l'esprit agité et instable s'égare ou s'enferme dans des pensées répétitives, il convient de le ramener doucement sous la maîtrise du Soi.\n" +
+      "• Action : Adoptez la posture de Sakshi Bhava (le témoin silencieux) : observez les boucles mentales sans vous y identifier.\n\n" +
+      "**2. CLINICAL COGNITIVE NEUROSCIENCE (TCC & Ancrage Somatique):**\n" +
+      "• Recadrage cognitif : Identifiez la rumination comme une 'boucle neurochimique'. Utilisez l'arrêt de la pensée : dites fermement 'Stop / Réinitialiser'.\n" +
+      "• Ancrage somatique (5-4-3-2-1) : Observez 5 objets visibles, touchez 4 textures, écoutez 3 sons, prenez 2 respirations profondes et buvez 1 gorgée d'eau.\n\n" +
+      "**3. TRATAK NEURO-OCULAR PROTOCOL (Méditation Trataka):**\n" +
+      "• Mode : Bindu Trataka (Point Focal Doré) pendant 3 minutes.\n" +
+      "• Neuro-mécanisme : Fixer le regard sans cligner des yeux apaise les micro-saccades oculaires, réduisant la noradrénaline et désactivant l'amygdale cérébrale.\n\n" +
+      "**4. ACTION CONCRÈTE IMMÉDIATE:**\n" +
+      "• Brisez l'inertie dès maintenant : levez-vous 2 minutes, étirez votre colonne vertébrale ou notez 1 tâche simple à accomplir dans les 10 prochaines minutes.";
+  } else if (isDe) {
+    reply =
+      "Ich verstehe Sie vollkommen. Anstatt Sie aufzufordern, Ihre Gefühle erneut zu wiederholen oder bei passiver Empathie zu verharren, aktivieren wir sofort unser konkretes Drei-Säulen-Aktionsprotokoll, um diese Gedankenschleife zu durchbrechen:\n\n" +
+      "**1. BHAGAVAD GITA REFRAMING (Bhagavad Gita - Kapitel 6, Vers 26):**\n" +
+      "[GITA_SHLOKA]\n" +
+      "यतो यतो निश्चरति मनश्चञ्चलमस्थिरम्।\n" +
+      "ततस्ततो नियम्यैतदात्मन्येव वशं नयेत्॥\n" +
+      "[/GITA_SHLOKA]\n" +
+      "• Essenz: Wo immer der ruhelose, flatterhafte Geist abschweift oder sich in Wiederholungen verfängt, führe ihn sanft unter die Führung des Selbst zurück.\n" +
+      "• Handlung: Nehmen Sie die Haltung des Sakshi Bhava (Beobachter-Bewusstsein) ein: Betrachten Sie Gedankenschleifen als biochemisches Rauschen.\n\n" +
+      "**2. CLINICAL COGNITIVE NEUROSCIENCE (KVT & Somatische Erdung):**\n" +
+      "• Kognitiver Reframe: Benennen Sie das Grübeln als 'neurochemische Schleife' und stoppen Sie es aktiv: Sagen Sie innerlich 'Stopp / Reset'.\n" +
+      "• Somatische Erdung (5-4-3-2-1): Nennen Sie 5 sichtbare Dinge, berühren Sie 4 Texturen, hören Sie 3 Geräusche, nehmen Sie 2 tiefe Atemzüge und trinken Sie einen Schluck Wasser.\n\n" +
+      "**3. TRATAK NEURO-OCULAR PROTOCOL (Trataka-Augenmeditation):**\n" +
+      "• Modus: Bindu Trataka (Goldener Fokuspunkt) für 3 Minuten.\n" +
+      "• Neuro-Mechanismus: Das Fixieren des Blickes hemmt okuläre Mikrosakkaden, senkt Noradrenalin und beruhigt die Amygdala nachhaltig.\n\n" +
+      "**4. SOFORTIGE HANDLUNG:**\n" +
+      "• Durchbrechen Sie die Trägheit: Stehen Sie für 2 Minuten auf, lockern Sie die Schultern und erledigen Sie eine einzige kleine Aufgabe.";
+  } else {
+    reply =
+      "I hear you completely. Instead of asking you to repeat your feelings or offering passive empathy, let us immediately shift to our concrete, actionable Tri-Pillar protocol to break this loop:\n\n" +
+      "**1. BHAGAVAD GITA REFRAMING (Bhagavad Gita - Chapter 6, Verse 26):**\n" +
+      "[GITA_SHLOKA]\n" +
+      "यतो यतो निश्चरति मनश्चञ्चलमस्थिरम्।\n" +
+      "ततस्ततो नियम्यैतदात्मन्येव वशं नयेत्॥\n" +
+      "[/GITA_SHLOKA]\n" +
+      "• Essence: From wherever the restless, looping mind wanders or fixates on frustration, gently restrain it and bring it back under the steady mastery of the Self.\n" +
+      "• Action: Shift into Sakshi Bhava (witness awareness). Acknowledge that the repetitive mental cycle is just cognitive noise, not your true identity.\n\n" +
+      "**2. CLINICAL COGNITIVE NEUROSCIENCE (CBT & Somatic Grounding):**\n" +
+      "• Reframe: Label repetitive rumination as a 'neurochemical feedback loop'. Interrupt the loop immediately with thought-stopping: say aloud or inwardly 'Reset / Stop'.\n" +
+      "• Somatic Anchor (5-4-3-2-1): Ground your autonomic nervous system right now: name 5 things you see, 4 physical textures you can touch, 3 sounds you hear, take 2 deep diaphragmatic breaths, and take 1 sip of water.\n\n" +
+      "**3. TRATAK NEURO-OCULAR PROTOCOL (Trataka Gazing):**\n" +
+      "• Mode: Bindu Trataka (Sacred Golden Focal Point) for 3 minutes.\n" +
+      "• Practice: Fix your gaze steadily upon the golden center point without blinking for 30–45 seconds. Halting ocular micro-saccades down-regulates locus coeruleus norepinephrine release, directly deactivating amygdala hyper-arousal.\n\n" +
+      "**4. IMMEDIATE ACTION DIRECTIVE:**\n" +
+      "• Break behavioural inertia now: step away from the screen for 2 minutes, stretch your spine, or write down 1 concrete, tangible task you will finish in the next 10 minutes.";
+  }
+
+  const sources = [
+    {
+      title: "Bhagavad Gita: Ch. 6, Verse 26 (Restless Mind & Mental Reining)",
+      summary: "Reining in the wandering, agitated mind back to the Self through detached witness consciousness.",
+      source: "Bhagavad Gita Library",
+    },
+    {
+      title: "Clinical CBT: Cognitive Defusion & Thought-Stopping",
+      summary: "Disrupting rumination loops via cognitive pattern interrupts and 5-4-3-2-1 sensory grounding.",
+      source: "Clinical & Psychoeducational Library",
+    },
+    {
+      title: "Tratak Neuro-Ocular: Bindu Trataka (Sacred Golden Focal Point)",
+      summary: "Fixed focal gaze inhibiting ocular micro-saccades to downregulate autonomic hyper-arousal.",
+      source: "Trataka Sacred Gazing Protocol",
+    },
+  ];
+
+  return {
+    reply,
+    sources,
+    providerUsed: "Tri-Pillar Active Solution Protocol",
+    recommended_trataka: "bindu",
+  };
+}
+
+/**
  * Detects if user input is an incomplete speech fragment, dangling pronoun, or cut-off utterance.
  * In a therapeutic setting, responding with full clinical diagnoses, Gita shlokas, and Trataka
  * to isolated fragments (e.g. "mein", "I...", "actually", "and then") is completely invalid.

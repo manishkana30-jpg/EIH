@@ -218,8 +218,12 @@ export const GITA_LIBRARY: GitaShlokaItem[] = [
       "looping thoughts", "racing thoughts", "mind wandering", "restless mind",
       "racing mind", "mental rituals", "spiral", "spiraling", "insomnia",
       "cant sleep", "awake at night", "sleepless", "adhd", "distracted", "chinta",
+      "repetition", "repetitive", "repetative", "replay", "replays", "loop",
+      "looping", "stuck", "no solution", "not providing solution", "give solution",
+      "provide solution", "share your feeling", "i am with you",
       "neend nahi aa rahi", "bechain man", "soch", "neend", "vichar", "विचार रुक नहीं रहे", "ज्यादा सोचना",
-      "नींद नहीं आ रही", "नींद नहीं आती", "नींद", "बेचैन मन", "रात भर जागना", "रात भर", "विचार", "सोच रहा हूँ", "सोचना"
+      "नींद नहीं आ रही", "नींद नहीं आती", "नींद", "बेचैन मन", "रात भर जागना", "रात भर", "विचार", "सोच रहा हूँ", "सोचना",
+      "दोहराव", "समाधान", "लूप", "अटक गया", "उपाय बताओ"
     ],
     shloka_sanskrit: "यतो यतो निश्चरति मनश्चञ्चलमस्थिरम्।\nततस्ततो नियम्यैतदात्मन्येव वशं नयेत्॥",
     shloka_roman: "yato yato niścarati manaś cañcalam asthiram |\ntatas tato niyamyaitad ātmany eva vaśaṁ nayet ||",
