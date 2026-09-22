@@ -133,6 +133,7 @@ export class BrowserSpeechController {
   // Adaptive silence threshold (2800ms gives user generous breathing room to complete thoughts)
   private silenceTimeoutMs = 2800;
   private currentLanguageLocale = 'en-US';
+  private activeSpeechGeneration = 0;
 
   private constructor() {
     if (typeof window !== 'undefined') {
@@ -1061,6 +1062,7 @@ export class BrowserSpeechController {
     if (currentChunk) sentenceChunks.push(currentChunk);
     if (sentenceChunks.length === 0) sentenceChunks.push(cleanText);
 
+    const speechGeneration = ++this.activeSpeechGeneration;
     let isFinished = false;
     const finishSpeech = () => {
       if (isFinished) return;
@@ -1136,7 +1138,9 @@ export class BrowserSpeechController {
     }
 
     const speakNextChunk = () => {
-      if (isFinished || !this.speechSynth) return;
+      if (isFinished || this.activeSpeechGeneration !== speechGeneration || !this.isSpeaking || !this.speechSynth) {
+        return;
+      }
       if (chunkIdx >= sentenceChunks.length) {
         finishSpeech();
         return;
@@ -1173,6 +1177,7 @@ export class BrowserSpeechController {
 
       // Real-Time Word & Sentence Boundary Highlighting (Karaoke Mode)
       utterance.onboundary = (event: any) => {
+        if (isFinished || this.activeSpeechGeneration !== speechGeneration || !this.isSpeaking) return;
         if (event.name && event.name !== 'word') return;
         lastBoundaryFiredTime = performance.now();
         const relativeCharIndex = event.charIndex || 0;
@@ -1190,6 +1195,12 @@ export class BrowserSpeechController {
       };
 
       utterance.onstart = () => {
+        if (isFinished || this.activeSpeechGeneration !== speechGeneration || !this.isSpeaking) {
+          try {
+            this.speechSynth?.cancel();
+          } catch (_) {}
+          return;
+        }
         chunkStartTime = performance.now();
         lastBoundaryFiredTime = performance.now();
         lastEmittedCharIndex = 0;
@@ -1205,19 +1216,16 @@ export class BrowserSpeechController {
         const firstWord = firstMatch ? firstMatch[0] : '';
         this.callbacks.onWordBoundary?.(currentChunkOffset, firstWord.length, firstWord);
 
-        // Adaptive boundary ticker: if browser voice lacks onboundary support (e.g. Google network voices in Chrome),
-        // smoothly advance word tracking based on elapsed speech duration
+        // Adaptive boundary ticker: smoothly advance word tracking based on elapsed speech duration
         stopBoundaryTicker();
         boundaryTicker = setInterval(() => {
-          if (isFinished || !this.isSpeaking) {
+          if (isFinished || this.activeSpeechGeneration !== speechGeneration || !this.isSpeaking) {
             stopBoundaryTicker();
             return;
           }
           const now = performance.now();
-          // If native onboundary hasn't fired in the last 280ms, interpolate progress
           if (now - lastBoundaryFiredTime > 280) {
             const elapsedSec = (now - chunkStartTime) / 1000;
-            // Average conversational speech reading rate: ~15.5 characters per second
             const estimatedRelativeChar = Math.min(
               chunkText.length - 1,
               Math.max(lastEmittedCharIndex, Math.floor(elapsedSec * 15.5))
@@ -1235,6 +1243,9 @@ export class BrowserSpeechController {
 
       utterance.onend = () => {
         stopBoundaryTicker();
+        if (isFinished || this.activeSpeechGeneration !== speechGeneration || !this.isSpeaking) {
+          return;
+        }
         if (chunkIdx < sentenceChunks.length) {
           speakNextChunk();
         } else {
@@ -1244,6 +1255,9 @@ export class BrowserSpeechController {
 
       utterance.onerror = (e) => {
         stopBoundaryTicker();
+        if (isFinished || this.activeSpeechGeneration !== speechGeneration || !this.isSpeaking) {
+          return;
+        }
         console.warn("SpeechSynthesis chunk notice:", e);
         if (chunkIdx < sentenceChunks.length) {
           speakNextChunk();
@@ -1268,6 +1282,7 @@ export class BrowserSpeechController {
   }
 
   public cancelSpeech(): void {
+    this.activeSpeechGeneration++;
     if (this.currentBlobUrl) {
       try {
         URL.revokeObjectURL(this.currentBlobUrl);
@@ -1297,6 +1312,13 @@ export class BrowserSpeechController {
       clearInterval(this.ttsResumeInterval);
       this.ttsResumeInterval = null;
     }
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window && window.speechSynthesis) {
+      try {
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.pause();
+        window.speechSynthesis.cancel();
+      } catch (_) {}
+    }
     if (this.speechSynth) {
       try {
         this.speechSynth.cancel();
@@ -1304,8 +1326,11 @@ export class BrowserSpeechController {
     }
     this.isSpeaking = false;
     this.isProcessingUtterance = false;
+    this.shouldBeListening = false;
     this.currentUtterance = null;
-    (window as any).__activeUtterance = null;
+    if (typeof window !== 'undefined') {
+      (window as any).__activeUtterance = null;
+    }
     this.callbacks.onWordBoundary?.(-1, 0, '');
     this.callbacks.onAssistantEnd?.();
   }

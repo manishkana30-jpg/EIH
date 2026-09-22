@@ -1084,52 +1084,74 @@ export default function SanctuarySessionPage() {
   };
 
   const handleEndSession = () => {
+    // 1. Force instant termination of HTML audio
     if (activeAudioRef.current) {
-      activeAudioRef.current.pause();
+      try {
+        activeAudioRef.current.pause();
+        activeAudioRef.current.src = "";
+      } catch (_) {}
       activeAudioRef.current = null;
     }
+
+    // 2. Force instant termination of SpeechSynthesis (browser native voices)
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      try {
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.pause();
+        window.speechSynthesis.cancel();
+      } catch (_) {}
+    }
+
+    // 3. Force controller to cancel all chunk generation and ongoing streaming
     browserSpeechController.cancelSpeech();
     browserSpeechController.stopRecognition();
+
+    // 4. Release all active microphone streams and visualizers
     if (activeStreamRef.current) {
-      activeStreamRef.current.getTracks().forEach((track) => track.stop());
+      try {
+        activeStreamRef.current.getTracks().forEach((track) => track.stop());
+      } catch (_) {}
       activeStreamRef.current = null;
     }
+    setRecordingStream(null);
+
+    // 5. Instantly clear all session playback and recording states
     setIsRecording(false);
     setIsPlayingAudio(false);
+    isPlayingAudioRef.current = false;
     isVoiceModeActiveRef.current = false;
+    isEchoLockedRef.current = false;
+    setIsEchoLocked(false);
+    setActiveKaraoke(null);
+    setSpeakingMessageId(null);
+    activeSpeakingMessageIdRef.current = null;
 
-    const executeReset = () => {
-      setMessages([]);
-      setTelemetry({
-        dominant_emotion: "Calmness",
-        polyvagal_state: "Ventral Vagal (Safe)",
-        cbt_distortion: "None",
-        percentages: { Calmness: 100, Receptivity: 90 },
-        strategy: "Sanctuary baseline active.",
-      });
-      setRecommendedTrataka("bindu");
-      setActiveTriguna(null);
-      setActiveCrisisData(null);
-      setIsCrisisModalOpen(false);
-      setIsCBTModalOpen(false);
-      setIsPranayamaOpen(false);
-      setIsTratakaOpen(false);
-      setIsHistoryOpen(false);
-      setActiveKaraoke(null);
-      setInputVal("");
-      setErrorMessage(null);
-      resetActiveSessionId();
-      purgeAllAppStorage();
-      clearPsychologyTelemetry();
-    };
+    // 6. Reset all clinical dialogues and return to calm sanctuary baseline
+    setMessages([]);
+    setTelemetry({
+      dominant_emotion: "Calmness",
+      polyvagal_state: "Ventral Vagal (Safe)",
+      cbt_distortion: "None",
+      percentages: { Calmness: 100, Receptivity: 90 },
+      strategy: "Sanctuary baseline active.",
+      voice_state: "Stable vocal resonance",
+    });
+    setRecommendedTrataka("bindu");
+    setActiveTriguna(null);
+    setActiveVoiceState(null);
+    setActiveCrisisData(null);
+    setIsCrisisModalOpen(false);
+    setIsCBTModalOpen(false);
+    setIsPranayamaOpen(false);
+    setIsTratakaOpen(false);
+    setIsHistoryOpen(false);
+    setInputVal("");
+    setErrorMessage(null);
 
-    if (messages.length > 0) {
-      if (window.confirm("End this active session? All live dialogue, audio synthesis, and ephemeral session memory will be permanently removed (zero retention).")) {
-        executeReset();
-      }
-    } else {
-      executeReset();
-    }
+    // 7. Ephemeral session memory zero-retention wipe
+    resetActiveSessionId();
+    purgeAllAppStorage();
+    clearPsychologyTelemetry();
   };
 
   const isSessionActive = isRecording || isPlayingAudio || isVoiceModeActiveRef.current;
