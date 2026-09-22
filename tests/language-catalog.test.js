@@ -74,7 +74,7 @@ console.log(`  ✓ [Hindi Devanagari]: "${hindiUtterance}" ➔ Detected: ${hindi
 // Turn B: User speaks in Hinglish (Roman Hindi)
 const hinglishUtterance = "Mujhe bohot tension ho raha hai office ki wajah se";
 const hinglishLang = detectUserSpokenLanguage(hinglishUtterance);
-assert.strictEqual(hindiLang.langCode, 'hi');
+assert.strictEqual(hinglishLang.langCode, 'hi');
 console.log(`  ✓ [Hinglish]: "${hinglishUtterance}" ➔ Detected: ${hinglishLang.name} (${hinglishLang.speechLocale})`);
 
 // Turn C: User switches to Spanish

@@ -7,11 +7,12 @@ import {
   isIncompleteUtterance,
   isRepetitionComplaintMessage,
   getLocalizedRepetitionSolutionResponse,
-  GREETING_RESPONSE,
-  TEST_RESPONSE,
+  getLocalizedGreetingResponse,
+  getLocalizedTestResponse,
   getLocalizedIncompleteUtteranceResponse,
   queryPsychologyLibrary,
 } from '@/lib/knowledge/psychology-library-rag';
+import { resolveSpokenLanguageWithGpsOverride } from '@/lib/i18n/language-catalog';
 import { findGitaWisdom, formatGitaShlokaBlock, GITA_LIBRARY } from '@/lib/knowledge/gita-library';
 import { resolveTratakaPrescription } from '@/lib/knowledge/trataka-recommendations';
 import {
@@ -148,37 +149,37 @@ export async function POST(req: NextRequest) {
     rawUserPrompt = (prompt || '').trim();
     const cleanPrompt = rawUserPrompt;
 
+    // Understand user spoken language and explicitly override GPS language for replying
+    const spokenResolution = resolveSpokenLanguageWithGpsOverride(cleanPrompt, language, locale);
+    const targetLang = normalizeLanguageCode(spokenResolution.langCode);
+    const effectiveLocale = spokenResolution.speechLocale;
+
     if (isTestMessage(cleanPrompt)) {
       return NextResponse.json({
-        reply: TEST_RESPONSE,
+        reply: getLocalizedTestResponse(cleanPrompt, targetLang, effectiveLocale),
         provider: 'audio_verification',
       });
     }
 
     if (isGreetingMessage(cleanPrompt)) {
       return NextResponse.json({
-        reply: GREETING_RESPONSE,
+        reply: getLocalizedGreetingResponse(cleanPrompt, targetLang, effectiveLocale),
         provider: 'conversational_empathy',
       });
     }
 
     if (isIncompleteUtterance(cleanPrompt)) {
-      const incompleteReply = getLocalizedIncompleteUtteranceResponse(cleanPrompt, language, locale);
+      const incompleteReply = getLocalizedIncompleteUtteranceResponse(cleanPrompt, targetLang, effectiveLocale);
       return NextResponse.json({
         reply: incompleteReply,
         provider: 'active_listening_interceptor',
       });
     }
 
-    // Determine target language from explicit selection, GPS locale, or script detection
-    const requestedLanguage = language || locale;
-    const detectedScriptLang = cleanPrompt.match(/[\u0900-\u097F]/) ? 'hi' : undefined;
-    const targetLang = normalizeLanguageCode(requestedLanguage || detectedScriptLang || 'en');
-
     // Anti-repetition check for user expressing frustration with canned or looped scripts
     const lowerPrompt = cleanPrompt.toLowerCase();
     if (isRepetitionComplaintMessage(cleanPrompt)) {
-      const repRes = getLocalizedRepetitionSolutionResponse(cleanPrompt, targetLang, locale);
+      const repRes = getLocalizedRepetitionSolutionResponse(cleanPrompt, targetLang, effectiveLocale);
       return NextResponse.json({
         reply: repRes.reply,
         sources: repRes.sources,

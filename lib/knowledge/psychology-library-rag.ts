@@ -6,6 +6,7 @@
 
 import psychologyLibraryData from '../../data/psychology_library.json' with { type: 'json' };
 import { emotionClassifier } from './emotion-classifier.ts';
+import { resolveSpokenLanguageWithGpsOverride } from '../i18n/language-catalog.ts';
 import {
   DYNAMIC_LEARNED_DOCUMENTS,
   learnAndIndexQuery,
@@ -291,26 +292,22 @@ export const GREETING_RESPONSE = 'Hello, how can I help you?';
 export const TEST_RESPONSE = 'Mic is running fine.';
 
 export function getLocalizedGreetingResponse(text?: string, lang?: string, locale?: string): string {
-  const isHi = (text && /[\u0900-\u097F]/.test(text)) || lang === 'hi' || locale?.toLowerCase().startsWith('hi');
-  if (isHi) return 'नमस्ते! मैं आपकी कैसे सहायता कर सकता हूँ?';
-  const isEs = lang === 'es' || locale?.toLowerCase().startsWith('es');
-  if (isEs) return '¡Hola! ¿Cómo puedo ayudarte hoy?';
-  const isFr = lang === 'fr' || locale?.toLowerCase().startsWith('fr');
-  if (isFr) return 'Bonjour ! Comment puis-je vous aider aujourd\'hui ?';
-  const isDe = lang === 'de' || locale?.toLowerCase().startsWith('de');
-  if (isDe) return 'Hallo! Wie kann ich Ihnen heute helfen?';
+  const spoken = resolveSpokenLanguageWithGpsOverride(text || '', lang, locale);
+  const targetCode = spoken.langCode;
+  if (targetCode === 'hi') return 'नमस्ते! मैं आपकी कैसे सहायता कर सकता हूँ?';
+  if (targetCode === 'es') return '¡Hola! ¿Cómo puedo ayudarte hoy?';
+  if (targetCode === 'fr') return 'Bonjour ! Comment puis-je vous aider aujourd\'hui ?';
+  if (targetCode === 'de') return 'Hallo! Wie kann ich Ihnen heute helfen?';
   return GREETING_RESPONSE;
 }
 
 export function getLocalizedTestResponse(text?: string, lang?: string, locale?: string): string {
-  const isHi = (text && /[\u0900-\u097F]/.test(text)) || lang === 'hi' || locale?.toLowerCase().startsWith('hi');
-  if (isHi) return 'माइक्रोफ़ोन बिल्कुल सही तरीके से काम कर रहा है।';
-  const isEs = lang === 'es' || locale?.toLowerCase().startsWith('es');
-  if (isEs) return 'El micrófono está funcionando perfectamente.';
-  const isFr = lang === 'fr' || locale?.toLowerCase().startsWith('fr');
-  if (isFr) return 'Le microphone fonctionne parfaitement.';
-  const isDe = lang === 'de' || locale?.toLowerCase().startsWith('de');
-  if (isDe) return 'Das Mikrofon funktioniert einwandfrei.';
+  const spoken = resolveSpokenLanguageWithGpsOverride(text || '', lang, locale);
+  const targetCode = spoken.langCode;
+  if (targetCode === 'hi') return 'माइक्रोफ़ोन बिल्कुल सही तरीके से काम कर रहा है।';
+  if (targetCode === 'es') return 'El micrófono está funcionando perfectamente.';
+  if (targetCode === 'fr') return 'Le microphone fonctionne parfaitement.';
+  if (targetCode === 'de') return 'Das Mikrofon funktioniert einwandfrei.';
   return TEST_RESPONSE;
 }
 
@@ -442,12 +439,12 @@ export interface RepetitionSolutionResponse {
 }
 
 export function getLocalizedRepetitionSolutionResponse(text?: string, lang?: string, locale?: string): RepetitionSolutionResponse {
-  const hindiRomanizedMarkers = ['chahiye', 'batao', 'karo', 'mujhe', 'sunna', 'raha', 'rahe', 'rahi', 'wahi', 'nahi', 'baar', 'ilaj', 'upay', 'samadhan', 'hal ', 'tarika'];
-  const hasHindiRomanized = text ? hindiRomanizedMarkers.some((m) => text.toLowerCase().includes(m)) : false;
-  const isHi = (text && /[\u0900-\u097F]/.test(text)) || lang === 'hi' || locale?.toLowerCase().startsWith('hi') || hasHindiRomanized;
-  const isEs = lang === 'es' || locale?.toLowerCase().startsWith('es');
-  const isFr = lang === 'fr' || locale?.toLowerCase().startsWith('fr');
-  const isDe = lang === 'de' || locale?.toLowerCase().startsWith('de');
+  const spoken = resolveSpokenLanguageWithGpsOverride(text || '', lang, locale);
+  const targetCode = spoken.langCode;
+  const isHi = targetCode === 'hi';
+  const isEs = targetCode === 'es';
+  const isFr = targetCode === 'fr';
+  const isDe = targetCode === 'de';
 
   let reply = '';
   if (isHi) {
@@ -654,11 +651,12 @@ export function isIncompleteUtterance(text: string): boolean {
 
 export function getLocalizedIncompleteUtteranceResponse(text?: string, lang?: string, locale?: string): string {
   const cleanSnippet = (text || '').trim().slice(0, 30);
-  const isHi =
-    (text && /[\u0900-\u097F]/.test(text)) ||
-    (text && /\b(mein|main|mai|hum|mujhe|mera|meri|mere|aur|lekin|toh|kya|kyun|kaise)\b/i.test(text)) ||
-    lang === 'hi' ||
-    locale?.toLowerCase().startsWith('hi');
+  const spoken = resolveSpokenLanguageWithGpsOverride(text || '', lang, locale);
+  const targetCode = spoken.langCode;
+  const isHi = targetCode === 'hi';
+  const isEs = targetCode === 'es';
+  const isFr = targetCode === 'fr';
+  const isDe = targetCode === 'de';
 
   if (isHi) {
     return cleanSnippet
@@ -666,21 +664,18 @@ export function getLocalizedIncompleteUtteranceResponse(text?: string, lang?: st
       : 'शायद आपकी बात अधूरी रह गई। कृपया थोड़ा विस्तार से बताएं कि आप क्या महसूस कर रहे हैं, मैं ध्यान से सुन रहा हूँ।';
   }
 
-  const isEs = lang === 'es' || locale?.toLowerCase().startsWith('es');
   if (isEs) {
     return cleanSnippet
       ? `Solo alcancé a escuchar "${cleanSnippet}", parece que la frase quedó incompleta o el micrófono se detuvo. Cuéntame un poco más sobre lo que estás experimentando, te escucho con atención.`
       : 'Parece que tu mensaje quedó incompleto. Cuéntame con más detalle lo que sientes, te escucho con atención.';
   }
 
-  const isFr = lang === 'fr' || locale?.toLowerCase().startsWith('fr');
   if (isFr) {
     return cleanSnippet
       ? `Je n'ai capté que "${cleanSnippet}", votre phrase semble avoir été interrompue. Pourriez-vous m'en dire un peu plus sur ce que vous ressentez ? Je vous écoute attentivement.`
       : 'Votre message semble incomplet. Dites-m\'en un peu plus sur ce que vous ressentez, je vous écoute attentivement.';
   }
 
-  const isDe = lang === 'de' || locale?.toLowerCase().startsWith('de');
   if (isDe) {
     return cleanSnippet
       ? `Ich habe nur "${cleanSnippet}" gehört, anscheinend wurde der Satz unterbrochen. Könnten Sie mir ein wenig mehr darüber erzählen, was Sie fühlen? Ich höre aufmerksam zu.`

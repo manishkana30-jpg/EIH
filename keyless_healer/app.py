@@ -826,10 +826,34 @@ async def chat_endpoint(payload: TherapyRequest, request: Request, background_ta
         if psychology_rag and len(clean_user_query) >= 4:
             background_tasks.add_task(psychology_rag.learn_document_from_query, clean_user_query)
 
-        # Detect target locale from script, payload locale, or payload language
+        # Detect user spoken language and explicitly override GPS locale
+        clean_lower = clean_user_query.lower()
         has_devanagari = bool(re.search(r"[\u0900-\u097F]", clean_user_query))
-        if has_devanagari:
+
+        hinglish_words = ["chahiye", "batao", "karo", "mujhe", "sunna", "raha", "rahe", "rahi", "nahi", "tension", "ghabrahat", "bechaini", "kya", "kaise", "samajh", "dard", "baat", "pareshan", "bhai", "yaar"]
+        spanish_words = ["hola", "siento", "tengo", "triste", "ayuda", "quiero", "miedo", "cansado", "ansiedad", "calmar", "estoy"]
+        french_words = ["bonjour", "suis", "triste", "peur", "merci", "fatigué", "besoin", "veux", "anxiété", "angoisse", "calmar"]
+        german_words = ["hallo", "fühle", "mich", "danke", "angst", "traurig", "überfordert", "hilfe", "müde", "einsam", "stress"]
+        english_words = ["feel", "feeling", "think", "thinking", "want", "need", "help", "worried", "anxious", "stress", "depressed", "myself", "cannot", "today", "please"]
+
+        hi_score = sum(1 for w in hinglish_words if re.search(r"\b" + re.escape(w) + r"\b", clean_lower))
+        es_score = sum(1 for w in spanish_words if re.search(r"\b" + re.escape(w) + r"\b", clean_lower))
+        fr_score = sum(1 for w in french_words if re.search(r"\b" + re.escape(w) + r"\b", clean_lower))
+        de_score = sum(1 for w in german_words if re.search(r"\b" + re.escape(w) + r"\b", clean_lower))
+        en_score = sum(1 for w in english_words if re.search(r"\b" + re.escape(w) + r"\b", clean_lower))
+
+        max_score = max(hi_score, es_score, fr_score, de_score, en_score)
+
+        if has_devanagari or (max_score > 0 and hi_score == max_score):
             target_locale = "hi-IN"
+        elif max_score > 0 and es_score == max_score:
+            target_locale = "es-ES"
+        elif max_score > 0 and fr_score == max_score:
+            target_locale = "fr-FR"
+        elif max_score > 0 and de_score == max_score:
+            target_locale = "de-DE"
+        elif max_score > 0 and en_score == max_score:
+            target_locale = "en-US"
         elif payload.locale:
             target_locale = payload.locale
         elif payload.language:

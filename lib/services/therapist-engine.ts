@@ -13,7 +13,7 @@ import {
   TEST_RESPONSE,
   getLocalizedIncompleteUtteranceResponse,
 } from "../knowledge/psychology-library-rag.ts";
-import { getLanguageByCode } from "../i18n/language-catalog.ts";
+import { getLanguageByCode, resolveSpokenLanguageWithGpsOverride } from "../i18n/language-catalog.ts";
 import {
   formatHumanTherapeuticMessage,
   getLocalizedGeneralAdvice,
@@ -277,6 +277,11 @@ export async function generateTherapeuticResponse(
   recommended_trataka?: string;
   triguna_analysis?: any;
 }> {
+  // 0. Accurately resolve spoken language and explicitly override GPS/locale
+  const spokenResolution = resolveSpokenLanguageWithGpsOverride(userMessage, language, locale);
+  const normLang = normalizeLanguageCode(spokenResolution.langCode);
+  const langItem = getLanguageByCode(normLang);
+
   // 1. Instant Crisis Safety Interception (Zero-False-Negative)
   const crisis = detectCrisis(userMessage);
   if (crisis.isCrisis) {
@@ -311,7 +316,7 @@ export async function generateTherapeuticResponse(
   }
 
   if (isIncompleteUtterance(userMessage)) {
-    const incompleteReply = getLocalizedIncompleteUtteranceResponse(userMessage, language, locale);
+    const incompleteReply = getLocalizedIncompleteUtteranceResponse(userMessage, normLang, spokenResolution.speechLocale);
     return {
       reply: incompleteReply,
       sources: [],
@@ -322,7 +327,7 @@ export async function generateTherapeuticResponse(
 
   // 1c. Repetition & Script Loop Interceptor (Delivers immediate actionable Tri-Pillar solution)
   if (isRepetitionComplaintMessage(userMessage)) {
-    const repRes = getLocalizedRepetitionSolutionResponse(userMessage, language, locale);
+    const repRes = getLocalizedRepetitionSolutionResponse(userMessage, normLang, spokenResolution.speechLocale);
     return {
       reply: repRes.reply,
       sources: repRes.sources,
@@ -375,11 +380,7 @@ export async function generateTherapeuticResponse(
     });
   }
 
-  // Determine Language Instruction for LLMs
-  const activeLangCode = language || (locale ? locale.split("-")[0].split("_")[0] : null);
-  const detectedScriptLang = /[\u0900-\u097F]/.test(userMessage) ? "hi" : "en";
-  const normLang = normalizeLanguageCode(activeLangCode || detectedScriptLang);
-  const langItem = getLanguageByCode(normLang);
+  // normLang and langItem resolved with full spoken language GPS override at start of handler
 
   const locGita = getLocalizedGitaItem(gitaItem, normLang);
   const locTratak = getLocalizedTratakaItem(tratakPrescription, normLang);

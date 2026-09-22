@@ -17,7 +17,9 @@ import { getResearchedAdviceForEmotion } from '../knowledge/authenticated-resear
 import {
   formatHumanTherapeuticMessage,
   getLocalizedGeneralAdvice,
+  normalizeLanguageCode,
 } from '../i18n/clinical-localization';
+import { resolveSpokenLanguageWithGpsOverride } from '../i18n/language-catalog';
 import { findGitaWisdom } from '../knowledge/gita-library';
 import {
   resolveTratakaPrescription,
@@ -171,6 +173,11 @@ class HealerBackendClient {
   ): Promise<ChatResponse> {
     const cleanMessage = message.trim();
 
+    // Understand user spoken language and explicitly override GPS language for replying
+    const spoken = resolveSpokenLanguageWithGpsOverride(cleanMessage, language, locale);
+    const effectiveLanguage = spoken.langCode;
+    const effectiveLocale = spoken.speechLocale;
+
     // 0. Immediate Deterministic Crisis Safety Check
     const crisis = detectCrisis(cleanMessage);
     if (crisis.isCrisis) {
@@ -196,7 +203,7 @@ class HealerBackendClient {
 
     // 0.1. Immediate Greeting & Mic Test Fast-Path (Single sentence responses, no clinical trataka)
     if (isTestMessage(cleanMessage)) {
-      const testReply = getLocalizedTestResponse(cleanMessage, language, locale);
+      const testReply = getLocalizedTestResponse(cleanMessage, effectiveLanguage, effectiveLocale);
       return {
         reply: testReply,
         sources: [],
@@ -214,7 +221,7 @@ class HealerBackendClient {
     }
 
     if (isGreetingMessage(cleanMessage)) {
-      const greetingReply = getLocalizedGreetingResponse(cleanMessage, language, locale);
+      const greetingReply = getLocalizedGreetingResponse(cleanMessage, effectiveLanguage, effectiveLocale);
       return {
         reply: greetingReply,
         sources: [],
@@ -232,7 +239,7 @@ class HealerBackendClient {
     }
 
     if (isIncompleteUtterance(cleanMessage)) {
-      const incompleteReply = getLocalizedIncompleteUtteranceResponse(cleanMessage, language, locale);
+      const incompleteReply = getLocalizedIncompleteUtteranceResponse(cleanMessage, effectiveLanguage, effectiveLocale);
       return {
         reply: incompleteReply,
         sources: [],
@@ -250,7 +257,7 @@ class HealerBackendClient {
     }
 
     if (isRepetitionComplaintMessage(cleanMessage)) {
-      const repRes = getLocalizedRepetitionSolutionResponse(cleanMessage, language, locale);
+      const repRes = getLocalizedRepetitionSolutionResponse(cleanMessage, effectiveLanguage, effectiveLocale);
       return {
         reply: repRes.reply,
         sources: repRes.sources,
@@ -268,11 +275,8 @@ class HealerBackendClient {
       };
     }
 
-    // Resolve accurate locale
-    const hasDevanagari = /[\u0900-\u097F]/.test(cleanMessage);
-    const resolvedLocale = hasDevanagari
-      ? 'hi-IN'
-      : locale || (language === 'hi' ? 'hi-IN' : language === 'es' ? 'es-ES' : language === 'fr' ? 'fr-FR' : language === 'de' ? 'de-DE' : undefined);
+    // Resolve accurate locale matching spoken language
+    const resolvedLocale = effectiveLocale;
 
     // TIER 1: Dedicated Hardware Python Daemon (via Tunnel or Localhost)
     const backendUrl = this.getBackendUrl();
@@ -288,7 +292,7 @@ class HealerBackendClient {
             message: cleanMessage,
             history,
             voice_mode: voiceMode,
-            language: hasDevanagari ? 'hi' : (language || undefined),
+            language: effectiveLanguage,
             locale: resolvedLocale,
             voice_state: voiceState,
           }),
@@ -328,7 +332,7 @@ class HealerBackendClient {
         body: JSON.stringify({
           message: cleanMessage,
           history: history?.map((h) => ({ role: h.sender === 'ai' ? 'assistant' : 'user', content: h.text })),
-          language: hasDevanagari ? 'hi' : (language || undefined),
+          language: effectiveLanguage,
           locale: resolvedLocale,
           voice_state: voiceState,
         }),
@@ -414,7 +418,7 @@ class HealerBackendClient {
       );
       const gitaItem = findGitaWisdom(cleanMessage);
 
-      const targetLang = cleanMessage.match(/[\u0900-\u097F]/) ? 'hi' : (language || locale || 'en');
+      const targetLang = normalizeLanguageCode(effectiveLanguage);
       const hasDistressKeywords = /(?:distress|anxious|anxiety|depress|depressed|depression|sad|sadness|fear|scared|panic|stress|stressed|overwhelm|overwhelmed|worry|worried|grief|pain|burnout|lonely|loneliness|angry|anger|trauma|shame|guilt|fail|failed|failure|terrif|crying|tears|breakup|heartbreak|heartbroken|debt|debts|financial|burden|burdened|broke|struggling|struggle|loans|bills|hopeless|hopelessness|empty|numb|insomnia|can't sleep|cant sleep|insecure|rejection|rejected|abandoned|confused|restless|exhausted|fatigue|unmotivated|frustrated|frustration|hurting|suffering|mental problem|mental health|overthinking|racing thoughts|fight|argument|conflict|alone|nobody cares|chinta|tanaav|udas|gussa|troubled|need help|please help me|help me please|someone help me|help me i'm|help me i am|दर्द|रोना|रो |रोने|रोऊ|दुःख|दुख|तनाव|चिंता|उदासी|डर|घबराहट|घबरा|ब्रेकअप|परेशान|पीड़ा|कष्ट|क्रोध|अकेला|हार|असफल|टूटा|कर्ज|कर्जा|ऋण|बोझ|निराश|निराशा|उलझन|बेचैन|बेचैनी|थकान|थका)/i.test(cleanMessage);
 
       const hasPositiveOrCalmExplicit =

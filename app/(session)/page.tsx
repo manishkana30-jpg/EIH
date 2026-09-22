@@ -40,6 +40,9 @@ import {
   detectUserLocale,
   getStoredLanguage,
   saveLanguagePreference,
+  detectUserSpokenLanguage,
+  resolveSpokenLanguageWithGpsOverride,
+  getLanguageByCode,
 } from "@/lib/i18n/language-catalog";
 import { saveLivePsychologyTelemetry, clearPsychologyTelemetry } from "@/lib/telemetry/psychology-store";
 import { getConditionById } from "@/lib/knowledge/psychology-library-rag";
@@ -359,10 +362,12 @@ export default function SanctuarySessionPage() {
   const playVoice = useCallback((text: string, audioBase64?: string, messageId?: string) => {
     if (isAiMutedRef.current) return;
 
-    const hasDevanagari = /[\u0900-\u097F]/.test(text);
-    const targetLocale = hasDevanagari
-      ? "hi-IN"
-      : currentLanguageRef.current.speechLocale || userLocaleRef.current || "en-US";
+    const detectedReplyLang = detectUserSpokenLanguage(text);
+    const targetLocale =
+      detectedReplyLang.speechLocale ||
+      currentLanguageRef.current.speechLocale ||
+      userLocaleRef.current ||
+      "en-US";
 
     // Precompute words and sentences for 100% exact 1:1 boundary mapping
     const { words: cleanWordList, speechText } = tokenizeForKaraoke(text, targetLocale);
@@ -544,13 +549,34 @@ export default function SanctuarySessionPage() {
         text: m.text,
       }));
 
+    // Understand user spoken language and explicitly override GPS language for replying
+    const spokenResolution = resolveSpokenLanguageWithGpsOverride(
+      messageText,
+      currentLanguageRef.current.code,
+      userLocaleRef.current
+    );
+
+    // If the user spoke in a different language than current active language, adapt session language dynamically
+    if (spokenResolution.isOverridden && spokenResolution.langCode !== currentLanguageRef.current.code) {
+      const matchedLang =
+        GLOBAL_LANGUAGE_CATALOG.find((l) => l.code === spokenResolution.langCode) ||
+        getLanguageByCode(spokenResolution.langCode);
+      if (matchedLang) {
+        setCurrentLanguage(matchedLang);
+        setUserLocale(spokenResolution.speechLocale);
+        currentLanguageRef.current = matchedLang;
+        userLocaleRef.current = spokenResolution.speechLocale;
+        browserSpeechController.setLanguageLocale(spokenResolution.speechLocale);
+      }
+    }
+
     try {
       const response = await healerClient.sendMessage(
         messageText,
         historyPayload,
         true,
-        currentLanguageRef.current.code,
-        userLocaleRef.current,
+        spokenResolution.langCode,
+        spokenResolution.speechLocale,
         voiceState || activeVoiceStateRef.current || undefined
       );
 
