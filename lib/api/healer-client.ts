@@ -385,7 +385,7 @@ class HealerBackendClient {
       const gitaItem = findGitaWisdom(cleanMessage);
 
       const targetLang = cleanMessage.match(/[\u0900-\u097F]/) ? 'hi' : (language || locale || 'en');
-      const hasDistressKeywords = /(?:distress|anxious|anxiety|depress|sad|fear|scared|panic|stress|overwhelm|worry|worried|grief|pain|burnout|lonely|loneliness|angry|anger|trauma|shame|guilt|fail|terrif|crying|tears|breakup|heartbreak|debt|debts|financial|burden|burdened|broke|struggling|loans|bills|chinta|tanaav|udas|gussa|troubled|need help|please help me|help me please|someone help me|help me i'm|help me i am|दर्द|रोना|रो |रोने|रोऊ|दुःख|दुख|तनाव|चिंता|उदासी|डर|घबराहट|घबरा|ब्रेकअप|परेशान|पीड़ा|कष्ट|क्रोध|अकेला|हार|असफल|टूटा|कर्ज|कर्जा|ऋण|बोझ)/i.test(cleanMessage);
+      const hasDistressKeywords = /(?:distress|anxious|anxiety|depress|depressed|depression|sad|sadness|fear|scared|panic|stress|stressed|overwhelm|overwhelmed|worry|worried|grief|pain|burnout|lonely|loneliness|angry|anger|trauma|shame|guilt|fail|failed|failure|terrif|crying|tears|breakup|heartbreak|heartbroken|debt|debts|financial|burden|burdened|broke|struggling|struggle|loans|bills|hopeless|hopelessness|empty|numb|insomnia|can't sleep|cant sleep|insecure|rejection|rejected|abandoned|confused|restless|exhausted|fatigue|unmotivated|frustrated|frustration|hurting|suffering|mental problem|mental health|overthinking|racing thoughts|fight|argument|conflict|alone|nobody cares|chinta|tanaav|udas|gussa|troubled|need help|please help me|help me please|someone help me|help me i'm|help me i am|दर्द|रोना|रो |रोने|रोऊ|दुःख|दुख|तनाव|चिंता|उदासी|डर|घबराहट|घबरा|ब्रेकअप|परेशान|पीड़ा|कष्ट|क्रोध|अकेला|हार|असफल|टूटा|कर्ज|कर्जा|ऋण|बोझ|निराश|निराशा|उलझन|बेचैन|बेचैनी|थकान|थका)/i.test(cleanMessage);
 
       const hasPositiveOrCalmExplicit =
         /(happy|great|excited|peaceful|calm|relaxed|wonderful|grateful|joy|glad|blessed|good|doing well|girlfriend|boyfriend|in love|new partner|dating|promoted|celebrat|प्रसन्न|खुश|आनंद|शांत|शांति|बढ़िया|ठीक हूँ)/i.test(cleanMessage);
@@ -407,8 +407,10 @@ class HealerBackendClient {
 
       const hasEmotionalDistressSignal =
         hasDistressKeywords ||
-        (diag.coreAffect?.valence !== undefined && diag.coreAffect.valence < -0.15) ||
-        (diag.coreAffect?.arousal !== undefined && diag.coreAffect.arousal > 0.65 && diag.coreAffect.valence < 0.1);
+        libraryResult !== null ||
+        (diag.dimensionId !== 'calmness' && diag.dimensionId !== 'joy' && diag.dimensionId !== 'amusement' && diag.dimensionId !== 'adoration') ||
+        (diag.coreAffect?.valence !== undefined && diag.coreAffect.valence < -0.05) ||
+        (diag.coreAffect?.arousal !== undefined && diag.coreAffect.arousal > 0.55 && diag.coreAffect.valence < 0.2);
 
       const hasClinicalDistress =
         !isPositiveOrNeutral &&

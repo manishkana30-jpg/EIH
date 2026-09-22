@@ -44,6 +44,7 @@ const PranayamaGuide = dynamic(() => import("./components/PranayamaGuide").then(
 const EncryptedHistoryModal = dynamic(() => import("./components/EncryptedHistoryModal").then(m => m.EncryptedHistoryModal ? { default: m.EncryptedHistoryModal } : m), { ssr: false });
 const CrisisModal = dynamic(() => import("./components/CrisisModal").then(m => m.CrisisModal ? { default: m.CrisisModal } : m), { ssr: false });
 const TratakaModule = dynamic(() => import("./components/TratakaModule").then(m => m.TratakaModule ? { default: m.TratakaModule } : m), { ssr: false });
+const GitaContemplationModal = dynamic(() => import("./components/GitaContemplationModal").then(m => m.GitaContemplationModal ? { default: m.GitaContemplationModal } : m), { ssr: false });
 const PwaInstallModal = dynamic(() => import("./components/PwaInstallModal").then(m => m.PwaInstallModal ? { default: m.PwaInstallModal } : m), { ssr: false });
 
 import { browserSpeechController } from "@/lib/audio/browser-speech";
@@ -277,31 +278,18 @@ function formatTherapeuticMessage(
             trimmed.toLowerCase().includes("suffering assessment") ||
             trimmed.includes("स्थिति व कष्ट") ||
             trimmed.includes("मानसिक पीड़ा") ||
+            trimmed.includes("स्थिति का संक्षिप्त सारांश") ||
             trimmed.toLowerCase().includes("diagnostic"));
-
-        const isSynergy =
-          isLastCard ||
-          (!isDiagnostic &&
-            (trimmed.startsWith("**4.") ||
-              trimmed.toLowerCase().includes("synerg") ||
-              trimmed.toLowerCase().includes("combination") ||
-              trimmed.includes("त्रिवेणी") ||
-              trimmed.includes("समाधान") ||
-              trimmed.toLowerCase().includes("summary")));
 
         const isTratak =
           !isDiagnostic &&
-          !isSynergy &&
-          !isLastCard &&
           (trimmed.startsWith("**3.") ||
             trimmed.toLowerCase().includes("tratak") ||
             trimmed.includes("त्राटक"));
 
         const isClinical =
           !isDiagnostic &&
-          !isSynergy &&
           !isTratak &&
-          !isLastCard &&
           (trimmed.startsWith("**2.") ||
             trimmed.toLowerCase().includes("clinical") ||
             trimmed.includes("कॉग्निटिव") ||
@@ -309,7 +297,6 @@ function formatTherapeuticMessage(
 
         const isGita =
           !isDiagnostic &&
-          !isSynergy &&
           !isTratak &&
           !isClinical &&
           !isLastCard &&
@@ -317,16 +304,29 @@ function formatTherapeuticMessage(
             trimmed.toLowerCase().includes("bhagavad gita") ||
             (trimmed.includes("गीता") && !trimmed.includes("त्रिवेणी") && !trimmed.startsWith("**4.")));
 
+        const isSynergy =
+          !isDiagnostic &&
+          !isGita &&
+          !isClinical &&
+          !isTratak &&
+          (isLastCard ||
+            trimmed.startsWith("**4.") ||
+            trimmed.toLowerCase().includes("synerg") ||
+            trimmed.toLowerCase().includes("combination") ||
+            trimmed.includes("त्रिवेणी") ||
+            trimmed.includes("समाधान") ||
+            trimmed.toLowerCase().includes("summary"));
+
         const borderClass = isDiagnostic
           ? "border-purple-500/35 bg-gradient-to-br from-purple-950/40 via-purple-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(168,85,247,0.08)]"
-          : (isSynergy || isLastCard)
-          ? "border-fuchsia-500/35 bg-gradient-to-br from-fuchsia-950/40 via-fuchsia-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(217,70,239,0.08)]"
           : isGita
           ? "border-amber-500/35 bg-gradient-to-br from-amber-950/40 via-amber-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(245,158,11,0.08)]"
           : isClinical
           ? "border-emerald-500/35 bg-gradient-to-br from-emerald-950/40 via-emerald-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(16,185,129,0.08)]"
           : isTratak
           ? "border-cyan-500/35 bg-gradient-to-br from-cyan-950/40 via-cyan-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(6,182,212,0.08)]"
+          : (isSynergy || isLastCard)
+          ? "border-fuchsia-500/35 bg-gradient-to-br from-fuchsia-950/40 via-fuchsia-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(217,70,239,0.08)]"
           : "border-slate-800/80 bg-slate-900/60";
 
         const isHindi = /[\u0900-\u097F]/.test(trimmed);
@@ -336,26 +336,26 @@ function formatTherapeuticMessage(
 
         const badgeText = isDiagnostic
           ? (isHindi ? "📋 स्थिति व मानसिक पीड़ा का मूल्यांकन" : isSpanish ? "📋 Evaluación del Sufrimiento" : isFrench ? "📋 Évaluation de la Souffrance" : isGerman ? "📋 Belastungsanalyse" : "📋 Diagnostic & Suffering Assessment")
-          : (isSynergy || isLastCard)
-          ? (isHindi ? "✨ सारांश: एकीकृत त्रिवेणी उपचार योजना" : isSpanish ? "✨ Resumen: Resolución Sinérgica Tri-Pilar" : isFrench ? "✨ Synthèse : Résolution Synergique Tri-Piliers" : isGerman ? "✨ Zusammenfassung: Synergistische Dreisäulen-Lösung" : "✨ Summary: Tri-Pillar Synergistic Resolution")
           : isGita
           ? (isHindi ? "🕉️ श्रीमद्भगवद्गीता आत्मिक दर्शन" : isSpanish ? "🕉️ Sabiduría del Bhagavad Gita" : isFrench ? "🕉️ Sagesse de la Bhagavad Gita" : isGerman ? "🕉️ Weisheit der Bhagavad Gita" : "🕉️ Bhagavad Gita Wisdom")
           : isClinical
           ? (isHindi ? "🧠 क्लिनिकल कॉग्निटिव न्यूरोसाइंस (CBT)" : isSpanish ? "🧠 Neurociencia Clínica Cognitiva (TCC)" : isFrench ? "🧠 Neurosciences Cliniques Cognitives (TCC)" : isGerman ? "🧠 Klinische Kognitive Neurowissenschaft (CBT)" : "🧠 Clinical Cognitive Neuroscience (CBT)")
           : isTratak
           ? (isHindi ? "👁️ त्राटक न्यूरो-ऑक्युलर ध्यान विधि" : isSpanish ? "👁️ Protocolo Neuro-Ocular Tratak" : isFrench ? "👁️ Protocole Neuro-Oculaire Tratak" : isGerman ? "👁️ Tratak Neuro-Okulares Protokoll" : "👁️ Tratak Neuro-Ocular Protocol")
+          : (isSynergy || isLastCard)
+          ? (isHindi ? "✨ सारांश: एकीकृत त्रिवेणी उपचार योजना" : isSpanish ? "✨ Resumen: Resolución Sinérgica Tri-Pilar" : isFrench ? "✨ Synthèse : Résolution Synergique Tri-Piliers" : isGerman ? "✨ Zusammenfassung: Synergistische Dreisäulen-Lösung" : "✨ Summary: Tri-Pillar Synergistic Resolution")
           : null;
 
         const badgeColor = isDiagnostic
           ? "text-purple-300 bg-purple-500/15 border-purple-500/30"
-          : (isSynergy || isLastCard)
-          ? "text-fuchsia-400 bg-fuchsia-500/15 border-fuchsia-500/30"
           : isGita
           ? "text-amber-400 bg-amber-500/15 border-amber-500/30"
           : isClinical
           ? "text-emerald-400 bg-emerald-500/15 border-emerald-500/30"
           : isTratak
           ? "text-cyan-400 bg-cyan-500/15 border-cyan-500/30"
+          : (isSynergy || isLastCard)
+          ? "text-fuchsia-400 bg-fuchsia-500/15 border-fuchsia-500/30"
           : "text-fuchsia-400 bg-fuchsia-500/15 border-fuchsia-500/30";
 
         // Extract subheader like "(Chapter 2, Verse 70)" if present
@@ -399,6 +399,7 @@ export default function SanctuarySessionPage() {
   const [activeKaraoke, setActiveKaraoke] = useState<KaraokeState | null>(null);
 
   // ─── Modal Visibility States ───
+  const [isGitaModalOpen, setIsGitaModalOpen] = useState(false);
   const [isCBTModalOpen, setIsCBTModalOpen] = useState(false);
   const [isPranayamaOpen, setIsPranayamaOpen] = useState(false);
   const [isTratakaOpen, setIsTratakaOpen] = useState(false);
@@ -1857,6 +1858,7 @@ export default function SanctuarySessionPage() {
                         setIsTratakaOpen(true);
                       }}
                       onOpenCBT={() => setIsCBTModalOpen(true)}
+                      onOpenGita={() => setIsGitaModalOpen(true)}
                       isLastMessage={isLastMessage}
                       recommendedTratakaLabel={getTratakaModeLabel(activeTratakMode)}
                     />
@@ -2419,6 +2421,12 @@ export default function SanctuarySessionPage() {
       {/* ─────────────────────────────────────────────────────────────
           4. CLINICAL MODALS (ZERO ABSOLUTE OVERLAY IN FLOW)
       ───────────────────────────────────────────────────────────── */}
+      <GitaContemplationModal
+        isOpen={isGitaModalOpen}
+        onClose={() => setIsGitaModalOpen(false)}
+        userLocale={userLocale}
+      />
+
       <CBTKnowledgeModal
         isOpen={isCBTModalOpen}
         onClose={() => setIsCBTModalOpen(false)}

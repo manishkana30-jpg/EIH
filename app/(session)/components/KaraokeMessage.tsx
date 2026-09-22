@@ -45,6 +45,7 @@ export interface KaraokeMessageProps {
   onToggle?: () => void;
   onLaunchTrataka?: (mode: string) => void;
   onOpenCBT?: () => void;
+  onOpenGita?: () => void;
   isLastMessage?: boolean;
   recommendedTratakaLabel?: string;
 }
@@ -334,6 +335,7 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
   onToggle,
   onLaunchTrataka,
   onOpenCBT,
+  onOpenGita,
   isLastMessage = false,
   recommendedTratakaLabel,
 }) => {
@@ -407,31 +409,18 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
                   trimmed.toLowerCase().includes("suffering assessment") ||
                   trimmed.includes("स्थिति व कष्ट") ||
                   trimmed.includes("मानसिक पीड़ा") ||
+                  trimmed.includes("स्थिति का संक्षिप्त सारांश") ||
                   trimmed.toLowerCase().includes("diagnostic"));
-
-              const isSynergy =
-                isLastCard ||
-                (!isDiagnostic &&
-                  (trimmed.startsWith("**4.") ||
-                    trimmed.toLowerCase().includes("synerg") ||
-                    trimmed.toLowerCase().includes("combination") ||
-                    trimmed.includes("त्रिवेणी") ||
-                    trimmed.includes("समाधान") ||
-                    trimmed.toLowerCase().includes("summary")));
 
               const isTratak =
                 !isDiagnostic &&
-                !isSynergy &&
-                !isLastCard &&
                 (trimmed.startsWith("**3.") ||
                   trimmed.toLowerCase().includes("tratak") ||
                   trimmed.includes("त्राटक"));
 
               const isClinical =
                 !isDiagnostic &&
-                !isSynergy &&
                 !isTratak &&
-                !isLastCard &&
                 (trimmed.startsWith("**2.") ||
                   trimmed.toLowerCase().includes("clinical") ||
                   trimmed.includes("कॉग्निटिव") ||
@@ -439,7 +428,6 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
 
               const isGita =
                 !isDiagnostic &&
-                !isSynergy &&
                 !isTratak &&
                 !isClinical &&
                 !isLastCard &&
@@ -447,16 +435,29 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
                   trimmed.toLowerCase().includes("bhagavad gita") ||
                   (trimmed.includes("गीता") && !trimmed.includes("त्रिवेणी") && !trimmed.startsWith("**4.")));
 
+              const isSynergy =
+                !isDiagnostic &&
+                !isGita &&
+                !isClinical &&
+                !isTratak &&
+                (isLastCard ||
+                  trimmed.startsWith("**4.") ||
+                  trimmed.toLowerCase().includes("synerg") ||
+                  trimmed.toLowerCase().includes("combination") ||
+                  trimmed.includes("त्रिवेणी") ||
+                  trimmed.includes("समाधान") ||
+                  trimmed.toLowerCase().includes("summary"));
+
               const borderClass = isDiagnostic
                 ? "border-purple-500/35 bg-gradient-to-br from-purple-950/40 via-purple-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(168,85,247,0.08)]"
-                : (isSynergy || isLastCard)
-                ? "border-fuchsia-500/35 bg-gradient-to-br from-fuchsia-950/40 via-fuchsia-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(217,70,239,0.08)]"
                 : isGita
                 ? "border-amber-500/35 bg-gradient-to-br from-amber-950/40 via-amber-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(245,158,11,0.08)]"
                 : isClinical
-                ? "border-emerald-500/35 bg-gradient-to-br from-emerald-950/40 via-emerald-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(160,185,129,0.08)]"
+                ? "border-emerald-500/35 bg-gradient-to-br from-emerald-950/40 via-emerald-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(16,185,129,0.08)]"
                 : isTratak
                 ? "border-cyan-500/35 bg-gradient-to-br from-cyan-950/40 via-cyan-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(6,182,212,0.08)]"
+                : (isSynergy || isLastCard)
+                ? "border-fuchsia-500/35 bg-gradient-to-br from-fuchsia-950/40 via-fuchsia-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(217,70,239,0.08)]"
                 : "border-slate-800/80 bg-slate-900/60";
 
               const isHindi = /[\u0900-\u097F]/.test(trimmed) || (message.locale ? message.locale.startsWith("hi") : false);
@@ -466,26 +467,26 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
 
               const badgeText = isDiagnostic
                 ? (isHindi ? "📋 स्थिति व मानसिक पीड़ा का मूल्यांकन" : isSpanish ? "📋 Evaluación del Sufrimiento" : isFrench ? "📋 Évaluation de la Souffrance" : isGerman ? "📋 Belastungsanalyse" : "📋 Diagnostic & Suffering Assessment")
-                : (isSynergy || isLastCard)
-                ? (isHindi ? "✨ सारांश: एकीकृत त्रिवेणी उपचार योजना" : isSpanish ? "✨ Resumen: Resolución Sinérgica Tri-Pilar" : isFrench ? "✨ Synthèse : Résolution Synergique Tri-Piliers" : isGerman ? "✨ Zusammenfassung: Synergistische Dreisäulen-Lösung" : "✨ Summary: Tri-Pillar Synergistic Resolution")
                 : isGita
                 ? (isHindi ? "🕉️ श्रीमद्भगवद्गीता आत्मिक दर्शन" : isSpanish ? "🕉️ Sabiduría del Bhagavad Gita" : isFrench ? "🕉️ Sagesse de la Bhagavad Gita" : isGerman ? "🕉️ Weisheit der Bhagavad Gita" : "🕉️ Bhagavad Gita Wisdom")
                 : isClinical
                 ? (isHindi ? "🧠 क्लिनिकल कॉग्निटिव न्यूरोसाइंस (CBT)" : isSpanish ? "🧠 Neurociencia Clínica Cognitiva (TCC)" : isFrench ? "🧠 Neurosciences Cliniques Cognitives (TCC)" : isGerman ? "🧠 Klinische Kognitive Neurowissenschaft (CBT)" : "🧠 Clinical Cognitive Neuroscience (CBT)")
                 : isTratak
                 ? (isHindi ? "👁️ त्राटक न्यूरो-ऑक्युलर ध्यान विधि" : isSpanish ? "👁️ Protocolo Neuro-Ocular Tratak" : isFrench ? "👁️ Protocole Neuro-Oculaire Tratak" : isGerman ? "👁️ Tratak Neuro-Okulares Protokoll" : "👁️ Tratak Neuro-Ocular Protocol")
+                : (isSynergy || isLastCard)
+                ? (isHindi ? "✨ सारांश: एकीकृत त्रिवेणी उपचार योजना" : isSpanish ? "✨ Resumen: Resolución Sinérgica Tri-Pilar" : isFrench ? "✨ Synthèse : Résolution Synergique Tri-Piliers" : isGerman ? "✨ Zusammenfassung: Synergistische Dreisäulen-Lösung" : "✨ Summary: Tri-Pillar Synergistic Resolution")
                 : null;
 
               const badgeColor = isDiagnostic
                 ? "text-purple-300 bg-purple-500/15 border-purple-500/30"
-                : (isSynergy || isLastCard)
-                ? "text-fuchsia-400 bg-fuchsia-500/15 border-fuchsia-500/30"
                 : isGita
                 ? "text-amber-400 bg-amber-500/15 border-amber-500/30"
                 : isClinical
                 ? "text-emerald-400 bg-emerald-500/15 border-emerald-500/30"
                 : isTratak
                 ? "text-cyan-400 bg-cyan-500/15 border-cyan-500/30"
+                : (isSynergy || isLastCard)
+                ? "text-fuchsia-400 bg-fuchsia-500/15 border-fuchsia-500/30"
                 : "text-fuchsia-400 bg-fuchsia-500/15 border-fuchsia-500/30";
 
               const headerMatch = trimmed.match(/^\*\*(?:[1234]\.\s+)?([^:]+):\*\*/i);
@@ -498,11 +499,40 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
                       <span className={`text-[10px] sm:text-[11px] font-mono font-bold tracking-wide uppercase px-2 py-0.5 rounded-full border ${badgeColor}`}>
                         {badgeText}
                       </span>
-                      {sectionHeader && (
-                        <span className="text-[11px] font-medium text-slate-300">
-                          {sectionHeader}
-                        </span>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {sectionHeader && (
+                          <span className="text-[11px] font-medium text-slate-300">
+                            {sectionHeader}
+                          </span>
+                        )}
+                        {isGita && onOpenGita && (
+                          <button
+                            type="button"
+                            onClick={onOpenGita}
+                            className="text-[10px] font-medium text-amber-400 hover:text-amber-300 underline underline-offset-2 transition-colors cursor-pointer"
+                          >
+                            Explore Shloka →
+                          </button>
+                        )}
+                        {isClinical && onOpenCBT && (
+                          <button
+                            type="button"
+                            onClick={onOpenCBT}
+                            className="text-[10px] font-medium text-emerald-400 hover:text-emerald-300 underline underline-offset-2 transition-colors cursor-pointer"
+                          >
+                            Interactive CBT →
+                          </button>
+                        )}
+                        {isTratak && onLaunchTrataka && (
+                          <button
+                            type="button"
+                            onClick={() => onLaunchTrataka(message.recommended_trataka || "bindu")}
+                            className="text-[10px] font-medium text-cyan-400 hover:text-cyan-300 underline underline-offset-2 transition-colors cursor-pointer"
+                          >
+                            Launch Gazing →
+                          </button>
+                        )}
+                      </div>
                     </div>
                   )}
                   {/* Shloka in plain text format inside Shreemadh Bhagwatgita Aatam Darshan (Silent to TTS) */}
@@ -524,28 +554,51 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
         )}
       </div>
 
-      {/* Optional Interactive Protocol Launchers (Trataka & CBT) */}
-      {isLastMessage && onLaunchTrataka && recommendedTratakaLabel && (
-        <div className="mt-1.5 max-w-[88%] md:max-w-xl">
-          <button
-            onClick={() => onLaunchTrataka(message.recommended_trataka || "bindu")}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 text-xs font-semibold transition-all shadow-[0_0_12px_rgba(245,158,11,0.15)] active:scale-[0.98]"
-          >
-            <Eye className="w-3.5 h-3.5 text-amber-400" />
-            <span>Launch Prescribed Trataka Gazing ({recommendedTratakaLabel})</span>
-          </button>
-        </div>
-      )}
+      {/* 2. Interactive Tri-Solution Options Bar (🕉️ Gita + 🧠 CBT + 👁️ Tratak) */}
+      {isLastMessage && (
+        <div className="mt-2.5 max-w-[88%] md:max-w-xl w-full p-2.5 sm:p-3 rounded-2xl bg-gradient-to-br from-slate-900/90 via-slate-900/70 to-slate-950/90 border border-slate-800/90 shadow-lg backdrop-blur-md space-y-2">
+          <div className="flex items-center justify-between px-1">
+            <span className="text-[11px] font-semibold text-slate-300 flex items-center gap-1.5">
+              <span className="text-amber-400">⚡</span>
+              <span>Tri-Solution Options (त्रिवेणी समाधान)</span>
+            </span>
+            <span className="text-[10px] text-teal-400/90 font-mono">3 Interactive Paths</span>
+          </div>
 
-      {isLastMessage && onOpenCBT && message.cbt_distortion && (
-        <div className="mt-1.5 max-w-[88%] md:max-w-xl">
-          <button
-            onClick={onOpenCBT}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-300 text-xs font-semibold transition-all shadow-[0_0_12px_rgba(16,185,129,0.12)] active:scale-[0.98]"
-          >
-            <Brain className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Explore CBT Reframe: {message.cbt_distortion} →</span>
-          </button>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            {/* 1. Gita Wisdom */}
+            <button
+              type="button"
+              onClick={onOpenGita}
+              className="flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/35 text-amber-300 text-xs font-semibold transition-all shadow-[0_0_10px_rgba(245,158,11,0.1)] active:scale-[0.98] cursor-pointer"
+              title="Open Bhagavad Gita Contemplation"
+            >
+              <span>🕉️</span>
+              <span>Gita Wisdom</span>
+            </button>
+
+            {/* 2. CBT Reframe */}
+            <button
+              type="button"
+              onClick={onOpenCBT}
+              className="flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/35 text-emerald-300 text-xs font-semibold transition-all shadow-[0_0_10px_rgba(16,185,129,0.1)] active:scale-[0.98] cursor-pointer"
+              title="Open Interactive CBT Reframe"
+            >
+              <Brain className="w-3.5 h-3.5 text-emerald-400" />
+              <span>CBT Reframe</span>
+            </button>
+
+            {/* 3. Launch Tratak */}
+            <button
+              type="button"
+              onClick={() => onLaunchTrataka?.(message.recommended_trataka || "bindu")}
+              className="flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/35 text-cyan-300 text-xs font-semibold transition-all shadow-[0_0_10px_rgba(6,182,212,0.1)] active:scale-[0.98] cursor-pointer"
+              title="Launch Prescribed Trataka Gazing"
+            >
+              <Eye className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Launch Tratak</span>
+            </button>
+          </div>
         </div>
       )}
 

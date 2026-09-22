@@ -472,7 +472,7 @@ Strictly DO NOT mix English sentences, phrases, or raw English jargon into your 
 Keep the Sanskrit Shloka in Devanagari script wrapped in [GITA_SHLOKA] and [/GITA_SHLOKA], and provide all reflections, CBT reframes, and Tratak instructions purely in ${langItem.name}.`
       : "";
 
-  const hasDistressKeywords = /(?:distress|anxious|anxiety|depress|sad|fear|scared|panic|stress|overwhelm|worry|worried|grief|pain|burnout|lonely|loneliness|angry|anger|trauma|shame|guilt|fail|terrif|crying|tears|breakup|heartbreak|debt|debts|financial|burden|burdened|broke|struggling|loans|bills|chinta|tanaav|udas|gussa|troubled|need help|please help me|help me please|someone help me|help me i'm|help me i am|दर्द|रोना|रो |रोने|रोऊ|दुःख|दुख|तनाव|चिंता|उदासी|डर|घबराहट|घबरा|ब्रेकअप|परेशान|पीड़ा|कष्ट|क्रोध|अकेला|हार|असफल|टूटा|कर्ज|कर्जा|ऋण|बोझ)/i.test(userMessage);
+  const hasDistressKeywords = /(?:distress|anxious|anxiety|depress|depressed|depression|sad|sadness|fear|scared|panic|stress|stressed|overwhelm|overwhelmed|worry|worried|grief|pain|burnout|lonely|loneliness|angry|anger|trauma|shame|guilt|fail|failed|failure|terrif|crying|tears|breakup|heartbreak|heartbroken|debt|debts|financial|burden|burdened|broke|struggling|struggle|loans|bills|hopeless|hopelessness|empty|numb|insomnia|can't sleep|cant sleep|insecure|rejection|rejected|abandoned|confused|restless|exhausted|fatigue|unmotivated|frustrated|frustration|hurting|suffering|mental problem|mental health|overthinking|racing thoughts|fight|argument|conflict|alone|nobody cares|chinta|tanaav|udas|gussa|troubled|need help|please help me|help me please|someone help me|help me i'm|help me i am|दर्द|रोना|रो |रोने|रोऊ|दुःख|दुख|तनाव|चिंता|उदासी|डर|घबराहट|घबरा|ब्रेकअप|परेशान|पीड़ा|कष्ट|क्रोध|अकेला|हार|असफल|टूटा|कर्ज|कर्जा|ऋण|बोझ|निराश|निराशा|उलझन|बेचैन|बेचैनी|थकान|थका)/i.test(userMessage);
 
   const hasPositiveOrCalmExplicit =
     /(happy|great|excited|peaceful|calm|relaxed|wonderful|grateful|joy|glad|blessed|good|doing well|girlfriend|boyfriend|in love|new partner|dating|promoted|celebrat|प्रसन्न|खुश|आनंद|शांत|शांति|बढ़िया|ठीक हूँ)/i.test(userMessage);
@@ -528,8 +528,10 @@ STRICT ANTI-REPETITION CONSTRAINTS:
 
   const hasEmotionalDistressSignal =
     hasDistressKeywords ||
-    emotionDiagnostic.coreAffect.valence < -0.15 ||
-    (emotionDiagnostic.coreAffect.arousal > 0.65 && emotionDiagnostic.coreAffect.valence < 0.1);
+    libraryRag !== null ||
+    (emotionDiagnostic.dimensionId !== 'calmness' && emotionDiagnostic.dimensionId !== 'joy' && emotionDiagnostic.dimensionId !== 'amusement' && emotionDiagnostic.dimensionId !== 'adoration') ||
+    emotionDiagnostic.coreAffect.valence < -0.05 ||
+    (emotionDiagnostic.coreAffect.arousal > 0.55 && emotionDiagnostic.coreAffect.valence < 0.2);
 
   const hasClinicalDistress =
     !isDirectPositive &&
@@ -539,7 +541,11 @@ STRICT ANTI-REPETITION CONSTRAINTS:
   function ensureDiagnosticAndGita(replyText: string, gitaBlockStr: string, diagnosticMarkdown?: string): string {
     let result = replyText;
     if (hasClinicalDistress && (!result.includes("[GITA_SHLOKA]") || !result.includes("[/GITA_SHLOKA]"))) {
-      result = `${gitaBlockStr}\n\n${result}`;
+      if (/(\*\*1\.[^*]*\*\*:?\s*)/i.test(result)) {
+        result = result.replace(/(\*\*1\.[^*]*\*\*:?\s*)/i, `$1\n${gitaBlockStr}\n`);
+      } else {
+        result = `${gitaBlockStr}\n\n${result}`;
+      }
     }
     const hasDiagnostic =
       result.toLowerCase().includes("diagnostic") ||
@@ -620,11 +626,11 @@ STRICT ANTI-REPETITION CONSTRAINTS:
     // Fallback to Free Open Inference / Companion
   }
 
-  // 4. Free Open Inference (Validates content before accepting, random seed to prevent identical outputs)
+  // 4. Free Open Inference (Fast reasoning model with 15s timeout)
   try {
     const messagesPayload = [
       { role: "system", content: systemPrompt },
-      ...(history || []).slice(-6).map((h) => ({
+      ...(history || []).slice(-4).map((h) => ({
         role: h.role === "assistant" || h.sender === "ai" ? "assistant" : "user",
         content: h.content || h.text || ""
       })),
@@ -635,10 +641,10 @@ STRICT ANTI-REPETITION CONSTRAINTS:
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         messages: messagesPayload,
-        model: "openai",
+        model: "openai-fast",
         seed: Math.floor(Math.random() * 10000000)
       }),
-      signal: AbortSignal.timeout(7000)
+      signal: AbortSignal.timeout(15000)
     });
     const text = await pollRes.text();
     const cleaned = text.trim();
@@ -654,11 +660,11 @@ STRICT ANTI-REPETITION CONSTRAINTS:
       lower.includes("queue") ||
       lower.includes("unauthorized");
 
-    if (cleaned && cleaned.length > 60 && !isUpstreamError) {
+    if (cleaned && cleaned.length > 50 && !isUpstreamError) {
       return {
         reply: ensureDiagnosticAndGita(cleaned, gitaBlock),
         sources: allSources,
-        providerUsed: "Free Edge AI",
+        providerUsed: "Free Edge AI (Cognitive LLM)",
         isCrisis: false,
         recommended_trataka: syncTratakaWithReply(cleaned, defaultRecTrataka),
       };

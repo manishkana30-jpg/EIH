@@ -1669,7 +1669,7 @@ export function buildDiagnosticSufferingAssessment(
 
   const hasDistressKeywords =
     !directPositiveAssertion &&
-    /(?:distress|anxious|anxiety|depress|sad|fear|scared|panic|stress|overwhelm|worry|worried|grief|pain|burnout|lonely|loneliness|angry|anger|trauma|shame|guilt|fail|terrif|crying|tears|breakup|heartbreak|chinta|tanaav|udas|gussa|troubled|need help|please help me|help me please|someone help me|help me i'm|help me i am|दर्द|रोना|रो |रोने|रोऊ|दुःख|दुख|तनाव|चिंता|उदासी|डर|घबराहट|घबरा|ब्रेकअप|परेशान|पीड़ा|कष्ट|क्रोध|अकेला|हार|असफल|टूटा)/i.test(text);
+    /(?:distress|anxious|anxiety|depress|sad|fear|scared|panic|stress|overwhelm|worry|worried|grief|pain|burnout|lonely|loneliness|angry|anger|trauma|shame|guilt|fail|terrif|crying|tears|breakup|heartbreak|chinta|tanaav|udas|gussa|troubled|need help|please help me|help me please|someone help me|help me i'm|help me i am|debt|debts|financial|loan|loans|money|broke|bills|burden|hopeless|empty|meaningless|numb|giving up|exhaust|insomnia|insecure|rejection|unmotivated|hurting|conflict|fight|argument|divorce|struggl|suicid|दर्द|रोना|रो |रोने|रोऊ|दुःख|दुख|तनाव|चिंता|उदासी|डर|घबराहट|घबरा|ब्रेकअप|परेशान|पीड़ा|कष्ट|क्रोध|अकेला|हार|असफल|टूटा|कर्ज|पैसे|आर्थिक|झगड़ा)/i.test(text);
 
   const isPositive =
     directPositiveAssertion ||
@@ -1794,7 +1794,12 @@ export function buildDiagnosticSufferingAssessment(
   else if (activeEmotionId.includes('dilemma') || activeEmotionId.includes('confus') || lower.includes('cannot decide') || lower.includes("can't decide") || lower.includes('असमंजस') || lower.includes('समझ नहीं')) matchedKey = 'confusion';
   else if (activeEmotionId.includes('overwhelm') || activeEmotionId.includes('burnout') || lower.includes('racing thoughts') || lower.includes('hurricane') || lower.includes('तनाव')) matchedKey = 'overwhelm';
 
-  const emotionName = emotionLabels[matchedKey]?.[norm] || (conditionName || diag.dimensionName);
+  const cleanCondition = (conditionName || '')
+    .replace(/^Learned:\s*/i, '')
+    .replace(/\s*Protocol$/i, '')
+    .trim();
+
+  const emotionName = emotionLabels[matchedKey]?.[norm] || (cleanCondition || diag.dimensionName);
 
   // Severity Label
   let severityLabel = "";
@@ -1902,6 +1907,30 @@ export function buildDiagnosticSufferingAssessment(
     else if (norm === 'fr') inputSummary = "Vous ressentez une joie sincère, de la sérénité et une belle clarté d'esprit ; votre physiologie repose dans une sécurité vagale apaisante.";
     else if (norm === 'de') inputSummary = "Sie erleben echte Freude, Gelassenheit und innere Klarheit; Ihr Nervensystem ruht in einem Zustand von Sicherheit und Harmonie.";
     else inputSummary = "You are experiencing genuine happiness, presence, and somatic ease; your nervous system is anchored in deep ventral vagal safety and clarity.";
+  } else if (lower.includes('debt') || lower.includes('financial') || lower.includes('loan') || lower.includes('money') || lower.includes('bills') || lower.includes('कर्ज') || lower.includes('पैसे') || lower.includes('आर्थिक')) {
+    if (norm === 'hi') inputSummary = "आप गंभीर आर्थिक समस्याओं, बढ़ते कर्ज और देनदारियों के भारी बोझ से लगातार मानसिक तनाव में हैं; यह निरंतर चिंता आपके मन पर गहरा दबाव बना रही है।";
+    else if (norm === 'es') inputSummary = "Estás soportando la pesada carga de problemas financieros y deudas acumuladas, lo que genera una angustia constante por tu estabilidad económica.";
+    else if (norm === 'fr') inputSummary = "Vous portez le fardeau écrasant de difficultés financières et de dettes accumulées, provoquant une inquiétude permanente pour votre sécurité.";
+    else if (norm === 'de') inputSummary = "Sie tragen die schwere Last finanzieller Probleme und Schulden, was ständige existenzielle Sorgen und mentalen Druck auslöst.";
+    else inputSummary = "You are carrying the crushing weight of financial stress and accumulating debts, generating an unrelenting psychological burden that is straining your peace of mind.";
+  } else if (lower.includes('lonely') || lower.includes('loneliness') || lower.includes('alone') || lower.includes('isolated') || lower.includes('nobody') || lower.includes('अकेला')) {
+    if (norm === 'hi') inputSummary = "आप अकेलेपन और भावनात्मक अलगाव की गहरी पीड़ा महसूस कर रहे हैं, जहाँ ऐसा लग रहा है कि आपके अंतर्मन के दर्द को साझा करने वाला कोई नहीं है।";
+    else if (norm === 'es') inputSummary = "Estás experimentando una soledad emocional profunda y aislamiento, sintiendo que llevas este peso sin apoyo cercano.";
+    else if (norm === 'fr') inputSummary = "Vous ressentez une solitude émotionnelle profonde et un isolement, portant cette peine sans réconfort extérieur.";
+    else if (norm === 'de') inputSummary = "Sie erleben tiefe emotionale Einsamkeit und Isolation, mit dem Gefühl, diese seelische Last ganz allein tragen zu müssen.";
+    else inputSummary = "You are experiencing profound emotional loneliness and isolation, feeling as though you are carrying this deep ache completely by yourself without support.";
+  } else if (lower.includes('family') || lower.includes('parents') || lower.includes('argument') || lower.includes('fight') || lower.includes('divorce') || lower.includes('झगड़ा') || lower.includes('लड़ाई')) {
+    if (norm === 'hi') inputSummary = "आप पारिवारिक विवाद, कटु कलह और आपसी मतभेदों के कारण गहरी मानसिक अशांति और आहत भावनाओं से गुजर रहे हैं।";
+    else if (norm === 'es') inputSummary = "Estás atravesando un doloroso conflicto familiar y discusiones amargas que han dejado tus emociones heridas e intranquilas.";
+    else if (norm === 'fr') inputSummary = "Vous traversez des tensions familiales douloureuses et des disputes qui bouleversent votre équilibre émotionnel.";
+    else if (norm === 'de') inputSummary = "Sie durchleben schmerzhafte familiäre Auseinandersetzungen und Streitigkeiten, die Ihr seelisches Gleichgewicht stark belasten.";
+    else inputSummary = "You are navigating painful family conflict, interpersonal discord, or bitter arguments that have left your emotional boundaries frayed and unsettled.";
+  } else if (lower.includes('hopeless') || lower.includes('empty') || lower.includes('meaningless') || lower.includes('numb') || lower.includes('निराश') || lower.includes('उदास')) {
+    if (norm === 'hi') inputSummary = "आप गहरे खालीपन, निराशा और ऊर्जा के अभाव का सामना कर रहे हैं, जहाँ जीवन दिशाहीन और मन अत्यधिक थका हुआ लग रहा है।";
+    else if (norm === 'es') inputSummary = "Estás enfrentando un vacío profundo, falta de sentido y agotamiento, donde todo parece requerir un esfuerzo sobrehumano.";
+    else if (norm === 'fr') inputSummary = "Vous traversez un vide profond, un sentiment d'impuissance et un épuisement émotionnel qui obscurcit votre horizon.";
+    else if (norm === 'de') inputSummary = "Sie spüren eine tiefe innere Leere, Hoffnungslosigkeit und emotionale Erschöpfung, die Ihnen die Kraft raubt.";
+    else inputSummary = "You are experiencing deep psychological depletion, profound emptiness, and a sense of hopelessness that makes even small steps forward feel insurmountable.";
   } else if (lower.includes('interview') || lower.includes('exam') || lower.includes('test') || lower.includes('failing') || lower.includes('career')) {
     if (norm === 'hi') inputSummary = "आप आने वाली परीक्षा या साक्षात्कार को लेकर अत्यधिक आशंकित हैं, असफलता का डर आपको सता रहा है और अनिर्णय की स्थिति आपको मानसिक रूप से थका रही है।";
     else if (norm === 'es') inputSummary = "Te enfrentas a una prueba o entrevista decisiva, experimentando un temor abrumador al fracaso y parálisis para tomar decisiones de estudio.";
@@ -1933,11 +1962,11 @@ export function buildDiagnosticSufferingAssessment(
     else if (norm === 'de') inputSummary = "Ihr Geist ist völlig überflutet von rasenden Gedanken, Reizen und Aufgaben, was sich wie ein innerer Sturm anfühlt.";
     else inputSummary = "Your cognitive bandwidth has been swamped by sensory overload, unrelenting task friction, and racing thoughts that resemble an internal hurricane.";
   } else {
-    if (norm === 'hi') inputSummary = "आप इस समय मानसिक तनाव, भावनात्मक अशांति और आंतरिक संघर्ष से जूझ रहे हैं, जिसने आपके मन और शरीर दोनों को असंतुलित कर दिया है।";
-    else if (norm === 'es') inputSummary = "Estás experimentando un pico de agitación emocional y tensión interna que está sobrecargando tu equilibrio físico y psicológico.";
-    else if (norm === 'fr') inputSummary = "Vous traversez une période d'intense tension intérieure et d'inconfort émotionnel qui fragilise votre équilibre.";
-    else if (norm === 'de') inputSummary = "Sie durchleben eine Phase spürbarer seelischer Belastung und innerer Unruhe, die Körper und Geist fordert.";
-    else inputSummary = `You are carrying a heavy burden of emotional strain and psychological unease${conditionName ? ` related to ${conditionName}` : ''} that has thrown your mind and physiology into turmoil.`;
+    if (norm === 'hi') inputSummary = `आप इस समय मानसिक तनाव, भावनात्मक अशांति और आंतरिक संघर्ष से जूझ रहे हैं${cleanCondition ? ` जो ${cleanCondition} से जुड़ा है` : ''}, जिसने आपके मन और शरीर दोनों को असंतुलित कर दिया है।`;
+    else if (norm === 'es') inputSummary = `Estás experimentando un pico de agitación emocional y tensión interna${cleanCondition ? ` vinculado a ${cleanCondition}` : ''} que está sobrecargando tu equilibrio físico y psicológico.`;
+    else if (norm === 'fr') inputSummary = `Vous traversez une période d'intense tension intérieure et d'inconfort émotionnel${cleanCondition ? ` liée à ${cleanCondition}` : ''} qui fragilise votre équilibre.`;
+    else if (norm === 'de') inputSummary = `Sie durchleben eine Phase spürbarer seelischer Belastung und innerer Unruhe${cleanCondition ? ` im Zusammenhang mit ${cleanCondition}` : ''}, die Körper und Geist fordert.`;
+    else inputSummary = `You are carrying a heavy burden of emotional strain and psychological unease${cleanCondition ? ` related to ${cleanCondition}` : ''} that has thrown your mind and physiology into turmoil.`;
   }
 
   // Full section Markdown
