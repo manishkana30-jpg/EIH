@@ -10,7 +10,6 @@
  */
 
 import { getBestTherapeuticVoice } from './voice-selector.ts';
-import { detectUserSpokenLanguage } from '../i18n/language-catalog.ts';
 import { voiceAcousticAnalyzer, type VoiceAcousticState } from './voice-acoustic-analyzer.ts';
 import { isIncompleteUtterance } from '../knowledge/psychology-library-rag.ts';
 
@@ -377,10 +376,6 @@ export class BrowserSpeechController {
     }
 
     try {
-      const isMobile =
-        typeof navigator !== 'undefined' &&
-        /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
       const recognition = new SpeechRec();
       recognition.continuous = true;
       recognition.interimResults = true;
@@ -761,7 +756,7 @@ export class BrowserSpeechController {
     // Resolve optimal regional voice based on text script, localeOverride, or currentLanguageLocale
     const hasHindiScriptClean = /[\u0900-\u097F]/.test(cleanText);
     const resolvedLocale = effectiveLocale || (hasHindiScriptClean ? 'hi-IN' : 'en-US');
-    const cleanLocaleKey = effectiveLocale.toLowerCase().replace('_', '-');
+    const cleanLocaleKey = resolvedLocale.toLowerCase().replace('_', '-');
     const baseLang = cleanLocaleKey.split('-')[0];
     const selectedVoice = REGIONAL_NEURAL_VOICE_MAP[cleanLocaleKey] || REGIONAL_NEURAL_VOICE_MAP[baseLang] || 'en-US-AriaNeural';
 

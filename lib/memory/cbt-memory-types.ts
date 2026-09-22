@@ -73,3 +73,16 @@ export interface TurnTrajectoryPoint {
     promptHook: string;
   };
 }
+
+/**
+ * Sanitizes user breakthrough phrases to prevent Prompt Injection when reinjected into LLM context.
+ */
+export function sanitizeBreakthroughPhrase(text: string): string {
+  if (!text) return '';
+  return text
+    .replace(/\[\/?(system|instruction|prompt|scratchpad|context|assistant|human)[^\]]*\]/gi, '')
+    .replace(/[`"'\\]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 120);
+}

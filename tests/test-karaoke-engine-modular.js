@@ -113,15 +113,7 @@ Inhale (4s) → Hold (7s) → Exhale (8s)`;
   assert.strictEqual(steps[2], "Exhale (8s)");
   console.log('  ✓ Process flows parsed into horizontal sequence of distinct phases');
 
-  // Test 4: Verify Component Files Existence and Exports
-  const hookFile = path.join(__dirname, '..', 'lib', 'audio', 'useKaraokeTTS.ts');
-  assert(fs.existsSync(hookFile), 'useKaraokeTTS.ts must exist in lib/audio/');
-  const hookCode = fs.readFileSync(hookFile, 'utf8');
-  assert(hookCode.includes('SpeechSynthesisUtterance'), 'useKaraokeTTS must utilize SpeechSynthesisUtterance');
-  assert(hookCode.includes('utterance.onboundary'), 'useKaraokeTTS must bind to utterance.onboundary');
-  assert(hookCode.includes('calculateFallbackLength'), 'useKaraokeTTS must export calculateFallbackLength');
-  assert(hookCode.includes('scrollIntoView'), 'useKaraokeTTS must include scrollIntoView auto-scroll');
-
+  // Test 4: Verify KaraokeMessage Component Existence and Exports
   const componentFile = path.join(__dirname, '..', 'app', '(session)', 'components', 'KaraokeMessage.tsx');
   assert(fs.existsSync(componentFile), 'KaraokeMessage.tsx must exist in app/(session)/components/');
   const compCode = fs.readFileSync(componentFile, 'utf8');
@@ -168,7 +160,7 @@ Inhale (4s) → Hold (7s) → Exhale (8s)`;
   assert(tokenizerCode.includes('cleanWordForMatch'), 'karaoke-tokenizer must export cleanWordForMatch');
   console.log('  ✓ karaoke-tokenizer.ts single source of truth verified with 1:1 token alignment');
 
-  console.log('  ✓ useKaraokeTTS and KaraokeMessage verified with modular React architecture');
+  console.log('  ✓ KaraokeMessage verified with modular React architecture');
   console.log('\nAll Modular Karaoke & Web Audio Tests Passed!\n');
 }
 

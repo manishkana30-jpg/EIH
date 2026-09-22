@@ -4,7 +4,6 @@ import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import {
   Activity,
-  CheckCircle2,
   AlertCircle,
   RefreshCw,
   Cpu,
@@ -13,24 +12,16 @@ import {
   Search,
   BookOpen,
   ShieldCheck,
-  Zap,
   ArrowLeft,
-  Server,
   Radio,
   Globe,
-  MapPin,
-  Play,
   Square,
   Sparkles,
-  Compass,
   Brain,
   HeartPulse,
   Flame,
   AlertTriangle,
-  Smile,
-  Frown,
   Wind,
-  Layers,
   History,
 } from 'lucide-react';
 import {
@@ -255,8 +246,6 @@ export default function BackendHealthPage() {
     }
   };
 
-  const isHealthy = data?.status === 'healthy';
-
   return (
     <main className="min-h-screen bg-[#080d0a] text-[#ecf3ee] p-4 sm:p-8 selection:bg-[#588e73]/30 font-sans">
       <div className="max-w-5xl mx-auto space-y-6">
@@ -289,6 +278,23 @@ export default function BackendHealthPage() {
               <ArrowLeft className="w-3.5 h-3.5" />
               Return to Session
             </Link>
+            {lastChecked && (
+              <span className="text-[10px] text-[#88a896] font-mono hidden md:inline">
+                {lastChecked.toLocaleTimeString()}
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={() => setAutoRefresh((prev) => !prev)}
+              className={`px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                autoRefresh
+                  ? 'bg-emerald-950/60 border-emerald-500/40 text-emerald-300'
+                  : 'bg-slate-900/60 border-slate-800 text-slate-400'
+              }`}
+              title="Toggle automatic health polling"
+            >
+              Auto: {autoRefresh ? 'ON' : 'OFF'}
+            </button>
             <button
               onClick={fetchHealth}
               disabled={loading}
@@ -315,7 +321,7 @@ export default function BackendHealthPage() {
                   </span>
                   <span className="flex items-center gap-1 text-[11px] text-[#74c69d] font-mono">
                     <span className="w-2 h-2 rounded-full bg-[#52b788] animate-ping" />
-                    Live Sync Active
+                    Live Sync Active ({new Date(lastSyncTime).toLocaleTimeString()})
                   </span>
                 </div>
                 <h2 className="text-lg sm:text-xl font-extrabold text-white mt-0.5">

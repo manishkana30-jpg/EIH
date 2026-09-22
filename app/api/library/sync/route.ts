@@ -27,7 +27,7 @@ export async function GET() {
         },
       }
     );
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Failed to synchronize learned documents' },
       { status: 500 }

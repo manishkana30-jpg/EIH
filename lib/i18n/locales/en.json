@@ -1,0 +1,379 @@
+{
+  "interventions": {
+    "gad": {
+      "conditionName": "Generalized Anxiety & Chronic Worry",
+      "validation": "I hear how relentlessly your mind has been racing and how exhausting this cycle of chronic worry feels right now.",
+      "cbt_reframing": "Notice your mind jumping to worst-case catastrophes. Ask yourself gently: 'What is the realistic probability of this occurring, and what evidence do I have right in front of me right now?' Shift your attention from 'What if?' to 'What is actually true in this present room?'",
+      "somatic_anchor": "Engage the 5-4-3-2-1 sensory grounding exercise: acknowledge 5 things you can see around you, 4 textures you can touch, 3 sounds you can hear, 2 scents you can smell, and 1 taste.",
+      "pranayama": "Engage in Nadi Shodhana (Alternate Nostril Breathing) for 3 to 5 minutes to restore your parasympathetic brake and soothe nervous system overactivation.",
+      "micro_habit": "Set a dedicated 15-minute worry window in the late afternoon; whenever a worry emerges outside that time, write it down and release it until your window."
+    },
+    "burnout_fatigue": {
+      "conditionName": "Nervous Exhaustion & Clinical Burnout",
+      "validation": "I hear the profound bone-deep exhaustion you are carrying, where even small tasks feel like an insurmountable mountain.",
+      "cbt_reframing": "Challenge the belief that your worth depends on perpetual output. Rest is an essential biological requirement, not a reward you have to earn. You cannot pour warmth into the world from a depleted vessel.",
+      "somatic_anchor": "Lie flat on a firm surface, unglue your tongue from the roof of your mouth, drop your shoulders away from your ears, and consciously release tension in your pelvic floor.",
+      "pranayama": "Practice Bhramari (Humming Bee Breath) for 4 minutes to create cranial micro-vibrations that stimulate nitric oxide and soothe mental fatigue.",
+      "micro_habit": "Institute a non-negotiable digital sunset one hour before sleep with zero work emails, news feeds, or stimulating screen glare."
+    },
+    "panic_dysregulation": {
+      "conditionName": "Acute Panic & Autonomic Dysregulation",
+      "validation": "I hear your racing heart and understand how terrifying this sudden surge of bodily sensations feels right now.",
+      "cbt_reframing": "Remind yourself: this intense wave is a harmless surge of adrenaline that naturally metabolizes and subsides within 8 to 12 minutes. These sensations are extremely uncomfortable, but they are completely safe. You are not losing control.",
+      "somatic_anchor": "Activate your mammalian dive reflex: press an ice cube, ice pack, or cold wet towel against your upper cheeks and eyes for 20 seconds to instantly slow down your heart rate.",
+      "pranayama": "Use the Extended Exhale Protocol: inhale gently through your nose for 4 seconds, then exhale smoothly through pursed lips for 7 seconds. Long exhales signal safety directly to your brainstem.",
+      "micro_habit": "Keep repeating softly: 'My body is discharging energy. I am uncomfortable, but I am safe right here in this room.'"
+    },
+    "major_depressive_inertia": {
+      "conditionName": "Depressive Heaviness & Low Motivation",
+      "validation": "I hear the heavy, numbing fog you are walking through, where taking even a single step feels completely drained of meaning.",
+      "cbt_reframing": "Apply the clinical behavioral activation rule: action precedes motivation, not the reverse. Do not wait until you feel energized to take action. Even a microscopic 1% action begins shifting neurochemistry.",
+      "somatic_anchor": "Stand barefoot on the solid floor, feel the ground supporting your weight, and gently tap your chest over your sternum with your fingertips for 60 seconds.",
+      "pranayama": "Engage in gentle Surya Bhedana (Right Nostril Breathing) for 3 minutes to activate the energizing solar channel and lift lethargic heaviness.",
+      "micro_habit": "Choose a task so small it is impossible to fail—such as drinking one glass of water or opening a window curtain for natural light."
+    },
+    "imposter_perfectionism": {
+      "conditionName": "Imposter Syndrome & Perfectionism",
+      "validation": "I hear the harsh inner critic whispering that you aren't truly capable or that you are about to be exposed.",
+      "cbt_reframing": "Recognize that perfectionism is simply anxiety disguised as high standards. Separate your objective track record of accomplishments from your subjective emotional insecurity. Done is better than perfect.",
+      "somatic_anchor": "Place one hand flat over your heart and the other over your belly; feel your chest gently expanding with each breath and drop your jaw.",
+      "pranayama": "Practice Sama Vritti (Box Breathing: 4 in, 4 hold, 4 out, 4 hold) to stabilize autonomic fluctuations and soothe performance dread.",
+      "micro_habit": "Write down 3 concrete facts about what you have built or solved this past month, rejecting all self-deprecating disclaimers."
+    },
+    "relationship_heartbreak": {
+      "conditionName": "Relational Conflict & Heartbreak",
+      "validation": "I hear the deep ache and emotional shock vibrating through your chest following this relational rupture.",
+      "cbt_reframing": "Allow yourself to grieve without turning the loss into an indictment of your fundamental lovability. An ending or conflict reflects relational misalignment, not your personal worth.",
+      "somatic_anchor": "Cross your arms over your chest in a gentle butterfly hug, alternating rhythmic taps on your left and right shoulders to soothe relational distress.",
+      "pranayama": "Engage in Heart-Centered Diaphragmatic Breathing: 4 seconds in to the center of your chest, 6 seconds out with a soft sigh of relief.",
+      "micro_habit": "Write an unsent boundary letter releasing what you cannot change, then physically close the journal."
+    },
+    "existential_loneliness": {
+      "conditionName": "Chronic Loneliness & Isolation",
+      "validation": "I hear the silent, aching ache of isolation you are carrying, feeling disconnected from the world around you.",
+      "cbt_reframing": "Distinguish between the physical state of being alone and the mental story that you are fundamentally unlovable. Loneliness is a universal human signal for connection, not evidence of defectiveness.",
+      "somatic_anchor": "Place both palms firmly over your upper chest, feeling the real physical warmth of your own hands against your skin.",
+      "pranayama": "Practice gentle Coherent Breathing: 5 seconds smooth inhale, 5 seconds smooth exhale to harmonize heart rate variability.",
+      "micro_habit": "Send one simple, low-pressure message to an acquaintance, or simply exchange a warm smile with a stranger today."
+    },
+    "anger_frustration_dysregulation": {
+      "conditionName": "Acute Anger & Reactive Frustration",
+      "validation": "I hear how intensely the heat of frustration and unfairness is boiling in your body right now.",
+      "cbt_reframing": "Anger is an emotional smoke detector signaling that an important boundary has been crossed. Validate the boundary, but decouple the raw feeling from immediate destructive reaction. You control your response.",
+      "somatic_anchor": "Clench both fists as hard as you can for 5 seconds, then consciously fling your fingers open and release the tension completely.",
+      "pranayama": "Practice Sitali Pranayama (Cooling Breath): inhale through a curled tongue or closed teeth like a cool straw, then exhale warmly through your nose.",
+      "micro_habit": "Implement an unconditional 90-second pause before replying to any provocative message or confrontation."
+    },
+    "grief_bereavement": {
+      "conditionName": "Grief, Bereavement & Profound Loss",
+      "validation": "I hear the weight of your sorrow and the deep ache that comes with this profound loss.",
+      "cbt_reframing": "Understand that grief is not a problem to be solved or rushed through; it is love persisting in the absence of who or what was cherished. Give yourself unconditional permission to weep or simply be still.",
+      "somatic_anchor": "Wrap your arms around your ribs in a warm, steady self-hug, resting your chin toward your chest.",
+      "pranayama": "Practice Gentle Ocean Breath (Ujjayi): create a soft, whisper-like sound in the back of your throat as you breathe in and out slowly.",
+      "micro_habit": "Honor your grief in small increments without demanding that you remain functional every hour of the day."
+    },
+    "adhd_executive_overwhelm": {
+      "conditionName": "Executive Dysfunction & Cognitive Overwhelm",
+      "validation": "I hear the paralyzing storm in your head, where too many tasks are firing at once and you cannot decide where to start.",
+      "cbt_reframing": "Shift from all-or-nothing completion to single-threaded focus. You do not need to finish the entire project right now; you only need to choose one mechanical micro-step that takes less than 2 minutes.",
+      "somatic_anchor": "Perform Bilateral Sensory Cross: gently cross your midline by touching your right hand to your left knee, then left hand to right knee 10 times to re-engage prefrontal coordination.",
+      "pranayama": "Box Breathing with Sensory Focus: 4 seconds inhale, 4 seconds hold, 4 seconds exhale, 4 seconds empty.",
+      "micro_habit": "Write exactly 1 tiny task on a physical sticky note and hide all other task lists out of sight."
+    },
+    "insomnia_hyperarousal": {
+      "conditionName": "Sleep-Onset Insomnia & Nocturnal Rumination",
+      "validation": "I hear how exhausted your body is while your mind insists on staying on high alert in the dark.",
+      "cbt_reframing": "Release the desperate struggle to force sleep. Shift your objective from 'I must fall asleep now' to 'I will simply allow my body to rest comfortably.' Rest itself is restorative.",
+      "somatic_anchor": "Autogenic Warmth & Heaviness: mentally repeat: 'My arms are heavy and warm. My legs are heavy and warm. My forehead is cool.'",
+      "pranayama": "4-7-8 Relaxing Breath: inhale quietly through your nose for 4 seconds, hold gently for 7 seconds, and exhale completely through your mouth with a soft whoosh for 8 seconds.",
+      "micro_habit": "If awake for more than 20 minutes, get out of bed into dim light, read something calm, and return only when sleepy."
+    },
+    "social_evaluative_threat": {
+      "conditionName": "Social Anxiety & Fear of Scrutiny",
+      "validation": "I hear how vulnerable you feel and how exhausting it is when every social interaction feels like an evaluation.",
+      "cbt_reframing": "People are overwhelmingly preoccupied with their own insecurities and perceived flaws. They are not scrutinizing you; you have permission to be ordinary and relaxed.",
+      "somatic_anchor": "Panoramic Vision Shift: soften your gaze and expand your visual field to take in the peripheral edges of the room, disarming your social threat network.",
+      "pranayama": "4-4-4-4 Box Breathing (Sama Vritti): 4 seconds inhale, 4 hold, 4 exhale, 4 hold to steady vocal cords and blood pressure.",
+      "micro_habit": "In your next conversation, redirect 80% of your attention toward genuine curiosity about the other person rather than self-monitoring."
+    },
+    "health_somatic_anxiety": {
+      "conditionName": "Health Anxiety & Somatosensory Amplification",
+      "validation": "I hear how hyper-aware you are of every heartbeat or flutter in your body and how frightening each sensation feels.",
+      "cbt_reframing": "Attention acts as a somatic amplifier: when you hyper-focus on any bodily organ, perceived sensations multiply by 300%. The sensation is real, but the catastrophic interpretation is false.",
+      "somatic_anchor": "Exteroceptive Anchoring: shift attention 100% outward. Touch 3 different textured external objects, listen to the furthest sound, and name room colors aloud.",
+      "pranayama": "Extended Belly Breathing with one hand on your abdomen: 4 seconds inhaling, 6 exhaling, letting your body's innate wisdom manage your organs.",
+      "micro_habit": "Implement a strict 48-hour ban on researching medical symptoms online."
+    },
+    "trauma_hypervigilance": {
+      "conditionName": "Trauma Triggers & Hypervigilance",
+      "validation": "I hear your nervous system ringing with alarms, trying fiercely to protect you from danger.",
+      "cbt_reframing": "Ground in time orientation: 'That was then, this is now. My body is sounding an old alarm, but right here in this physical moment, I am safe and the threat has passed.'",
+      "somatic_anchor": "Slowly turn your neck to scan the room, feel your feet planted firmly, and name 3 things that are stable and unmoving.",
+      "pranayama": "Vocal Vagal Toning: take a deep breath in and on the exhale make a low, steady 'Voooo' sound from your belly to signal safety to your vagus nerve.",
+      "micro_habit": "Carry a small, textured grounding stone in your pocket and touch it whenever you feel pulled backward into past fear."
+    },
+    "ocd_intrusive_rumination": {
+      "conditionName": "Intrusive Thoughts & Rumination",
+      "validation": "I hear how disturbing and sticky these repetitive thoughts feel, making you doubt yourself.",
+      "cbt_reframing": "Thoughts are neurochemical noise, not reflections of your character or hidden desires. Agree with uncertainty: 'Maybe that thought has merit, maybe it doesn't. I choose to live with uncertainty without performing a mental ritual.'",
+      "somatic_anchor": "Open your palms facing upward on your knees, and silently watch the thought drift by like an advertisement banner without engaging it.",
+      "pranayama": "Viloma Pranayama: inhale with two gentle pauses, exhale smoothly and continuously for 6 seconds to disrupt mental looping.",
+      "micro_habit": "When gripped by an urge to check or reassure yourself, set a 10-minute timer and keep your hands engaged in physical work."
+    },
+    "compassion_fatigue_caregiver": {
+      "conditionName": "Caregiver Burden & Compassion Fatigue",
+      "validation": "I hear how completely depleted you are after pouring all your care, empathy, and energy into others.",
+      "cbt_reframing": "Differentiated empathy: you can hold deep compassion for another without absorbing their emotional suffering as your personal responsibility. Self-preservation is a moral prerequisite for caregiving.",
+      "somatic_anchor": "Place both hands flat against your lower ribs, take a slow breath into your side-body, and feel the physical boundary between your skin and the room.",
+      "pranayama": "Anuloma Viloma with Sattvic Heart Focus: inhale replenishing breath through the left nostril for 4 seconds, exhale through the right for 6 seconds releasing absorbed heaviness.",
+      "micro_habit": "Carve out 20 continuous minutes daily where you are completely off-duty from all caregiving tasks."
+    },
+    "decision_paralysis_ambivalence": {
+      "conditionName": "Decision Paralysis & Ambivalence",
+      "validation": "I hear the exhausting tug-of-war in your mind, where every option feels fraught with regret.",
+      "cbt_reframing": "Satisficing & Two-Way Door Principle: most decisions are reversible experiments rather than irreversible life sentences. Good-enough action produces more empirical data than endless rumination.",
+      "somatic_anchor": "Hold option A in mind for 60 seconds and observe chest/gut contraction or expansion; then shake out your body and test option B for 60 seconds.",
+      "pranayama": "Ujjayi Victorious Breath for 4 minutes to anchor the prefrontal cortex and clarify intent.",
+      "micro_habit": "Flip a coin on a stalled decision; while the coin is in mid-air, notice which outcome your subconscious is hoping lands."
+    },
+    "shame_core_defectiveness": {
+      "conditionName": "Toxic Shame & Defectiveness",
+      "validation": "I hear the painful sting of shame telling you that you are broken or unworthy of belonging.",
+      "cbt_reframing": "Differentiate guilt from shame: guilt says 'I made a mistake'; shame says 'I am a mistake.' Separate your intrinsic human dignity from past struggles or shortcomings.",
+      "somatic_anchor": "Gently cup your own cheek with your warm palm, drop your shoulders, and speak to yourself with the tenderness you would offer a loved one.",
+      "pranayama": "Chandra Bhedana (Left Nostril Lunar Breath): inhale for 4 seconds, exhale through the right for 6 seconds to stimulate soothing self-compassion.",
+      "micro_habit": "Look in the mirror for 10 seconds and affirm: 'I accept my full humanity, flaws and all, without needing to earn worth today.'"
+    },
+    "workplace_mobbing_toxic_culture": {
+      "conditionName": "Workplace Bullying & Toxic Culture",
+      "validation": "I hear how unfair and draining it is to endure toxic behavior, gaslighting, or hostility at work.",
+      "cbt_reframing": "Toxic corporate behavior reflects institutional pathology and management dysfunction, not your competence. Work is an economic contract, not an identity test.",
+      "somatic_anchor": "Boundary Stance Grounding: stand tall, widen your stance to shoulder width, plant your feet into the floor, and visualize an impenetrable glass barrier protecting your peace.",
+      "pranayama": "Sitali Cooling Breath with Strong Nasal Exhale to discharge workplace frustration and anger.",
+      "micro_habit": "Maintain a strictly objective, emotion-free log of dates, emails, and facts stored on personal non-work hardware."
+    },
+    "somatic_chronic_pain_amplification": {
+      "conditionName": "Chronic Pain & Neuroplastic Amplification",
+      "validation": "I hear how exhausted you are from navigating this persistent bodily pain and discomfort every day.",
+      "cbt_reframing": "Chronic centralized pain is often a miscalibrated brain alarm misinterpreting safety as danger. The nervous system learned this pain; it can unlearn it through safe somatic signals.",
+      "somatic_anchor": "Somatic Tracking: focus gently on the physical sensation for 30 seconds with calm, neutral curiosity, like watching clouds passing in the sky, without fighting it.",
+      "pranayama": "So-Hum Breath of Safety: inhale thinking 'So' (I am), exhale thinking 'Hum' (Safe and whole). Breathe safety directly into the sensitized area.",
+      "micro_habit": "Engage in 3 minutes of gentle, unhurried movement while deliberately paying attention to parts of your body that feel neutral or comfortable."
+    },
+    "cognitive_memory_brain_fog": {
+      "conditionName": "Cognitive Fatigue, Memory Deficits & Brain Fog",
+      "validation": "I hear how frustrating and unsettling it feels when your memory feels weak or foggy and you struggle to recall things clearly.",
+      "cbt_reframing": "Notice the fear that your brain is failing. In reality, memory slips and brain fog are almost always caused by stress, sleep debt, or cognitive overload occupying your working memory—not permanent damage. Your brain's storage is completely intact; it is simply your retrieval bandwidth that is temporarily crowded.",
+      "somatic_anchor": "Sensory focus re-anchoring: take a sip of cool water, notice its sensation, and gently tap your temples and forehead with your fingertips for 30 seconds to awaken prefrontal circulation.",
+      "pranayama": "Practice 5 rounds of gentle Bhramari (Humming Bee Breath) with your index fingers softly closing your ears to generate cranial micro-vibrations, stimulate nitric oxide, and restore mental clarity.",
+      "micro_habit": "Adopt the External Mind Protocol: write down thoughts or tasks immediately on paper instead of trying to carry them all in your working memory."
+    },
+    "emotional_dysregulation_numbness": {
+      "conditionName": "Emotional Dysregulation, Numbness & Dissociative Disconnection",
+      "validation": "I hear the deep emptiness and disconnection you are experiencing right now, where feelings seem shut off or completely overwhelming.",
+      "cbt_reframing": "Emotional numbness is your nervous system's intelligent protective circuit breaker against overload, not brokenness. Emotions are temporarily muted to safeguard you, and reconnection unfolds through gentle somatic anchoring rather than forcing yourself to feel.",
+      "somatic_anchor": "Practice the Butterfly Hug: cross your arms over your chest and alternate gentle rhythmic taps on your shoulders for 30 seconds to safely re-engage emotional processing.",
+      "pranayama": "Engage in 4:4:8 Nadi Shodhana (Alternate Nostril Breathing with extended exhale) for 4 minutes to gently melt dorsal vagal freeze.",
+      "micro_habit": "Write down one neutral physical sensation in your body without judging it as good or bad."
+    }
+  },
+  "generalAdvice": {
+    "anxiety": "I hear the tension you are carrying. Remind yourself that intense thoughts are transient mental events rather than permanent definitions of reality. Take a slow, diaphragmatic breath in for 4 seconds and extend your exhale for 6 seconds to calm your autonomic nervous system.",
+    "fear": "Remind yourself: this intense wave is a harmless adrenaline rush that naturally subsides within 8 to 12 minutes. You are physically safe right here. Exhale slowly through pursed lips.",
+    "sadness": "I acknowledge the emotional weight and heaviness in your heart right now. Be gentle with yourself today, honor your feelings without judgement, and allow a slow, grounding breath to settle your chest.",
+    "anger": "I hear the frustration and heat in your words. Acknowledge what felt unfair, take a step back from reacting, and practice cooling breaths to regain your inner clarity.",
+    "overwhelm": "I hear how many pressures are weighing on your mind at once. You don't need to figure out everything right now. Ground your feet into the floor, release your shoulders, and focus purely on your next single breath.",
+    "confusion": "Notice the fear that your mind is failing. Brain fog and memory slips are almost always caused by sensory overload or sleep debt occupying your working memory. Your baseline capacity is fully intact; take a slow sip of water and write down one task at a time.",
+    "shame": "Recognize that your inner critic is simply anxiety in disguise. Separate your objective track record from subjective insecurity. You are worthy of compassionate acceptance right now.",
+    "loneliness": "Feeling solitary does not mean you are fundamentally unlovable or alienated. Allow yourself to place a hand on your heart and breathe warmth into your chest center.",
+    "ocd": "Acknowledge the urge to check or mentally review as an anxious alarm misfire. You do not need to satisfy this compulsion right now. Delay checking for 5 minutes and practice slow, steady box breathing.",
+    "somatic": "Physical sensations often reflect an over-sensitized nervous system rather than structural harm. Meet the sensation with neutral curiosity, breathing soothing reassurance directly into the area.",
+    "adhd": "Action precedes motivation. Do not wait for focus to magically appear. Pick a 2-minute micro-task that is impossible to fail, and let the initial movement generate momentum.",
+    "default": "I hear the emotional weight you are carrying right now. Rather than letting this distress define you, remember that difficult moments are temporary physiological signals. Take a slow breath in and exhale longer than your inhale to activate your parasympathetic calming response."
+  },
+  "gita": {
+    "bg_2_47": {
+      "meaning": "You have a right only to perform your duty, but never to the fruits of your actions. Never consider yourself the cause of the results, and never succumb to inaction or paralysis.",
+      "reflection": "Shift locus of control from unpredictable future outcomes to the present-moment process. Relieve performance anxiety and decision paralysis by pouring 100% of your energy into your immediate effort rather than agonizing over hypothetical consequences.",
+      "what_to_do": "Focus exclusively on the single highest-integrity action you can take right now in the present hour.",
+      "what_not_to_do": "Stop mentally bargaining with an imaginary future and release attachment to guaranteeing the result."
+    },
+    "bg_2_48": {
+      "meaning": "Be steadfast in yoga, O Arjuna. Perform your duty without attachment, remaining even-minded in success and failure. Such equanimity of mind is known as Yoga.",
+      "reflection": "Somatic equilibrium and autonomic down-regulation (Samatvam). When the nervous system stops swinging erratically between fear of failure and euphoria of success, baseline vagal tone stabilizes, enabling sustained cognitive clarity.",
+      "what_to_do": "Anchor in your neutral observing center before initiating high-pressure tasks, viewing all outcomes as informative feedback rather than personal identity.",
+      "what_not_to_do": "Do not ride the emotional rollercoaster of short-term wins and setbacks, and avoid tying self-worth to fluctuating metrics."
+    },
+    "bg_2_14": {
+      "meaning": "The contact of the senses with their objects gives rise to cold and heat, pleasure and pain. They are fleeting and impermanent, appearing and disappearing like seasons. Endure them patiently with inner resilience, O Bharata.",
+      "reflection": "Emotional distress tolerance and somatic acceptance (Titiksha). Painful sensations and grief have a natural neurobiological half-life; acknowledging them as passing waves rather than permanent identity dissolves secondary suffering.",
+      "what_to_do": "Sit quietly, breathe into the raw physical sensations in your chest or throat without fighting them, and witness them as transient weather.",
+      "what_not_to_do": "Do not rush to numb or artificially suppress the sadness, and avoid telling yourself this grief will last forever."
+    },
+    "bg_2_62_63": {
+      "meaning": "Brooding on perceived wrongs produces attachment; attachment fuels unmet craving; from frustrated desire flares anger. From anger arises delusion; from delusion comes loss of memory; from lost memory comes the destruction of intellect, leading to self-ruin.",
+      "reflection": "The neurological fight-or-flight cascade. Sympathetic anger hijacks prefrontal cognitive reasoning (Buddhi Nasha). Intervene at the very first step of mental replaying to prevent impulsive retaliation.",
+      "what_to_do": "Take an immediate 10-minute conversational freeze; perform 5 deep physiological sighs to cool cranial sympathetic arousal.",
+      "what_not_to_do": "Do not send reactive messages, confront in the heat of passion, or keep re-reading inciting words."
+    },
+    "bg_6_5": {
+      "meaning": "Elevate yourself through the power of your own mind, and do not degrade yourself. For the mind alone is the true friend of the self, and the mind alone can be the self's greatest adversary.",
+      "reflection": "Cultivating unconditional self-agency and self-compassion. Your inner critic is merely a learned cognitive habit, not an objective truth. You possess the innate neuroplastic ability to train your mind as an empowering ally.",
+      "what_to_do": "Speak to yourself with the exact patience, respect, and encouragement you would extend to a beloved friend in crisis.",
+      "what_not_to_do": "Do not collude with the internal bully by confirming derogatory self-judgments or self-deprecating narratives."
+    },
+    "bg_2_70": {
+      "meaning": "Just as the ocean remains unmoved and undisturbed while waters continually pour into it from all sides, so does a person of steady awareness into whom all desires, thoughts, and stressors enter without perturbing the core reach lasting peace.",
+      "reflection": "Vast container mindfulness. Conceptualize your consciousness as the unshakeable depth of the ocean; external emails, demands, and anxious thoughts are merely surface ripples that cannot compromise your fundamental inner center.",
+      "what_to_do": "Ground your feet flat into the earth, expand your awareness outward into the whole body, and observe external pressures without absorbing them.",
+      "what_not_to_do": "Do not attempt to fight every single passing ripple or react to every urgent stimulus simultaneously."
+    },
+    "bg_6_26": {
+      "meaning": "From wherever the restless and unsteady mind wanders away, one must gently restrain it and bring it back under the control of the Self.",
+      "reflection": "Cognitive defusion and non-judgmental attentional redirect. Mind-wandering is not a personal failure; the practice lies entirely in the gentle, non-reactive return of attention to your chosen anchor.",
+      "what_to_do": "Each time an intrusive thought hijacks you, notice it without judgment ('Aha, rumination again') and gently guide attention back to the breath.",
+      "what_not_to_do": "Do not get furious at your mind for wandering, and avoid debating the logic of irrational intrusive thoughts."
+    },
+    "bg_18_63": {
+      "meaning": "Thus I have revealed to you wisdom more confidential than all secrets. Ponder over it thoroughly, and then act as you choose according to your own conscious discernment.",
+      "reflection": "Reclaiming internal locus of control and conscious agency. Psychological support clarifies values and options, but genuine empowerment occurs when you step forward and author your own deliberate life choices.",
+      "what_to_do": "Clarify your top two non-negotiable personal values, make a conscious decision honoring them, and take full ownership of the journey.",
+      "what_not_to_do": "Do not outsource your life decisions to others or wait for 100% guarantee before daring to act."
+    },
+    "bg_2_56": {
+      "meaning": "One whose mind remains unshaken amidst adversity, who does not crave after pleasure, and who is free from attachment, fear, and anger, is called a sage of steady wisdom (Sthitaprajna).",
+      "reflection": "Affective equilibrium and autonomic resilience. True psychological strength is not the complete absence of painful emotion, but cultivating a stable observing self (Sakshi) that remains centered through emotional storms.",
+      "what_to_do": "Practice being the compassionate witness to your emotional tides without identifying as the storm itself.",
+      "what_not_to_do": "Do not catastrophize uncomfortable emotions or label yourself as broken because you feel fear."
+    },
+    "bg_12_15": {
+      "meaning": "One by whom the world is not distressed and who is not distressed by the world, who is freed from the agitation of excessive joy, intolerance, fear, and anxiety—such a one is truly dear to the Divine.",
+      "reflection": "Healthy interpersonal differentiation and relational boundaries. Establish emotional equilibrium where you neither inflict hostility on others nor permit the erratic projections of others to disrupt your internal sanctity.",
+      "what_to_do": "Maintain kind but impenetrable emotional boundaries: others' opinions are reflections of their internal state, not your objective worth.",
+      "what_not_to_do": "Do not compromise your integrity to appease toxic dynamics, and do not absorb others' unmanaged dysregulation."
+    },
+    "bg_3_35": {
+      "meaning": "It is far better to perform one's own natural duty, even if imperfectly, than to masterfully execute the duty of another. Following another's path invites fear, disorientation, and spiritual peril.",
+      "reflection": "Reclaiming personal authenticity over comparative inadequacy. Anxiety thrives when measuring unique individual worth against external, societal yardsticks. Embracing your authentic pace dissolves imposter distress.",
+      "what_to_do": "Honor your unique temperament, pacing, and strengths; define success by your internal alignment rather than comparative status.",
+      "what_not_to_do": "Stop doomscrolling other people's curated highlights and measuring your private struggles against their public facade."
+    },
+    "bg_5_23": {
+      "meaning": "One who is able to withstand the intense surges born of desire and anger here in this very body, before departing from it, is truly harmonized and lives happily.",
+      "reflection": "Urge surfing and autonomic distress tolerance. An intense emotional or compulsive urge peaks within 90 seconds like a wave; developing the somatic capacity to surf this peak without giving in rewires the reward circuitry.",
+      "what_to_do": "Pause and surf the physical urge for 90 seconds, breathing steadily through the sensation without acting on it.",
+      "what_not_to_do": "Do not immediately capitulate to urgent impulses or shame yourself for feeling the biological surge."
+    },
+    "bg_18_66": {
+      "meaning": "Abandoning all strenuous anxieties and contrived burdens, surrender completely unto Me alone. I shall liberate you from all distress and afflictions; do not grieve.",
+      "reflection": "Radical surrender of hyper-responsibility and existential trust. When you have exhausted your personal ego-control, stepping back into the vast holding intelligence of life relieves the crushing weight of hyper-vigilance.",
+      "what_to_do": "Consciously set down the imaginary weight of controlling the universe; rest your tired body and trust that life is holding you.",
+      "what_not_to_do": "Do not shoulder burdens that do not belong to you today, and stop believing you must solve everything alone."
+    }
+  },
+  "trataka": {
+    "bindu": {
+      "name": "Bindu Trataka (Sacred Golden Focal Point)",
+      "focalTarget": "A solitary, luminous golden amber dot at eye level (approx. 2 feet away).",
+      "neuroMechanism": "Stabilizing optic flow and holding motionless saccadic fixation signals the superior colliculus and amygdala to down-regulate acute sympathetic hyperarousal and panic.",
+      "guidance": "Gaze softly at the radiant amber center without straining or blinking forcefully. Allow peripheral visual stimuli to gently blur into the background. Synchronize your gaze with a 4-second slow inhale and a 6-second prolonged exhale. Conclude by rubbing your palms vigorously until warm and cupping them over your closed eyes (Palming)."
+    },
+    "flame": {
+      "name": "Jyoti Trataka (Candle Flame Gazing)",
+      "focalTarget": "The glowing, steady golden-orange tip of a meditative flame.",
+      "neuroMechanism": "Gentle luminance stimulating retinal photoreceptors rekindles central dopaminergic and autonomic tone, cutting through dorsal vagal shutdown, depressive inertia, and apathy.",
+      "guidance": "Rest your gaze on the brightest apex of the flame, relaxing your forehead and facial muscles. Breathe in warmth through the chest, allowing the steady light to illuminate internal heaviness. Hold a soft, receptive gaze for 2 minutes until slight natural lacrimation (tearing) occurs, cleansing the ocular channels. Close your eyes and visualize the residual golden after-image between the eyebrows (Antaranga Trataka)."
+    },
+    "murti": {
+      "name": "Mandala Trataka (Sacred Geometry Resonance)",
+      "focalTarget": "An intricate, concentric sacred geometric mandala pattern.",
+      "neuroMechanism": "Symmetrical geometric visualization stimulates bilateral occipital-parietal integration, breaking chaotic rumination and restoring prefrontal executive coherence.",
+      "guidance": "Focus gently on the geometric center (Bindu) of the mandala. Slowly trace the symmetrical concentric petals outward with your peripheral gaze, then return to the center. Maintain an unbroken, calm breathing cycle to harmonize left and right cerebral hemispheres. Close your eyes and rest within the ordered spatial harmony created in the mind."
+    },
+    "pratibimb": {
+      "name": "Pratibimb Trataka (Sacred Mirror Gazing)",
+      "focalTarget": "Your own pupil reflections in a softly lit mirror or reflective front camera.",
+      "neuroMechanism": "Engages frontoparietal mirror-neuron circuits and ventral vagal social engagement systems to rewire toxic core shame, imposter syndrome, and self-alienation.",
+      "guidance": "Look directly into the pupils of your own eyes with compassionate, non-judgmental awareness. Notice any critical mental dialogue arise, and consciously soften your gaze into unconditional acceptance. Silently repeat: \"I acknowledge you. I accept you. You are safe here in this moment.\" Conclude with hands over the heart center, integrating self-compassion."
+    },
+    "shoonya": {
+      "name": "Shoonya Trataka (Void & Panoramic Space Gazing)",
+      "focalTarget": "Unbounded empty space, expansive dark blue horizon, or dark void screen.",
+      "neuroMechanism": "Shifting from foveal hyper-focus to panoramic peripheral vision immediately deactivates sympathetic adrenergic tone and halts decision-paralysis rumination.",
+      "guidance": "Soften your gaze so you are not looking AT any object, but rather through the open, spacious void. Expand your visual field to take in the extreme left, right, ceiling, and floor simultaneously. Notice how your mental narrative quietens the moment panoramic vision engages. Breathe naturally into the vast, silent space of pure awareness."
+    }
+  },
+  "assessment": {
+    "emotions": {
+      "joy": "Joy, Gratitude & Ventral Vagal Safety",
+      "calmness": "Calmness, Presence & Parasympathetic Regulation",
+      "anxiety": "Anticipatory Anxiety & Fear of Negative Outcomes",
+      "sadness": "Acute Sadness, Grief & Emotional Heaviness",
+      "anger": "Frustration, Interpersonal Betrayal & Anger Cascade",
+      "fear": "Panic, Threat Alarm & Autonomic Dysregulation",
+      "shame": "Core Shame, Self-Blame & Imposter Syndrome",
+      "confusion": "Existential Dilemma, Decision Paralysis & Mental Fog",
+      "overwhelm": "Cognitive Overload, Sensory Chaos & Burnout Exhaustion"
+    },
+    "severity": {
+      "positive": "Harmonious & Regulated State (Ventral Vagal Safe [Distress 1/10])",
+      "severe": "Severe / Acute High Distress",
+      "moderate": "Moderate to Elevated Distress",
+      "mild": "Mild to Moderate Strain"
+    },
+    "nervousSystem": {
+      "positive": "Ventral Vagal Social Engagement & Deep Physiological Safety (Parasympathetic Regulated)",
+      "sympathetic": "Sympathetic Nervous System Hyperarousal (Fight-or-Flight Overdrive)",
+      "dorsal": "Dorsal Vagal Shutdown (Hypoarousal / Depletion & Freeze)"
+    },
+    "bodilyMarkers": {
+      "positive": "Relaxed shoulders, open chest, natural unhurried breathing, and whole-body somatic lightness",
+      "sympathetic": "Chest tightness, rapid shallow breathing, throat constriction, and visceral unrest",
+      "dorsal": "Heavy limbs, neuro-energetic depletion, brain fog, and interoceptive numbness"
+    },
+    "inputSummaries": {
+      "positive": "You are experiencing genuine happiness, presence, and somatic ease; your nervous system is anchored in deep ventral vagal safety and clarity.",
+      "debt": "You are carrying the crushing weight of financial stress and accumulating debts, generating an unrelenting psychological burden that is straining your peace of mind.",
+      "lonely": "You are experiencing profound emotional loneliness and isolation, feeling as though you are carrying this deep ache completely by yourself without support.",
+      "family": "You are navigating painful family conflict, interpersonal discord, or bitter arguments that have left your emotional boundaries frayed and unsettled.",
+      "hopeless": "You are experiencing deep psychological depletion, profound emptiness, and a sense of hopelessness that makes even small steps forward feel insurmountable.",
+      "interview": "You are preparing for a high-stakes interview or milestone, trapped in intense anticipatory dread of failure and overwhelming decision paralysis.",
+      "breakup": "You are enduring the raw agony of emotional heartbreak and relational grief, where emotional loss has translated into palpable physical ache in your chest.",
+      "boss": "You have been subjected to hostile treatment and toxic invalidation, leaving your nervous system shaking with acute rage and indignation.",
+      "fake": "You are caught in a punishing cycle of toxic core shame and imposter syndrome, where an aggressive inner critic convinces you that you are fundamentally inadequate.",
+      "overwhelm": "Your cognitive bandwidth has been swamped by sensory overload, unrelenting task friction, and racing thoughts that resemble an internal hurricane.",
+      "defaultTemplate": "You are carrying a heavy burden of emotional strain and psychological unease{condition} that has thrown your mind and physiology into turmoil."
+    },
+    "markdownTemplates": {
+      "positive": {
+        "title": "**SUMMARY & EMOTIONAL WELLBEING ASSESSMENT (वर्तमान स्थिति एवं संतुलन का विश्लेषण):**",
+        "stateLabel": "Identified Emotional State",
+        "autonomicLabel": "Autonomic & Regulatory State",
+        "somaticLabel": "Interoceptive Bodily Experience",
+        "summaryLabel": "Empathic Summary of Your Experience"
+      },
+      "distress": {
+        "title": "**SUMMARY & CLINICAL ASSESSMENT:**",
+        "stateLabel": "State & Suffering Severity Level (Distress Index)",
+        "focusLabel": "Focus"
+      }
+    }
+  },
+  "synergyResolution": {
+    "template": "**4. SUMMARY: TRI-PILLAR SYNERGISTIC RESOLUTION (How They Work in Combination to Heal You):**\nThe Gita grounds you in detached present action, CBT dismantles catastrophic thought loops, and {tratakName} mechanically quiets amygdala alarm.\n- Recovery Sequence: Step 1 (Gita wisdom) → Step 2 (CBT reframe) → Step 3 ({tratakName} focus)."
+  },
+  "messagePillars": {
+    "gitaTitle": "**1. BHAGAVAD GITA REFRAMING (Chapter {chapter}, Verse {verse}):**",
+    "gitaSpeaker": "The timeless wisdom of the Gita reminds us:",
+    "gitaAction": "Actionable path:",
+    "cbtTitle": "**2. CLINICAL COGNITIVE NEUROSCIENCE (CBT & Somatic Grounding):**",
+    "cbtSomaticAnchor": "Somatic anchor:",
+    "tratakaTitle": "**3. TRATAK NEURO-OCULAR PROTOCOL ({name}):**",
+    "tratakaFocalTarget": "Sacred Gazing Target:",
+    "tratakaPractice": "Practice Guidance ({duration} Minutes):"
+  },
+  "generalAdviceSpeakers": {
+    "gitaSpeaker": "The timeless wisdom of the Gita reminds us:",
+    "gitaReflection": "Reflecting on your situation:"
+  }
+}

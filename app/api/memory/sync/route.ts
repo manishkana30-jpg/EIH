@@ -15,7 +15,7 @@ export const dynamic = 'force-dynamic';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { action, thoughtRecord, profile, userTurn, aiTurn, followUpTurn } = body as {
+    const { action, thoughtRecord: _thoughtRecord, profile: _profile, userTurn, aiTurn: _aiTurn, followUpTurn } = body as {
       action: 'sync_profile' | 'analyze_turn' | 'get_summary';
       thoughtRecord?: CBTThoughtRecord;
       profile?: Partial<UserCognitiveProfile>;

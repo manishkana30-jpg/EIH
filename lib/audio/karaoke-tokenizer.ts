@@ -119,7 +119,7 @@ export function parseTherapeuticMessage(rawText: string): {
  * Universal Tokenizer for Real-Time Karaoke Highlighting and Speech Synthesis.
  * Guaranteed 100% 1:1 match between spoken speech tokens and rendered UI word spans.
  */
-export function tokenizeForKaraoke(rawText: string, locale?: string): TokenizeResult {
+export function tokenizeForKaraoke(rawText: string, _locale?: string): TokenizeResult {
   const { isGita, shlokaBlock, therapeuticBody, sections } = parseTherapeuticMessage(rawText);
 
   const words: KaraokeToken[] = [];

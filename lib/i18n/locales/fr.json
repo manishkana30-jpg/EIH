@@ -1,0 +1,379 @@
+{
+  "interventions": {
+    "gad": {
+      "conditionName": "Anxiété Généralisée et Rumination Chronique",
+      "validation": "J'entends pleinement à quel point votre esprit s'emballe et combien ce cycle de soucis incessants est épuisant pour votre corps.",
+      "cbt_reframing": "Prenez conscience de cette tendance à anticiper le pire scénario. Demandez-vous avec bienveillance : 'Quelle est la probabilité réelle de cet événement et quels faits concrets ai-je sous les yeux ?' Quittez le 'Et si...' pour revenir à ce qui est tangible ici et maintenant.",
+      "somatic_anchor": "Pratiquez l'ancrage sensoriel 5-4-3-2-1 : observez 5 éléments visibles, touchez 4 textures, écoutez 3 sons ambiants, décelez 2 odeurs et 1 goût.",
+      "pranayama": "Effectuez 3 à 5 minutes de respiration alternée (Nadi Shodhana) afin de réactiver votre frein vagal et apaiser la suractivation émotionnelle.",
+      "micro_habit": "Instaurez une plage horaire quotidienne de 15 minutes dédiée aux soucis ; en dehors de ce créneau, notez-les sur un carnet et laissez-les reposer."
+    },
+    "burnout_fatigue": {
+      "conditionName": "Épuisement Nerveux et Burnout",
+      "validation": "Je ressens pleinement cette fatigue écrasante qui pèse sur vos épaules et vide votre énergie vitale.",
+      "cbt_reframing": "Rejetez l'idée que votre valeur dépend de votre productivité ininterrompue. Le repos n'est pas une récompense à mériter, c'est une nécessité biologique absolue pour vous régénérer.",
+      "somatic_anchor": "Allongez-vous confortablement, décollez la langue du palais, abaissez les épaules et détendez complètement les muscles du visage et du bassin.",
+      "pranayama": "Pratiquez 4 minutes de respiration Bhramari (le souffle du bourdonnement) pour induire une vibration apaisante et revitaliser l'esprit.",
+      "micro_habit": "Adoptez un couvre-feu numérique complet 60 minutes avant le coucher sans notifications professionnelles ni lumière bleue."
+    },
+    "panic_dysregulation": {
+      "conditionName": "Panique Aiguë et Crise d'Angoisse",
+      "validation": "J'entends la violence de cette montée d'angoisse et la terreur que peut provoquer l'emballement de vos battements cardiaques.",
+      "cbt_reframing": "Rappelez-vous fermement : cette vague est une simple décharge d'adrénaline qui retombe naturellement en 8 à 12 minutes. Les sensations sont intenses mais absolument sans danger pour vous. Vous êtes en sécurité.",
+      "somatic_anchor": "Appliquez une compresse d'eau très froide ou un glaçon sur les pommettes et le haut des yeux pendant 20 secondes pour ralentir le rythme cardiaque.",
+      "pranayama": "Respirez avec une expiration allongée : inspirez par le nez pendant 4 secondes, puis soufflez lentement par la bouche pincée pendant 7 secondes.",
+      "micro_habit": "Répétez doucement : 'Mon corps élimine un trop-plein d'énergie. C'est inconfortable, mais je ne cours aucun danger.'"
+    },
+    "major_depressive_inertia": {
+      "conditionName": "Abattement Émotionnel et Perte d'Énergie",
+      "validation": "J'entends le poids immense et l'engourdissement qui vous envahissent, rendant chaque geste si lourd à accomplir.",
+      "cbt_reframing": "Appliquez le principe de l'activation comportementale : l'élan vient après le mouvement, non l'inverse. N'attendez pas d'avoir envie pour agir ; un geste infime suffit à réamorcer la vitalité.",
+      "somatic_anchor": "Tenez-vous pieds nus sur le sol, ressentez la stabilité de la terre et tapotez doucement votre sternum du bout des doigts pendant une minute.",
+      "pranayama": "Pratiquez 3 minutes de respiration solaire (Surya Bhedana par la narine droite) pour réchauffer et dynamiser l'organisme.",
+      "micro_habit": "Accomplissez un geste minuscule et garanti : boire un verre d'eau ou simplement ouvrir la fenêtre pour respirer l'air frais."
+    },
+    "imposter_perfectionism": {
+      "conditionName": "Syndrome de l'Imposteur et Perfectionnisme",
+      "validation": "J'entends ce doute persistant qui vous fait croire que vos réussites ne sont dues qu'à la chance ou au hasard.",
+      "cbt_reframing": "Prenez conscience que le perfectionnisme est souvent une armure contre la peur du jugement. Distinguez vos compétences objectives de votre insécurité émotionnelle. Le travail accompli vaut mieux que l'idéal inaccessible.",
+      "somatic_anchor": "Posez une main sur votre cœur et l'autre sur votre ventre ; ressentez le rythme calme de votre souffle et desserrez les dents.",
+      "pranayama": "Effectuez la respiration carrée (4 temps inspiration, rétention, expiration, rétention) pour recentrer votre confiance.",
+      "micro_habit": "Listez 3 accomplissements réels et mesurables accomplis récemment, sans chercher à en minimiser l'importance."
+    },
+    "relationship_heartbreak": {
+      "conditionName": "Chagrin d'Amour et Rupture Relationnelle",
+      "validation": "J'entends la douleur aiguë et la sensation de vide qui serrent votre poitrine après cette séparation.",
+      "cbt_reframing": "Accueillez votre tristesse sans en faire une remise en cause de votre valeur. Une rupture traduit une divergence de trajectoires, nullement une incapacité à être aimé.",
+      "somatic_anchor": "Pratiquez l'étreinte du papillon : croisez les bras sur votre poitrine et tapotez alternativement chaque épaule avec douceur.",
+      "pranayama": "Respirez au niveau du cœur : inspirez 4 secondes en ouvrant la cage thoracique, puis expirez 6 secondes dans un soupir libérateur.",
+      "micro_habit": "Rédigez sur papier vos émotions sans filtre pour vous en libérer, puis fermez symboliquement la page."
+    },
+    "existential_loneliness": {
+      "conditionName": "Solitude Profonde et Sentiment d'Isolement",
+      "validation": "J'entends le poids de cet isolement et la sensation de n'être compris par personne en ce moment.",
+      "cbt_reframing": "Distinguez l'état d'être seul de l'idée que vous êtes indigne d'affection. La solitude est un appel biologique au lien, non une marque de défaillance.",
+      "somatic_anchor": "Posez vos deux paumes bien à plat sur le haut du buste et ressentez la chaleur réconfortante de votre contact.",
+      "pranayama": "Pratiquez la cohérence cardiaque : inspirez 5 secondes sans forcer, puis expirez 5 secondes avec fluidité.",
+      "micro_habit": "Envoyez un mot simple et sans attente à un proche ou échangez un regard bienveillant avec une personne croisée."
+    },
+    "anger_frustration_dysregulation": {
+      "conditionName": "Colère Vive et Frustration Réactive",
+      "validation": "J'entends la brûlure de cette irritation et la sensation d'injustice qui bouillonne en vous actuellement.",
+      "cbt_reframing": "La colère est une alarme légitime indiquant qu'une limite a été franchie. Validez ce ressenti tout en choisissant de différer votre réaction pour garder la maîtrise.",
+      "somatic_anchor": "Serrez les poings au maximum pendant 5 secondes, puis relâchez-les brusquement en écartant les doigts pour décharger la pression.",
+      "pranayama": "Pratiquez le souffle rafraîchissant Sitali : inspirez l'air frais par la bouche entrouverte et expirez lentement par le nez.",
+      "micro_habit": "Marquez une pause stricte de 90 secondes avant de formuler la moindre réponse sous le coup de l'émotion."
+    },
+    "grief_bereavement": {
+      "conditionName": "Deuil et Perte Émotionnelle Profonde",
+      "validation": "J'entends la déchirure de cette absence et le chagrin immense qui vous étreint en ce moment.",
+      "cbt_reframing": "Le deuil n'est pas une faiblesse à surmonter au plus vite, mais l'expression de l'attachement face à la perte. Accordez-vous le droit absolu de pleurer et de vivre ce silence.",
+      "somatic_anchor": "Enlacez votre buste de vos propres bras dans une étreinte douce et bienveillante en inclinant la tête.",
+      "pranayama": "Adoptez la respiration océanique Ujjayi : émettez un léger murmure apaisant au fond de la gorge à chaque souffle.",
+      "micro_habit": "Avancez un instant à la fois, sans vous obliger à afficher une façade rassurante envers autrui."
+    },
+    "adhd_executive_overwhelm": {
+      "conditionName": "Surcharge Cognitive et Dispersion Mentale",
+      "validation": "J'entends ce tourbillon d'idées qui s'entrechoquent et cette paralysie qui vous empêche de savoir par quoi commencer.",
+      "cbt_reframing": "Quittez l'illusion de devoir tout régler en même temps. Choisissez une unique micro-tâche mécanique réalisable en moins de deux minutes pour débloquer l'action.",
+      "somatic_anchor": "Pratiquez des mouvements croisés : touchez votre genou gauche avec la main droite, puis l'inverse 10 fois pour réactiver la coordination.",
+      "pranayama": "Respirez au rythme d'un carré (4-4-4-4) afin de ramener le calme dans vos circuits attentionnels.",
+      "micro_habit": "Écrivez une seule tâche sur un papier et masquez toutes vos autres listes de travail."
+    },
+    "insomnia_hyperarousal": {
+      "conditionName": "Insomnie d'Endormissement et Rumination Nocturne",
+      "validation": "J'entends la fatigue de votre corps et la détresse de voir votre cerveau continuer à s'agiter dans le noir.",
+      "cbt_reframing": "Cessez de vouloir forcer le sommeil à tout prix. Remplacez l'injonction 'je dois dormir' par 'j'offre à mon corps un moment de repos réparateur'. Le calme est déjà bénéfique.",
+      "somatic_anchor": "Formule d'apaisement : répétez intérieurement : 'Mes bras sont lourds et chauds. Mes jambes sont lourdes et chaudes. Mon front est frais et serein.'",
+      "pranayama": "Technique 4-7-8 : inspirez 4 secondes par le nez, retenez 7 secondes et expirez lentement 8 secondes par la bouche.",
+      "micro_habit": "Si le sommeil ne vient pas après 20 minutes, quittez le lit pour une activité douce dans la pénombre jusqu'au retour de la fatigue."
+    },
+    "social_evaluative_threat": {
+      "conditionName": "Anxiété Sociale et Peur du Jugement",
+      "validation": "J'entends cette sensation de vulnérabilité et l'angoisse d'être épié lors du moindre échange avec autrui.",
+      "cbt_reframing": "Les gens sont absorbés par leurs propres insécurités. Personne ne vous scrute avec sévérité ; vous êtes en sécurité en restant simplement vous-même.",
+      "somatic_anchor": "Élargissez votre vision périphérique pour désamorcer le sentiment de menace dans votre cerveau.",
+      "pranayama": "Respiration carrée (4-4-4-4) pour apaiser le rythme cardiaque et poser votre voix en toute sérénité.",
+      "micro_habit": "Portez 80% de votre attention vers ce que dit l'autre plutôt que de surveiller vos propres attitudes."
+    },
+    "health_somatic_anxiety": {
+      "conditionName": "Anxiété de Santé et Hypervigilance Corporelle",
+      "validation": "J'entends votre vigilance aiguë face à chaque sensation de votre corps et l'inquiétude que cela éveille.",
+      "cbt_reframing": "L'attention agit comme un amplificateur : plus vous surveillez votre corps, plus les sensations sont décuplées. Le ressenti existe, mais le scénario catastrophique est infondé.",
+      "somatic_anchor": "Portez votre attention vers l'extérieur : touchez 3 objets distincts et nommez les bruits lointains.",
+      "pranayama": "Respiration ventrale avec la main sur l'abdomen (4 secondes inspiration, 6 secondes expiration).",
+      "micro_habit": "Suspendez toute recherche médicale sur internet pendant 48 heures d'affilée."
+    },
+    "trauma_hypervigilance": {
+      "conditionName": "Hypervigilance et Résurgence Traumatique",
+      "validation": "J'entends la vigilance extrême de votre système nerveux qui cherche à vous préserver à tout prix.",
+      "cbt_reframing": "Ancrage temporel : 'Cela appartenait au passé, voici le présent. Mon corps déclenche une ancienne alerte, mais ici et maintenant, la menace est révolue.'",
+      "somatic_anchor": "Tournez lentement la tête pour regarder la pièce, appuyez fermement vos pieds au sol et nommez 3 repères stables.",
+      "pranayama": "Tonification du nerf vague avec un son grave ('Voooo') émis depuis le ventre à l'expiration.",
+      "micro_habit": "Gardez un petit galet dans la poche à toucher dès qu'une angoisse du passé refait surface."
+    },
+    "ocd_intrusive_rumination": {
+      "conditionName": "Pensées Intrusives et Rumination Obsessionnelle",
+      "validation": "J'entends la détresse causée par ces pensées répétitives et intrusives qui vous font douter de vous.",
+      "cbt_reframing": "Les pensées ne sont que du bruit neurochimique, nullement le miroir de votre être profond. Accueillez le doute : 'Peut-être oui, peut-être non ; je choisis de ne pas entrer dans le débat mental.'",
+      "somatic_anchor": "Ouvrez les mains paumes vers le ciel et observez la pensée s'éloigner comme un nuage sans la retenir.",
+      "pranayama": "Respiration Viloma avec courtes pauses pour briser l'automatisme mental.",
+      "micro_habit": "Attendez 10 minutes avant de céder à une vérification ou à une recherche de réassurance."
+    },
+    "compassion_fatigue_caregiver": {
+      "conditionName": "Usure de Compassion et Épuisement de l'Aidant",
+      "validation": "J'entends votre fatigue immense après avoir tant donné pour soutenir et accompagner autrui.",
+      "cbt_reframing": "Différenciation et juste distance : vous pouvez éprouver une profonde empathie sans porter la souffrance d'autrui sur vos épaules. Se préserver est le devoir premier de l'aidant.",
+      "somatic_anchor": "Posez les mains sur vos côtes, respirez dans vos flancs et ressentez la frontière saine entre vous et l'extérieur.",
+      "pranayama": "Respiration Anuloma Viloma en visualisant la régénération de vos réserves d'énergie.",
+      "micro_habit": "Prenez 20 minutes chaque jour entièrement libérées de toute obligation envers autrui."
+    },
+    "decision_paralysis_ambivalence": {
+      "conditionName": "Paralysie Décisionnelle et Ambivalence",
+      "validation": "J'entends cette lutte intérieure épuisante où chaque choix semble comporter un risque de regret.",
+      "cbt_reframing": "Principe des portes réversibles : la majorité des choix peuvent être ajustés en chemin. Prendre une décision suffisante aujourd'hui libère bien plus d'énergie que l'hésitation perpétuelle.",
+      "somatic_anchor": "Pensez à l'option A pendant 60 secondes en observant vos sensations corporelles, puis faites de même avec l'option B.",
+      "pranayama": "Respiration Ujjayi pendant 4 minutes pour retrouver le discernement intérieur.",
+      "micro_habit": "Lancez une pièce de monnaie ; pendant son vol, observez la face que vous espérez voir apparaître."
+    },
+    "shame_core_defectiveness": {
+      "conditionName": "Honte Toxique et Dévalorisation de Soi",
+      "validation": "J'entends la souffrance aiguë de cette voix qui vous dit que vous n'êtes pas à la hauteur ou indigne d'amour.",
+      "cbt_reframing": "Distinguez culpabilité et honte : l'une dit 'j'ai commis une erreur', l'autre dit 'je suis une erreur'. Corrigez vos faux pas sans jamais piétiner votre dignité fondamentale.",
+      "somatic_anchor": "Posez tendrement la paume sur votre joue, baissez les épaules et adressez-vous des paroles bienveillantes comme à un enfant aimé.",
+      "pranayama": "Respiration lunaire Chandra Bhedana (par la narine gauche) pour éveiller la douceur envers soi.",
+      "micro_habit": "Regardez-vous avec bienveillance et affirmez votre valeur inconditionnelle d'être humain."
+    },
+    "workplace_mobbing_toxic_culture": {
+      "conditionName": "Harcèlement Professionnel et Ambiance Toxique",
+      "validation": "J'entends la souffrance et l'usure morale provoquées par les tensions toxiques dans votre cadre professionnel.",
+      "cbt_reframing": "L'hostilité en entreprise découle de dysfonctionnements hiérarchiques, non de votre valeur. Le travail est un contrat, non la totalité de votre existence.",
+      "somatic_anchor": "Tenez-vous bien droit, pieds ancrés au sol, et visualisez une barrière protectrice infranchissable entre vous et les pressions malsaines.",
+      "pranayama": "Respiration apaisante Sitali avec expiration nasale énergique pour évacuer la rancœur accumulée.",
+      "micro_habit": "Consignez objectivement les faits et échanges sur un support personnel."
+    },
+    "somatic_chronic_pain_amplification": {
+      "conditionName": "Douleur Chronique et Sensibilisation Nerveuse",
+      "validation": "J'entends à quel point vivre avec cette douleur physique continue est épuisant pour votre moral et votre corps.",
+      "cbt_reframing": "Reprogrammation de la douleur : la douleur chronique est fréquemment une alarme cérébrale hypersensible suractivée sans lésion active. Le cerveau peut désapprendre ce réflexe.",
+      "somatic_anchor": "Observation somatique : regardez la sensation pendant 30 secondes avec une curiosité neutre, sans lutter contre elle.",
+      "pranayama": "Souffle apaisant So-Hum : inspirez en pensant 'So' et expirez en pensant 'Hum' (Je suis en sécurité).",
+      "micro_habit": "Faites 3 minutes de mouvements doux en portant votre attention sur les zones de votre corps qui vont bien."
+    },
+    "cognitive_memory_brain_fog": {
+      "conditionName": "Fatigue Cognitive, Trous de Mémoire et Brouillard Mental",
+      "validation": "J'entends combien il est déstabilisant et anxiogène de sentir sa mémoire fléchir et d'avoir du mal à retrouver ses idées.",
+      "cbt_reframing": "Prenez du recul face à la crainte d'un déclin cognitif irréversible. Les oublis fréquents et le brouillard mental résultent presque toujours du stress, d'un manque de sommeil ou d'une surcharge d'informations. Votre mémoire profonde est parfaitement préservée ; c'est simplement votre bande passante mentale qui est temporairement saturée.",
+      "somatic_anchor": "Réancrage sensoriel : buvez une gorgée d'eau fraîche en observant la sensation dans la gorge, puis tapotez doucement vos tempes et votre front du bout des doigts pendant 30 secondes.",
+      "pranayama": "Réalisez 5 cycles de respiration Bhramari (le souffle du bourdonnement) en bouchant légèrement vos oreilles avec les index pour diffuser des micro-vibrations crâniennes et clarifier l'esprit.",
+      "micro_habit": "Externalisez votre mémoire : notez immédiatement chaque tâche sur un carnet plutôt que d'encombrer votre esprit."
+    },
+    "emotional_dysregulation_numbness": {
+      "conditionName": "Dérégulation Émotionnelle et Déconnexion Dissociative",
+      "validation": "Je ressens ce vide et cet engourdissement où il semble impossible d'accéder à vos émotions.",
+      "cbt_reframing": "L'engourdissement émotionnel est un disjoncteur protecteur de votre système nerveux face au trop-plein, non une anomalie permanente. Vos émotions se reconnectent avec douceur à travers le corps.",
+      "somatic_anchor": "Pratiquez le câlin papillon : croisez les bras sur la poitrine et tapotez doucement vos épaules alternativement pendant 30 secondes.",
+      "pranayama": "Effectuez 4 minutes de respiration alternée Nadi Shodhana (ratio 4:4:8) pour apaiser le figement vagal.",
+      "micro_habit": "Notez une sensation physique neutre chaque jour sans porter de jugement."
+    }
+  },
+  "generalAdvice": {
+    "anxiety": "J'entends l'angoisse et la tension qui vous habitent. Rappelez-vous que les pensées intenses ne sont que des passages mentaux temporaires. Inspirez sur 4 temps et expirez longuement sur 6 temps pour apaiser votre système nerveux.",
+    "fear": "Rappelez-vous : cette montée d'adrénaline culmine puis s'estompe naturellement en 8 à 12 minutes. Vous êtes en sécurité.",
+    "sadness": "Je ressens la tristesse et la lourdeur qui pèsent sur votre cœur. Soyez bienveillant avec vous-même aujourd'hui et laissez une respiration lente vous apporter du réconfort.",
+    "anger": "Je comprends l'irritation et la colère qui montent en vous. Identifiez ce qui a heurté vos limites tout en vous offrant un temps d'arrêt salvateur.",
+    "overwhelm": "J'entends à quel point vous vous sentez submergé en ce moment. Vous n'avez pas à tout régler immédiatement. Ancrez vos pieds dans le sol et concentrez-vous sur ce souffle présent.",
+    "confusion": "Le brouillard cérébral provient le plus souvent d'une surcharge cognitive ou d'un manque de repos. Buvez de l'eau fraîche et externalisez vos tâches par écrit.",
+    "shame": "Séparez vos compétences objectives de vos doutes subjectifs. Vous n'avez pas à viser la perfection pour avoir de la valeur.",
+    "loneliness": "La solitude ressentie ne vous coupe pas irrémédiablement des autres. Posez la main sur le cœur et respirez avec douceur.",
+    "ocd": "Le besoin impérieux de vérifier est une fausse alerte cérébrale. Retardez ce geste de 5 minutes et prolongez vos expirations.",
+    "somatic": "Les tensions physiques traduisent une sensibilité nerveuse accrue. Accueillez la sensation avec calme et relâchez la mâchoire.",
+    "adhd": "Le mouvement crée l'élan. Lancez-vous dans une micro-action de 2 minutes sans attendre que la motivation apparaisse.",
+    "default": "J'entends la charge émotionnelle que vous portez en ce moment. Ces instants difficiles ne vous définissent pas. Inspirez doucement et prolongez l'expiration pour retrouver votre calme."
+  },
+  "gita": {
+    "bg_2_47": {
+      "meaning": "Tu n'as de droit que sur l'action présente, jamais sur les fruits de tes actes. Ne sois pas guidé par la récompense, et ne succombe point à l'inaction.",
+      "reflection": "Ramenez votre esprit vers l'acte immédiat plutôt que vers des résultats hypothétiques. Se détacher de l'issue dissout la peur de l'échec.",
+      "what_to_do": "Consacrez votre énergie à l'étape concrète et digne qui s'offre à vous en cet instant.",
+      "what_not_to_do": "Cessez de négocier avec un futur imaginaire et de laisser l'anxiété paralyser votre élan."
+    },
+    "bg_2_48": {
+      "meaning": "Établi dans le yoga, ô Arjuna, accomplis ton devoir sans attachement, égal dans le succès comme dans l'échec. Car l'équanimité est le yoga même.",
+      "reflection": "L'équanimité (Samatvam) est le véritable sanctuaire intérieur. En libérant votre système nerveux de l'obsession de la victoire ou de la défaite, vous retrouvez une clarté souveraine.",
+      "what_to_do": "Posez votre acte avec une conscience sereine et détachez-vous de l'anxiété du résultat.",
+      "what_not_to_do": "Ne liez pas votre valeur humaine aux fluctuations éphémères du succès extérieur."
+    },
+    "bg_2_14": {
+      "meaning": "Le contact des sens avec leurs objets fait naître le chaud et le froid, la joie et la peine. Éphémères, ils apparaissent et disparaissent. Accueille-les avec sérénité.",
+      "reflection": "Toute douleur émotionnelle ressemble aux saisons : elle naît, culmine puis s'efface. Votre être véritable demeure intact derrière ces vagues.",
+      "what_to_do": "Observez ce ressenti douloureux avec compassion, sans crispation, en respirant posément.",
+      "what_not_to_do": "Ne confondez pas un chagrin temporaire avec la réalité définitive de votre existence."
+    },
+    "bg_2_62_63": {
+      "meaning": "Ressasser les griefs nourrit l'attachement ; de l'attachement naît le désir contrarié, puis la colère. La colère aveugle l'esprit et détruit le discernement.",
+      "reflection": "La colère est un feu qui consume d'abord celui qui la porte. Prendre du recul permet à la clarté mentale de reprendre ses droits.",
+      "what_to_do": "Faites une pause immédiate, respirez profondément et reportez toute réponse.",
+      "what_not_to_do": "Ne laissez pas la rancœur dicter vos paroles ou vos décisions impulsives."
+    },
+    "bg_6_5": {
+      "meaning": "Que l'homme s'élève par lui-même et ne se déprécie pas. Car l'esprit est le meilleur allié de l'âme, ou son plus redoutable ennemi.",
+      "reflection": "La bienveillance envers soi-même est la clé de la guérison. Choisissez d'être votre propre allié plutôt que votre critique le plus sévère.",
+      "what_to_do": "Accueillez vos efforts avec douceur et valorisez chaque pas franchi.",
+      "what_not_to_do": "Ne cédez pas à la voix intérieure de l'imposture et du dénigrement."
+    },
+    "bg_2_70": {
+      "meaning": "Tel l'océan qui demeure imperturbable tandis que s'y déversent les fleuves, celui en qui les pensées se fondent sans troubler la paix intérieure accède au repos suprême.",
+      "reflection": "Face au tumulte extérieur, cultivez la profondeur de l'océan. Les remous en surface ne sauraient altérer votre calme fondamental.",
+      "what_to_do": "Prenez les choses une par une en accordant un répit bienvenu à votre esprit.",
+      "what_not_to_do": "Évitez la dispersion et la surcharge mentale du multitâche permanent."
+    },
+    "bg_6_26": {
+      "meaning": "D'où que l'esprit instable et vagabond s'échappe, il faut le ramener avec constance sous la guidance du Soi.",
+      "reflection": "L'esprit s'égare naturellement. Ramenez-le au souffle présent sans reproche ni irritation, avec bienveillance.",
+      "what_to_do": "Revenez simplement à la sensation de l'air entrant et sortant de vos narines.",
+      "what_not_to_do": "Ne vous blâmez pas d'avoir été distrait ; le retour au calme est l'exercice lui-même."
+    },
+    "bg_18_63": {
+      "meaning": "Ainsi t'ai-je révélé la sagesse la plus profonde. Médite-la pleinement, puis agis en conscience selon ton libre choix.",
+      "reflection": "Retrouvez votre autonomie fondamentale. Vous possédez en vous la sagesse nécessaire pour discerner votre juste voie.",
+      "what_to_do": "Faites confiance à votre discernement intérieur pour poser un acte serein et lucide.",
+      "what_not_to_do": "Ne vous résignez pas à l'impuissance ni à la dépendance passive."
+    },
+    "bg_2_56": {
+      "meaning": "Celui dont l'esprit n'est point ébranlé dans l'épreuve, exempt d'avidité dans la joie, affranchi de l'attachement, de la peur et de la colère : tel est le sage au discernement stable.",
+      "reflection": "L'équanimité est le plus précieux des trésors. Elle permet de traverser les tempêtes sans perdre son centre.",
+      "what_to_do": "Accueillez les événements avec un calme souverain et une profonde dignité.",
+      "what_not_to_do": "Ne laissez pas l'adversité entamer votre stabilité intérieure."
+    },
+    "bg_12_15": {
+      "meaning": "Celui qui ne trouble point autrui et que le monde ne saurait troubler, libre de l'agitation, de l'intolérance et de l'anxiété : celui-là m'est cher.",
+      "reflection": "Préservez votre espace intérieur des hostilités du monde. La paix que vous rayonnez est votre meilleur bouclier.",
+      "what_to_do": "Posez des limites calmes et refusez d'endosser la négativité d'autrui.",
+      "what_not_to_do": "Ne laissez pas l'amertume ou la rancœur s'installer dans votre cœur."
+    },
+    "bg_3_35": {
+      "meaning": "Mieux vaut accomplir son propre devoir, fût-il imparfait, que d'exceller dans celui d'un autre. Suivre la voie d'autrui est source de péril et d'angoisse.",
+      "reflection": "Cessez la comparaison stérile. Votre valeur réside dans la fidélité à votre être véritable et à votre rythme propre.",
+      "what_to_do": "Avancez avec sincérité sur votre propre chemin sans chercher à copier autrui.",
+      "what_not_to_do": "Ne sacrifiez pas votre vérité personnelle pour correspondre aux standards des autres."
+    },
+    "bg_5_23": {
+      "meaning": "Celui qui, dès cette vie présente, parvient à maîtriser les assauts du désir et de la colère : celui-là est uni à la paix, celui-là est heureux.",
+      "reflection": "L'urgence émotionnelle n'est qu'une vague passagère dans votre corps. Apprenez à chevaucher la crête sans vous y noyer.",
+      "what_to_do": "Attendez patiemment quelques instants en ancrant votre attention dans vos sensations corporelles.",
+      "what_not_to_do": "Ne réagissez pas sous le coup de la pulsion immédiate."
+    },
+    "bg_18_66": {
+      "meaning": "Délaissant tout fardeau fabriqué et toute vaine angoisse, abandonne-toi avec confiance à Moi seul. Je te délivrerai de toute peine ; ne t'afflige point.",
+      "reflection": "Quand tout semble trop lourd, lâcher prise n'est pas abandonner, c'est s'en remettre à une intelligence plus vaste qui soutient toute chose.",
+      "what_to_do": "Déposez votre fardeau avec humilité et respirez dans la confiance retrouvée.",
+      "what_not_to_do": "Ne prétendez pas porter seul le poids du monde sur vos épaules."
+    }
+  },
+  "trataka": {
+    "bindu": {
+      "name": "Bindu Trataka (Point Focal Doré)",
+      "focalTarget": "Un point doré lumineux à hauteur des yeux, à environ soixante centimètres.",
+      "neuroMechanism": "La fixation visuelle continue apaise l'amygdale cérébrale et tarit le flux des pensées anxieuses.",
+      "guidance": "Fixez doucement le point doré sans cligner excessivement. Dès que la fatigue survient, fermez les yeux et posez vos paumes chaudes dessus."
+    },
+    "flame": {
+      "name": "Jyoti Trataka (Contemplation de la Flamme)",
+      "focalTarget": "L'extrémité stable et rayonnante d'une flamme de bougie.",
+      "neuroMechanism": "La clarté de la flamme ravive l'élan vital et dissipe la léthargie dépressive en stimulant les photorécepteurs rétiniens.",
+      "guidance": "Posez votre regard au sommet de la flamme, le visage détendu. Fermez ensuite les yeux et observez l'image rémanente au centre du front."
+    },
+    "murti": {
+      "name": "Mandala Trataka (Géométrie Sacrée Harmonisante)",
+      "focalTarget": "Le centre d'un mandala aux motifs harmonieux et symétriques.",
+      "neuroMechanism": "La contemplation de formes équilibrées réharmonise les hémisphères cérébraux et réduit le bruit mental.",
+      "guidance": "Concentrez-vous sur le cœur du mandala en laissant la symétrie apaiser naturellement vos pensées."
+    },
+    "pratibimb": {
+      "name": "Pratibimb Trataka (Miroir de Bienveillance Intérieure)",
+      "focalTarget": "Le reflet de votre propre regard dans le miroir.",
+      "neuroMechanism": "Ce regard sans jugement apaise la honte intérieure et répare l'estime de soi en activant l'ocytocine.",
+      "guidance": "Plongez votre regard dans vos yeux avec une infinie douceur. Dites-vous intérieurement : 'Je m'accueille avec tendresse'."
+    },
+    "shoonya": {
+      "name": "Shoonya Trataka (Le Vide Méditatif et l'Horizon Vaste)",
+      "focalTarget": "Le ciel infini ou l'espace ouvert devant vous.",
+      "neuroMechanism": "Le regard panoramique éteint l'hyperactivité mentale et crée un espace de silence régénérateur.",
+      "guidance": "Élargissez votre regard vers l'immensité sans vous focaliser sur un point précis. Laissez l'esprit devenir aussi vaste que l'horizon."
+    }
+  },
+  "assessment": {
+    "emotions": {
+      "joy": "Joie, Gratitude et Sécurité Vagale",
+      "calmness": "Calme, Sérénité et Régulation Parasympathique",
+      "anxiety": "Anxiété Anticipatoire et Peur de l'Échec",
+      "sadness": "Tristesse Aiguë, Deuil et Accablement",
+      "anger": "Colère Vive, Frustration et Sentiment de Trahison",
+      "fear": "Panique Aiguë, Alerte de Danger et Angoisse",
+      "shame": "Honte Profonde, Autocritique et Syndrome de l'Imposteur",
+      "confusion": "Dilemme Existantiel, Paralysie Décisionnelle et Flou Mental",
+      "overwhelm": "Surcharge Mentale, Épuisement et Dispersion Cognitive"
+    },
+    "severity": {
+      "positive": "État Régulé et Apaisé (Regulated / Ventral Vagal Safe [Distress 1/10])",
+      "severe": "Détresse Sévère / Aiguë",
+      "moderate": "Tension Modérée à Élevée",
+      "mild": "Tension Légère à Modérée"
+    },
+    "nervousSystem": {
+      "positive": "Sécurité Vagale Ventrale et Connexion Sociale (État Apaisé et Équilibré)",
+      "sympathetic": "Hyperactivation Sympathique (Fuite ou Combat)",
+      "dorsal": "Inhibition Vagale Dorsale (Figement / Épuisement)"
+    },
+    "bodilyMarkers": {
+      "positive": "Épaules détendues, poitrine ouverte, respiration ample et légèreté corporelle",
+      "sympathetic": "Oppression thoracique, rythme cardiaque élevé et crispation",
+      "dorsal": "Lourdeur corporelle, sensation de vide et épuisement physique"
+    },
+    "inputSummaries": {
+      "positive": "Vous ressentez une joie sincère, de la sérénité et une belle clarté d'esprit ; votre physiologie repose dans une sécurité vagale apaisante.",
+      "debt": "Vous portez le fardeau écrasant de difficultés financières et de dettes accumulées, provoquant une inquiétude permanente pour votre sécurité.",
+      "lonely": "Vous ressentez une solitude émotionnelle profonde et un isolement, portant cette peine sans réconfort extérieur.",
+      "family": "Vous traversez des tensions familiales douloureuses et des disputes qui bouleversent votre équilibre émotionnel.",
+      "hopeless": "Vous traversez un vide profond, un sentiment d'impuissance et un épuisement émotionnel qui obscurcit votre horizon.",
+      "interview": "Vous affrontez une échéance importante avec une angoisse vive liée à la peur de l'échec et une hésitation paralysante.",
+      "breakup": "Vous vivez la déchirure d'une rupture amoureuse et un chagrin intense qui se répercute physiquement dans votre poitrine.",
+      "boss": "Vous avez subi une agression verbale ou un comportement toxique, provoquant une violente onde de colère et un sentiment d'injustice.",
+      "fake": "Vous êtes enfermé dans une spirale d'autodépréciation sévère, vous sentant illégitime et submergé par un sentiment d'échec.",
+      "overwhelm": "Votre esprit est submergé par un flot incessant de pensées et de stimuli, semblable à une tempête mentale incontrôlable.",
+      "defaultTemplate": "Vous traversez une période d'intense tension intérieure et d'inconfort émotionnel{condition} qui fragilise votre équilibre."
+    },
+    "markdownTemplates": {
+      "positive": {
+        "title": "**SYNTHÈSE CLINIQUE ET ÉVALUATION DU BIEN-ÊTRE:**",
+        "stateLabel": "Émotion Identifiée et État Émotionnel",
+        "autonomicLabel": "Niveau de Régulation et État Neurovégétatif",
+        "somaticLabel": "Ressenti Somatique Corporel",
+        "summaryLabel": "Synthèse Empathique de votre Situation"
+      },
+      "distress": {
+        "title": "**SYNTHÈSE CLINIQUE :**",
+        "stateLabel": "État et Niveau de Souffrance",
+        "focusLabel": "Focus"
+      }
+    }
+  },
+  "synergyResolution": {
+    "template": "**4. SYNTHÈSE : RÉSOLUTION SYNERGIQUE TRI-PILIERS :**\nComment ils agissent en combinaison : La Gita apaise l'attente du résultat, la TCC désamorce les distorsions et {tratakName} régule le système nerveux.\n- Séquence de Récupération : Étape 1 (Gita) → Étape 2 (TCC) → Étape 3 ({tratakName})।"
+  },
+  "messagePillars": {
+    "gitaTitle": "**1. SAGESSE DE LA BHAGAVAD GITA (Chapitre {chapter}, Verset {verse}):**",
+    "gitaSpeaker": "La Gita nous enseigne :",
+    "gitaAction": "Action juste :",
+    "cbtTitle": "**2. NEUROSCIENCE CLINIQUE COGNITIVE (TCC et Ancrage Somatique):**",
+    "cbtSomaticAnchor": "Ancrage somatique :",
+    "tratakaTitle": "**3. PROTOCOLE NEURO-OCULAIRE TRATAK ({name}):**",
+    "tratakaFocalTarget": "Point Focal :",
+    "tratakaPractice": "Pratique ({duration} min) :"
+  },
+  "generalAdviceSpeakers": {
+    "gitaSpeaker": "La parole de la Gita :",
+    "gitaReflection": "Méditation :"
+  }
+}

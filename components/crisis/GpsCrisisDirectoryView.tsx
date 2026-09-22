@@ -5,22 +5,17 @@ import Link from 'next/link';
 import {
   PhoneCall,
   ShieldAlert,
-  HeartHandshake,
   Globe2,
   MapPin,
   Navigation,
   Loader2,
   Hospital,
-  Building2,
   ExternalLink,
-  RefreshCw,
   AlertTriangle,
   ArrowLeft,
-  ChevronRight,
 } from 'lucide-react';
 import {
   CountryCrisisProfile,
-  GLOBAL_CRISIS_DIRECTORY,
   getCrisisProfileByCountry,
   inferCountryFromTimezone,
   getAvailableCrisisCountries,
@@ -55,7 +50,7 @@ export const GpsCrisisDirectoryView: React.FC = () => {
   const availableCountries = getAvailableCrisisCountries();
 
   // 1. Fetch nearby facilities and location details from coordinates
-  const fetchNearbyFacilities = useCallback(async (lat: number, lng: number, countryCode?: string) => {
+  const fetchNearbyFacilities = useCallback(async (lat: number, lng: number, _countryCode?: string) => {
     setIsLoadingFacilities(true);
     try {
       const res = await fetch('/api/safety/nearby-facilities', {

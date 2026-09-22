@@ -11,7 +11,7 @@
 
 const assert = require('assert');
 const { detectCrisis } = require('../lib/safety/crisis-detector.ts');
-const { sanitizeBreakthroughPhrase } = require('../lib/memory/cognitive-vault.ts');
+const { sanitizeBreakthroughPhrase } = require('../lib/memory/cbt-memory-types.ts');
 
 console.log('\n================================================================');
 console.log('AUDIT REMEDIATION & SECURITY VERIFICATION SUITE');

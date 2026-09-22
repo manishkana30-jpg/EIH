@@ -13,8 +13,8 @@ const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 
-const ontologyPath = path.join(__dirname, '..', 'lib', 'knowledge', 'modern-neuroscience-ontology.json');
-const ontology = JSON.parse(fs.readFileSync(ontologyPath, 'utf8'));
+const ontologyPath = path.join(__dirname, '..', 'lib', 'knowledge', 'modern-neuroscience-ontology.ts');
+const { neuroscienceData: ontology } = require(ontologyPath);
 
 console.log('\n--- Running Dual-Pathway Somatic & Doshic Remedies Matrix Tests ---');
 

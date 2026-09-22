@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { BookOpen, Brain, Sparkles, Activity, ShieldCheck, ExternalLink } from 'lucide-react';
+import { BookOpen, Brain, Sparkles, Activity } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Clinical Methodology & Neuro-Vedantic Science | EIH Sanctuary',

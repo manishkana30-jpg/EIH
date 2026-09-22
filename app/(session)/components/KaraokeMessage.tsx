@@ -1,19 +1,17 @@
 "use client";
 
-import React, { useRef } from "react";
+import React from "react";
 import {
   Volume2,
-  VolumeX,
   Play,
   Pause,
   Square,
-  Sparkles,
   Brain,
   Eye,
   User,
 } from "lucide-react";
-import { GitaShlokaCard, parseGitaShloka } from "./GitaShlokaCard";
-import { isWordActive, cleanWordForMatch } from "@/lib/audio/karaoke-tokenizer";
+import { GitaShlokaCard, parseGitaShloka } from "@/components/gita/GitaShlokaCard";
+import { isWordActive } from "@/lib/audio/karaoke-tokenizer";
 
 export interface KaraokeState {
   messageId: string;
@@ -596,7 +594,7 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
               title="Launch Prescribed Trataka Gazing"
             >
               <Eye className="w-3.5 h-3.5 text-cyan-400" />
-              <span>Launch Tratak</span>
+              <span>{recommendedTratakaLabel || "Launch Tratak"}</span>
             </button>
           </div>
         </div>

@@ -29,7 +29,7 @@ export async function GET() {
         },
       }
     );
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Failed to retrieve version manifest' },
       { status: 500 }

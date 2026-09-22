@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import { AlertCircle, RotateCcw, Home, Brain } from 'lucide-react';
+import { AlertCircle, RotateCcw, Home } from 'lucide-react';
 
 export default function Error({
   error,

@@ -3,7 +3,7 @@
  * Frontend Client for CBT Knowledge Base Auto-Upgrade and Dynamic Distortion Querying.
  */
 
-import { cbtLibrary, CBTLibraryData, CBTDistortion, CBTProtocol, CBTAnalysisResult } from '../knowledge/cbt-library';
+import { cbtLibrary, CBTLibraryData, CBTAnalysisResult } from '../knowledge/cbt-library';
 
 export interface UpgradeStatusResponse {
   success: boolean;

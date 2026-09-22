@@ -4,17 +4,12 @@ import React, { useState, useEffect } from 'react';
 import {
   Activity,
   ArrowLeft,
-  Brain,
   Download,
   Heart,
   Layers,
   Lock,
-  RefreshCw,
   ShieldCheck,
-  Sparkles,
-  TrendingUp,
   Wind,
-  Zap,
 } from 'lucide-react';
 import { COWEN_27_DIMENSIONS } from '@/lib/types/emotions';
 import { getStoredSessionRecords, SessionRecord } from '@/lib/db/indexed-db';
@@ -73,7 +68,7 @@ export default function SessionReportPage() {
               <h1 className="text-xl sm:text-2xl font-bold font-heading text-[var(--text-nature-primary)] flex items-center gap-2">
                 <span>Deep Emotional Insights &amp; Clinical Neuro-Report</span>
                 <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#588e73]/20 text-[var(--accent-sage)] font-mono border border-[#588e73]/40">
-                  Live Session
+                  {isLoading ? 'Loading Records...' : `${sessions.length} Session${sessions.length === 1 ? '' : 's'}`}
                 </span>
               </h1>
               <p className="text-xs text-[var(--text-nature-secondary)] mt-0.5">

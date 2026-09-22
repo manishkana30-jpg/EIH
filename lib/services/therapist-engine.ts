@@ -10,7 +10,7 @@ import {
   TEST_RESPONSE,
   getLocalizedIncompleteUtteranceResponse,
 } from "../knowledge/psychology-library-rag.ts";
-import { GLOBAL_LANGUAGE_CATALOG, getLanguageByCode } from "../i18n/language-catalog.ts";
+import { getLanguageByCode } from "../i18n/language-catalog.ts";
 import {
   formatHumanTherapeuticMessage,
   getLocalizedGeneralAdvice,

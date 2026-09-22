@@ -20,15 +20,15 @@ function runTests() {
   // ─── 1. Verify Component Files Have Zero Visual/Image Assets ───
   const cardComponentPath = path.join(__dirname, '..', 'components', 'gita', 'GitaShlokaCard.tsx');
   const libraryViewPath = path.join(__dirname, '..', 'components', 'gita', 'GitaLibraryView.tsx');
-  const sessionCardPath = path.join(__dirname, '..', 'app', '(session)', 'components', 'GitaShlokaCard.tsx');
+  const karaokeMsgPath = path.join(__dirname, '..', 'app', '(session)', 'components', 'KaraokeMessage.tsx');
 
   assert(fs.existsSync(cardComponentPath), 'components/gita/GitaShlokaCard.tsx must exist');
   assert(fs.existsSync(libraryViewPath), 'components/gita/GitaLibraryView.tsx must exist');
-  assert(fs.existsSync(sessionCardPath), 'app/(session)/components/GitaShlokaCard.tsx must exist');
+  assert(fs.existsSync(karaokeMsgPath), 'app/(session)/components/KaraokeMessage.tsx must exist');
 
   const cardCode = fs.readFileSync(cardComponentPath, 'utf8');
   const libraryViewCode = fs.readFileSync(libraryViewPath, 'utf8');
-  const sessionCardCode = fs.readFileSync(sessionCardPath, 'utf8');
+  const karaokeMsgCode = fs.readFileSync(karaokeMsgPath, 'utf8');
 
   // Assert NO <img> tags in code
   assert(!cardCode.includes('<img '), 'GitaShlokaCard must NOT contain any <img> tags');
@@ -42,10 +42,11 @@ function runTests() {
   assert(!cardCode.includes('from "lucide-react"') && !cardCode.includes("from 'lucide-react'"), 'GitaShlokaCard must NOT import any visual icon packages');
   assert(!libraryViewCode.includes('from "lucide-react"') && !libraryViewCode.includes("from 'lucide-react'"), 'GitaLibraryView must NOT import any visual icon packages');
 
-  // Assert session card re-exports or uses the pure text-only card
-  assert(sessionCardCode.includes('@/components/gita/GitaShlokaCard'), 'app/(session)/components/GitaShlokaCard must re-export the unified text-only card');
+  // Assert direct import of the unified text-only card in session components
+  assert(karaokeMsgCode.includes('@/components/gita/GitaShlokaCard'), 'KaraokeMessage must import directly from @/components/gita/GitaShlokaCard');
 
   console.log('  ✓ Verified 0 visual/image assets: No <img>, <svg>, or visual icons in Gita components');
+  console.log('  ✓ Verified direct import from @/components/gita/GitaShlokaCard without re-export indirection');
 
   // ─── 2. Verify GITA_LIBRARY Structure & Semantic Fields ───
   const gitaLibPath = path.join(__dirname, '..', 'lib', 'knowledge', 'gita-library.ts');
@@ -73,14 +74,14 @@ function runTests() {
   console.log('  ✓ Verified real-time search & plain-text category taxonomy');
 
   // ─── 4. Verify Multilingual Localization Catalog ───
-  const localizationPath = path.join(__dirname, '..', 'lib', 'i18n', 'clinical-localization.ts');
-  const locCode = fs.readFileSync(localizationPath, 'utf8');
+  const { GITA_LOCALIZATION_CATALOG } = require('../lib/i18n/clinical-localization.ts');
+  const bg248 = GITA_LOCALIZATION_CATALOG.bg_2_48;
 
-  assert(locCode.includes('bg_2_48: {'), 'clinical-localization.ts must include bg_2_48 translations');
-  assert(locCode.includes("मन की यही समता 'योग' कहलाती है"), 'Hindi translation for BG 2.48 must be present');
-  assert(locCode.includes('Esa ecuanimidad mental se llama Yoga'), 'Spanish translation for BG 2.48 must be present');
-  assert(locCode.includes("Car l'équanimité est le yoga même"), 'French translation for BG 2.48 must be present');
-  assert(locCode.includes('Dieser Gleichmut des Geistes wird Yoga genannt'), 'German translation for BG 2.48 must be present');
+  assert(bg248, 'clinical-localization.ts must include bg_2_48 translations');
+  assert(bg248.hi && bg248.hi.meaning.includes("मन की यही समता 'योग' कहलाती है"), 'Hindi translation for BG 2.48 must be present');
+  assert(bg248.es && bg248.es.meaning.includes('Esa ecuanimidad mental se llama Yoga'), 'Spanish translation for BG 2.48 must be present');
+  assert(bg248.fr && bg248.fr.meaning.includes("Car l'équanimité est le yoga même"), 'French translation for BG 2.48 must be present');
+  assert(bg248.de && bg248.de.meaning.includes('Dieser Gleichmut des Geistes wird Yoga genannt'), 'German translation for BG 2.48 must be present');
 
   console.log('  ✓ Verified multilingual translation catalog (EN, HI, ES, FR, DE) for BG 2.48');
 
@@ -100,9 +101,6 @@ function runTests() {
   console.log('  ✓ Verified app/api/gita/route.ts REST endpoint exists');
 
   // ─── 7. Verify Shloka is Embedded Plain-Text Inside Gita Section, Not at Top of Chat ───
-  const karaokeMsgPath = path.join(__dirname, '..', 'app', '(session)', 'components', 'KaraokeMessage.tsx');
-  const karaokeMsgCode = fs.readFileSync(karaokeMsgPath, 'utf8');
-
   assert(karaokeMsgCode.includes('variant="inline"'), 'KaraokeMessage must render Gita shloka using variant="inline"');
   assert(karaokeMsgCode.includes('isGita && gitaParsed.isGita && gitaParsed.shlokaBlock'), 'KaraokeMessage must embed shloka inside the isGita section');
 

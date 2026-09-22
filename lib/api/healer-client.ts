@@ -6,8 +6,6 @@ import {
   isGreetingMessage,
   isTestMessage,
   isIncompleteUtterance,
-  GREETING_RESPONSE,
-  TEST_RESPONSE,
   getLocalizedGreetingResponse,
   getLocalizedTestResponse,
   getLocalizedIncompleteUtteranceResponse,
@@ -15,7 +13,6 @@ import {
 import { getResearchedAdviceForEmotion } from '../knowledge/authenticated-research-bank';
 import {
   formatHumanTherapeuticMessage,
-  getLocalizedClinicalIntervention,
   getLocalizedGeneralAdvice,
 } from '../i18n/clinical-localization';
 import { findGitaWisdom } from '../knowledge/gita-library';
@@ -293,7 +290,7 @@ class HealerBackendClient {
             };
           }
         }
-      } catch (err) {
+      } catch {
         console.warn('Backend daemon unavailable, transitioning to Edge reasoning engine...');
       }
     }

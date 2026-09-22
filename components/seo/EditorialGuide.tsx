@@ -2,19 +2,13 @@ import React from 'react';
 import Link from 'next/link';
 import {
   Brain,
-  Activity,
   Eye,
   ShieldCheck,
   Zap,
   Flame,
-  Sparkles,
-  Compass,
   Headphones,
   Sliders,
   Monitor,
-  CheckCircle2,
-  ArrowRight,
-  Sun,
   Moon,
   Wind
 } from 'lucide-react';

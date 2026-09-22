@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ShieldCheck, Lock, Database, Trash2, Cpu, EyeOff } from 'lucide-react';
+import { ShieldCheck, Lock, Trash2, Cpu, EyeOff } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy & Zero-Retention Protocol | EIH Sanctuary',
@@ -39,7 +39,7 @@ export default function PrivacyPolicyPage() {
           <ul className="list-disc list-inside space-y-1.5 text-zinc-300 text-xs sm:text-sm pl-2">
             <li><strong>Zero Persistent History:</strong> Transcripts, messages, and session records are NEVER saved to your device’s IndexedDB, local disk, or remote databases.</li>
             <li><strong>Zero Cache History:</strong> Telemetry and psychological assessments are processed in-memory for the active turn only and not persisted across sessions.</li>
-            <li><strong>Automatic Purge on Exit:</strong> Closing your browser tab, navigating away, or clicking "End Session" instantly and irreversibly wipes 100% of memory and temporary caches.</li>
+            <li><strong>Automatic Purge on Exit:</strong> Closing your browser tab, navigating away, or clicking &quot;End Session&quot; instantly and irreversibly wipes 100% of memory and temporary caches.</li>
           </ul>
         </section>
 

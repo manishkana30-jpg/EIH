@@ -4,14 +4,13 @@ const isExport = process.env.NEXT_EXPORT === 'true';
 
 const nextConfig = {
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false,
   },
   typescript: {
     ignoreBuildErrors: false,
   },
   output: isExport ? 'export' : undefined,
   reactStrictMode: true,
-  swcMinify: true,
   compress: true,
   poweredByHeader: false,
   compiler: {
@@ -72,7 +71,7 @@ const nextConfig = {
         },
         {
           key: 'Content-Security-Policy',
-          value: "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; media-src 'self' blob: data:; connect-src 'self' https://*.vercel.app https://eutils.ncbi.nlm.nih.gov https://nominatim.openstreetmap.org https://overpass-api.de https://api.tavily.com https://api.groq.com https://generativelanguage.googleapis.com https://text.pollinations.ai https://api.openai.com wss: ws:; worker-src 'self' blob:; frame-ancestors 'none';",
+          value: "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; media-src 'self' blob: data:; connect-src 'self' http://localhost:8000 http://127.0.0.1:8000 ws://localhost:8000 ws://127.0.0.1:8000 https://*.vercel.app https://eutils.ncbi.nlm.nih.gov https://nominatim.openstreetmap.org https://overpass-api.de https://api.tavily.com https://api.groq.com https://generativelanguage.googleapis.com https://text.pollinations.ai https://api.openai.com wss: ws:; worker-src 'self' blob:; frame-ancestors 'none';",
         },
       ],
     },

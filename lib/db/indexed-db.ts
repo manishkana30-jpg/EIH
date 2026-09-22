@@ -31,9 +31,9 @@ export interface SessionRecord {
   primaryDimension?: string;
 }
 
-const DB_NAME = 'EIH_SecureStorage';
-const STORE_PROFILES = 'emotional_profiles';
-const STORE_SESSIONS = 'therapeutic_sessions';
+export const DB_NAME = 'EIH_SecureStorage';
+export const STORE_PROFILES = 'emotional_profiles';
+export const STORE_SESSIONS = 'therapeutic_sessions';
 
 // ─── STRICTLY IN-MEMORY EPHEMERAL STATE (ZERO DISK / ZERO RETENTION) ───
 let inMemorySessionMessages: TherapeuticMessage[] = [];

@@ -81,7 +81,7 @@ export const DEFAULT_PSYCHOLOGY_STATE: PsychologicalIssueState = {
 /**
  * Deduce severity based on emotion percentages and distortion
  */
-function calculateSeverity(distortion: string, percentages: Record<string, number>): 'High' | 'Moderate' | 'Mild' | 'Regulated' {
+export function calculateSeverity(distortion: string, percentages: Record<string, number>): 'High' | 'Moderate' | 'Mild' | 'Regulated' {
   if (distortion === 'None' || distortion === 'None Detected') {
     return 'Regulated';
   }
@@ -94,7 +94,7 @@ function calculateSeverity(distortion: string, percentages: Record<string, numbe
 /**
  * Deduce Pranayama technique from polyvagal autonomic state
  */
-function deducePranayama(polyvagalState: string): string {
+export function deducePranayama(polyvagalState: string): string {
   const p = (polyvagalState || '').toLowerCase();
   if (p.includes('sympathetic') || p.includes('fight') || p.includes('flight')) {
     return 'Nadi Shodhana (Alternate Nostril 4:4:4:4) & 4:6 Extended Exhale';

@@ -14,10 +14,10 @@ const path = require('path');
 function runHybridRagTests() {
   console.log('--- Running Modern Neuroscience of Emotion Test Suite ---');
 
-  const ontologyPath = path.join(__dirname, '..', 'lib', 'knowledge', 'modern-neuroscience-ontology.json');
-  assert(fs.existsSync(ontologyPath), 'modern-neuroscience-ontology.json must exist');
+  const ontologyPath = path.join(__dirname, '..', 'lib', 'knowledge', 'modern-neuroscience-ontology.ts');
+  assert(fs.existsSync(ontologyPath), 'modern-neuroscience-ontology.ts must exist');
 
-  const ontology = JSON.parse(fs.readFileSync(ontologyPath, 'utf8'));
+  const { neuroscienceData: ontology } = require(ontologyPath);
 
   // 1. Verify 3 Foundational Pillars
   assert.strictEqual(ontology.framework_meta.pillars.length, 3, 'Must define all 3 foundational neuroscience pillars');

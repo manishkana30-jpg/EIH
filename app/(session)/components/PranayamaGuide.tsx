@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, Play, Pause, RotateCcw, Wind, Heart, Sparkles, Activity } from 'lucide-react';
+import { X, Play, Pause, RotateCcw, Wind } from 'lucide-react';
 
 interface SomaticBreathworkGuideProps {
   isOpen: boolean;

@@ -132,7 +132,7 @@ export async function POST(req: NextRequest) {
   let rawUserPrompt = '';
   try {
     const body = await req.json();
-    const { prompt, diagnostic, apiKey, tier, history = [], cognitiveProfile, language, locale } = body as {
+    const { prompt, diagnostic, apiKey, tier, history = [], cognitiveProfile: _cognitiveProfile, language, locale } = body as {
       prompt: string;
       diagnostic?: DiagnosticInput;
       apiKey?: string;

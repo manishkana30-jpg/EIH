@@ -1,7 +1,7 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ArrowLeft, BookOpen, Brain, Sparkles, ShieldAlert } from 'lucide-react';
+import { ArrowLeft, Brain, ShieldAlert } from 'lucide-react';
 import { ClinicalGuideSection } from '@/components/editorial/ClinicalGuideSection';
 
 export const metadata: Metadata = {

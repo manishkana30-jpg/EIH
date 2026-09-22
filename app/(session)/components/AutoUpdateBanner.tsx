@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, RefreshCw, Wifi, CheckCircle2 } from 'lucide-react';
+import { Sparkles, RefreshCw, CheckCircle2 } from 'lucide-react';
 import { syncLearnedDocumentsFromCloud } from '@/lib/knowledge/self-learning-rag';
 
 export function AutoUpdateBanner() {
@@ -89,7 +89,7 @@ export function AutoUpdateBanner() {
           }
         }
       }
-    } catch (err) {
+    } catch {
       // Non-blocking network check
     }
   };
@@ -169,6 +169,7 @@ export function AutoUpdateBanner() {
       window.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('online', handleOnline);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

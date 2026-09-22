@@ -14,18 +14,11 @@ import {
   Volume2,
   VolumeX,
   Heart,
-  Brain,
   CheckCircle2,
   Info,
   ArrowRight,
-  Flame,
   Layers,
-  Sparkle,
   Camera,
-  CameraOff,
-  RefreshCw,
-  Lock,
-  AlertCircle,
 } from 'lucide-react';
 import PratibimbCamera from './PratibimbCamera';
 import { browserSpeechController } from '@/lib/audio/browser-speech';
@@ -432,8 +425,6 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
     const s = sec % 60;
     return `${m}:${s.toString().padStart(2, '0')}`;
   };
-
-  const progressPercent = Math.min(100, (elapsedSec / TOTAL_TRATAKA_SECONDS) * 100);
 
   // Stage 2 specific calculations (Strict 2-minute gaze)
   const isStage2 = currentStageId === 2;

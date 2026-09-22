@@ -14,7 +14,7 @@ import {
   ArrowRight,
   ShieldAlert,
 } from 'lucide-react';
-import { cbtLibrary, CBTDistortion, CBTProtocol, CBTSchema } from '@/lib/knowledge/cbt-library';
+import { cbtLibrary, CBTDistortion } from '@/lib/knowledge/cbt-library';
 import { cbtUpgraderService, UpgradeStatusResponse } from '@/lib/services/cbt-upgrader';
 
 interface CBTKnowledgeModalProps {
@@ -199,10 +199,11 @@ export const CBTKnowledgeModal: React.FC<CBTKnowledgeModalProps> = ({ isOpen, on
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                 {filteredDistortions.map((distortion) => (
-                  <div
+                  <button
+                    type="button"
                     key={distortion.id}
                     onClick={() => setSelectedDistortion(distortion)}
-                    className={`p-4 rounded-2xl border transition-all cursor-pointer ${
+                    className={`p-4 rounded-2xl border transition-all cursor-pointer text-left w-full ${
                       selectedDistortion?.id === distortion.id
                         ? 'bg-emerald-950/40 border-emerald-500/60 shadow-lg'
                         : 'bg-[#14201a]/70 border-[#283c32] hover:border-emerald-600/40 hover:bg-[#14201a]'
@@ -218,7 +219,7 @@ export const CBTKnowledgeModal: React.FC<CBTKnowledgeModalProps> = ({ isOpen, on
                     <div className="text-[11px] text-emerald-400/90 italic bg-emerald-950/30 p-2 rounded-lg border border-emerald-900/40">
                       &ldquo;{distortion.example_thought}&rdquo;
                     </div>
-                  </div>
+                  </button>
                 ))}
               </div>
 
@@ -325,10 +326,11 @@ export const CBTKnowledgeModal: React.FC<CBTKnowledgeModalProps> = ({ isOpen, on
           {activeTab === 'analyzer' && (
             <div className="space-y-5">
               <div className="p-4 rounded-2xl bg-[#14201a] border border-[#283c32] space-y-3">
-                <label className="text-xs font-semibold text-slate-200 block">
+                <label htmlFor="cbt-analyzer-thought-input" className="text-xs font-semibold text-slate-200 block">
                   Enter an automatic thought or client utterance to analyze:
                 </label>
                 <textarea
+                  id="cbt-analyzer-thought-input"
                   rows={3}
                   placeholder="e.g. 'I made a tiny mistake in my presentation and I know everyone in the office thinks I am completely incompetent and I'll be fired tomorrow.'"
                   value={testThought}

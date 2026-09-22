@@ -4,7 +4,7 @@
  * ephemeral BYOK metadata passing, and barge-in interruption handling.
  */
 
-import { Room, RoomEvent, Track, RemoteTrackPublication, RemoteParticipant, LocalAudioTrack } from 'livekit-client';
+import type { Room, Track, RemoteTrackPublication, RemoteParticipant, LocalAudioTrack } from 'livekit-client';
 import { audioManager } from './audio-manager';
 
 export interface VoiceMessageEvent {
@@ -77,11 +77,13 @@ export class LiveKitAudioClient {
 
   /**
    * Connects to LiveKit server room via WebRTC UDP transport.
+   * Lazily loads livekit-client so the ~2.7 MB module is only fetched when needed.
    */
   public async connect(options: LiveKitConnectionOptions): Promise<boolean> {
     this.setState('connecting');
 
     try {
+      const { Room, RoomEvent, Track: LiveKitTrack, LocalAudioTrack } = await import('livekit-client');
       await audioManager.initialize();
 
       this.room = new Room({
@@ -101,8 +103,8 @@ export class LiveKitAudioClient {
 
       this.room.on(
         RoomEvent.TrackSubscribed,
-        (track: Track, publication: RemoteTrackPublication, participant: RemoteParticipant) => {
-          if (track.kind === Track.Kind.Audio) {
+        (track: Track, _publication: RemoteTrackPublication, _participant: RemoteParticipant) => {
+          if (track.kind === LiveKitTrack.Kind.Audio) {
             const audioElement = track.attach();
             this.currentAssistantAudio = audioElement;
             this.setState('speaking');
