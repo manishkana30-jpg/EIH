@@ -472,10 +472,14 @@ Strictly DO NOT mix English sentences, phrases, or raw English jargon into your 
 Keep the Sanskrit Shloka in Devanagari script wrapped in [GITA_SHLOKA] and [/GITA_SHLOKA], and provide all reflections, CBT reframes, and Tratak instructions purely in ${langItem.name}.`
       : "";
 
-  const hasDistressKeywords = /(?:distress|anxious|anxiety|depress|sad|fear|scared|panic|stress|overwhelm|worry|worried|grief|pain|burnout|lonely|loneliness|angry|anger|trauma|shame|guilt|fail|terrif|crying|tears|breakup|heartbreak|chinta|tanaav|udas|gussa|troubled|need help|please help me|help me please|someone help me|help me i'm|help me i am|दर्द|रोना|रो |रोने|रोऊ|दुःख|दुख|तनाव|चिंता|उदासी|डर|घबराहट|घबरा|ब्रेकअप|परेशान|पीड़ा|कष्ट|क्रोध|अकेला|हार|असफल|टूटा)/i.test(userMessage);
+  const hasDistressKeywords = /(?:distress|anxious|anxiety|depress|sad|fear|scared|panic|stress|overwhelm|worry|worried|grief|pain|burnout|lonely|loneliness|angry|anger|trauma|shame|guilt|fail|terrif|crying|tears|breakup|heartbreak|debt|debts|financial|burden|burdened|broke|struggling|loans|bills|chinta|tanaav|udas|gussa|troubled|need help|please help me|help me please|someone help me|help me i'm|help me i am|दर्द|रोना|रो |रोने|रोऊ|दुःख|दुख|तनाव|चिंता|उदासी|डर|घबराहट|घबरा|ब्रेकअप|परेशान|पीड़ा|कष्ट|क्रोध|अकेला|हार|असफल|टूटा|कर्ज|कर्जा|ऋण|बोझ)/i.test(userMessage);
+
+  const hasPositiveOrCalmExplicit =
+    /(happy|great|excited|peaceful|calm|relaxed|wonderful|grateful|joy|glad|blessed|good|doing well|girlfriend|boyfriend|in love|new partner|dating|promoted|celebrat|प्रसन्न|खुश|आनंद|शांत|शांति|बढ़िया|ठीक हूँ)/i.test(userMessage);
 
   const isDirectPositive =
     !hasDistressKeywords &&
+    hasPositiveOrCalmExplicit &&
     (emotionDiagnostic.dimensionId === 'joy' ||
      emotionDiagnostic.dimensionId === 'calmness' ||
      emotionDiagnostic.dimensionId === 'romance' ||
@@ -486,8 +490,7 @@ Keep the Sanskrit Shloka in Devanagari script wrapped in [GITA_SHLOKA] and [/GIT
      emotionDiagnostic.dimensionId === 'relief' ||
      emotionDiagnostic.dimensionId === 'awe' ||
      emotionDiagnostic.dimensionId === 'interest' ||
-     emotionDiagnostic.coreAffect.valence >= 0.15 ||
-     /(happy|great|excited|peaceful|wonderful|grateful|joy|glad|blessed|girlfriend|boyfriend|in love|new partner|dating|प्रसन्न|खुश|आनंद|शांति|बढ़िया)/i.test(userMessage));
+     emotionDiagnostic.coreAffect.valence >= 0.15);
 
   const currentTurnGroundingDirective = isDirectPositive
     ? `\n\n### MANDATORY CURRENT-TURN EMOTIONAL GROUNDING (NO STICKY EMOTIONS):
@@ -523,14 +526,14 @@ STRICT ANTI-REPETITION CONSTRAINTS:
 
   const systemPrompt = `${THERAPIST_SYSTEM_PROMPT}${langDirective}${currentTurnGroundingDirective}${antiRepetitionDirective}\n\n[CLINICAL RESEARCH & RETRIEVED WISDOM]:\n${contextString}`;
 
+  const hasEmotionalDistressSignal =
+    hasDistressKeywords ||
+    emotionDiagnostic.coreAffect.valence < -0.15 ||
+    (emotionDiagnostic.coreAffect.arousal > 0.65 && emotionDiagnostic.coreAffect.valence < 0.1);
+
   const hasClinicalDistress =
     !isDirectPositive &&
-    Boolean(
-      libraryRag ||
-      hasDistressKeywords ||
-      emotionDiagnostic.coreAffect.valence < -0.15 ||
-      emotionDiagnostic.coreAffect.arousal > 0.65
-    );
+    hasEmotionalDistressSignal;
 
   // Helper to guarantee [GITA_SHLOKA] tags, authentic Sanskrit shloka, and diagnostic summary only when clinical distress is present
   function ensureDiagnosticAndGita(replyText: string, gitaBlockStr: string, diagnosticMarkdown?: string): string {

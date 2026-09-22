@@ -374,10 +374,14 @@ class HealerBackendClient {
       const gitaItem = findGitaWisdom(cleanMessage);
 
       const targetLang = cleanMessage.match(/[\u0900-\u097F]/) ? 'hi' : (language || locale || 'en');
-      const hasDistressKeywords = /(?:distress|anxious|anxiety|depress|sad|fear|scared|panic|stress|overwhelm|worry|worried|grief|pain|burnout|lonely|loneliness|angry|anger|trauma|shame|guilt|fail|terrif|crying|tears|breakup|heartbreak|chinta|tanaav|udas|gussa|troubled|need help|please help me|help me please|someone help me|help me i'm|help me i am|दर्द|रोना|रो |रोने|रोऊ|दुःख|दुख|तनाव|चिंता|उदासी|डर|घबराहट|घबरा|ब्रेकअप|परेशान|पीड़ा|कष्ट|क्रोध|अकेला|हार|असफल|टूटा)/i.test(cleanMessage);
+      const hasDistressKeywords = /(?:distress|anxious|anxiety|depress|sad|fear|scared|panic|stress|overwhelm|worry|worried|grief|pain|burnout|lonely|loneliness|angry|anger|trauma|shame|guilt|fail|terrif|crying|tears|breakup|heartbreak|debt|debts|financial|burden|burdened|broke|struggling|loans|bills|chinta|tanaav|udas|gussa|troubled|need help|please help me|help me please|someone help me|help me i'm|help me i am|दर्द|रोना|रो |रोने|रोऊ|दुःख|दुख|तनाव|चिंता|उदासी|डर|घबराहट|घबरा|ब्रेकअप|परेशान|पीड़ा|कष्ट|क्रोध|अकेला|हार|असफल|टूटा|कर्ज|कर्जा|ऋण|बोझ)/i.test(cleanMessage);
+
+      const hasPositiveOrCalmExplicit =
+        /(happy|great|excited|peaceful|calm|relaxed|wonderful|grateful|joy|glad|blessed|good|doing well|girlfriend|boyfriend|in love|new partner|dating|promoted|celebrat|प्रसन्न|खुश|आनंद|शांत|शांति|बढ़िया|ठीक हूँ)/i.test(cleanMessage);
 
       const isPositiveOrNeutral =
         !hasDistressKeywords &&
+        hasPositiveOrCalmExplicit &&
         (diag.dimensionId === 'joy' ||
          diag.dimensionId === 'calmness' ||
          diag.dimensionId === 'romance' ||
@@ -388,17 +392,16 @@ class HealerBackendClient {
          diag.dimensionId === 'relief' ||
          diag.dimensionId === 'awe' ||
          diag.dimensionId === 'interest' ||
-         (diag.coreAffect?.valence !== undefined && diag.coreAffect.valence >= 0.15) ||
-         /(happy|great|excited|peaceful|wonderful|grateful|joy|glad|blessed|girlfriend|boyfriend|in love|new partner|dating|प्रसन्न|खुश|आनंद|शांति|बढ़िया)/i.test(cleanMessage));
+         (diag.coreAffect?.valence !== undefined && diag.coreAffect.valence >= 0.15));
+
+      const hasEmotionalDistressSignal =
+        hasDistressKeywords ||
+        (diag.coreAffect?.valence !== undefined && diag.coreAffect.valence < -0.15) ||
+        (diag.coreAffect?.arousal !== undefined && diag.coreAffect.arousal > 0.65 && diag.coreAffect.valence < 0.1);
 
       const hasClinicalDistress =
         !isPositiveOrNeutral &&
-        Boolean(
-          libraryResult ||
-          hasDistressKeywords ||
-          (diag.coreAffect?.valence !== undefined && diag.coreAffect.valence < -0.15) ||
-          (diag.coreAffect?.arousal !== undefined && diag.coreAffect.arousal > 0.65)
-        );
+        hasEmotionalDistressSignal;
 
       let fallbackReply = '';
       if (hasClinicalDistress) {

@@ -70,6 +70,8 @@ const VALENCE_MAP: Record<string, number> = {
   rejection: -0.85, ruined: -0.85, broken: -0.8, lost: -0.7, messed: -0.75,
   overwhelmed: -0.75, burnout: -0.8, unloved: -0.85, betrayed: -0.9, cheated: -0.9,
   dumped: -0.85, helpless: -0.85, useless: -0.85, yelled: -0.75, tears: -0.75,
+  debt: -0.75, debts: -0.8, burden: -0.8, burdened: -0.85, financial: -0.5,
+  broke: -0.75, loans: -0.65, bills: -0.55, struggling: -0.75, struggle: -0.7,
 
   // Positive
   joyful: 0.9, happy: 0.8, ecstatic: 0.95, thrilled: 0.9, delighted: 0.85,
@@ -89,6 +91,7 @@ const AROUSAL_MAP: Record<string, number> = {
   furious: 0.85, enraged: 0.9, ecstatic: 0.95, thrilled: 0.85, energized: 0.8,
   shocked: 0.85, alarmed: 0.8, excited: 0.8, intense: 0.75, pounding: 0.8,
   surprised: 0.75, agitated: 0.7, rushing: 0.7, hyper: 0.75, vibrating: 0.7,
+  burden: 0.65, burdened: 0.7, debt: 0.7, debts: 0.75,
 
   // Low Arousal
   heavy: -0.6, drained: -0.65, empty: -0.6, lifeless: -0.8, bored: -0.6,

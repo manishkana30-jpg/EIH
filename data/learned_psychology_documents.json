@@ -517,5 +517,34 @@
     "source_platform": "NCBI PubMed & Wikipedia Clinical Knowledge",
     "learned_timestamp": "2026-09-22T02:13:12.414Z",
     "query_trigger": "I made new girlfriend"
+  },
+  {
+    "id": "learned_financial_problems_debt_burden",
+    "name": "Learned: Financial Problems Debt Burden Protocol",
+    "category": "Cognitive & Neuro-Performance",
+    "triguna_balance": "Vata-Rajas Autonomic Agitation",
+    "core_symptoms": [
+      "financial problems debt burden",
+      "financial",
+      "problems",
+      "debt",
+      "burden"
+    ],
+    "cognitive_distortions": [
+      "Emotional Reasoning",
+      "Catastrophic Overgeneralization"
+    ],
+    "solutions": {
+      "cbt_reframing": "Acknowledge that feeling financial problems debt burden is a valid physiological signal, not an identity. Notice automatic thoughts predicting helplessness, and gently re-anchor in what is factually true right now.\n\n[Wikipedia Context]: Finance refers to the management, movement, investment, and raising of money.\n\n\"Finance\" also refers to the academic discipline that studies these.\nBased on the scope of financial activities, the discipline can be divided into the three primary branches personal, corporate, and public finance.\n[PubMed Literature]: Clinical study on financial problems debt burden psychotherapy cbt somatic: Psychotherapy for Major Depressive Disorder and Generalized Anxiety Disorder: A Health Technology Assessment.",
+      "somatic_anchor": "Drop your shoulders, unglue your tongue from the roof of your mouth, and ground both feet firmly onto the floor for 30 seconds.",
+      "pranayama": "Practice 4-4-4-4 Sama Vritti Box Breathing or Alternate Nostril Breathing (Nadi Shodhana) for 3 minutes to restore vagal balance.",
+      "micro_habit": "Take one single micro-action within your direct control right now, ignoring long-term overwhelm."
+    },
+    "severity_level": "Mild to Moderate",
+    "requires_immediate_crisis": false,
+    "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5709536/",
+    "source_platform": "NCBI PubMed & Wikipedia Clinical Knowledge",
+    "learned_timestamp": "2026-09-22T02:21:25.814Z",
+    "query_trigger": "financial problems debt burden"
   }
 ]
