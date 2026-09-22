@@ -46,6 +46,15 @@ export function AutoUpdateBanner() {
           setLearnedCount(data.learnedCount);
         }
 
+        // Initialize clientBuildIdRef on first check if empty
+        if (!clientBuildIdRef.current) {
+          const stored = typeof window !== 'undefined' ? localStorage.getItem('eih_active_build_id') : null;
+          clientBuildIdRef.current = stored || data.buildId;
+          if (typeof window !== 'undefined' && data.buildId) {
+            localStorage.setItem('eih_active_build_id', data.buildId);
+          }
+        }
+
         // If server buildId exists and is different from current client bundle
         if (
           data.buildId &&
@@ -54,6 +63,18 @@ export function AutoUpdateBanner() {
           !updateAvailable
         ) {
           console.info('🚀 EIH: New deployment detected from git push. Preparing auto-update.');
+
+          // If the user is NOT actively on this tab (tab is in background/minimized),
+          // update immediately and silently so when they reopen it, it is already fresh!
+          if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
+            console.info('🤫 EIH: Tab in background. Applying silent background update immediately.');
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('eih_active_build_id', data.buildId);
+            }
+            triggerInstantUpdate();
+            return;
+          }
+
           setUpdateAvailable(true);
           setNewVersionInfo({ version: data.version, commit: data.commit });
 

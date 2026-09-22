@@ -182,6 +182,7 @@ export default function RootLayout({
                 navigator.serviceWorker.addEventListener('controllerchange', function() {
                   if (!refreshing) {
                     refreshing = true;
+                    // If tab is in background, reload immediately and silently
                     window.location.reload();
                   }
                 });
@@ -189,7 +190,18 @@ export default function RootLayout({
                   navigator.serviceWorker.register('/sw.js').then(
                     function(registration) {
                       registration.update();
+                      // Register periodic background sync (updates app when closed/in background)
+                      if ('periodicSync' in registration) {
+                        registration.periodicSync.register('eih-periodic-update', {
+                          minInterval: 15 * 60 * 1000
+                        }).catch(function() {});
+                      }
+                      // Check for updates periodically
                       setInterval(function() { registration.update(); }, 60000);
+                      // If a worker is waiting, trigger immediate takeover
+                      if (registration.waiting) {
+                        registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+                      }
                     },
                     function(err) {
                       console.warn('EIH ServiceWorker registration notice: ', err);

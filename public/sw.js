@@ -49,6 +49,39 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+/* ─── Periodic Background Sync: Auto-update cache when app is not open ─── */
+self.addEventListener('periodicsync', (event) => {
+  if (event.tag === 'eih-periodic-update' || event.tag === 'check-update') {
+    event.waitUntil(
+      fetch('/api/version?_t=' + Date.now(), { cache: 'no-store' })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data && data.buildId) {
+            return caches.open(CACHE_NAME).then((cache) => {
+              return Promise.allSettled(
+                PRECACHE_URLS.map((u) =>
+                  fetch(u + '?_bg=' + Date.now(), { cache: 'no-store' }).then((r) => {
+                    if (r.ok) return cache.put(u, r);
+                  })
+                )
+              );
+            });
+          }
+        })
+        .catch(() => {})
+    );
+  }
+});
+
+/* ─── Background Sync on reconnect ─── */
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'eih-sync-knowledge' || event.tag === 'check-update') {
+    event.waitUntil(
+      fetch('/api/library/sync', { cache: 'no-store' }).catch(() => {})
+    );
+  }
+});
+
 /* ─── Helper: Is this a static asset? ─── */
 function isStaticAsset(url) {
   return (

@@ -14,7 +14,8 @@ async function testAutoUpdateAndSync() {
   const swContent = fs.readFileSync(swPath, 'utf8');
   assert.ok(swContent.includes("event.data.type === 'SKIP_WAITING'"), 'sw.js must handle SKIP_WAITING message');
   assert.ok(swContent.includes("self.skipWaiting()"), 'sw.js must execute self.skipWaiting()');
-  console.log('  ✓ Service Worker message listener active (instant activation on push)');
+  assert.ok(swContent.includes("periodicsync"), 'sw.js must support periodic background sync when app is closed');
+  console.log('  ✓ Service Worker message listener & Periodic Background Sync active');
 
   // 2. Verify /api/version route exists and is syntactically sound
   console.log('\n--- 2. Checking /api/version Route Implementation ---');
