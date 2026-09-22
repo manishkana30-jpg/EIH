@@ -379,6 +379,35 @@ export function isRepetitionComplaintMessage(userMessage: string): boolean {
     "सुन नहीं रहे",
     "सुन नहीं रहा",
     "मैं आपके साथ हूँ",
+    // Hindi romanized solution-demand and frustration expressions
+    "solution chahiye",
+    "solution do",
+    "solution batao",
+    "sunna band karo",
+    "sunna band",
+    "bas sunna",
+    "sirf sun rahe ho",
+    "sirf sunna",
+    "kuch karo",
+    "kuch to karo",
+    "ilaj batao",
+    "ilaj chahiye",
+    "upay batao",
+    "upay chahiye",
+    "madad karo",
+    "help karo",
+    "tarika batao",
+    "hal batao",
+    "hal chahiye",
+    "samadhan do",
+    "samadhan chahiye",
+    "samadhan batao",
+    "jawab do",
+    "koi jawab",
+    "wahi wahi",
+    "fir se wahi",
+    "fir wahi",
+    "dobara wahi",
   ];
   return repetitionPatterns.some((p) => lower.includes(p));
 }
@@ -413,7 +442,9 @@ export interface RepetitionSolutionResponse {
 }
 
 export function getLocalizedRepetitionSolutionResponse(text?: string, lang?: string, locale?: string): RepetitionSolutionResponse {
-  const isHi = (text && /[\u0900-\u097F]/.test(text)) || lang === 'hi' || locale?.toLowerCase().startsWith('hi');
+  const hindiRomanizedMarkers = ['chahiye', 'batao', 'karo', 'mujhe', 'sunna', 'raha', 'rahe', 'rahi', 'wahi', 'nahi', 'baar', 'ilaj', 'upay', 'samadhan', 'hal ', 'tarika'];
+  const hasHindiRomanized = text ? hindiRomanizedMarkers.some((m) => text.toLowerCase().includes(m)) : false;
+  const isHi = (text && /[\u0900-\u097F]/.test(text)) || lang === 'hi' || locale?.toLowerCase().startsWith('hi') || hasHindiRomanized;
   const isEs = lang === 'es' || locale?.toLowerCase().startsWith('es');
   const isFr = lang === 'fr' || locale?.toLowerCase().startsWith('fr');
   const isDe = lang === 'de' || locale?.toLowerCase().startsWith('de');
