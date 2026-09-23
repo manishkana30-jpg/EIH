@@ -8,6 +8,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from dataclasses import dataclass
+from typing import Any, Sequence
 
 import httpx
 
@@ -226,7 +227,7 @@ class KeylessClinicalSearch:
             return [OFFLINE_PROTOCOLS["depression"]]
         return [OFFLINE_PROTOCOLS["overwhelm"]]
 
-    def format_grounding_context(self, evidence_list: list[ClinicalEvidence]) -> str:
+    def format_grounding_context(self, evidence_list: Sequence[Any]) -> str:
         """
         Formats clinical evidence strictly into:
         [Wikipedia Context]: {wikipedia_extract}

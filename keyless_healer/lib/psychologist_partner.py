@@ -717,7 +717,7 @@ class KeylessPsychologistPartner:
 
         search_task = asyncio.create_task(self.search_engine.search(user_message))
         telemetry = self._heuristic_analysis(user_message)
-        evidence_list = await search_task
+        evidence_list: list[Any] = await search_task
 
         # Retrieve matched condition from Clinical & Psychoeducational Library RAG
         rag_guidance = await asyncio.to_thread(psychology_rag.retrieve_guidance, user_message) if psychology_rag else None
