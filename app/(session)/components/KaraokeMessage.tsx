@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Volume2,
   Play,
@@ -9,9 +9,12 @@ import {
   Brain,
   Eye,
   User,
+  CheckCircle2,
+  HelpCircle,
+  ArrowRight,
 } from "lucide-react";
 import { GitaShlokaCard, parseGitaShloka } from "@/components/gita/GitaShlokaCard";
-import { isWordActive } from "@/lib/audio/karaoke-tokenizer";
+import { isWordActive, parseTherapeuticStages } from "@/lib/audio/karaoke-tokenizer";
 
 export interface KaraokeState {
   messageId: string;
@@ -46,6 +49,10 @@ export interface KaraokeMessageProps {
   onOpenGita?: () => void;
   isLastMessage?: boolean;
   recommendedTratakaLabel?: string;
+  currentStage?: number;
+  onConfirmStage1?: (messageId: string) => void;
+  onAdvanceStage?: (messageId: string, nextStage: number) => void;
+  onPlayStageVoice?: (messageId: string, stageNum: number, speechText: string) => void;
 }
 
 interface RenderCounter {
@@ -336,8 +343,32 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
   onOpenGita,
   isLastMessage = false,
   recommendedTratakaLabel,
+  currentStage,
+  onConfirmStage1,
+  onAdvanceStage,
+  onPlayStageVoice,
 }) => {
   const isAi = message.sender === "ai";
+
+  // ─── AI Message State & Hooks (Must execute unconditionally in every render) ───
+  const [localStage, setLocalStage] = useState<number>(currentStage || 1);
+  const [isAdjusting, setIsAdjusting] = useState<boolean>(false);
+  const [selectedAdjustEmotion, setSelectedAdjustEmotion] = useState<string>("");
+
+  useEffect(() => {
+    if (currentStage && currentStage !== localStage) {
+      setLocalStage(currentStage);
+    }
+  }, [currentStage, localStage]);
+
+  const activeStage = currentStage || localStage;
+
+  // Parse into structured 4-stage therapeutic protocol
+  const parsedStages = useMemo(
+    () => (isAi ? parseTherapeuticStages(message.text, message.locale) : { isStructured: false, stages: [], defaultSpeechText: "" }),
+    [isAi, message.text, message.locale]
+  );
+  const isStructured = parsedStages.isStructured && parsedStages.stages.length >= 3;
 
   // ─── User Message View ───
   if (!isAi) {
@@ -361,16 +392,44 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
     );
   }
 
-  // ─── AI Message View ───
-  // 1. Separate Gita Shloka from therapeutic body text
+  // Fallback parsing for legacy/non-structured messages
   const gitaParsed = parseGitaShloka(message.text);
   const therapeuticBody = gitaParsed.isGita ? gitaParsed.remainingText : message.text;
-
-  // Split into therapeutic sections if formatted with section headers
   const parts = therapeuticBody.split(
     /(?=\*\*(?:[1234]\.\s+|SUMMARY|आपकी स्थिति|स्थिति व कष्ट|RESUMEN|SYNTHÈSE|ZUSAMMENFASSUNG|TRI-PILLAR|एकीकृत))/i
   );
   const counter: RenderCounter = { wordIndex: 0, sentenceIndex: 0 };
+
+  const isHindi = /[\u0900-\u097F]/.test(message.text) || (message.locale ? message.locale.startsWith("hi") : false);
+  const isSpanish = (message.locale ? message.locale.startsWith("es") : false) || /\b(sabiduría|verso)\b/i.test(message.text);
+
+  const stage1 = parsedStages.stages.find(s => s.stage === 1);
+  const stage2 = parsedStages.stages.find(s => s.stage === 2);
+  const stage3 = parsedStages.stages.find(s => s.stage === 3);
+  const stage4 = parsedStages.stages.find(s => s.stage === 4);
+
+  const handleConfirmS1 = () => {
+    setLocalStage(2);
+    if (onConfirmStage1) {
+      onConfirmStage1(message.id);
+    } else if (onAdvanceStage) {
+      onAdvanceStage(message.id, 2);
+    }
+    if (onPlayStageVoice && stage2?.speechText) {
+      onPlayStageVoice(message.id, 2, stage2.speechText);
+    }
+  };
+
+  const handleAdvanceTo = (nextStage: number) => {
+    setLocalStage(nextStage);
+    if (onAdvanceStage) {
+      onAdvanceStage(message.id, nextStage);
+    }
+    const targetStageData = parsedStages.stages.find(s => s.stage === nextStage);
+    if (onPlayStageVoice && targetStageData?.speechText) {
+      onPlayStageVoice(message.id, nextStage, targetStageData.speechText);
+    }
+  };
 
   return (
     <div className="flex flex-col items-start w-full group">
@@ -380,171 +439,418 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
           🌿
         </div>
         <span className="text-teal-300 font-semibold">Sanctuary Healer</span>
+        {isStructured && (
+          <span className="text-[10px] text-slate-400 font-mono ml-2">
+            Step {Math.min(activeStage, 4)} of 4
+          </span>
+        )}
       </div>
 
-      {/* Therapeutic / Educational Content with Real-Time Karaoke & Inline Plain-Text Shloka */}
-      <div className="max-w-[88%] md:max-w-xl p-4 rounded-2xl text-sm leading-relaxed bg-gradient-to-br from-slate-900/90 via-slate-900/80 to-slate-950/95 border border-slate-800/80 text-slate-100 rounded-tl-sm shadow-xl backdrop-blur-md">
-        {parts.length <= 1 ? (
-          <div className="space-y-1.5 text-slate-100 text-xs sm:text-sm">
-            {gitaParsed.isGita && gitaParsed.shlokaBlock && (
-              <div data-tts-silent="true" data-tts-skip="true" className="tts-skip select-text my-2">
-                <GitaShlokaCard shlokaContent={gitaParsed.shlokaBlock} variant="inline" />
+      {/* Sequential Card Container */}
+      <div className="max-w-[92%] md:max-w-xl w-full p-3.5 sm:p-4 rounded-2xl text-sm leading-relaxed bg-gradient-to-br from-slate-900/95 via-slate-900/85 to-slate-950/95 border border-slate-800/80 text-slate-100 rounded-tl-sm shadow-xl backdrop-blur-md space-y-3.5">
+        
+        {isStructured ? (
+          <>
+            {/* Step Progression Bar */}
+            <div className="flex items-center justify-between gap-1 pb-2 border-b border-white/5 text-[10px] sm:text-[11px] font-mono select-none">
+              {[
+                { num: 1, label: isHindi ? "1. स्थिति" : "1. Emotion" },
+                { num: 2, label: isHindi ? "2. गीता" : "2. Gita" },
+                { num: 3, label: isHindi ? "3. CBT" : "3. CBT" },
+                { num: 4, label: isHindi ? "4. त्राटक" : "4. Tratak" },
+              ].map((step, idx) => {
+                const isPassed = activeStage > step.num;
+                const isCurrent = activeStage === step.num;
+                return (
+                  <React.Fragment key={step.num}>
+                    <div
+                      className={`flex items-center gap-1 px-2 py-0.5 rounded-full border transition-all ${
+                        isPassed
+                          ? "bg-emerald-500/15 border-emerald-500/40 text-emerald-300"
+                          : isCurrent
+                          ? "bg-purple-500/25 border-purple-400 text-purple-200 shadow-[0_0_10px_rgba(168,85,247,0.3)] animate-pulse"
+                          : "bg-slate-900/40 border-slate-800 text-slate-500"
+                      }`}
+                    >
+                      {isPassed ? (
+                        <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                      ) : (
+                        <span>{step.num}</span>
+                      )}
+                      <span className="hidden xs:inline font-medium">{step.label}</span>
+                    </div>
+                    {idx < 3 && (
+                      <span className={`text-[10px] ${activeStage > step.num ? "text-emerald-500" : "text-slate-700"}`}>
+                        →
+                      </span>
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </div>
+
+            {/* ─── CARD 1: SANCTUARY EMOTION UNDERSTANDING (ALWAYS DISPLAYED) ─── */}
+            {stage1 && (
+              <div className="p-3.5 sm:p-4 rounded-xl border border-purple-500/35 bg-gradient-to-br from-purple-950/40 via-purple-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(168,85,247,0.08)] backdrop-blur-md space-y-2.5">
+                <div className="flex flex-wrap items-center justify-between gap-1.5 pb-1.5 border-b border-purple-500/15">
+                  <span className="text-[10px] sm:text-[11px] font-mono font-bold tracking-wide uppercase px-2 py-0.5 rounded-full border text-purple-300 bg-purple-500/15 border-purple-500/30">
+                    {stage1.badge}
+                  </span>
+                  {activeStage > 1 ? (
+                    <span className="flex items-center gap-1 text-[11px] font-medium text-emerald-400 bg-emerald-950/40 border border-emerald-500/30 px-2 py-0.5 rounded-full">
+                      <CheckCircle2 className="w-3 h-3" />
+                      <span>{isHindi ? "अनुमोदित" : "Confirmed by you"}</span>
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-mono text-purple-300/80 animate-pulse">
+                      ● {isHindi ? "आपकी सहमति प्रतीक्षित..." : "Awaiting your confirmation..."}
+                    </span>
+                  )}
+                </div>
+
+                {/* Emotion Identification & Assessment */}
+                <div className="space-y-1.5 text-slate-100 text-xs sm:text-sm">
+                  <div className="flex items-start gap-2">
+                    <span className="text-purple-400 font-bold">•</span>
+                    <div>
+                      <span className="text-slate-400 text-xs">
+                        {isHindi ? "पहचाना गया मनोभाव:" : "Understood Emotion:"}{" "}
+                      </span>
+                      <strong className="text-purple-200 text-sm font-semibold">
+                        {selectedAdjustEmotion || stage1.meta.emotionName || stage1.title}
+                      </strong>
+                    </div>
+                  </div>
+
+                  {stage1.meta.severity && (
+                    <div className="flex items-start gap-2 text-xs">
+                      <span className="text-purple-400 font-bold">•</span>
+                      <span className="text-slate-300">
+                        <strong className="text-slate-400 font-medium">
+                          {isHindi ? "पीड़ा व तंत्रिका तंत्र:" : "Severity & Autonomic State:"}
+                        </strong>{" "}
+                        {stage1.meta.severity} {stage1.meta.autonomicState ? `| ${stage1.meta.autonomicState}` : ""}
+                      </span>
+                    </div>
+                  )}
+
+                  {stage1.meta.bodilyBurden && (
+                    <div className="flex items-start gap-2 text-xs">
+                      <span className="text-purple-400 font-bold">•</span>
+                      <span className="text-slate-300">
+                        <strong className="text-slate-400 font-medium">
+                          {isHindi ? "शारीरिक संवेदनाएं:" : "Bodily Sensations:"}
+                        </strong>{" "}
+                        {stage1.meta.bodilyBurden}
+                      </span>
+                    </div>
+                  )}
+
+                  {stage1.meta.summary && (
+                    <p className="mt-1 text-slate-200 italic bg-purple-950/20 p-2.5 rounded-lg border border-purple-500/20 leading-relaxed text-xs sm:text-sm">
+                      &ldquo;{stage1.meta.summary}&rdquo;
+                    </p>
+                  )}
+                </div>
+
+                {/* Step 1 Interactive Confirmation Prompt */}
+                {activeStage === 1 && (
+                  <div className="pt-2 border-t border-purple-500/20 space-y-2">
+                    <p className="text-xs sm:text-sm font-semibold text-purple-200 flex items-center gap-1.5">
+                      <HelpCircle className="w-4 h-4 text-purple-400 shrink-0" />
+                      <span>{stage1.meta.confirmationPrompt || (isHindi ? "क्या आप इस समय इसी मानसिक स्थिति का अनुभव कर रहे हैं?" : "Is this what you're experiencing right now?")}</span>
+                    </p>
+
+                    {!isAdjusting ? (
+                      <div className="flex flex-wrap items-center gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={handleConfirmS1}
+                          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)] active:scale-95 cursor-pointer"
+                        >
+                          <CheckCircle2 className="w-4 h-4" />
+                          <span>{isHindi ? "हाँ, यह सही है (अगला: गीता दर्शन)" : "Yes, that's right (Next: Gita Wisdom)"}</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setIsAdjusting(true)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs font-medium transition-all active:scale-95 cursor-pointer"
+                        >
+                          <span>{isHindi ? "नहीं, थोड़ा अलग है" : "Not quite / Adjust"}</span>
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="p-2.5 rounded-xl bg-slate-950/80 border border-purple-500/30 space-y-2">
+                        <span className="text-[11px] text-slate-400">
+                          {isHindi ? "कृपया अपनी मुख्य भावना चुनें:" : "Choose the feeling that best matches:"}
+                        </span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {[
+                            "Anxiety / Worry",
+                            "Depression / Sadness",
+                            "Overwhelm / Burnout",
+                            "Acute Panic",
+                            "Anger / Betrayal",
+                            "Toxic Shame / Guilt",
+                            "Decision Paralysis",
+                          ].map((em) => (
+                            <button
+                              key={em}
+                              type="button"
+                              onClick={() => setSelectedAdjustEmotion(em)}
+                              className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-all ${
+                                selectedAdjustEmotion === em
+                                  ? "bg-purple-500 text-slate-950 font-bold border-purple-400 shadow-md"
+                                  : "bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-700"
+                              }`}
+                            >
+                              {em}
+                            </button>
+                          ))}
+                        </div>
+                        <div className="flex items-center gap-2 pt-1">
+                          <button
+                            type="button"
+                            onClick={handleConfirmS1}
+                            className="px-3 py-1 rounded-lg bg-emerald-500 text-slate-950 font-bold text-xs hover:bg-emerald-400 active:scale-95 transition-all"
+                          >
+                            {isHindi ? "संशोधन स्वीकारें →" : "Confirm Emotion →"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setIsAdjusting(false)}
+                            className="text-xs text-slate-400 hover:text-slate-200 underline"
+                          >
+                            {isHindi ? "रद्द करें" : "Cancel"}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
-            {renderFormattedMarkdown(therapeuticBody, isSpeaking, activeKaraoke, activeWordRef, counter)}
-          </div>
+
+            {/* ─── CARD 2: BHAGAVAD GITA CARD & GYAN (REVEALED IN STEP 2) ─── */}
+            {activeStage >= 2 && stage2 && (
+              <div className="p-3.5 sm:p-4 rounded-xl border border-amber-500/35 bg-gradient-to-br from-amber-950/40 via-amber-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(245,158,11,0.08)] backdrop-blur-md space-y-2.5 animate-fadeIn">
+                <div className="flex flex-wrap items-center justify-between gap-1.5 pb-1.5 border-b border-amber-500/15">
+                  <span className="text-[10px] sm:text-[11px] font-mono font-bold tracking-wide uppercase px-2 py-0.5 rounded-full border text-amber-400 bg-amber-500/15 border-amber-500/30">
+                    {stage2.badge}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    {onOpenGita && (
+                      <button
+                        type="button"
+                        onClick={onOpenGita}
+                        className="text-[10px] font-medium text-amber-400 hover:text-amber-300 underline underline-offset-2 transition-colors cursor-pointer"
+                      >
+                        Explore Shloka →
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Shloka in plain text format inside Shreemadh Bhagwatgita Aatam Darshan */}
+                {stage2.meta.shlokaBlock && (
+                  <div data-tts-silent="true" data-tts-skip="true" className="tts-skip select-text my-2">
+                    <GitaShlokaCard shlokaContent={stage2.meta.shlokaBlock} variant="inline" />
+                  </div>
+                )}
+
+                {/* Gita Spiritual Wisdom & Actionable Duty */}
+                <div className="space-y-1.5 text-slate-100 text-xs sm:text-sm">
+                  {stage2.meta.meaning && (
+                    <div className="text-slate-200 leading-relaxed">
+                      <strong className="text-amber-300">
+                        {isHindi ? "भगवान श्रीकृष्ण का पावन संदेश:" : "Divine Teaching:"}{" "}
+                      </strong>
+                      {stage2.meta.meaning}
+                    </div>
+                  )}
+                  {stage2.meta.reflection && (
+                    <div className="text-slate-300 leading-relaxed">
+                      <strong className="text-amber-400/90">
+                        {isHindi ? "जीवन में उतारें:" : "Spiritual Reflection:"}{" "}
+                      </strong>
+                      {stage2.meta.reflection}
+                    </div>
+                  )}
+                  {stage2.meta.duty && (
+                    <div className="p-2.5 rounded-lg bg-amber-950/20 border border-amber-500/25 text-amber-200 leading-relaxed">
+                      <strong>{isHindi ? "वर्तमान कर्तव्य (निष्काम कर्म):" : "Your Duty Right Now:"} </strong>
+                      {stage2.meta.duty}
+                    </div>
+                  )}
+                </div>
+
+                {/* Stage 2 Advance Controls */}
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-amber-500/15">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (onPlayStageVoice) {
+                        onPlayStageVoice(message.id, 2, stage2.speechText);
+                      } else if (onPlay) {
+                        onPlay();
+                      }
+                    }}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-300 text-[11px] font-medium transition-all cursor-pointer"
+                  >
+                    <Volume2 className="w-3.5 h-3.5" />
+                    <span>{isHindi ? "श्लोक एवं गीता उपदेश सुनें 🔊" : "Listen Shloka & Wisdom 🔊"}</span>
+                  </button>
+
+                  {activeStage === 2 && (
+                    <button
+                      type="button"
+                      onClick={() => handleAdvanceTo(3)}
+                      className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition-all shadow-md active:scale-95 cursor-pointer ml-auto"
+                    >
+                      <span>{isHindi ? "अगला: CBT व प्राणायाम →" : "Next: CBT & Breathwork →"}</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* ─── CARD 3: CLINICAL CBT & SOMATIC BREATHWORK (REVEALED IN STEP 3) ─── */}
+            {activeStage >= 3 && stage3 && (
+              <div className="p-3.5 sm:p-4 rounded-xl border border-emerald-500/35 bg-gradient-to-br from-emerald-950/40 via-emerald-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(16,185,129,0.08)] backdrop-blur-md space-y-2.5 animate-fadeIn">
+                <div className="flex flex-wrap items-center justify-between gap-1.5 pb-1.5 border-b border-emerald-500/15">
+                  <span className="text-[10px] sm:text-[11px] font-mono font-bold tracking-wide uppercase px-2 py-0.5 rounded-full border text-emerald-400 bg-emerald-500/15 border-emerald-500/30">
+                    {stage3.badge}
+                  </span>
+                  {onOpenCBT && (
+                    <button
+                      type="button"
+                      onClick={onOpenCBT}
+                      className="text-[10px] font-medium text-emerald-400 hover:text-emerald-300 underline underline-offset-2 transition-colors cursor-pointer"
+                    >
+                      Interactive CBT →
+                    </button>
+                  )}
+                </div>
+
+                <div className="space-y-2 text-slate-100 text-xs sm:text-sm">
+                  {renderFormattedMarkdown(stage3.displayContent, isSpeaking, activeKaraoke, activeWordRef, counter)}
+                </div>
+
+                {/* Stage 3 Advance Controls */}
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-emerald-500/15">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (onPlayStageVoice) {
+                        onPlayStageVoice(message.id, 3, stage3.speechText);
+                      } else if (onPlay) {
+                        onPlay();
+                      }
+                    }}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 text-[11px] font-medium transition-all cursor-pointer"
+                  >
+                    <Volume2 className="w-3.5 h-3.5" />
+                    <span>{isHindi ? "CBT तकनीक सुनें 🔊" : "Listen CBT Guidance 🔊"}</span>
+                  </button>
+
+                  {activeStage === 3 && (
+                    <button
+                      type="button"
+                      onClick={() => handleAdvanceTo(4)}
+                      className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition-all shadow-md active:scale-95 cursor-pointer ml-auto"
+                    >
+                      <span>{isHindi ? "अगला: त्राटक ध्यान विधि →" : "Next: Tratak Gazing →"}</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* ─── CARD 4: TRATAK NEURO-OCULAR GAZING PROTOCOL (REVEALED IN STEP 4) ─── */}
+            {activeStage >= 4 && stage4 && (
+              <div className="p-3.5 sm:p-4 rounded-xl border border-cyan-500/35 bg-gradient-to-br from-cyan-950/40 via-cyan-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(6,182,212,0.08)] backdrop-blur-md space-y-2.5 animate-fadeIn">
+                <div className="flex flex-wrap items-center justify-between gap-1.5 pb-1.5 border-b border-cyan-500/15">
+                  <span className="text-[10px] sm:text-[11px] font-mono font-bold tracking-wide uppercase px-2 py-0.5 rounded-full border text-cyan-400 bg-cyan-500/15 border-cyan-500/30">
+                    {stage4.badge}
+                  </span>
+                  {onLaunchTrataka && (
+                    <button
+                      type="button"
+                      onClick={() => onLaunchTrataka(message.recommended_trataka || "bindu")}
+                      className="text-[10px] font-medium text-cyan-400 hover:text-cyan-300 underline underline-offset-2 transition-colors cursor-pointer"
+                    >
+                      Launch Gazing →
+                    </button>
+                  )}
+                </div>
+
+                <div className="space-y-2 text-slate-100 text-xs sm:text-sm">
+                  {renderFormattedMarkdown(stage4.displayContent, isSpeaking, activeKaraoke, activeWordRef, counter)}
+                </div>
+
+                {/* Launch Trataka Button */}
+                <div className="pt-2 border-t border-cyan-500/15 flex flex-wrap items-center justify-between gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (onPlayStageVoice) {
+                        onPlayStageVoice(message.id, 4, stage4.speechText);
+                      } else if (onPlay) {
+                        onPlay();
+                      }
+                    }}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/30 text-cyan-300 text-[11px] font-medium transition-all cursor-pointer"
+                  >
+                    <Volume2 className="w-3.5 h-3.5" />
+                    <span>{isHindi ? "त्राटक विधि सुनें 🔊" : "Listen Tratak Guidance 🔊"}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => onLaunchTrataka?.(message.recommended_trataka || "bindu")}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition-all shadow-[0_0_15px_rgba(6,182,212,0.3)] active:scale-95 cursor-pointer ml-auto"
+                  >
+                    <Eye className="w-4 h-4" />
+                    <span>{isHindi ? "त्राटक ध्यान सत्र शुरू करें 👁️" : "Launch Gazing Session 👁️"}</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         ) : (
-          <div className="space-y-3.5 my-1">
-            {parts.map((part, idx) => {
-              const trimmed = part.trim();
-              if (!trimmed) return null;
+          /* Legacy / Unstructured single message rendering */
+          <div className="space-y-3 text-slate-100 text-xs sm:text-sm">
+            {parts.map((part, pIdx) => {
+              const isLastCard = pIdx === parts.length - 1;
+              const isSynergy = isLastCard || (!isLastCard && (part.startsWith("**4.") || part.toLowerCase().includes("synerg")));
+              const isDiagnostic = !isLastCard && (part.startsWith("**SUMMARY") || part.includes("स्थिति व कष्ट"));
+              const isGitaCard = !isLastCard && !isDiagnostic && !isSynergy && (part.startsWith("**1.") || part.includes("गीता"));
 
-              const isLastCard = idx === parts.length - 1;
-
-              const isDiagnostic =
-                !isLastCard &&
-                (trimmed.startsWith("**SUMMARY") ||
-                  trimmed.toLowerCase().includes("suffering assessment") ||
-                  trimmed.includes("स्थिति व कष्ट") ||
-                  trimmed.includes("मानसिक पीड़ा") ||
-                  trimmed.includes("स्थिति का संक्षिप्त सारांश") ||
-                  trimmed.toLowerCase().includes("diagnostic"));
-
-              const isTratak =
-                !isDiagnostic &&
-                (trimmed.startsWith("**3.") ||
-                  trimmed.toLowerCase().includes("tratak") ||
-                  trimmed.includes("त्राटक"));
-
-              const isClinical =
-                !isDiagnostic &&
-                !isTratak &&
-                (trimmed.startsWith("**2.") ||
-                  trimmed.toLowerCase().includes("clinical") ||
-                  trimmed.includes("कॉग्निटिव") ||
-                  trimmed.toLowerCase().includes("cbt"));
-
-              const isGita =
-                !isDiagnostic &&
-                !isTratak &&
-                !isClinical &&
-                !isLastCard &&
-                (trimmed.startsWith("**1.") ||
-                  trimmed.toLowerCase().includes("bhagavad gita") ||
-                  (trimmed.includes("गीता") && !trimmed.includes("त्रिवेणी") && !trimmed.startsWith("**4.")));
-
-              const isSynergy =
-                !isDiagnostic &&
-                !isGita &&
-                !isClinical &&
-                !isTratak &&
-                (isLastCard ||
-                  trimmed.startsWith("**4.") ||
-                  trimmed.toLowerCase().includes("synerg") ||
-                  trimmed.toLowerCase().includes("combination") ||
-                  trimmed.includes("त्रिवेणी") ||
-                  trimmed.includes("समाधान") ||
-                  trimmed.toLowerCase().includes("summary"));
-
-              const borderClass = isDiagnostic
-                ? "border-purple-500/35 bg-gradient-to-br from-purple-950/40 via-purple-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(168,85,247,0.08)]"
-                : isGita
-                ? "border-amber-500/35 bg-gradient-to-br from-amber-950/40 via-amber-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(245,158,11,0.08)]"
-                : isClinical
-                ? "border-emerald-500/35 bg-gradient-to-br from-emerald-950/40 via-emerald-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(16,185,129,0.08)]"
-                : isTratak
-                ? "border-cyan-500/35 bg-gradient-to-br from-cyan-950/40 via-cyan-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(6,182,212,0.08)]"
-                : (isSynergy || isLastCard)
-                ? "border-fuchsia-500/35 bg-gradient-to-br from-fuchsia-950/40 via-fuchsia-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(217,70,239,0.08)]"
-                : "border-slate-800/80 bg-slate-900/60";
-
-              const isHindi = /[\u0900-\u097F]/.test(trimmed) || (message.locale ? message.locale.startsWith("hi") : false);
-              const isSpanish = /\b(sabiduría|verso|capítulo|mente|atención|respiración|resumen)\b/i.test(trimmed) || (message.locale ? message.locale.startsWith("es") : false);
-              const isFrench = /\b(sagesse|verset|chapitre|respiration|pensée|synthèse)\b/i.test(trimmed) || (message.locale ? message.locale.startsWith("fr") : false);
-              const isGerman = /\b(weisheit|kapitel|nervensystem|atmung|gedanken|zusammenfassung)\b/i.test(trimmed) || (message.locale ? message.locale.startsWith("de") : false);
-
-              const badgeText = isDiagnostic
-                ? (isHindi ? "📋 स्थिति व मानसिक पीड़ा का मूल्यांकन" : isSpanish ? "📋 Evaluación del Sufrimiento" : isFrench ? "📋 Évaluation de la Souffrance" : isGerman ? "📋 Belastungsanalyse" : "📋 Diagnostic & Suffering Assessment")
-                : isGita
-                ? (isHindi ? "🕉️ श्रीमद्भगवद्गीता आत्मिक दर्शन" : isSpanish ? "🕉️ Sabiduría del Bhagavad Gita" : isFrench ? "🕉️ Sagesse de la Bhagavad Gita" : isGerman ? "🕉️ Weisheit der Bhagavad Gita" : "🕉️ Bhagavad Gita Wisdom")
-                : isClinical
-                ? (isHindi ? "🧠 क्लिनिकल कॉग्निटिव न्यूरोसाइंस (CBT)" : isSpanish ? "🧠 Neurociencia Clínica Cognitiva (TCC)" : isFrench ? "🧠 Neurosciences Cliniques Cognitives (TCC)" : isGerman ? "🧠 Klinische Kognitive Neurowissenschaft (CBT)" : "🧠 Clinical Cognitive Neuroscience (CBT)")
-                : isTratak
-                ? (isHindi ? "👁️ त्राटक न्यूरो-ऑक्युलर ध्यान विधि" : isSpanish ? "👁️ Protocolo Neuro-Ocular Tratak" : isFrench ? "👁️ Protocole Neuro-Oculaire Tratak" : isGerman ? "👁️ Tratak Neuro-Okulares Protokoll" : "👁️ Tratak Neuro-Ocular Protocol")
-                : (isSynergy || isLastCard)
-                ? (isHindi ? "✨ सारांश: एकीकृत त्रिवेणी उपचार योजना" : isSpanish ? "✨ Resumen: Resolución Sinérgica Tri-Pilar" : isFrench ? "✨ Synthèse : Résolution Synergique Tri-Piliers" : isGerman ? "✨ Zusammenfassung: Synergistische Dreisäulen-Lösung" : "✨ Summary: Tri-Pillar Synergistic Resolution")
-                : null;
-
-              const badgeColor = isDiagnostic
-                ? "text-purple-300 bg-purple-500/15 border-purple-500/30"
-                : isGita
-                ? "text-amber-400 bg-amber-500/15 border-amber-500/30"
-                : isClinical
-                ? "text-emerald-400 bg-emerald-500/15 border-emerald-500/30"
-                : isTratak
-                ? "text-cyan-400 bg-cyan-500/15 border-cyan-500/30"
-                : (isSynergy || isLastCard)
-                ? "text-fuchsia-400 bg-fuchsia-500/15 border-fuchsia-500/30"
-                : "text-fuchsia-400 bg-fuchsia-500/15 border-fuchsia-500/30";
-
-              const headerMatch = trimmed.match(/^\*\*(?:[1234]\.\s+)?([^:]+):\*\*/i);
-              const sectionHeader = headerMatch ? headerMatch[1].replace(/^[1234]\.\s*/, "") : null;
+              let badgeLabel = "";
+              if (isSynergy) {
+                badgeLabel = isHindi
+                  ? "✨ सारांश: एकीकृत त्रिवेणी उपचार योजना"
+                  : isSpanish
+                  ? "✨ Resumen: Resolución Sinérgica Tri-Pilar"
+                  : "✨ Summary: Tri-Pillar Synergistic Resolution";
+              }
 
               return (
-                <div key={idx} className={`p-3.5 sm:p-4 rounded-xl border ${borderClass} backdrop-blur-md space-y-2`}>
-                  {badgeText && (
-                    <div className="flex flex-wrap items-center justify-between gap-1.5 pb-1.5 border-b border-white/5">
-                      <span className={`text-[10px] sm:text-[11px] font-mono font-bold tracking-wide uppercase px-2 py-0.5 rounded-full border ${badgeColor}`}>
-                        {badgeText}
-                      </span>
-                      <div className="flex items-center gap-2">
-                        {sectionHeader && (
-                          <span className="text-[11px] font-medium text-slate-300">
-                            {sectionHeader}
-                          </span>
-                        )}
-                        {isGita && onOpenGita && (
-                          <button
-                            type="button"
-                            onClick={onOpenGita}
-                            className="text-[10px] font-medium text-amber-400 hover:text-amber-300 underline underline-offset-2 transition-colors cursor-pointer"
-                          >
-                            Explore Shloka →
-                          </button>
-                        )}
-                        {isClinical && onOpenCBT && (
-                          <button
-                            type="button"
-                            onClick={onOpenCBT}
-                            className="text-[10px] font-medium text-emerald-400 hover:text-emerald-300 underline underline-offset-2 transition-colors cursor-pointer"
-                          >
-                            Interactive CBT →
-                          </button>
-                        )}
-                        {isTratak && onLaunchTrataka && (
-                          <button
-                            type="button"
-                            onClick={() => onLaunchTrataka(message.recommended_trataka || "bindu")}
-                            className="text-[10px] font-medium text-cyan-400 hover:text-cyan-300 underline underline-offset-2 transition-colors cursor-pointer"
-                          >
-                            Launch Gazing →
-                          </button>
-                        )}
-                      </div>
-                    </div>
+                <div key={pIdx} className="space-y-1.5">
+                  {badgeLabel && (
+                    <span className="text-[10px] font-mono font-bold tracking-wide uppercase px-2 py-0.5 rounded-full border text-teal-300 bg-teal-500/15 border-teal-500/30">
+                      {badgeLabel}
+                    </span>
                   )}
-                  {/* Shloka in plain text format inside Shreemadh Bhagwatgita Aatam Darshan (Silent to TTS) */}
-                  {isGita && gitaParsed.isGita && gitaParsed.shlokaBlock && (
+                  {!isLastCard && isGitaCard && gitaParsed.isGita && gitaParsed.shlokaBlock && (
                     <div data-tts-silent="true" data-tts-skip="true" className="tts-skip select-text my-2">
-                      <GitaShlokaCard
-                        shlokaContent={gitaParsed.shlokaBlock}
-                        variant="inline"
-                      />
+                      <GitaShlokaCard shlokaContent={gitaParsed.shlokaBlock} variant="inline" />
                     </div>
                   )}
-                  <div className="leading-relaxed text-slate-100 text-xs sm:text-sm font-sans space-y-1">
-                    {renderFormattedMarkdown(trimmed, isSpeaking, activeKaraoke, activeWordRef, counter)}
-                  </div>
+                  {renderFormattedMarkdown(part, isSpeaking, activeKaraoke, activeWordRef, counter)}
                 </div>
               );
             })}
@@ -553,7 +859,7 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
       </div>
 
       {/* 2. Interactive Tri-Solution Options Bar (🕉️ Gita + 🧠 CBT + 👁️ Tratak) */}
-      {isLastMessage && (
+      {isLastMessage && !isStructured && (
         <div className="mt-2.5 max-w-[88%] md:max-w-xl w-full p-2.5 sm:p-3 rounded-2xl bg-gradient-to-br from-slate-900/90 via-slate-900/70 to-slate-950/90 border border-slate-800/90 shadow-lg backdrop-blur-md space-y-2">
           <div className="flex items-center justify-between px-1">
             <span className="text-[11px] font-semibold text-slate-300 flex items-center gap-1.5">

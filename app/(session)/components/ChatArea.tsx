@@ -75,6 +75,10 @@ export interface ChatAreaProps {
   onChatScroll: () => void;
   inputVal: string;
   setInputVal: (val: string) => void;
+  messageStages?: Record<string, number>;
+  onConfirmStage1?: (messageId: string) => void;
+  onAdvanceStage?: (messageId: string, nextStage: number) => void;
+  onPlayStageVoice?: (messageId: string, stageNum: number, speechText: string) => void;
 }
 
 export const ChatArea: React.FC<ChatAreaProps> = ({
@@ -117,6 +121,10 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
   onChatScroll,
   inputVal,
   setInputVal,
+  messageStages,
+  onConfirmStage1,
+  onAdvanceStage,
+  onPlayStageVoice,
 }) => {
   return (
     <motion.main
@@ -392,6 +400,10 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                     onOpenGita={onOpenGita}
                     isLastMessage={isLastMessage}
                     recommendedTratakaLabel={getTratakaModeLabel(activeTratakMode)}
+                    currentStage={messageStages?.[m.id]}
+                    onConfirmStage1={onConfirmStage1}
+                    onAdvanceStage={onAdvanceStage}
+                    onPlayStageVoice={onPlayStageVoice}
                   />
                 </motion.div>
               );

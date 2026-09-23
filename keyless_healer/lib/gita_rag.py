@@ -601,8 +601,10 @@ def synthesize_gita_response(
     loc_tratak = get_localized_trataka_item(rec_trataka, norm)
 
     # Resolve localized CBT & Somatic protocol from library RAG or condition catalog
-    cond_id = rag_guidance.get("id") or rag_guidance.get("condition_id") if rag_guidance else "gad"
-    catalog_cond = CLINICAL_LOCALIZATION_CATALOG.get(cond_id, CLINICAL_LOCALIZATION_CATALOG.get("gad", {}))
+    cond_id_raw = (rag_guidance.get("id") or rag_guidance.get("condition_id")) if rag_guidance else "gad"
+    cond_id = str(cond_id_raw or "gad")
+    default_catalog = CLINICAL_LOCALIZATION_CATALOG.get("gad", {})
+    catalog_cond = CLINICAL_LOCALIZATION_CATALOG.get(cond_id, default_catalog)
     loc_cond = catalog_cond.get(norm, catalog_cond.get("en", {}))
 
     cbt_text = loc_cond.get("cbt_reframing") or (

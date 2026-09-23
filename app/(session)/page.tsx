@@ -11,7 +11,7 @@ import {
   TrigunaAnalysis,
 } from "@/lib/api/healer-client";
 import { AutoUpdateBanner } from "./components/AutoUpdateBanner";
-import { tokenizeForKaraoke } from "@/lib/audio/karaoke-tokenizer";
+import { tokenizeForKaraoke, parseTherapeuticStages } from "@/lib/audio/karaoke-tokenizer";
 import { LeftNav } from "./components/LeftNav";
 import { MobileNav } from "./components/MobileNav";
 import { TelemetryPanel } from "./components/TelemetryPanel";
@@ -69,6 +69,16 @@ export default function SanctuarySessionPage() {
   const [isBackendHealthy, setIsBackendHealthy] = useState<boolean | null>(null);
   const [isAiMuted, setIsAiMuted] = useState(false);
   const [activeKaraoke, setActiveKaraoke] = useState<KaraokeState | null>(null);
+
+  // ─── Sequential Card Progression State (Card 1 -> Card 2 -> Card 3 -> Card 4) ───
+  const [messageStages, setMessageStages] = useState<Record<string, number>>({});
+  const messageStagesRef = useRef<Record<string, number>>({});
+  useEffect(() => {
+    messageStagesRef.current = messageStages;
+  }, [messageStages]);
+
+  const activeSpeakingStageRef = useRef<{ messageId: string; stage: number } | null>(null);
+  const parsedStagesCacheRef = useRef<Record<string, any>>({});
 
   // ─── Modal Visibility States ───
   const [isGitaModalOpen, setIsGitaModalOpen] = useState(false);
@@ -359,6 +369,8 @@ export default function SanctuarySessionPage() {
   }, [activeKaraoke]);
 
   // ─── Voice Playback with Real-Time Karaoke & Echo Avoidance ───
+  const playVoiceRef = useRef<(text: string, audioBase64?: string, messageId?: string) => void>(() => {});
+
   const playVoice = useCallback((text: string, audioBase64?: string, messageId?: string) => {
     if (isAiMutedRef.current) return;
 
@@ -452,6 +464,44 @@ export default function SanctuarySessionPage() {
           startContinuousVoiceListeningRef.current?.();
         }
       }, 200);
+
+      // Auto-advance sequentially between therapeutic cards once reading completes
+      const currentSpeaking = activeSpeakingStageRef.current;
+      if (currentSpeaking) {
+        const { messageId, stage } = currentSpeaking;
+        const parsed = parsedStagesCacheRef.current[messageId];
+
+        if (stage === 2) {
+          // Card 2 (Gita) finished reading -> auto-advance to Card 3 (CBT) and read aloud
+          setTimeout(() => {
+            setMessageStages((prev) => ({ ...prev, [messageId]: 3 }));
+            messageStagesRef.current = { ...messageStagesRef.current, [messageId]: 3 };
+            if (parsed) {
+              const stage3 = parsed.stages.find((s: any) => s.stage === 3);
+              if (stage3) {
+                activeSpeakingStageRef.current = { messageId, stage: 3 };
+                playVoiceRef.current(stage3.speechText, undefined, messageId);
+              }
+            }
+          }, 450);
+        } else if (stage === 3) {
+          // Card 3 (CBT) finished reading -> auto-advance to Card 4 (Tratak) and read aloud
+          setTimeout(() => {
+            setMessageStages((prev) => ({ ...prev, [messageId]: 4 }));
+            messageStagesRef.current = { ...messageStagesRef.current, [messageId]: 4 };
+            if (parsed) {
+              const stage4 = parsed.stages.find((s: any) => s.stage === 4);
+              if (stage4) {
+                activeSpeakingStageRef.current = { messageId, stage: 4 };
+                playVoiceRef.current(stage4.speechText, undefined, messageId);
+              }
+            }
+          }, 450);
+        } else {
+          // Stage 1 or Stage 4 concluded
+          activeSpeakingStageRef.current = null;
+        }
+      }
     };
 
     // Watchdog timer: ensure audio locks are never permanently stuck
@@ -498,6 +548,53 @@ export default function SanctuarySessionPage() {
     browserSpeechController.speak(effectiveClean, undefined, handleAudioEnd, targetLocale);
   }, []);
 
+  useEffect(() => {
+    playVoiceRef.current = playVoice;
+  }, [playVoice]);
+
+  // ─── Sequential Card Progression Handlers ───
+  const handleConfirmStage1 = useCallback(
+    (messageId: string) => {
+      setMessageStages((prev) => ({ ...prev, [messageId]: 2 }));
+      messageStagesRef.current = { ...messageStagesRef.current, [messageId]: 2 };
+
+      const parsed = parsedStagesCacheRef.current[messageId];
+      if (parsed) {
+        const stage2 = parsed.stages.find((s: any) => s.stage === 2);
+        if (stage2) {
+          activeSpeakingStageRef.current = { messageId, stage: 2 };
+          playVoiceRef.current(stage2.speechText, undefined, messageId);
+        }
+      }
+    },
+    []
+  );
+
+  const handleAdvanceStage = useCallback(
+    (messageId: string, nextStage: number) => {
+      setMessageStages((prev) => ({ ...prev, [messageId]: nextStage }));
+      messageStagesRef.current = { ...messageStagesRef.current, [messageId]: nextStage };
+
+      const parsed = parsedStagesCacheRef.current[messageId];
+      if (parsed) {
+        const targetStage = parsed.stages.find((s: any) => s.stage === nextStage);
+        if (targetStage) {
+          activeSpeakingStageRef.current = { messageId, stage: nextStage };
+          playVoiceRef.current(targetStage.speechText, undefined, messageId);
+        }
+      }
+    },
+    []
+  );
+
+  const handlePlayStageVoice = useCallback(
+    (messageId: string, stageNum: number, speechText: string) => {
+      activeSpeakingStageRef.current = { messageId, stage: stageNum };
+      playVoiceRef.current(speechText, undefined, messageId);
+    },
+    []
+  );
+
   // ─── Send Message Handler ───
   const handleSendMessage = async (textToSend?: string, voiceState?: VoiceAcousticState) => {
     const messageText = (textToSend !== undefined ? textToSend : inputVal).trim();
@@ -540,6 +637,28 @@ export default function SanctuarySessionPage() {
         });
       }
     }, 50);
+
+    // Affirmative confirmation check:
+    // If the latest AI message is awaiting Stage 1 confirmation ("Is this right?"), and user sends
+    // an affirmative response ("yes", "haan", "correct", etc.), advance directly to Stage 2 (Gita Card & Gyan)
+    // without sending a redundant backend request (stopping repetitive loops completely).
+    const lastAiMsg = [...messagesRef.current].reverse().find((m) => m.sender === "ai");
+    const isAwaitingStage1 =
+      lastAiMsg &&
+      messageStagesRef.current[lastAiMsg.id] === 1 &&
+      parsedStagesCacheRef.current[lastAiMsg.id]?.isStructured;
+
+    const isAffirmativeConfirmation =
+      /^(yes|yeah|yep|right|correct|that's right|thats right|haan|sahi|sahi hai|bilkul|ha|si|oui|ja|yes please|exactly|true|agree|affirmative|y)\b/i.test(
+        messageText.trim().replace(/[.,!]/g, "")
+      );
+
+    if (isAwaitingStage1 && isAffirmativeConfirmation && lastAiMsg) {
+      isSendingRef.current = false;
+      setIsLoading(false);
+      handleConfirmStage1(lastAiMsg.id);
+      return;
+    }
 
     const historyPayload: ChatHistoryItem[] = messagesRef.current
       .filter((m) => m.text.trim())
@@ -623,7 +742,21 @@ export default function SanctuarySessionPage() {
         saveLivePsychologyTelemetry(response.telemetry, messageText);
       }
 
-      playVoice(response.reply, response.audio_base64, aiMsg.id);
+      // Parse response into sequential therapeutic stages
+      const parsedStages = parseTherapeuticStages(response.reply, spokenResolution.langCode);
+      parsedStagesCacheRef.current[aiMsg.id] = parsedStages;
+
+      if (parsedStages.isStructured && parsedStages.stages.length > 0) {
+        // Initialize strictly at Stage 1 (Sanctuary Emotion Understanding ONLY)
+        setMessageStages((prev) => ({ ...prev, [aiMsg.id]: 1 }));
+        messageStagesRef.current = { ...messageStagesRef.current, [aiMsg.id]: 1 };
+
+        const stage1 = parsedStages.stages.find((s) => s.stage === 1) || parsedStages.stages[0];
+        activeSpeakingStageRef.current = { messageId: aiMsg.id, stage: 1 };
+        playVoice(stage1.speechText, undefined, aiMsg.id);
+      } else {
+        playVoice(response.reply, response.audio_base64, aiMsg.id);
+      }
     } catch (error) {
       console.error("Chat communication notice:", error);
       setErrorMessage("Unable to reach the clinical reasoning engine. Please check your connection and retry.");
@@ -918,6 +1051,10 @@ export default function SanctuarySessionPage() {
           onChatScroll={handleChatScroll}
           inputVal={inputVal}
           setInputVal={setInputVal}
+          messageStages={messageStages}
+          onConfirmStage1={handleConfirmStage1}
+          onAdvanceStage={handleAdvanceStage}
+          onPlayStageVoice={handlePlayStageVoice}
         />
 
         {/* Mobile Telemetry Slide-over Drawer (renders Voice State: and Listening word-by-word) */}

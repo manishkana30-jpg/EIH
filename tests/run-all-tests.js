@@ -31,6 +31,7 @@ require('./test-language-and-vocal-selection.js');
 require('./test-seo-verification.js');
 require('./test-karaoke-engine-modular.js');
 require('./test-text-only-gita-library.js');
+require('./test-sequential-card-flow.js');
 
 
 console.log('================================================================');

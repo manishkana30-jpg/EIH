@@ -133,6 +133,8 @@ export class BrowserSpeechController {
   private silenceTimeoutMs = 2800;
   private currentLanguageLocale = 'en-US';
   private activeSpeechGeneration = 0;
+  private lastSpokenText = '';
+  private lastSpeechEndTime = 0;
 
   private constructor() {
     if (typeof window !== 'undefined') {
@@ -543,6 +545,19 @@ export class BrowserSpeechController {
     const finalVoiceState = voiceAcousticAnalyzer.evaluateState();
     voiceAcousticAnalyzer.reset();
 
+    // Suppress acoustic echo: if audio finished playing within the last 1200ms and captured text matches assistant's own output
+    if (this.lastSpeechEndTime > 0 && Date.now() - this.lastSpeechEndTime < 1200 && this.lastSpokenText) {
+      const lower = finalText.toLowerCase();
+      if (lower.length > 5 && (this.lastSpokenText.includes(lower) || lower.includes(this.lastSpokenText))) {
+        console.warn('Acoustic speaker feedback echo detected and suppressed:', finalText);
+        this.isProcessingUtterance = false;
+        if (this.shouldBeListening && !this.isSpeaking) {
+          this.startRecognition(this.mediaStream || undefined);
+        }
+        return;
+      }
+    }
+
     // 1. If Web Speech API captured text, finalize the paragraph with voice acoustic state!
     if (finalText.length > 0) {
       this.callbacks.onUserSpeech?.(finalText, true, finalVoiceState);
@@ -682,11 +697,23 @@ export class BrowserSpeechController {
     const hasDevanagari = /[\u0900-\u097F]/.test(processed);
     const isEnglish = (locale && locale.startsWith('en')) || (!hasDevanagari && !locale);
 
-    // Always strictly strip [GITA_SHLOKA]...[/GITA_SHLOKA] from speech payload in all languages
-    // The Gita contemplation card is rendered silently in the UI
-    processed = processed.replace(/\[GITA_SHLOKA\][\s\S]*?\[\/GITA_SHLOKA\]/gi, '');
-    if (isEnglish) {
-      processed = processed.replace(/[\u0900-\u097F]+/g, '');
+    // Strip [GITA_SHLOKA] and [/GITA_SHLOKA] tags, but preserve the shloka text so TTS audibly reads it
+    processed = processed
+      .replace(/\[\/?GITA_SHLOKA\]/gi, ' ')
+      .replace(/—\s*(?:श्रीमद्भगवद्गीता|Bhagavad Gita)[^.\n]*/gi, '');
+
+    // For English locale when both Devanagari and Romanized shloka lines are present,
+    // preserve the Romanized Sanskrit so English neural voices pronounce it naturally
+    if (isEnglish && hasDevanagari) {
+      const lines = processed.split('\n');
+      const filtered = lines.map(line => {
+        // If line is purely Devanagari and there is Romanized text elsewhere, drop pure Devanagari line for English TTS
+        if (/^[\u0900-\u097F\s।॥—\d.,]+$/.test(line.trim())) {
+          return '';
+        }
+        return line;
+      });
+      processed = filtered.filter(Boolean).join('\n');
     }
 
     return processed
@@ -1060,12 +1087,14 @@ export class BrowserSpeechController {
     if (currentChunk) sentenceChunks.push(currentChunk);
     if (sentenceChunks.length === 0) sentenceChunks.push(cleanText);
 
+    this.lastSpokenText = (cleanText || '').toLowerCase().trim();
     const speechGeneration = ++this.activeSpeechGeneration;
     this.isSpeaking = true;
     let isFinished = false;
     const finishSpeech = () => {
       if (isFinished) return;
       isFinished = true;
+      this.lastSpeechEndTime = Date.now();
 
       if (this.ttsWatchdogTimer) {
         clearTimeout(this.ttsWatchdogTimer);
@@ -1092,7 +1121,7 @@ export class BrowserSpeechController {
           if (this.shouldBeListening && !this.isSpeaking) {
             this.startRecognition();
           }
-        }, 200);
+        }, 650);
       }
     };
 

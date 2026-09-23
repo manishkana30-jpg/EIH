@@ -433,9 +433,12 @@ def format_human_therapeutic_message(
         from .psychology_library_rag import psychology_rag
         lib_cond = psychology_rag.get_condition_by_id(cond_id)
         if lib_cond:
-            sols = lib_cond.get("solutions", {})
+            sols = lib_cond.get("solutions") or {}
             return f"I hear what you are navigating with {lib_cond.get('name')}. {sols.get('cbt_reframing', '')} To steady your autonomic nervous system right now: engage in {sols.get('somatic_anchor', '')} alongside {sols.get('pranayama', '')}"
         cond = CLINICAL_LOCALIZATION_CATALOG.get("cognitive_memory_brain_fog") or CLINICAL_LOCALIZATION_CATALOG.get("gad")
+
+    if not cond:
+        return GENERAL_LOCALIZED_ADVICE.get(norm, GENERAL_LOCALIZED_ADVICE["en"])["default"]
 
     loc = cond.get(norm) or cond.get("en")
     if not loc:
@@ -444,16 +447,21 @@ def format_human_therapeutic_message(
     diag_data = build_diagnostic_suffering_assessment(user_message, cond_id, None, norm)
     synergy = build_tri_pillar_synergy_resolution(norm, "Tratak")
 
+    v = loc.get("validation", "")
+    c = loc.get("cbt_reframing", "")
+    s = loc.get("somatic_anchor", "")
+    p = loc.get("pranayama", "")
+
     if norm == "hi":
-        cbt_part = f"{loc['validation']} {loc['cbt_reframing']} अपने तंत्रिका तंत्र को स्थिर करने के लिए: {loc['somatic_anchor']} इसके साथ ही {loc['pranayama']}"
+        cbt_part = f"{v} {c} अपने तंत्रिका तंत्र को स्थिर करने के लिए: {s} इसके साथ ही {p}".strip()
     elif norm == "es":
-        cbt_part = f"{loc['validation']} {loc['cbt_reframing']} Para regular tu sistema nervioso en este instante: practica {loc['somatic_anchor']} y {loc['pranayama']}"
+        cbt_part = f"{v} {c} Para regular tu sistema nervioso en este instante: practica {s} y {p}".strip()
     elif norm == "fr":
-        cbt_part = f"{loc['validation']} {loc['cbt_reframing']} Pour apaiser votre système nerveux dès maintenant : appliquez {loc['somatic_anchor']} ainsi que {loc['pranayama']}"
+        cbt_part = f"{v} {c} Pour apaiser votre système nerveux dès maintenant : appliquez {s} ainsi que {p}".strip()
     elif norm == "de":
-        cbt_part = f"{loc['validation']} {loc['cbt_reframing']} Um Ihr Nervensystem jetzt zu beruhigen: Nutzen Sie {loc['somatic_anchor']} und {loc['pranayama']}"
+        cbt_part = f"{v} {c} Um Ihr Nervensystem jetzt zu beruhigen: Nutzen Sie {s} und {p}".strip()
     else:
-        cbt_part = f"{loc['validation']} {loc['cbt_reframing']} To steady your autonomic nervous system right now: engage in {loc['somatic_anchor']} alongside {loc['pranayama']}"
+        cbt_part = f"{v} {c} To steady your autonomic nervous system right now: engage in {s} alongside {p}".strip()
 
     return f"{diag_data['markdown']}\n\n**2. CLINICAL COGNITIVE NEUROSCIENCE (CBT):**\n{cbt_part}\n\n{synergy}"
 

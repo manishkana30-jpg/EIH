@@ -12,7 +12,7 @@ import os
 import re
 import time
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Optional
 
 import httpx
 
@@ -74,9 +74,9 @@ except ImportError:
             gita_rag = None  # type: ignore[assignment]
             def detect_existential_dilemma(text: str) -> bool:  # type: ignore[misc]
                 return False
-            def build_gita_system_prompt(retrieved_gita_wisdom: str, target_locale: str = "en-US") -> str:  # type: ignore[misc]
+            def build_gita_system_prompt(retrieved_gita_wisdom: str, target_locale: str = "en-US", rag_context: str = "") -> str:  # type: ignore[misc]
                 return ""
-            def synthesize_gita_response(user_query: str, wisdom: dict, locale: str = "en-US") -> str:  # type: ignore[misc]
+            def synthesize_gita_response(user_query: str, wisdom: dict[str, Any], locale: str = "en-US", rag_guidance: dict[str, Any] | None = None, rec_trataka: str = "bindu") -> str:  # type: ignore[misc]
                 return ""
 
 try:
@@ -101,6 +101,13 @@ except ImportError:
             )
         except ImportError:
             cbt_loader = None  # type: ignore[assignment]
+            def normalize_language_code(code: str) -> str:
+                return "en"
+            def format_human_therapeutic_message(cond_id: str, lang_code: Optional[str] = "en", user_message: str = "") -> str:
+                return "Take a deep breath and center your awareness on this moment."
+            GENERAL_LOCALIZED_ADVICE: dict[str, dict[str, str]] = {
+                "en": {"default": "Take a moment to breathe and reground your nervous system."}
+            }
 
 logger = logging.getLogger("PsychologistPartner")
 
