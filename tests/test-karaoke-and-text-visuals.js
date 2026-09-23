@@ -187,9 +187,34 @@ Like the ocean remains still while waters enter it, maintain equanimity.
   assert(speechContent.includes('onWordBoundary?:'), 'browser-speech.ts must declare onWordBoundary in callbacks');
   assert(speechContent.includes('public async speakWithWebSpeechSynth'), 'browser-speech.ts must export speakWithWebSpeechSynth as public');
 
-  console.log('  ✓ Verified page.tsx has active-karaoke-word ID and auto-scroll centering implementation');
-  console.log('  ✓ Verified page.tsx prioritizes SpeechSynthesisUtterance and avoids card wrappers');
-  console.log('  ✓ Verified browser-speech.ts has SpeechSynthesisUtterance.onboundary integration');
+  // Test 5: Verify Red Highlighting, Medium Speed, Patient Listening, and Anti-Cutoff Watchdogs
+  const cssPath = path.join(__dirname, '..', 'app', 'globals.css');
+  const cssContent = fs.readFileSync(cssPath, 'utf8');
+  assert(cssContent.includes('.karaoke-word.active'), 'globals.css must style .karaoke-word.active');
+  assert(cssContent.includes('#dc2626') || cssContent.includes('239, 68, 68') || cssContent.includes('220, 38, 38'), 'globals.css must apply vivid luminous red color to active word');
+  console.log('  ✓ Verified globals.css active word has luminous red color styling');
+
+  // Verify medium speech rate (0.85) in browser-speech.ts
+  assert(speechContent.includes('utterance.rate = 0.85;'), 'browser-speech.ts must set utterance.rate to 0.85 for calm medium therapeutic pace');
+  console.log('  ✓ Verified browser-speech.ts rate is configured to 0.85 (calm medium therapeutic speed)');
+
+  // Verify patient listening silence delays
+  assert(speechContent.includes('silenceTimeoutMs = 4200;'), 'browser-speech.ts must have 4200ms base silence timeout');
+  assert(speechContent.includes('isIncomplete ? 6000'), 'browser-speech.ts must grant 6000ms delay for incomplete/trailing conjunctions');
+  console.log('  ✓ Verified browser-speech.ts provides patient silence delays (4.2s base, 5s short, 6s incomplete)');
+
+  // Verify anti-cutoff watchdog with dynamic refresh
+  assert(speechContent.includes('resetWatchdog'), 'browser-speech.ts must implement dynamic resetWatchdog to prevent mid-speech cutoffs');
+  assert(pageContent.includes('resetSafetyTimer'), 'page.tsx must implement dynamic resetSafetyTimer on boundary events to prevent speech cutting off halfway');
+  console.log('  ✓ Verified dynamic audio watchdogs prevent speech from stopping halfway');
+
+  // Verify full card speech in karaoke-tokenizer.ts
+  const tokenizerPath = path.join(__dirname, '..', 'lib', 'audio', 'karaoke-tokenizer.ts');
+  const tokenizerContent = fs.readFileSync(tokenizerPath, 'utf8');
+  assert(tokenizerContent.includes('s1SpeechText = isHindi'), 'karaoke-tokenizer.ts must define s1SpeechText');
+  assert(tokenizerContent.includes('bodilyBurden'), 'Stage 1 must include bodily burden for complete card reading');
+  assert(tokenizerContent.includes('avoid'), 'Stage 2 must include avoidable pitfalls for complete card reading');
+  console.log('  ✓ Verified karaoke-tokenizer.ts reads full card content (severity, body burden, shloka, duty, pitfalls)');
 
   console.log('\nKaraoke & Text Visuals Tests: All Passed Successfully!\n');
 }

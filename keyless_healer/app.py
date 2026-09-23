@@ -1321,7 +1321,7 @@ async def stream_voice(
     text: str | None = None,
     voice: str | None = None,
     locale: str | None = None,
-    rate: str = "-5%",
+    rate: str = "-14%",
 ):
     """
     Zero-Cost Natural Voice Synthesis streaming via Microsoft Edge Neural TTS.
@@ -1330,6 +1330,7 @@ async def stream_voice(
     target_text = text
     target_voice = voice
     target_locale = locale
+    target_rate = rate or "-14%"
 
     if request.method == "POST":
         content_type = request.headers.get("content-type", "")
@@ -1340,6 +1341,7 @@ async def stream_voice(
                     target_text = body.get("text") or target_text
                     target_voice = body.get("voice") or target_voice
                     target_locale = body.get("locale") or target_locale
+                    target_rate = body.get("rate") or target_rate
             except Exception:
                 pass
         elif "form" in content_type:
@@ -1348,6 +1350,7 @@ async def stream_voice(
                 target_text = form_data.get("text", target_text)
                 target_voice = form_data.get("voice", target_voice)
                 target_locale = form_data.get("locale", target_locale)
+                target_rate = form_data.get("rate", target_rate)
             except Exception:
                 pass
 
@@ -1375,7 +1378,7 @@ async def stream_voice(
         voice_str = "en-US-AriaNeural"
 
     try:
-        audio_bytes = await audio_engine.synthesize_speech_bytes(clean_text, voice=voice_str)
+        audio_bytes = await audio_engine.synthesize_speech_bytes(clean_text, voice=voice_str, rate=str(target_rate))
         if not audio_bytes:
             raise HTTPException(status_code=500, detail="Voice synthesis returned empty audio")
 

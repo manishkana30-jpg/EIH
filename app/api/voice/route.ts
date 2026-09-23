@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
   const text = searchParams.get('text') || '';
   const rawVoice = searchParams.get('voice') || '';
   const locale = searchParams.get('locale') || '';
-  const rate = searchParams.get('rate') || '-4%';
+  const rate = searchParams.get('rate') || '-14%';
 
   if (!text.trim()) {
     return new NextResponse('Missing text query parameter', { status: 400 });
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
     const text = body.text || '';
     const rawVoice = body.voice;
     const locale = body.locale || '';
-    const rate = body.rate || '-4%';
+    const rate = body.rate || '-14%';
 
     if (!text.trim()) {
       return new NextResponse('Missing text in request body', { status: 400 });

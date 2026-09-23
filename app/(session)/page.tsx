@@ -413,11 +413,13 @@ export default function SanctuarySessionPage() {
       const activeWord = cleanWordList[activeWordIdx];
       const activeSentenceIdx = activeWord ? activeWord.sentenceIndex : 0;
 
+      resetSafetyTimer();
       setActiveKaraoke({
         messageId: activeSpeakingMessageIdRef.current,
         wordIndex: activeWord ? activeWord.wordIndex : activeWordIdx,
         sentenceIndex: activeSentenceIdx,
         wordText: wordText || activeWord?.word,
+        stage: activeSpeakingStageRef.current?.stage,
       });
     };
 
@@ -504,15 +506,22 @@ export default function SanctuarySessionPage() {
       }
     };
 
-    // Watchdog timer: ensure audio locks are never permanently stuck
+    // Watchdog timer: generous failsafe margin so speech is never cut off halfway
     const wordCount = effectiveClean.split(/\s+/).length;
-    const maxSafetyMs = Math.max(6000, (wordCount / 2.0) * 1000 + 5000);
-    safetyTimer = setTimeout(() => {
-      if (isPlayingAudioRef.current) {
-        console.warn("Audio playback safety watchdog fired: unlocking audio state.");
-        handleAudioEnd();
+    const maxSafetyMs = Math.max(45000, (wordCount / 0.65) * 1000 + 40000);
+    const resetSafetyTimer = () => {
+      if (safetyTimer) {
+        clearTimeout(safetyTimer);
       }
-    }, maxSafetyMs);
+      safetyTimer = setTimeout(() => {
+        if (isPlayingAudioRef.current) {
+          console.warn("Audio playback safety watchdog fired: unlocking audio state.");
+          handleAudioEnd();
+        }
+      }, maxSafetyMs);
+    };
+
+    resetSafetyTimer();
 
     // 1. Primary Engine: SpeechSynthesisUtterance.onboundary for millisecond-exact word & sentence tracking
     if (typeof window !== "undefined" && "speechSynthesis" in window && window.speechSynthesis) {

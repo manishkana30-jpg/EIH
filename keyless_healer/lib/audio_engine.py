@@ -233,7 +233,7 @@ class FreeAudioEngine:
     # ---------------------------------------------------------
     # TEXT-TO-SPEECH (TTS)
     # ---------------------------------------------------------
-    async def synthesize_speech_bytes(self, text: str, voice: str | None = None) -> bytes:
+    async def synthesize_speech_bytes(self, text: str, voice: str | None = None, rate: str | None = None) -> bytes:
         """Synthesizes text into MP3 audio bytes using edge-tts (or pyttsx3 fallback)."""
         if not text or not text.strip():
             return b""
@@ -251,16 +251,17 @@ class FreeAudioEngine:
                 clean_text = clean_text[:1800]
 
         selected_voice = voice or self.default_voice
+        selected_rate = rate or "-14%"  # Calm, medium therapeutic pace
 
         # 1. Primary TTS: edge-tts (High quality neural voice)
         if edge_tts is not None:
             try:
-                communicate = edge_tts.Communicate(clean_text, selected_voice, rate="-5%", pitch="-2Hz")
+                communicate = edge_tts.Communicate(clean_text, selected_voice, rate=selected_rate, pitch="-2Hz")
                 mp3_buffer = io.BytesIO()
                 async for chunk in communicate.stream():
                     if chunk.get("type") == "audio" and "data" in chunk and isinstance(chunk["data"], (bytes, bytearray)):
                         mp3_buffer.write(chunk["data"])
-                mp3_buffer.seek(0)
+                    mp3_buffer.seek(0)
                 audio_data = mp3_buffer.read()
                 if len(audio_data) > 0:
                     return audio_data
@@ -273,7 +274,7 @@ class FreeAudioEngine:
                 return b""
             try:
                 engine = pyttsx3.init()
-                engine.setProperty("rate", 160)
+                engine.setProperty("rate", 135)  # Medium soothing pace
                 with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
                     tmp_path = tmp.name
                 engine.save_to_file(clean_text, tmp_path)

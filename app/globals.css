@@ -394,14 +394,16 @@
   /* Never add margin, padding, font-size, or scale transforms here */
 }
 
-/* Active highlighted word */
+/* Active highlighted word - Vivid Luminous Red */
 .karaoke-word.active {
-  background-color: rgba(239, 68, 68, 0.75) !important; /* Vivid luminous red marker glow */
+  background-color: #dc2626 !important; /* Vivid bright red (red-600) */
   color: #ffffff !important;
+  font-weight: 700 !important;
   border-radius: 4px;
-  /* If emphasis is required without layout reflow, use text-shadow and box-shadow: */
-  text-shadow: 0 0 1px #ffffff, 0 0 10px rgba(239, 68, 68, 0.95) !important;
-  box-shadow: 0 0 12px rgba(239, 68, 68, 0.85) !important;
+  padding: 0 3px !important;
+  text-shadow: 0 0 2px #ffffff, 0 0 10px rgba(239, 68, 68, 0.95) !important;
+  box-shadow: 0 0 16px rgba(220, 38, 38, 0.95), 0 0 5px rgba(255, 255, 255, 0.7) !important;
+  border: 1px solid rgba(254, 202, 202, 0.8) !important;
 }
 
 /* Soft yellow marker glow variant */

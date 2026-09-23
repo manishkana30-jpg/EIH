@@ -22,6 +22,7 @@ export interface KaraokeState {
   sentenceIndex: number;
   wordText?: string;
   charRange?: { start: number; end: number };
+  stage?: number;
 }
 
 export interface KaraokeMessageProps {
@@ -69,13 +70,15 @@ function renderProcessFlowLine(
   isSpeaking: boolean,
   activeKaraoke: KaraokeState | null | undefined,
   activeWordRef: React.RefObject<HTMLSpanElement> | undefined,
-  counter: RenderCounter
+  counter: RenderCounter,
+  stageNum?: number
 ) {
   // Matches "A -> B -> C" or "A → B → C" or "A --> B"
   const arrowRegex = /\s*(?:->|→|-->)\s*/;
   const steps = line.split(arrowRegex).filter(Boolean);
 
   if (steps.length <= 1) return null;
+  const isStageSpeaking = isSpeaking && (!activeKaraoke?.stage || stageNum === undefined || activeKaraoke.stage === stageNum);
 
   return (
     <div className="inline-flex flex-wrap items-center gap-1.5 my-1.5 p-1.5 rounded-xl bg-slate-900/80 border border-slate-800/80">
@@ -83,7 +86,7 @@ function renderProcessFlowLine(
         const stepWords = step.trim().split(/\s+/).filter(Boolean);
         const renderedWords = stepWords.map((word, wIdx) => {
           const thisWordIdx = counter.wordIndex++;
-          const activeWord = isSpeaking && isWordActive(thisWordIdx, word, activeKaraoke);
+          const activeWord = isStageSpeaking && isWordActive(thisWordIdx, word, activeKaraoke, stageNum);
 
           if (activeWord) {
             return (
@@ -91,7 +94,7 @@ function renderProcessFlowLine(
                 key={wIdx}
                 id="active-karaoke-word"
                 ref={activeWordRef}
-                className="karaoke-word active"
+                className="karaoke-word active bg-red-600 text-white font-bold px-1 rounded shadow-[0_0_14px_rgba(220,38,38,0.9)] ring-1 ring-red-300"
               >
                 {word}
               </span>
@@ -128,8 +131,10 @@ function renderInlineBadgesAndText(
   isSpeaking: boolean,
   activeKaraoke: KaraokeState | null | undefined,
   activeWordRef: React.RefObject<HTMLSpanElement> | undefined,
-  counter: RenderCounter
+  counter: RenderCounter,
+  stageNum?: number
 ) {
+  const isStageSpeaking = isSpeaking && (!activeKaraoke?.stage || stageNum === undefined || activeKaraoke.stage === stageNum);
   // Regex to detect [tag: text] or [🎯 ...] or [⚡ ...]
   const badgeRegex = /(\[(?:🎯\s*Focus Anchor|⚡\s*Autonomic State|diagram|visual|flow|focus)[^\]]*\])/gi;
   const parts = text.split(badgeRegex);
@@ -151,7 +156,7 @@ function renderInlineBadgesAndText(
       const badgeWords = label.split(/\s+/).filter(Boolean);
       const renderedBadge = badgeWords.map((word, bIdx) => {
         const thisWordIdx = counter.wordIndex++;
-        const activeWord = isSpeaking && isWordActive(thisWordIdx, word, activeKaraoke);
+        const activeWord = isStageSpeaking && isWordActive(thisWordIdx, word, activeKaraoke, stageNum);
 
         if (activeWord) {
           return (
@@ -159,7 +164,7 @@ function renderInlineBadgesAndText(
               key={bIdx}
               id="active-karaoke-word"
               ref={activeWordRef}
-              className="karaoke-word active"
+              className="karaoke-word active bg-red-600 text-white font-bold px-1 rounded shadow-[0_0_14px_rgba(220,38,38,0.9)] ring-1 ring-red-300"
             >
               {word}
             </span>
@@ -218,8 +223,8 @@ function renderInlineBadgesAndText(
               counter.sentenceIndex++;
             }
 
-            const activeWord = isWordActive(thisWordIdx, token, activeKaraoke);
-            const activeSentence = activeKaraoke ? thisSentenceIdx === activeKaraoke.sentenceIndex : false;
+            const activeWord = isStageSpeaking && isWordActive(thisWordIdx, token, activeKaraoke, stageNum);
+            const activeSentence = isStageSpeaking && activeKaraoke ? thisSentenceIdx === activeKaraoke.sentenceIndex : false;
 
             if (activeWord) {
               return (
@@ -227,7 +232,7 @@ function renderInlineBadgesAndText(
                   key={tIdx}
                   id="active-karaoke-word"
                   ref={activeWordRef}
-                  className="karaoke-word active"
+                  className="karaoke-word active bg-red-600 text-white font-bold px-1 rounded shadow-[0_0_14px_rgba(220,38,38,0.9)] ring-1 ring-red-300"
                 >
                   {token}
                 </span>
@@ -238,14 +243,14 @@ function renderInlineBadgesAndText(
               return (
                 <span
                   key={tIdx}
-                  className="karaoke-word text-red-100 bg-red-500/15 font-medium"
+                  className="karaoke-word text-red-100 bg-red-500/20 font-medium rounded-sm px-0.5"
                 >
                   {token}
                 </span>
               );
             }
 
-            if (activeKaraoke && thisWordIdx < activeKaraoke.wordIndex) {
+            if (isStageSpeaking && activeKaraoke && thisWordIdx < activeKaraoke.wordIndex) {
               return (
                 <span key={tIdx} className="karaoke-word text-slate-100">
                   {token}
@@ -283,7 +288,8 @@ function renderFormattedMarkdown(
   isSpeaking: boolean,
   activeKaraoke: KaraokeState | null | undefined,
   activeWordRef: React.RefObject<HTMLSpanElement> | undefined,
-  counter: RenderCounter
+  counter: RenderCounter,
+  stageNum?: number
 ) {
   // 1. Strip leading header line if present e.g. **1. ...** or **SUMMARY ...**
   // 2. Convert markdown images to clean text: ![alt](url) -> alt (never broken images)
@@ -299,7 +305,7 @@ function renderFormattedMarkdown(
 
     // Check if line is a process flow (e.g. Inhale (4s) → Hold (7s) → Exhale (8s))
     if (/\s*(?:->|→|-->)\s*/.test(trimmedLine) && !trimmedLine.startsWith("**")) {
-      const flowElement = renderProcessFlowLine(trimmedLine, isSpeaking, activeKaraoke, activeWordRef, counter);
+      const flowElement = renderProcessFlowLine(trimmedLine, isSpeaking, activeKaraoke, activeWordRef, counter, stageNum);
       if (flowElement) {
         return (
           <span key={lIdx} className="block my-1">
@@ -311,7 +317,78 @@ function renderFormattedMarkdown(
 
     return (
       <span key={lIdx} className="block leading-relaxed">
-        {renderInlineBadgesAndText(trimmedLine, isSpeaking, activeKaraoke, activeWordRef, counter)}
+        {renderInlineBadgesAndText(trimmedLine, isSpeaking, activeKaraoke, activeWordRef, counter, stageNum)}
+      </span>
+    );
+  });
+}
+
+/**
+ * Tokenizes arbitrary prose into word-by-word active spans with vivid red highlighting.
+ */
+function renderTokenizedText(
+  text: string,
+  stageNum: number,
+  isSpeaking: boolean,
+  activeKaraoke: KaraokeState | null | undefined,
+  activeWordRef: React.RefObject<HTMLSpanElement> | undefined,
+  counter: RenderCounter,
+  extraClass = ""
+) {
+  if (!text) return null;
+  const tokens = text.split(/(\s+)/);
+  const isStageSpeaking = isSpeaking && (!activeKaraoke?.stage || activeKaraoke.stage === stageNum);
+
+  return tokens.map((token, tIdx) => {
+    if (/^\s+$/.test(token)) {
+      return <React.Fragment key={tIdx}> </React.Fragment>;
+    }
+    if (!token) return null;
+
+    const thisWordIdx = counter.wordIndex++;
+    const thisSentenceIdx = counter.sentenceIndex;
+    if (/[.!?।]\s*$/.test(token)) {
+      counter.sentenceIndex++;
+    }
+
+    const activeWord = isStageSpeaking && isWordActive(thisWordIdx, token, activeKaraoke, stageNum);
+    const activeSentence = isStageSpeaking && activeKaraoke ? thisSentenceIdx === activeKaraoke.sentenceIndex : false;
+
+    if (activeWord) {
+      return (
+        <span
+          key={tIdx}
+          id="active-karaoke-word"
+          ref={activeWordRef}
+          className="karaoke-word active bg-red-600 text-white font-bold px-1 rounded shadow-[0_0_14px_rgba(220,38,38,0.9)] ring-1 ring-red-300"
+        >
+          {token}
+        </span>
+      );
+    }
+
+    if (activeSentence) {
+      return (
+        <span
+          key={tIdx}
+          className={`karaoke-word text-red-100 bg-red-500/20 font-medium rounded-sm px-0.5 ${extraClass}`}
+        >
+          {token}
+        </span>
+      );
+    }
+
+    if (isStageSpeaking && activeKaraoke && thisWordIdx < activeKaraoke.wordIndex) {
+      return (
+        <span key={tIdx} className={`karaoke-word text-slate-100 ${extraClass}`}>
+          {token}
+        </span>
+      );
+    }
+
+    return (
+      <span key={tIdx} className={`karaoke-word ${extraClass}`}>
+        {token}
       </span>
     );
   });
@@ -399,6 +476,10 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
     /(?=\*\*(?:[1234]\.\s+|SUMMARY|आपकी स्थिति|स्थिति व कष्ट|RESUMEN|SYNTHÈSE|ZUSAMMENFASSUNG|TRI-PILLAR|एकीकृत))/i
   );
   const counter: RenderCounter = { wordIndex: 0, sentenceIndex: 0 };
+  const card1Counter: RenderCounter = { wordIndex: 0, sentenceIndex: 0 };
+  const card2Counter: RenderCounter = { wordIndex: 0, sentenceIndex: 0 };
+  const card3Counter: RenderCounter = { wordIndex: 0, sentenceIndex: 0 };
+  const card4Counter: RenderCounter = { wordIndex: 0, sentenceIndex: 0 };
 
   const isHindi = /[\u0900-\u097F]/.test(message.text) || (message.locale ? message.locale.startsWith("hi") : false);
   const isSpanish = (message.locale ? message.locale.startsWith("es") : false) || /\b(sabiduría|verso)\b/i.test(message.text);
@@ -517,7 +598,15 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
                         {isHindi ? "पहचाना गया मनोभाव:" : "Understood Emotion:"}{" "}
                       </span>
                       <strong className="text-purple-200 text-sm font-semibold">
-                        {selectedAdjustEmotion || stage1.meta.emotionName || stage1.title}
+                        {renderTokenizedText(
+                          selectedAdjustEmotion || stage1.meta.emotionName || stage1.title,
+                          1,
+                          isSpeaking,
+                          activeKaraoke,
+                          activeWordRef,
+                          card1Counter,
+                          "text-purple-200 font-semibold"
+                        )}
                       </strong>
                     </div>
                   </div>
@@ -529,7 +618,15 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
                         <strong className="text-slate-400 font-medium">
                           {isHindi ? "पीड़ा व तंत्रिका तंत्र:" : "Severity & Autonomic State:"}
                         </strong>{" "}
-                        {stage1.meta.severity} {stage1.meta.autonomicState ? `| ${stage1.meta.autonomicState}` : ""}
+                        {renderTokenizedText(
+                          `${stage1.meta.severity}${stage1.meta.autonomicState ? ` | ${stage1.meta.autonomicState}` : ""}`,
+                          1,
+                          isSpeaking,
+                          activeKaraoke,
+                          activeWordRef,
+                          card1Counter,
+                          "text-slate-300"
+                        )}
                       </span>
                     </div>
                   )}
@@ -541,14 +638,32 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
                         <strong className="text-slate-400 font-medium">
                           {isHindi ? "शारीरिक संवेदनाएं:" : "Bodily Sensations:"}
                         </strong>{" "}
-                        {stage1.meta.bodilyBurden}
+                        {renderTokenizedText(
+                          stage1.meta.bodilyBurden,
+                          1,
+                          isSpeaking,
+                          activeKaraoke,
+                          activeWordRef,
+                          card1Counter,
+                          "text-slate-300"
+                        )}
                       </span>
                     </div>
                   )}
 
                   {stage1.meta.summary && (
                     <p className="mt-1 text-slate-200 italic bg-purple-950/20 p-2.5 rounded-lg border border-purple-500/20 leading-relaxed text-xs sm:text-sm">
-                      &ldquo;{stage1.meta.summary}&rdquo;
+                      &ldquo;
+                      {renderTokenizedText(
+                        stage1.meta.summary,
+                        1,
+                        isSpeaking,
+                        activeKaraoke,
+                        activeWordRef,
+                        card1Counter,
+                        "text-slate-200 italic"
+                      )}
+                      &rdquo;
                     </p>
                   )}
                 </div>
@@ -558,7 +673,17 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
                   <div className="pt-2 border-t border-purple-500/20 space-y-2">
                     <p className="text-xs sm:text-sm font-semibold text-purple-200 flex items-center gap-1.5">
                       <HelpCircle className="w-4 h-4 text-purple-400 shrink-0" />
-                      <span>{stage1.meta.confirmationPrompt || (isHindi ? "क्या आप इस समय इसी मानसिक स्थिति का अनुभव कर रहे हैं?" : "Is this what you're experiencing right now?")}</span>
+                      <span>
+                        {renderTokenizedText(
+                          stage1.meta.confirmationPrompt || (isHindi ? "क्या आप इस समय इसी मानसिक स्थिति का अनुभव कर रहे हैं?" : "Is this what you're experiencing right now?"),
+                          1,
+                          isSpeaking,
+                          activeKaraoke,
+                          activeWordRef,
+                          card1Counter,
+                          "text-purple-200 font-semibold"
+                        )}
+                      </span>
                     </p>
 
                     {!isAdjusting ? (
@@ -666,7 +791,15 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
                       <strong className="text-amber-300">
                         {isHindi ? "भगवान श्रीकृष्ण का पावन संदेश:" : "Divine Teaching:"}{" "}
                       </strong>
-                      {stage2.meta.meaning}
+                      {renderTokenizedText(
+                        stage2.meta.meaning,
+                        2,
+                        isSpeaking,
+                        activeKaraoke,
+                        activeWordRef,
+                        card2Counter,
+                        "text-slate-200"
+                      )}
                     </div>
                   )}
                   {stage2.meta.reflection && (
@@ -674,13 +807,43 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
                       <strong className="text-amber-400/90">
                         {isHindi ? "जीवन में उतारें:" : "Spiritual Reflection:"}{" "}
                       </strong>
-                      {stage2.meta.reflection}
+                      {renderTokenizedText(
+                        stage2.meta.reflection,
+                        2,
+                        isSpeaking,
+                        activeKaraoke,
+                        activeWordRef,
+                        card2Counter,
+                        "text-slate-300"
+                      )}
                     </div>
                   )}
                   {stage2.meta.duty && (
                     <div className="p-2.5 rounded-lg bg-amber-950/20 border border-amber-500/25 text-amber-200 leading-relaxed">
                       <strong>{isHindi ? "वर्तमान कर्तव्य (निष्काम कर्म):" : "Your Duty Right Now:"} </strong>
-                      {stage2.meta.duty}
+                      {renderTokenizedText(
+                        stage2.meta.duty,
+                        2,
+                        isSpeaking,
+                        activeKaraoke,
+                        activeWordRef,
+                        card2Counter,
+                        "text-amber-200"
+                      )}
+                    </div>
+                  )}
+                  {stage2.meta.avoid && (
+                    <div className="text-xs text-amber-300/80 leading-relaxed">
+                      <strong className="text-amber-400/90">{isHindi ? "विशेष रूप से इस भूल से बचें:" : "Pitfall to Avoid:"} </strong>
+                      {renderTokenizedText(
+                        stage2.meta.avoid,
+                        2,
+                        isSpeaking,
+                        activeKaraoke,
+                        activeWordRef,
+                        card2Counter,
+                        "text-amber-300/80"
+                      )}
                     </div>
                   )}
                 </div>
@@ -735,7 +898,7 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
                 </div>
 
                 <div className="space-y-2 text-slate-100 text-xs sm:text-sm">
-                  {renderFormattedMarkdown(stage3.displayContent, isSpeaking, activeKaraoke, activeWordRef, counter)}
+                  {renderFormattedMarkdown(stage3.displayContent, isSpeaking, activeKaraoke, activeWordRef, card3Counter, 3)}
                 </div>
 
                 {/* Stage 3 Advance Controls */}
@@ -788,7 +951,7 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
                 </div>
 
                 <div className="space-y-2 text-slate-100 text-xs sm:text-sm">
-                  {renderFormattedMarkdown(stage4.displayContent, isSpeaking, activeKaraoke, activeWordRef, counter)}
+                  {renderFormattedMarkdown(stage4.displayContent, isSpeaking, activeKaraoke, activeWordRef, card4Counter, 4)}
                 </div>
 
                 {/* Launch Trataka Button */}

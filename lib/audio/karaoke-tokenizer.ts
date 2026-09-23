@@ -45,9 +45,15 @@ export function cleanWordForMatch(str: string): string {
 export function isWordActive(
   currentWordIndex: number,
   wordStr: string,
-  activeKaraoke: { wordIndex: number; wordText?: string } | null | undefined
+  activeKaraoke: { wordIndex: number; wordText?: string; stage?: number } | null | undefined,
+  cardStage?: number
 ): boolean {
   if (!activeKaraoke) return false;
+
+  // If cardStage is specified and activeKaraoke specifies stage, they must match
+  if (cardStage !== undefined && activeKaraoke.stage !== undefined && activeKaraoke.stage !== cardStage) {
+    return false;
+  }
 
   // Direct index match
   if (currentWordIndex === activeKaraoke.wordIndex) {
@@ -396,8 +402,8 @@ export function parseTherapeuticStages(rawText: string, locale?: string): Struct
     : "📋 1. Sanctuary Emotion Understanding";
 
   const s1SpeechText = isHindi
-    ? `आपकी स्थिति का मूल्यांकन: मैं समझ सकता हूँ कि आप इस समय ${emotionName} से जूझ रहे हैं। ${summary || 'आपका मन और शरीर इस आंतरिक दबाव से अत्यधिक थके हुए हैं।'} ${confirmationPrompt}`
-    : `Sanctuary understanding: I hear that you are navigating ${emotionName}. ${summary || 'You are carrying a burden of emotional strain.'} ${confirmationPrompt}`;
+    ? `आपकी स्थिति का मूल्यांकन: मैं समझ सकता हूँ कि आप इस समय ${emotionName} से जूझ रहे हैं। ${severity ? `पीड़ा व तंत्रिका तंत्र: ${severity}${autonomicState ? ` और ${autonomicState}` : ''}। ` : ''}${bodilyBurden ? `शारीरिक संवेदनाएं: ${bodilyBurden}। ` : ''}${summary || 'आपका मन और शरीर इस आंतरिक दबाव से अत्यधिक थके हुए हैं।'} ${confirmationPrompt}`
+    : `Sanctuary understanding: I hear that you are navigating ${emotionName}. ${severity ? `Severity and autonomic state: ${severity}${autonomicState ? ` and ${autonomicState}` : ''}. ` : ''}${bodilyBurden ? `Bodily sensations: ${bodilyBurden}. ` : ''}${summary || 'You are carrying a burden of emotional strain.'} ${confirmationPrompt}`;
 
   stages.push({
     stage: 1,
@@ -467,9 +473,9 @@ export function parseTherapeuticStages(rawText: string, locale?: string): Struct
 
   let s2SpeechText = '';
   if (isHindi) {
-    s2SpeechText = `${spokenShloka}। भगवान श्रीकृष्ण का अमर उपदेश: ${meaning || 'अपने कर्तव्य पर एकाग्र हों, फलों की चिंता छोड़ें।'} ${reflection || 'वर्तमान क्षण में स्थित रहें।'} आपका कर्तव्य: ${duty || 'सच्चे मन से अपना कर्म करें।'}`;
+    s2SpeechText = `${spokenShloka}। भगवान श्रीकृष्ण का अमर उपदेश: ${meaning || 'अपने कर्तव्य पर एकाग्र हों, फलों की चिंता छोड़ें।'} ${reflection || 'वर्तमान क्षण में स्थित रहें।'} आपका कर्तव्य: ${duty || 'सच्चे मन से अपना कर्म करें।'}${avoid ? ` विशेष रूप से इस भूल से बचें: ${avoid}।` : ''}`;
   } else {
-    s2SpeechText = `${spokenShloka}. Bhagavad Gita wisdom: ${meaning || 'Dedicate your focus entirely to your present duty rather than fearing future outcomes.'} ${reflection || 'Step out of anxiety into present action.'} Your duty: ${duty || 'Take the highest-integrity action in front of you.'}`;
+    s2SpeechText = `${spokenShloka}. Bhagavad Gita wisdom: ${meaning || 'Dedicate your focus entirely to your present duty rather than fearing future outcomes.'} ${reflection || 'Step out of anxiety into present action.'} Your duty: ${duty || 'Take the highest-integrity action in front of you.'}${avoid ? ` Pitfall to avoid: ${avoid}.` : ''}`;
   }
 
   stages.push({

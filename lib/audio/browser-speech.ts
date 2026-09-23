@@ -129,8 +129,8 @@ export class BrowserSpeechController {
   private ttsResumeInterval: ReturnType<typeof setInterval> | null = null;
   private keepAliveInterval: ReturnType<typeof setInterval> | null = null;
 
-  // Adaptive silence threshold (2800ms gives user generous breathing room to complete thoughts)
-  private silenceTimeoutMs = 2800;
+  // Patient clinical silence threshold (4200ms gives user generous breathing room to complete thoughts without rushing)
+  private silenceTimeoutMs = 4200;
   private currentLanguageLocale = 'en-US';
   private activeSpeechGeneration = 0;
   private lastSpokenText = '';
@@ -488,7 +488,9 @@ export class BrowserSpeechController {
     // Check for trailing conjunctions, prepositions, or dangling phrases
     const isTrailingConjunction = /\b(and|or|but|because|cause|cuz|so|if|when|then|like|that|with|to|for|about|i|my|me|mein|main|mai|aur|lekin|par|kyunki|ki|toh|jaise|kuch|kya|kyun)\s*$/i.test(clean);
     const isIncomplete = isTrailingConjunction || isIncompleteUtterance(clean);
-    const silenceDelay = isIncomplete ? 3400 : this.silenceTimeoutMs;
+    const wordCount = clean.split(/\s+/).length;
+    // Patient turn-taking: 6000ms for trailing conjunctions/incomplete thoughts, 5000ms for short (<4 words) thoughts, 4200ms base
+    const silenceDelay = isIncomplete ? 6000 : (wordCount < 4 ? 5000 : this.silenceTimeoutMs);
 
     this.speechSilenceTimer = setTimeout(() => {
       // VAD Voice Activity Guard: if microphone detects vocal energy, do NOT cut off!
@@ -1126,12 +1128,21 @@ export class BrowserSpeechController {
     };
 
     const wordCount = cleanText.split(/\s+/).length;
-    const maxEstimatedDurationMs = Math.max(6000, (wordCount / 1.8) * 1000 + 8000);
-    this.ttsWatchdogTimer = setTimeout(() => {
-      if (!isFinished) {
-        finishSpeech();
+    // Failsafe safety duration: generous margin so speech is never cut off halfway
+    const computeSafetyDuration = () => Math.max(45000, (wordCount / 0.7) * 1000 + 40000);
+
+    const resetWatchdog = () => {
+      if (this.ttsWatchdogTimer) {
+        clearTimeout(this.ttsWatchdogTimer);
       }
-    }, maxEstimatedDurationMs);
+      this.ttsWatchdogTimer = setTimeout(() => {
+        if (!isFinished) {
+          finishSpeech();
+        }
+      }, computeSafetyDuration());
+    };
+
+    resetWatchdog();
 
     // Keep-alive heartbeat interval to defeat Chrome's 15-second silent suspension
     if (this.ttsResumeInterval) {
@@ -1177,7 +1188,8 @@ export class BrowserSpeechController {
       const currentChunkOffset = chunkOffsets[chunkIdx] || 0;
       const chunkText = sentenceChunks[chunkIdx++];
       const utterance = new SpeechSynthesisUtterance(chunkText);
-      utterance.rate = 0.94;
+      // Medium, calm, soothing therapeutic speed (not in a hurry)
+      utterance.rate = 0.85;
       utterance.pitch = 1.0;
       utterance.volume = 1.0;
       utterance.lang = targetLocale;
@@ -1206,6 +1218,7 @@ export class BrowserSpeechController {
       // Real-Time Word & Sentence Boundary Highlighting (Karaoke Mode)
       utterance.onboundary = (event: any) => {
         if (isFinished || this.activeSpeechGeneration !== speechGeneration || !this.isSpeaking) return;
+        resetWatchdog();
         if (event.name && event.name !== 'word') return;
         lastBoundaryFiredTime = performance.now();
         const relativeCharIndex = event.charIndex || 0;
@@ -1229,6 +1242,7 @@ export class BrowserSpeechController {
           } catch (_) {}
           return;
         }
+        resetWatchdog();
         chunkStartTime = performance.now();
         lastBoundaryFiredTime = performance.now();
         lastEmittedCharIndex = 0;
