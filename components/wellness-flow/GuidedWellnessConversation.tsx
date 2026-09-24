@@ -209,6 +209,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
         onStatusChange: (status, message) => {
           setConfirmStatus(status);
           setConfirmStatusMessage(message);
+          setIsListening(status === 'listening');
         },
         onLiveTranscript: (text) => {
           setLiveConfirmTranscript(text);
@@ -234,17 +235,19 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
 
   // ─── Voice Recording Toggle with Explicit Consent ───
   const handleToggleListening = async () => {
-    if (!hasMicConsent) {
-      setShowConsentModal(true);
-      return;
-    }
-
     // In CONFIRM phase, route directly to dedicated short-session recognizer
     if (currentState === 'CONFIRM') {
+      setMicConsent(true);
+      setHasMicConsent(true);
       if (confirmVoiceManagerRef.current) {
         confirmVoiceManagerRef.current.startDedicatedListeningSession(1);
         return;
       }
+    }
+
+    if (!hasMicConsent) {
+      setShowConsentModal(true);
+      return;
     }
 
     if (isListening) {
@@ -770,6 +773,8 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
                       {confirmStatus === 'fallback_buttons' && (
                         <button
                           onClick={() => {
+                            setMicConsent(true);
+                            setHasMicConsent(true);
                             confirmVoiceManagerRef.current?.startDedicatedListeningSession(1);
                           }}
                           className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-800 hover:bg-slate-700 text-purple-300 text-[10px] font-medium border border-slate-700 transition-all"
