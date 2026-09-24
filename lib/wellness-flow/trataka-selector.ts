@@ -60,8 +60,30 @@ export class TratakaSelector {
     let rationale_en = '';
     let rationale_hi = '';
 
-    // RULE 1: Shame, Guilt, Imposter Syndrome, Self-Doubt -> Mirror / Eye-Reflection Gazing
+    // RULE 0: Calm, Peaceful, Contentment, Equanimity -> Om Symbol or Moon & Star Gazing
     if (
+      emotion === 'calm' ||
+      secondary === 'calm' ||
+      theme.includes('equanimity') ||
+      theme.includes('gratitude')
+    ) {
+      if (time === 'night' || time === 'evening') {
+        selectedKey = 'moon_star';
+        rationale_en =
+          'Because your mind is resting in calm and tranquility, Moon and Star Gazing was chosen to deepen your peaceful presence under the vast, quiet expanse of the cosmos.';
+        rationale_hi =
+          'चूंकि आपका मन शांत और सुखद स्थिति में है, इसलिए चंद्र व तारा त्राटक चुना गया है ताकि शांत रात्रि का आकाश आपकी आंतरिक शांति और विस्तार को और गहरा कर सके।';
+      } else {
+        selectedKey = 'om_symbol';
+        rationale_en =
+          'Because you are experiencing calm and contentment, Om Symbol Gazing was chosen to anchor your serene focus into sacred harmony and grounded clarity.';
+        rationale_hi =
+          'चूंकि आप शांति और संतोष का अनुभव कर रहे हैं, इसलिए ॐ प्रतीक त्राटक चुना गया है ताकि पवित्र ज्यामिति आपकी शांति को स्थिर और प्रदीप्त रख सके।';
+      }
+    }
+
+    // RULE 1: Shame, Guilt, Imposter Syndrome, Self-Doubt -> Mirror / Eye-Reflection Gazing
+    else if (
       emotion === 'guilt' ||
       secondary === 'guilt' ||
       theme.includes('self_worth') ||

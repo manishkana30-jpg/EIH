@@ -147,6 +147,30 @@
       "step4_replacement_thought_hi": "मैं एक इंसान हूँ जो भूलों से सीखकर आगे बढ़ता है। मैं खुद को प्रताड़ित करना छोड़कर आत्म-करुणा के साथ आगे बढ़ता हूँ।",
       "step4_action_step_en": "Place both hands over your heart, breathe in deeply, and whisper: 'I forgive myself. I did the best I knew how.'",
       "step4_action_step_hi": "दोनों हाथ अपने सीने पर रखें, गहरी सांस लें और मन में कहें: 'मैं स्वयं को क्षमा करता हूँ। मैंने अपनी पूरी समझ से प्रयास किया था।'"
+    },
+    "calm": {
+      "mood_key": "calm",
+      "distortion_id": "mindful_presence",
+      "distortion_name_en": "Mindful Presence & Gratitude Amplification",
+      "distortion_name_hi": "सजग उपस्थिति और कृतज्ञता का विस्तार",
+      "step1_prompt_en": "In moments of calm and contentment, what positive aspect of your life or inner strength feels clearest to you right now?",
+      "step1_prompt_hi": "शांति और संतोष के इन पलों में, आपके जीवन या आपकी आंतरिक शक्ति का कौन सा सकारात्मक पहलू आपको सबसे स्पष्ट महसूस हो रहा है?",
+      "step2_name_en": "This is Mindful Presence and Cognitive Savoring: anchoring neuroplasticity by deliberately absorbing and appreciating positive emotional stability.",
+      "step2_name_hi": "यह 'सजग उपस्थिति' और 'सकारात्मक संवर्धन' है: अपने मन की शांति और संतुलन को गहराई से अनुभव कर उसे स्थायी बनाना।",
+      "step3_challenge_questions_en": [
+        "What inner habits or choices helped you reach this calm, balanced state today?",
+        "How can you anchor this feeling so you can return to it when future challenges arise?",
+        "Who or what are you most genuinely grateful for in this quiet moment?"
+      ],
+      "step3_challenge_questions_hi": [
+        "आज इस शांत और संतुलित स्थिति तक पहुँचने में आपके किन विचारों या निर्णयों ने सहायता की?",
+        "भविष्य की चुनौतियों के समय इस शांति को पुनः याद रखने के लिए आप इसे कैसे संजो सकते हैं?",
+        "इस शांत पल में आप किसके प्रति सबसे अधिक कृतज्ञता महसूस करते हैं?"
+      ],
+      "step4_replacement_thought_en": "Peace is not the absence of life's waves, but the ability to remain grounded within myself. I cherish and nourish this tranquility.",
+      "step4_replacement_thought_hi": "शांति का अर्थ जीवन में लहरों का न होना नहीं, बल्कि स्वयं में स्थिर रहना है। मैं इस आंतरिक शांति को संजोता हूँ।",
+      "step4_action_step_en": "Take a slow, deep breath in, feel the gentle expansion in your chest, and hold a quiet smile of gratitude for 5 seconds.",
+      "step4_action_step_hi": "एक धीमी, गहरी सांस अंदर लें, अपने सीने में सहज विश्राम महसूस करें, और 5 सेकंड के लिए एक शांत कृतज्ञ मुस्कान बनाए रखें।"
     }
   }
 }
