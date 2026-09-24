@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EIH Automated Emotion & Multimodal Test Report</title>
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: #111827;
+      --border: #1f2937;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --accent-teal: #14b8a6;
+      --accent-emerald: #10b981;
+      --accent-rose: #f43f5e;
+      --accent-amber: #f59e0b;
+      --accent-purple: #a855f7;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 24px;
+      margin: 0;
+    }
+    .container { max-width: 1200px; margin: 0 auto; }
+    header {
+      padding: 32px 0 24px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 28px;
+    }
+    h1 { margin: 0 0 8px; font-size: 28px; color: #fff; }
+    .subtitle { color: var(--text-muted); font-size: 14px; }
+    .grid-metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .metric-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+    }
+    .metric-title { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 6px; }
+    .metric-val { font-size: 32px; font-weight: 800; }
+    .metric-sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+    .val-emerald { color: var(--accent-emerald); }
+    .val-rose { color: var(--accent-rose); }
+    .val-teal { color: var(--accent-teal); }
+    .val-amber { color: var(--accent-amber); }
+    .alert-banner {
+      background: rgba(244, 63, 94, 0.1);
+      border: 1px solid rgba(244, 63, 94, 0.4);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 32px;
+    }
+    .alert-banner-success {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+    .alert-title { font-weight: 700; color: var(--accent-rose); font-size: 16px; margin-bottom: 6px; }
+    .alert-title-success { color: var(--accent-emerald); }
+    .alert-desc { font-size: 13px; color: #fecdd3; line-height: 1.6; }
+    .alert-desc-success { color: #a7f3d0; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      background: var(--card-bg);
+      border-radius: 12px;
+      overflow: hidden;
+      font-size: 13px;
+    }
+    th, td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    th { background: #1a2234; color: var(--text-muted); font-weight: 600; font-size: 11px; text-transform: uppercase; }
+    tr:hover td { background: rgba(255, 255, 255, 0.02); }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .badge-critical { background: rgba(244, 63, 94, 0.2); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.4); }
+    .badge-high { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
+    .badge-success { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .section-title { font-size: 20px; font-weight: 700; margin: 36px 0 16px; color: #fff; }
+    .code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 12px; color: #cbd5e1; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Emotional Intelligence & Multimodal Test Suite Report</h1>
+      <div class="subtitle">Evaluated on 343 realistic human inputs across English, Hindi, and Hinglish | Duration: 0.90s</div>
+    </header>
+
+    
+    <div class="alert-banner alert-banner-success">
+      <div class="alert-title alert-title-success">✓ Clinical Safety Gate Passed: 100.0% Recall (26/26)</div>
+      <div class="alert-desc alert-desc-success">
+        All 26 crisis expressions (including Hindi, Hinglish, passive despair, self-harm, and violent harm) were accurately detected with immediate clinical deflection and 0 false positives across 317 normal inputs.
+      </div>
+    </div>
+
+    <div class="grid-metrics">
+      <div class="metric-card">
+        <div class="metric-title">Test Corpus</div>
+        <div class="metric-val val-teal">343</div>
+        <div class="metric-sub">26 Emotion Categories + Safety</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-title">Primary Emotion Accuracy</div>
+        <div class="metric-val val-amber">67.6%</div>
+        <div class="metric-sub">232 / 343 classified accurately</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-title">Safety Recall Rate</div>
+        <div class="metric-val val-rose">100.0%</div>
+        <div class="metric-sub">26 of 26 crisis triggers caught</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-title">Intent Parser Accuracy</div>
+        <div class="metric-val val-emerald">100.0%</div>
+        <div class="metric-sub">30 / 30 multilingual variants</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-title">Journey Reliability</div>
+        <div class="metric-val val-emerald">100%</div>
+        <div class="metric-sub">30 / 30 full journeys reached summary</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-title">Stuck States Detected</div>
+        <div class="metric-val val-emerald">0</div>
+        <div class="metric-sub">Zero dead ends or infinite loops</div>
+      </div>
+    </div>
+
+    <h2 class="section-title">Critical Safety Misses (0 Cases)</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Lang</th>
+          <th>Input Utterance</th>
+          <th>Detected State</th>
+          <th>Why It Matters</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+      </tbody>
+    </table>
+
+    <h2 class="section-title">Acoustic Prosody & Multimodal Analysis (65 Audio Profiles)</h2>
+    <div class="grid-metrics">
+      <div class="metric-card">
+        <div class="metric-title">Clean Audio Matching</div>
+        <div class="metric-val val-emerald">82.4%</div>
+        <div class="metric-sub">SNR > 30dB baseline</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-title">Low Noise (Fan Murmur)</div>
+        <div class="metric-val val-teal">75.0%</div>
+        <div class="metric-sub">+5% noise floor</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-title">Medium Noise (Room Echo)</div>
+        <div class="metric-val val-amber">62.5%</div>
+        <div class="metric-sub">+15% noise floor</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-title">STT Injection Resilience</div>
+        <div class="metric-val val-emerald">80.0%</div>
+        <div class="metric-sub">8/10 misrecognized phrases handled</div>
+      </div>
+    </div>
+
+    <h2 class="section-title">Sample Suspicious / Misclassified Cases (First 20 of 254)</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Lang / Style</th>
+          <th>Utterance</th>
+          <th>Expected</th>
+          <th>Detected</th>
+          <th>Diagnosis</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+          <tr>
+            <td class="code">T002</td>
+            <td>en / raw</td>
+            <td>my heart is beating so FAST rn i cant breathe properly hands shaking what if i mess up tomorrow omgggg</td>
+            <td><span class="badge badge-success">anxiety</span></td>
+            <td><span class="badge badge-amber">sadness</span></td>
+            <td>Expected emotion 'anxiety' but classified as 'sadness'.</td>
+          </tr>
+        
+          <tr>
+            <td class="code">T003</td>
+            <td>hinglish / mixed</td>
+            <td>Yaar kal client presentation hai aur mujhe bahut zyada ghabrahat ho rahi hai, heart rate normal hi nahi ho raha</td>
+            <td><span class="badge badge-success">[7, 9]</span></td>
+            <td><span class="badge badge-amber">10</span></td>
+            <td>Intensity score 10 fell outside expected range [7, 9].</td>
+          </tr>
+        
+          <tr>
+            <td class="code">T006</td>
+            <td>hinglish / raw</td>
+            <td>behosh hone jaisa lag raha hai anxiety attacks aa rahe hain baar baar</td>
+            <td><span class="badge badge-success">[8, 10]</span></td>
+            <td><span class="badge badge-amber">7</span></td>
+            <td>Intensity score 7 fell outside expected range [8, 10].</td>
+          </tr>
+        
+          <tr>
+            <td class="code">T007</td>
+            <td>en / ordered</td>
+            <td>My chest feels tight and heavy, like someone is sitting on it, and I'm dreading waking up tomorrow.</td>
+            <td><span class="badge badge-success">anxiety</span></td>
+            <td><span class="badge badge-amber">sadness</span></td>
+            <td>Expected emotion 'anxiety' but classified as 'sadness'.</td>
+          </tr>
+        
+          <tr>
+            <td class="code">T007</td>
+            <td>en / ordered</td>
+            <td>My chest feels tight and heavy, like someone is sitting on it, and I'm dreading waking up tomorrow.</td>
+            <td><span class="badge badge-success">[7, 9]</span></td>
+            <td><span class="badge badge-amber">6</span></td>
+            <td>Intensity score 6 fell outside expected range [7, 9].</td>
+          </tr>
+        
+          <tr>
+            <td class="code">T009</td>
+            <td>hinglish / raw</td>
+            <td>bahut chinta ho rahi hai future ko leke</td>
+            <td><span class="badge badge-success">[6, 8]</span></td>
+            <td><span class="badge badge-amber">10</span></td>
+            <td>Intensity score 10 fell outside expected range [6, 8].</td>
+          </tr>
+        
+          <tr>
+            <td class="code">T014</td>
+            <td>hinglish / mixed</td>
+            <td>thodi bechaini hai bas aur kuch nahi</td>
+            <td><span class="badge badge-success">[3, 5]</span></td>
+            <td><span class="badge badge-amber">7</span></td>
+            <td>Intensity score 7 fell outside expected range [3, 5].</td>
+          </tr>
+        
+          <tr>
+            <td class="code">T016</td>
+            <td>en / raw</td>
+            <td>just crying uncontrollably rn... cant stop the tears it hurts so deeply inside</td>
+            <td><span class="badge badge-success">[8, 10]</span></td>
+            <td><span class="badge badge-amber">6</span></td>
+            <td>Intensity score 6 fell outside expected range [8, 10].</td>
+          </tr>
+        
+          <tr>
+            <td class="code">T020</td>
+            <td>en / raw</td>
+            <td>sooooo so so sad 😭😭😭💔</td>
+            <td><span class="badge badge-success">[7, 9]</span></td>
+            <td><span class="badge badge-amber">6</span></td>
+            <td>Intensity score 6 fell outside expected range [7, 9].</td>
+          </tr>
+        
+          <tr>
+            <td class="code">T021</td>
+            <td>hinglish / raw</td>
+            <td>bohot dukhi hu man bilkul toot gaya hai</td>
+            <td><span class="badge badge-success">[7, 9]</span></td>
+            <td><span class="badge badge-amber">6</span></td>
+            <td>Intensity score 6 fell outside expected range [7, 9].</td>
+          </tr>
+        
+          <tr>
+            <td class="code">T026</td>
+            <td>hinglish / mixed</td>
+            <td>dil bohot bhaari lag raha hai jaise koi bojh ho</td>
+            <td><span class="badge badge-success">sadness</span></td>
+            <td><span class="badge badge-amber">stress</span></td>
+            <td>Expected emotion 'sadness' but classified as 'stress'.</td>
+          </tr>
+        
+          <tr>
+            <td class="code">T029</td>
+            <td>en / ordered</td>
+            <td>I feel like a dark cloud has settled in my mind and I have zero joy in anything I used to love.</td>
+            <td><span class="badge badge-success">[7, 9]</span></td>
+            <td><span class="badge badge-amber">6</span></td>
+            <td>Intensity score 6 fell outside expected range [7, 9].</td>
+          </tr>
+        
+          <tr>
+            <td class="code">T030</td>
+            <td>en / raw</td>
+            <td>completely hollow inside. not even sad just numb and depressed like an empty shell.</td>
+            <td><span class="badge badge-success">[7, 9]</span></td>
+            <td><span class="badge badge-amber">6</span></td>
+            <td>Intensity score 6 fell outside expected range [7, 9].</td>
+          </tr>
+        
+          <tr>
+            <td class="code">T032</td>
+            <td>hi / ordered</td>
+            <td>जीवन में सब कुछ नीरस और शून्य लग रहा है, मन में गहरा अवसाद है।</td>
+            <td><span class="badge badge-success">sadness</span></td>
+            <td><span class="badge badge-amber">overthinking</span></td>
+            <td>Expected emotion 'sadness' but classified as 'overthinking'.</td>
+          </tr>
+        
+          <tr>
+            <td class="code">T032</td>
+            <td>hi / ordered</td>
+            <td>जीवन में सब कुछ नीरस और शून्य लग रहा है, मन में गहरा अवसाद है।</td>
+            <td><span class="badge badge-success">[7, 9]</span></td>
+            <td><span class="badge badge-amber">6</span></td>
+            <td>Intensity score 6 fell outside expected range [7, 9].</td>
+          </tr>
+        
+          <tr>
+            <td class="code">T035</td>
+            <td>hinglish / raw</td>
+            <td>kuch accha nahi lagta, har cheez bekaar lagti hai</td>
+            <td><span class="badge badge-success">sadness</span></td>
+            <td><span class="badge badge-amber">overthinking</span></td>
+            <td>Expected emotion 'sadness' but classified as 'overthinking'.</td>
+          </tr>
+        
+          <tr>
+            <td class="code">T036</td>
+            <td>en / ordered</td>
+            <td>My therapist diagnosed clinical depression last year and the heavy sinking feeling is back.</td>
+            <td><span class="badge badge-success">[7, 9]</span></td>
+            <td><span class="badge badge-amber">6</span></td>
+            <td>Intensity score 6 fell outside expected range [7, 9].</td>
+          </tr>
+        
+          <tr>
+            <td class="code">T037</td>
+            <td>en / raw</td>
+            <td>zero energy zero happiness just dragging myself through hours</td>
+            <td><span class="badge badge-success">sadness</span></td>
+            <td><span class="badge badge-amber">overthinking</span></td>
+            <td>Expected emotion 'sadness' but classified as 'overthinking'.</td>
+          </tr>
+        
+          <tr>
+            <td class="code">T037</td>
+            <td>en / raw</td>
+            <td>zero energy zero happiness just dragging myself through hours</td>
+            <td><span class="badge badge-success">[7, 9]</span></td>
+            <td><span class="badge badge-amber">6</span></td>
+            <td>Intensity score 6 fell outside expected range [7, 9].</td>
+          </tr>
+        
+          <tr>
+            <td class="code">T038</td>
+            <td>hinglish / mixed</td>
+            <td>man me gehri udasi aur andhera chha gaya hai</td>
+            <td><span class="badge badge-success">sadness</span></td>
+            <td><span class="badge badge-amber">overthinking</span></td>
+            <td>Expected emotion 'sadness' but classified as 'overthinking'.</td>
+          </tr>
+        
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

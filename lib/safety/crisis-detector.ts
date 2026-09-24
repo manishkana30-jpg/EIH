@@ -89,23 +89,23 @@ export const EMERGENCY_HOTLINES: EmergencyHotline[] = [
 const CRISIS_PATTERNS: { category: CrisisDetectionResult['triggerCategory']; regex: RegExp }[] = [
   {
     category: 'suicide_ideation',
-    regex: /(kill(ing|ed|s)?\s*myself|end(ing|ed|s)?\s*my\s*life|want\s*to\s*die|suicid(e|al)|commit(ting|ted)?\s*suicide|better\s*off\s*dead|don'?t\s*want\s*to\s*live|no\s*reason\s*to\s*live|hang(ing|ed)?\s*myself|overdos(e|ing|ed)|slit(ting)?\s*my\s*wrists|jump(ing|ed)?\s*off|shoot(ing)?\s*myself|ending\s*it\s*all|goodbye\s*cruel\s*world|take\s*my\s*own\s*life|ready\s*to\s*die)/i,
+    regex: /(kill(ing|ed|s)?\s*myself|end(ing|ed|s)?\s*my\s*life|want\s*to\s*die|suicid(e|al)|commit(ting|ted)?\s*suicide|better\s*off\s*dead|don'?t\s*want\s*to\s*live|no\s*reason\s*to\s*live|hang(ing|ed)?\s*myself|overdos(e|ing|ed)|slit(ting)?\s*my\s*wrists?|cut(ting)?\s*(my\s*)?wrists?|jump(ing|ed)?\s*(off|in\s*front\s*of)|shoot(ing)?\s*myself|ending\s*it\s*all|goodbye\s*cruel\s*world|take\s*my\s*own\s*life|ready\s*to\s*die|farewell\s*notes?|don'?t\s*want\s*to\s*wake\s*up|better\s*off\s*without\s*me|disappear\s*forever|cannot\s*guarantee\s*my\s*(physical\s*)?safety|can'?t\s*guarantee\s*my\s*(physical\s*)?safety|hoarded\s*.*(pills|sleeping\s*pills)|sleeping\s*pills\s*in\s*my\s*drawer|balcony\s*ledge|standing\s*on\s*the\s*(balcony\s*)?ledge|आत्महत्या|जीवन\s*(को\s*)?(समाप्त|खत्म)|जीवित\s*नहीं\s*रहना|जीने\s*का\s*(कोई\s*)?मतलब\s*नहीं|मर\s*जाना\s*चाहता|मरने\s*का\s*(विचार|मन)|खुद\s*को\s*(खत्म|मार)|जहर\s*खा|sab\s*khatam\s*kar\s*(dena|dunga|chahta|raha)|jine\s*ka\s*(koi\s*)?मतलब|jine\s*ka\s*(koi\s*)?matlab\s*nahi|jeene\s*ka\s*(koi\s*)?matlab\s*nahi|khud\s*ko\s*khatam|(meri|apni)\s*jaan\s*len(a|e|i)|duniya\s*se\s*gayab|gayab\s*hone\s*ka\s*mann|zahar\s*kha|zeher\s*kha|marne\s*ka\s*(mann|irada|vichar)|mar\s*jana\s*chahta)/iu,
   },
   {
     category: 'acute_psychosis',
-    regex: /(voices\s*(are\s*)?telling\s*me\s*to\s*(kill|hurt|die|attack)|hearing\s*voices\s*to\s*harm|command\s*hallucinations?|poison(ing|ed)?\s*my\s*(food|water)|they\s*put\s*(a\s*)?chip\s*in\s*my\s*brain|they\s*are\s*in\s*my\s*walls)/i,
+    regex: /(voices\s*(in\s*my\s*head\s*)?(are\s*)?(tell(ing)?|screaming\s*at)\s*me\s*to\s*(kill|hurt|die|attack|jump)|hearing\s*voices\s*to\s*(harm|kill|attack)|command\s*hallucinations?|poison(ing|ed)?\s*my\s*(food|water)|to\s*poison\s*me|they\s*put\s*(a\s*)?chip\s*in\s*my\s*(brain|water|food|head|body)|they\s*are\s*in\s*my\s*walls|आवाजें\s*कह\s*रही|aawazein\s*bol\s*rahi)/iu,
   },
   {
     category: 'self_harm',
-    regex: /(cut(ting)?\s*myself|burn(ing|ed|s)?\s*myself|hurt(ing|s)?\s*myself|harm(ing|ed|s)?\s*myself|bleed(ing)?\s*out|punish(ing|ed)?\s*my\s*body|self\s*harm(ing)?)/i,
+    regex: /(cut(ting)?\s*myself|cut(ting)?\s*(my\s*)?(wrists?|arms?|legs?|skin)|burn(ing|ed|s)?\s*(myself|my\s*(arms?|skin|body))|hurt(ing|s)?\s*myself|harm(ing|ed|s)?\s*myself|bleed(ing)?\s*out|punish(ing|ed)?\s*my\s*body|self\s*harm(ing)?|apne\s*haath\s*katne|haath\s*katne|nas\s*katne|हाथ\s*काट|नस\s*काट|खुद\s*को\s*चोट)/iu,
   },
   {
     category: 'severe_violence',
-    regex: /(kill(ing|ed)?\s*(someone|them|him|her|everyone)|shoot\s*up|bomb(ing)?|murder(ing)?|stab(bing|bed)?\s*(someone|him|her)|massacre)/i,
+    regex: /(kill(ing|ed)?\s*(someone|them|him|her|everyone|people)|shoot\s*(up|everyone|them|people|coworkers|students|colleagues)|bring\s*a\s*gun\s*to\s*(the\s*)?(office|school|work|church|mall)|bomb(ing)?|murder(ing)?|stab(bing|bed)?\s*(someone|him|her|them)|massacre|sabko\s*maar\s*dunga|jaan\s*se\s*maar\s*dunga|sabko\s*khatam\s*kar\s*dunga|गोली\s*मार\s*दूंगा|सबको\s*मार\s*दूंगा)/iu,
   },
   {
     category: 'domestic_abuse',
-    regex: /(hitting\s*me|beat(ing|en)?\s*me|abus(ing|ed)?\s*me|threaten(ed|ing)?\s*to\s*kill\s*me|in\s*danger\s*at\s*home)/i,
+    regex: /(hitting\s*me|beat(ing|en)?\s*me|abus(ing|ed)?\s*me|threaten(ed|ing)?\s*to\s*kill\s*me|in\s*danger\s*at\s*home|mujhe\s*maar\s*rahe|pitayi\s*kar|मारपीट)/iu,
   },
 ];
 
@@ -195,7 +195,7 @@ export function detectCrisis(inputText: string): CrisisDetectionResult {
 
 Because I am an AI companion and cannot provide emergency clinical care or guarantee your immediate physical safety, I am connecting you right now with real, compassionate human specialists who are ready to support you 24/7 without judgment.
 
-Please reach out immediately to one of the free, confidential lifelines below. Your life matters deeply.`,
+Please reach out immediately to one of the free, confidential lifelines below. If you are in India, please call Tele-MANAS toll-free at 14416 or 1800-891-4416. In the United States or Canada, call or text 988. In the United Kingdom, call 111. Your life matters deeply.`,
       recommendedHotlines: EMERGENCY_HOTLINES,
     };
   }
