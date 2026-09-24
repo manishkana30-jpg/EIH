@@ -489,8 +489,10 @@ export class BrowserSpeechController {
     const isTrailingConjunction = /\b(and|or|but|because|cause|cuz|so|if|when|then|like|that|with|to|for|about|i|my|me|mein|main|mai|aur|lekin|par|kyunki|ki|toh|jaise|kuch|kya|kyun)\s*$/i.test(clean);
     const isIncomplete = isTrailingConjunction || isIncompleteUtterance(clean);
     const wordCount = clean.split(/\s+/).length;
-    // Patient turn-taking: 6000ms for trailing conjunctions/incomplete thoughts, 5000ms for short (<4 words) thoughts, 4200ms base
-    const silenceDelay = isIncomplete ? 6000 : (wordCount < 4 ? 5000 : this.silenceTimeoutMs);
+    // Check for quick affirmative answers ("yes", "haan", "sahi", "correct", etc.) so confirmation is prompt
+    const isShortAffirmation = /^(yes|yeah|yep|haan|ha|sahi|sahi hai|bilkul|correct|right|ok|okay|sure|agree)\b/i.test(clean.toLowerCase().replace(/[.,!]/g, '')) && wordCount <= 3;
+    // Patient turn-taking: 1400ms for short affirmative confirmations, 6000ms for trailing conjunctions/incomplete thoughts, 5000ms for short thoughts, 4200ms base
+    const silenceDelay = isShortAffirmation ? 1400 : (isIncomplete ? 6000 : (wordCount < 4 ? 5000 : this.silenceTimeoutMs));
 
     this.speechSilenceTimer = setTimeout(() => {
       // VAD Voice Activity Guard: if microphone detects vocal energy, do NOT cut off!
@@ -876,14 +878,14 @@ export class BrowserSpeechController {
             text: cleanText,
             voice: selectedVoice,
             locale: effectiveLocale,
-            rate: '-4%',
+            rate: '-12%',
           }),
           signal: AbortSignal.timeout(3000),
         });
       } else {
         const voiceParam = encodeURIComponent(selectedVoice);
         const localeParam = encodeURIComponent(effectiveLocale);
-        const voiceUrl = `${voiceBase}?text=${encodeURIComponent(cleanText)}&voice=${voiceParam}&locale=${localeParam}&rate=-4%`;
+        const voiceUrl = `${voiceBase}?text=${encodeURIComponent(cleanText)}&voice=${voiceParam}&locale=${localeParam}&rate=-12%`;
         res = await fetch(voiceUrl, {
           signal: AbortSignal.timeout(3000),
         });

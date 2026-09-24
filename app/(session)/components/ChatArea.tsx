@@ -55,6 +55,7 @@ export interface ChatAreaProps {
   onLanguageChange: (lang: LanguageItem, isAuto: boolean) => void;
   onOpenMobileNav: () => void;
   onOpenMobileTelemetry: () => void;
+  onOpenWellnessFlow?: () => void;
   onOpenTrataka: (mode?: string) => void;
   onOpenPranayama: () => void;
   onOpenCBT: () => void;
@@ -101,6 +102,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
   onLanguageChange,
   onOpenMobileNav,
   onOpenMobileTelemetry,
+  onOpenWellnessFlow,
   onOpenTrataka,
   onOpenPranayama,
   onOpenCBT,
@@ -319,6 +321,20 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
 
             {/* Direct Protocol Launchers */}
             <div className="flex flex-wrap items-center justify-center gap-2 mb-4">
+              {onOpenWellnessFlow && (
+                <button
+                  onClick={onOpenWellnessFlow}
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500/25 via-teal-500/20 to-emerald-500/15 hover:from-emerald-500/35 border border-emerald-400/60 text-emerald-200 text-xs font-bold transition-all shadow-[0_0_15px_rgba(16,185,129,0.25)] active:scale-95 group"
+                  title="Voice-first guided journey: Mood -> Gita -> CBT -> Trataka"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-emerald-300 group-hover:scale-110 transition-transform animate-pulse" />
+                  <span>4-Phase Guided Flow</span>
+                  <span className="text-[9px] font-mono px-1 py-0.2 rounded bg-emerald-400 text-slate-950 ml-0.5">
+                    VOICE
+                  </span>
+                </button>
+              )}
+
               <button
                 onClick={onOpenPranayama}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-teal-500/30 hover:border-teal-400/60 text-teal-300 text-xs font-medium transition-all shadow-sm active:scale-95 group"

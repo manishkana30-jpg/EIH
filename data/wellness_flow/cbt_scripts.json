@@ -1,0 +1,152 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "version": "1.0.0",
+  "title": "Cognitive Behavioral Therapy (CBT) Guided Mini-Flow Scripts",
+  "description": "Structured, evidence-based CBT protocols mapped to specific mood profiles for voice-guided cognitive reframing.",
+  "scripts": {
+    "anxiety": {
+      "mood_key": "anxiety",
+      "distortion_id": "catastrophizing",
+      "distortion_name_en": "Catastrophizing & Fortune-Telling",
+      "distortion_name_hi": "विनाशकारी सोच (भविष्य में सबसे बुरे की आशंका)",
+      "step1_prompt_en": "Let's uncover the automatic thought behind this anxiety. When you feel this tightness, what is the worst-case story your mind is telling you?",
+      "step1_prompt_hi": "आइए इस चिंता के पीछे छिपे स्वचालित विचार को पहचानें। जब घबराहट बढ़ती है, तो आपका मन कौन सी सबसे बुरी बात मान लेता है?",
+      "step2_name_en": "Notice that your mind is Catastrophizing—treating an imaginary worst-case scenario as if it were a guaranteed certainty.",
+      "step2_name_hi": "ध्यान दें कि यह मस्तिष्क की 'विनाशकारी सोच' (Catastrophizing) है—जहाँ एक काल्पनिक डर को निश्चित सच मान लिया जाता है।",
+      "step3_challenge_questions_en": [
+        "What objective facts prove this catastrophic prediction will definitely happen?",
+        "If the feared event did occur, what inner strengths and resources do you have to handle it?",
+        "What is a much more realistic, middle-ground outcome?"
+      ],
+      "step3_challenge_questions_hi": [
+        "क्या कोई ठोस प्रमाण है कि यह अनहोनी सचमुच घटित होने वाली है?",
+        "यदि थोड़ी कठिनाई आई भी, तो क्या आपके पास उसका सामना करने की क्षमता नहीं है?",
+        "इस स्थिति का सबसे वास्तविक और संतुलित परिणाम क्या हो सकता है?"
+      ],
+      "step4_replacement_thought_en": "This anxious thought is just an alarm bell, not a prophecy. I have handled uncertainty before, and I can take this one step at a time.",
+      "step4_replacement_thought_hi": "यह चिंता केवल मन का एक सायरन है, भविष्य की भविष्यवाणी नहीं। मैंने पहले भी चुनौतियों का सामना किया है, और मैं इसे भी धीरे-धीरे सम्भाल लूँगा।",
+      "step4_action_step_en": "Drop your shoulders down, exhale for 6 seconds, and write down or say aloud one small step you can take today.",
+      "step4_action_step_hi": "कंधों को ढीला छोड़ें, 6 सेकंड तक धीमी सांस बाहर छोड़ें, और एक छोटा सा कदम बताएं जो आप अभी उठा सकते हैं।"
+    },
+    "sadness": {
+      "mood_key": "sadness",
+      "distortion_id": "mental_filter",
+      "distortion_name_en": "Mental Filter & Overgeneralization",
+      "distortion_name_hi": "नकारात्मक फ़िल्टर और अति-सामान्यीकरण",
+      "step1_prompt_en": "In moments of sadness, our mind often adopts a dark lens. What is the heavy thought repeating in your head about yourself or your life?",
+      "step1_prompt_hi": "उदासी के पलों में मन अक्सर एक गहरा नकारात्मक चश्मा पहन लेता है। अपने या अपने जीवन के बारे में कौन सी भारी बात मन में गूंज रही है?",
+      "step2_name_en": "This is a Mental Filter: your brain is magnifying pain and sorrow while filtering out your resilience, past victories, and supportive possibilities.",
+      "step2_name_hi": "यह 'नकारात्मक फ़िल्टर' है: मन केवल दुःख और कमियों को बड़ा करके देख रहा है, जबकि आपकी शक्ति और सम्भावनाओं को अनदेखा कर रहा है।",
+      "step3_challenge_questions_en": [
+        "Am I assuming that because I feel exhausted today, everything will always feel this way?",
+        "What is one small thing, however tiny, that went right or gave you even a second of relief recently?",
+        "What would you say with deep warmth to someone you care about who felt this exact sadness?"
+      ],
+      "step3_challenge_questions_hi": [
+        "क्या आज उदास होने का अर्थ यह है कि जीवन हमेशा ऐसा ही रहेगा?",
+        "क्या हाल ही में कोई एक छोटी सी बात भी ऐसी थी जिसने आपको हल्का सा सहारा दिया?",
+        "यदि कोई आपका प्रिय मित्र इतना ही दुःखी होता, तो आप उससे कितने स्नेह से बात करते?"
+      ],
+      "step4_replacement_thought_en": "Feeling low today does not mean my life is empty. Sadness is an emotion passing through me, not my permanent identity.",
+      "step4_replacement_thought_hi": "आज उदासी महसूस होने का मतलब यह नहीं कि जीवन व्यर्थ है। उदासी एक गुजरता हुआ भाव है, मेरा सम्पूर्ण अस्तित्व नहीं।",
+      "step4_action_step_en": "Drink a glass of cool water, place a comforting hand over your chest, and step outside for 2 minutes of fresh air.",
+      "step4_action_step_hi": "एक घूंट ठंडा पानी पिएं, अपना हाथ अपने हृदय पर रखें, और दो मिनट के लिए खुली हवा में गहरी सांस लें।"
+    },
+    "anger": {
+      "mood_key": "anger",
+      "distortion_id": "should_statements",
+      "distortion_name_en": "Rigid 'Should' Demands & Personalization",
+      "distortion_name_hi": "कठोर अपेक्षाएं ('उन्हें ऐसा ही करना चाहिए था')",
+      "step1_prompt_en": "Anger usually carries an underlying rule that was violated. What did the person or situation do that feels so completely unfair to you?",
+      "step1_prompt_hi": "क्रोध के पीछे अक्सर एक नियम का टूटना होता है। सामने वाले व्यक्ति या परिस्थिति ने ऐसा क्या किया जो आपको सर्वथा अनुचित लग रहा है?",
+      "step2_name_en": "Notice the cognitive pattern of 'Should Statements' and Personalization: demanding that the world or others strictly obey our rules.",
+      "step2_name_hi": "यह कठोर अपेक्षाओं का भ्रम है: जहाँ हम यह मान लेते हैं कि सामने वाले को हमारे अनुसार ही सोचना और व्यवहार करना चाहिए था।",
+      "step3_challenge_questions_en": [
+        "Is holding on to this fiery anger right now hurting the other person, or is it burning my own peace?",
+        "Could their behavior be driven by their own limitations, stress, or ignorance rather than malice toward me?",
+        "What boundary can I firmly set without poisoning my own mind with rage?"
+      ],
+      "step3_challenge_questions_hi": [
+        "इस तीव्र क्रोध को थामे रहने से सामने वाले को चोट पहुँच रही है या मेरा अपना मन जल रहा है?",
+        "क्या उनका यह आचरण उनके अपने तनाव या समझ की कमी का परिणाम हो सकता है?",
+        "बिना अपना आपा खोए, मैं कौन सी स्वस्थ सीमा स्पष्ट रूप से तय कर सकता हूँ?"
+      ],
+      "step4_replacement_thought_en": "I cannot control how other people act, but I have 100% authority over my own calm and dignified response.",
+      "step4_replacement_thought_hi": "मैं दूसरों के व्यवहार को नियंत्रित नहीं कर सकता, परन्तु अपनी शांति और मर्यादा पर मेरा पूरा अधिकार है।",
+      "step4_action_step_en": "Unclench your jaw, soften your fists, and take three long, cooling exhalations through pursed lips.",
+      "step4_action_step_hi": "अपने जबड़े को ढीला छोड़ें, मुट्ठियों को खोलें, और 3 बार मुंह से धीरे-धीरे ठंडी हवा बाहर छोड़ें।"
+    },
+    "stress": {
+      "mood_key": "stress",
+      "distortion_id": "all_or_nothing",
+      "distortion_name_en": "All-or-Nothing Thinking & Overload",
+      "distortion_name_hi": "आर-पार की सोच (या तो पूर्ण या सब व्यर्थ)",
+      "step1_prompt_en": "When stress peaks, our brain creates an urgent narrative. What thought is making you feel like everything is on your shoulders?",
+      "step1_prompt_hi": "जब तनाव चरम पर होता है, तो मन पर क्या विचार हावी होता है? ऐसा क्या लग रहा है कि सब कुछ आपके ऊपर ही निर्भर है?",
+      "step2_name_en": "This is All-or-Nothing Thinking: believing that if you cannot complete everything perfectly right now, you have failed entirely.",
+      "step2_name_hi": "यह 'आर-पार की सोच' (All-or-Nothing) है: यह मानना कि यदि सब कुछ तुरंत और एकदम सही नहीं हुआ, तो सब बर्बाद हो जाएगा।",
+      "step3_challenge_questions_en": [
+        "Does everything truly need to be resolved in this exact hour, or can parts of it wait until tomorrow?",
+        "What happens if this is done well enough rather than absolutely perfectly?",
+        "What is the single highest-priority task if you could only do one thing today?"
+      ],
+      "step3_challenge_questions_hi": [
+        "क्या सचमुच सब कुछ इसी घंटे होना जरूरी है, या कुछ कार्य कल के लिए रखे जा सकते हैं?",
+        "यदि यह कार्य शत-प्रतिशत परिपूर्ण न होकर सिर्फ संतोषजनक भी हो, तो क्या कोई नुकसान होगा?",
+        "आज के लिए सबसे महत्वपूर्ण एक कार्य कौन सा है जिसे करके आप चैन की सांस ले सकें?"
+      ],
+      "step4_replacement_thought_en": "Progress is always better than perfection. I don't have to carry the whole mountain today; moving one stone is enough.",
+      "step4_replacement_thought_hi": "परिपूर्णता की तुलना में निरंतर प्रयास अधिक मूल्यवान है। मुझे आज पूरा पहाड़ नहीं उठाना, एक पत्थर हटाना ही पर्याप्त है।",
+      "step4_action_step_en": "Pick one non-urgent item from your mental list and consciously grant yourself permission to defer it until tomorrow.",
+      "step4_action_step_hi": "अपने मन की सूची में से किसी एक गैर-जरूरी काम को आज के लिए छोड़ देने की अनुमति खुद को दें।"
+    },
+    "overthinking": {
+      "mood_key": "overthinking",
+      "distortion_id": "mind_reading",
+      "distortion_name_en": "Mind Reading & Intrusive Rumination",
+      "distortion_name_hi": "दूसरों के मन को पढ़ने का भ्रम और दोहराव",
+      "step1_prompt_en": "What repetitive thought loop has been spinning in your head over and over without resolving anything?",
+      "step1_prompt_hi": "कौन सा विचार आपके मस्तिष्क में बार-बार चक्रवात की तरह घूम रहा है और कोई समाधान नहीं दे रहा?",
+      "step2_name_en": "This is Intrusive Rumination and Mind Reading: treating hypothetical conjectures and assumptions as verified reality.",
+      "step2_name_hi": "यह 'विचारों का चक्रव्यूह' और 'मन पढ़ना' है: केवल अटकलों और संभावनाओं को वास्तविक सत्य मान लेना।",
+      "step3_challenge_questions_en": [
+        "Has replaying this thought for the twentieth time given you any fresh, useful insight?",
+        "Are you assuming you know what others are secretly thinking without them explicitly telling you?",
+        "Can you choose to park this topic in a mental 'waiting room' until tomorrow morning?"
+      ],
+      "step3_challenge_questions_hi": [
+        "क्या इस विचार को बीसवीं बार दोहराने से कोई नया समाधान मिला है?",
+        "क्या आप यह मान रहे हैं कि दूसरे लोग आपके बारे में क्या सोच रहे हैं, बिना उनसे पूछे?",
+        "क्या आप इस विषय को आज रात के लिए एक किनारे रखकर विश्राम चुन सकते हैं?"
+      ],
+      "step4_replacement_thought_en": "Thoughts are just neurochemical electricity in my brain. Just because I think a thought does not make it true or important.",
+      "step4_replacement_thought_hi": "विचार केवल मस्तिष्क में उठने वाली मानसिक तरंगें हैं। कोई विचार मन में आया, इसका मतलब यह नहीं कि वह सच है।",
+      "step4_action_step_en": "Notice 5 visible objects around you in the room, touch the surface beneath you, and firmly anchor into the physical room.",
+      "step4_action_step_hi": "कमरे में रखी किन्हीं 5 वस्तुओं को ध्यान से देखें, अपनी हथेली को मेज या जांघ पर रखकर स्पर्श महसूस करें।"
+    },
+    "guilt": {
+      "mood_key": "guilt",
+      "distortion_id": "personalization",
+      "distortion_name_en": "Excessive Self-Blame & Toxic Guilt",
+      "distortion_name_hi": "अत्यधिक आत्म-दोष और ग्लानि",
+      "step1_prompt_en": "Guilt often tells us we are fundamentally at fault. What are you punishing yourself for right now?",
+      "step1_prompt_hi": "आत्म-ग्लानि हमें यह विश्वास दिलाती है कि सब कुछ हमारी गलती है। आप इस समय किस बात के लिए खुद को सजा दे रहे हैं?",
+      "step2_name_en": "This is Personalization and Self-Blame: taking 100% of the responsibility for complex, multi-factor events that nobody could fully control.",
+      "step2_name_hi": "यह 'अत्यधिक आत्म-दोष' (Personalization) है: उन जटिल परिस्थितियों की पूरी जिम्मेदारी अपने ऊपर ले लेना जिन पर आपका पूरा नियंत्रण नहीं था।",
+      "step3_challenge_questions_en": [
+        "Did you act with the best awareness and information you had at that exact moment in time?",
+        "What other external factors, circumstances, and people played a role in what happened?",
+        "Can self-punishment undo the past, or is learning and self-forgiveness the only constructive path?"
+      ],
+      "step3_challenge_questions_hi": [
+        "क्या आपने उस समय अपनी समझ और सामर्थ्य के अनुसार सबसे बेहतर करने का प्रयास नहीं किया था?",
+        "उस परिस्थिति में अन्य कौन से कारण और लोग शामिल थे?",
+        "क्या खुद को कोसने से अतीत बदल सकता है, या सीखकर आगे बढ़ना ही सच्चा मार्ग है?"
+      ],
+      "step4_replacement_thought_en": "I am a human being who learns and grows through imperfections. I release self-condemnation and embrace accountability with self-compassion.",
+      "step4_replacement_thought_hi": "मैं एक इंसान हूँ जो भूलों से सीखकर आगे बढ़ता है। मैं खुद को प्रताड़ित करना छोड़कर आत्म-करुणा के साथ आगे बढ़ता हूँ।",
+      "step4_action_step_en": "Place both hands over your heart, breathe in deeply, and whisper: 'I forgive myself. I did the best I knew how.'",
+      "step4_action_step_hi": "दोनों हाथ अपने सीने पर रखें, गहरी सांस लें और मन में कहें: 'मैं स्वयं को क्षमा करता हूँ। मैंने अपनी पूरी समझ से प्रयास किया था।'"
+    }
+  }
+}

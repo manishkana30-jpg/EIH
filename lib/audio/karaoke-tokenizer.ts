@@ -65,7 +65,7 @@ export function isWordActive(
     const cleanWord = cleanWordForMatch(wordStr);
     const cleanTarget = cleanWordForMatch(activeKaraoke.wordText);
     if (cleanWord && cleanTarget && cleanWord === cleanTarget) {
-      if (Math.abs(currentWordIndex - activeKaraoke.wordIndex) <= 4) {
+      if (Math.abs(currentWordIndex - activeKaraoke.wordIndex) <= 8) {
         return true;
       }
     }
@@ -402,8 +402,8 @@ export function parseTherapeuticStages(rawText: string, locale?: string): Struct
     : "📋 1. Sanctuary Emotion Understanding";
 
   const s1SpeechText = isHindi
-    ? `आपकी स्थिति का मूल्यांकन: मैं समझ सकता हूँ कि आप इस समय ${emotionName} से जूझ रहे हैं। ${severity ? `पीड़ा व तंत्रिका तंत्र: ${severity}${autonomicState ? ` और ${autonomicState}` : ''}। ` : ''}${bodilyBurden ? `शारीरिक संवेदनाएं: ${bodilyBurden}। ` : ''}${summary || 'आपका मन और शरीर इस आंतरिक दबाव से अत्यधिक थके हुए हैं।'} ${confirmationPrompt}`
-    : `Sanctuary understanding: I hear that you are navigating ${emotionName}. ${severity ? `Severity and autonomic state: ${severity}${autonomicState ? ` and ${autonomicState}` : ''}. ` : ''}${bodilyBurden ? `Bodily sensations: ${bodilyBurden}. ` : ''}${summary || 'You are carrying a burden of emotional strain.'} ${confirmationPrompt}`;
+    ? `पहचाना गया मनोभाव: ${emotionName}। ${severity ? `पीड़ा व तंत्रिका तंत्र: ${severity}${autonomicState ? ` ${autonomicState}` : ''}। ` : ''}${bodilyBurden ? `शारीरिक संवेदनाएं: ${bodilyBurden}। ` : ''}${summary ? `${summary} ` : ''}${confirmationPrompt}`
+    : `Understood Emotion: ${emotionName}. ${severity ? `Severity and autonomic state: ${severity}${autonomicState ? ` ${autonomicState}` : ''}. ` : ''}${bodilyBurden ? `Bodily sensations: ${bodilyBurden}. ` : ''}${summary ? `${summary} ` : ''}${confirmationPrompt}`;
 
   stages.push({
     stage: 1,
@@ -443,13 +443,13 @@ export function parseTherapeuticStages(rawText: string, locale?: string): Struct
   let avoid = '';
 
   if (gitaPart) {
-    const mMatch = gitaPart.match(/(?:समझाते हैं कि|nos ilumina:|nous éclaire :|lehrt:|meaning:|Essence:)\s*([^\n]+)/i);
+    const mMatch = gitaPart.match(/(?:समझाते हैं कि|पावन संदेश:|nos ilumina:|nous éclaire :|lehrt:|meaning:|Essence:|Teaching:)\s*([^\n]+)/i);
     if (mMatch) meaning = mMatch[1].trim();
 
     const rMatch = gitaPart.match(/(?:इस संदेश को अपने वर्तमान जीवन में उतारें:|जीवन में उतारें:|Integración:|Application :|reflection:|Reflexion:)\s*([^\n]+)/i);
     if (rMatch) reflection = rMatch[1].trim();
 
-    const dMatch = gitaPart.match(/(?:इस समय आपका कर्तव्य:|कर्तव्य:|orientación de acción:|action juste :|Action:|duty:)\s*([^।\n]+)/i);
+    const dMatch = gitaPart.match(/(?:इस समय आपका कर्तव्य:|वर्तमान कर्तव्य:|कर्तव्य:|orientación de acción:|action juste :|Action:|duty:)\s*([^।\n]+)/i);
     if (dMatch) duty = dMatch[1].trim();
 
     const aMatch = gitaPart.match(/(?:विशेष रूप से इस भूल से बचें:|evitar:|éviter :|avoid:)\s*([^\n]+)/i);
@@ -473,9 +473,9 @@ export function parseTherapeuticStages(rawText: string, locale?: string): Struct
 
   let s2SpeechText = '';
   if (isHindi) {
-    s2SpeechText = `${spokenShloka}। भगवान श्रीकृष्ण का अमर उपदेश: ${meaning || 'अपने कर्तव्य पर एकाग्र हों, फलों की चिंता छोड़ें।'} ${reflection || 'वर्तमान क्षण में स्थित रहें।'} आपका कर्तव्य: ${duty || 'सच्चे मन से अपना कर्म करें।'}${avoid ? ` विशेष रूप से इस भूल से बचें: ${avoid}।` : ''}`;
+    s2SpeechText = `${spokenShloka}। ${meaning ? `भगवान श्रीकृष्ण का पावन संदेश: ${meaning}। ` : ''}${reflection ? `जीवन में उतारें: ${reflection}। ` : ''}${duty ? `वर्तमान कर्तव्य: ${duty}। ` : ''}${avoid ? `विशेष रूप से इस भूल से बचें: ${avoid}।` : ''}`;
   } else {
-    s2SpeechText = `${spokenShloka}. Bhagavad Gita wisdom: ${meaning || 'Dedicate your focus entirely to your present duty rather than fearing future outcomes.'} ${reflection || 'Step out of anxiety into present action.'} Your duty: ${duty || 'Take the highest-integrity action in front of you.'}${avoid ? ` Pitfall to avoid: ${avoid}.` : ''}`;
+    s2SpeechText = `${spokenShloka}. ${meaning ? `Divine Teaching: ${meaning}. ` : ''}${reflection ? `Spiritual Reflection: ${reflection}. ` : ''}${duty ? `Your Duty Right Now: ${duty}. ` : ''}${avoid ? `Pitfall to Avoid: ${avoid}.` : ''}`;
   }
 
   stages.push({
@@ -514,9 +514,9 @@ export function parseTherapeuticStages(rawText: string, locale?: string): Struct
     .replace(/^\*\*(?:[2]\.\s+|CLINICAL[^*]*|क्लिनिकल[^*]*)[^*]*\*\*\s*:?\s*/im, '')
     .trim();
 
-  const s3SpeechText = isHindi
-    ? `क्लिनिकल कॉग्निटिव न्यूरोसाइंस और श्वसन अभ्यास: ${cbtCleaned || 'अपने मन के नकारात्मक विचारों को पहचानें और गहरी सांस लेकर तंत्रिका तंत्र को शांत करें।'}`
-    : `Clinical cognitive neuroscience and breathwork: ${cbtCleaned || 'Notice catastrophic thoughts and anchor your nervous system with measured breathing.'}`;
+  const s3SpeechText = cbtCleaned || (isHindi
+    ? 'अपने मन के नकारात्मक विचारों को पहचानें और गहरी सांस लेकर तंत्रिका तंत्र को शांत करें।'
+    : 'Notice catastrophic thoughts and anchor your nervous system with measured breathing.');
 
   stages.push({
     stage: 3,
@@ -552,9 +552,9 @@ export function parseTherapeuticStages(rawText: string, locale?: string): Struct
     .replace(/^\*\*(?:[3]\.\s+|TRATAK[^*]*|त्राटक[^*]*)[^*]*\*\*\s*:?\s*/im, '')
     .trim();
 
-  const s4SpeechText = isHindi
-    ? `त्राटक न्यूरो-ऑक्युलर दृष्टि ध्यान विधि: ${tratakCleaned || 'अपनी दृष्टि को एक बिंदु पर स्थिर करें ताकि मस्तिष्क का तनाव केंद्र शांत हो सके। अंत में हथेलियों को रगड़कर आंखों पर रखें।'}`
-    : `Tratak neuro-ocular protocol: ${tratakCleaned || 'Rest a motionless soft gaze upon the focal target to stop ocular micro-saccades and de-escalate amygdala hyperarousal.'}`;
+  const s4SpeechText = tratakCleaned || (isHindi
+    ? 'अपनी दृष्टि को एक बिंदु पर स्थिर करें ताकि मस्तिष्क का तनाव केंद्र शांत हो सके। अंत में हथेलियों को रगड़कर आंखों पर रखें।'
+    : 'Rest a motionless soft gaze upon the focal target to stop ocular micro-saccades and de-escalate amygdala hyperarousal.');
 
   stages.push({
     stage: 4,

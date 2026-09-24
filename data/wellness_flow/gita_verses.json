@@ -1,0 +1,162 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "version": "1.0.0",
+  "title": "Bhagavad Gita Wisdom Knowledge Base for Wellness Conversation Flow",
+  "description": "Authentic Gita verses with Devanagari Sanskrit, Roman transliteration, English & Hindi meanings, psychological problem analysis, and everyday practical solutions.",
+  "verses": [
+    {
+      "id": "bg_2_47",
+      "reference": "Chapter 2, Verse 47",
+      "reference_code": "BG 2.47",
+      "sanskrit": "कर्मण्येवाधिकारस्ते मा फलेषु कदाचन।\nमा कर्मफलहेतुर्भूर्मा ते सङ्गोऽस्त्वकर्मणि॥",
+      "transliteration": "karmaṇy evādhikāras te mā phaleṣu kadācana |\nmā karma-phala-hetur bhūr mā te saṅgo 'stv akarmaṇi ||",
+      "english_meaning": "You have a right only to perform your duties, but you are never entitled to the fruits of your actions. Never consider yourself the cause of results, and never succumb to inaction.",
+      "hindi_meaning": "तुम्हारा अधिकार केवल कर्म करने पर है, उसके फलों पर कभी नहीं। इसलिए कर्म के फल के प्रति आसक्त मत बनो और न ही कर्म न करने में तुम्हारी रुचि हो।",
+      "problem_analysis": "The Gita identifies that anxiety and mental paralysis arise when the mind obsessively leaps into the unpredictable future, attempting to control outcomes rather than engaging with present action.",
+      "practical_solution": "Direct 100% of your energy toward the single concrete task right in front of you. When worrying about the outcome begins, take a slow breath, say 'I control my effort, not the universe', and take one small step.",
+      "applicable_emotions": [
+        "anxiety",
+        "stress",
+        "overthinking",
+        "fear",
+        "low motivation"
+      ],
+      "root_themes": [
+        "future_uncertainty",
+        "performance_pressure",
+        "loss_of_control",
+        "career_dilemma"
+      ],
+      "speech_text_en": "In the Bhagavad Gita, Chapter 2, Verse 47, Krishna gives timeless advice for racing anxiety: 'Karmany evadhikaras te ma phaleshu kadachana.' You have the power over your effort right here in the present moment, but you cannot dictate future results. When we fixate on what might happen, our mind creates anxious spirals. The Gita's practical solution is outcome detachment: focus completely on your immediate next action, breathe through the uncertainty, and let go of trying to control the future.",
+      "speech_text_hi": "भगवद्गीता के अध्याय 2, श्लोक 47 में श्रीकृष्ण चिंता और भविष्य के डर का समाधान देते हुए कहते हैं: 'कर्मण्येवाधिकारस्ते मा फलेषु कदाचन।' आपका अधिकार केवल वर्तमान कर्म पर है, परिणाम पर नहीं। जब हमारा मन भविष्य के परिणामों को नियंत्रित करने का प्रयास करता है, तब चिंता और तनाव जन्म लेते हैं। गीता का व्यावहारिक मार्ग यह है: अपना पूरा ध्यान वर्तमान कार्य पर केंद्रित करें और फल की चिंता छोड़ दें।"
+    },
+    {
+      "id": "bg_2_14",
+      "reference": "Chapter 2, Verse 14",
+      "reference_code": "BG 2.14",
+      "sanskrit": "मात्रास्पर्शास्तु कौन्तेय शीतोष्णसुखदुःखदाः।\nआगमापायिनोऽनित्यास्तांस्तितिक्षस्व भारत॥",
+      "transliteration": "mātrā-sparśās tu kaunteya śītoṣṇa-sukha-duḥkha-dāḥ |\nāgamāpāyino 'nityās tāṁs titikṣasva bhārata ||",
+      "english_meaning": "O son of Kunti, the contact between the senses and their objects gives rise to fleeting feelings of heat and cold, pleasure and pain. They are transient and come and go; bear them patiently.",
+      "hindi_meaning": "हे कुंतीपुत्र, इंद्रियों और उनके विषयों का संपर्क सर्दी-गर्मी, सुख-दुःख देने वाला है। ये आने-जाने वाले और अनित्य हैं। हे भारत, धैर्यपूर्वक इन्हें सहन करो।",
+      "problem_analysis": "Grief, sadness, and emotional pain feel permanent when we are inside them. The Gita reminds us of Titiksha (emotional endurance) and the biological truth of impermanence.",
+      "practical_solution": "Recognize that intense emotional waves crest and subside like physical temperature. Instead of fighting the sadness or suppressing it, witness it as a passing visitor that cannot harm your core self.",
+      "applicable_emotions": [
+        "sadness",
+        "grief",
+        "loneliness",
+        "heartbreak",
+        "depression"
+      ],
+      "root_themes": [
+        "loss_and_impermanence",
+        "emotional_heaviness",
+        "separation",
+        "temporary_distress"
+      ],
+      "speech_text_en": "In Chapter 2, Verse 14, the Gita addresses sorrow: 'Matra-sparshas tu kaunteya sheetoshna-sukha-duhkha-dah.' Just like seasons change from winter chill to summer warmth, sadness and grief are transient biological sensations. They arise, stay for a time, and naturally pass. The Gita invites you to practice Titiksha—gentle endurance. You do not need to fight this heavy sorrow; allow yourself to feel it without fear, knowing this dark cloud is passing across the unchanging sky of your awareness.",
+      "speech_text_hi": "भगवद्गीता के अध्याय 2, श्लोक 14 में भगवान कहते हैं: 'मात्रास्पर्शास्तु कौन्तेय शीतोष्णसुखदुःखदाः।' जिस प्रकार सर्दी और गर्मी आते और जाते हैं, उसी प्रकार सुख और दुःख भी क्षणिक हैं। जब मन किसी दुःख या अकेलेपन से व्यथित हो, तो याद रखें कि यह भावना स्थायी नहीं है। गीता हमें तितिक्षा—धैर्यपूर्वक सहने और समझने की शक्ति सिखाती है। अपने इस दुःख को स्वीकार करें, यह समय भी बीत जाएगा।"
+    },
+    {
+      "id": "bg_2_62_63",
+      "reference": "Chapter 2, Verses 62-63",
+      "reference_code": "BG 2.62-63",
+      "sanskrit": "ध्यायतो विषयान्पुंसः सङ्गस्तेषूपजायते।\nसङ्गात्सञ्जायते कामः कामात्क्रोधोऽभिजायते॥\nक्रोधाद्भवति संमोहः संमोहात्स्मृतिविभ्रमः।\nस्मृतिभ्रंशाद् बुद्धिनाशो बुद्धिनाशात्प्रणश्यति॥",
+      "transliteration": "dhyāyato viṣayān puṁsaḥ saṅgas teṣūpajāyate |\nsaṅgāt sañjāyate kāmaḥ kāmāt krodho 'bhijāyate ||\nkrodhād bhavati saṁmohaḥ saṁmohāt smṛti-vibhramaḥ |\nsmṛti-bhraṁśād buddhi-nāśo buddhi-nāśāt praṇaśyati ||",
+      "english_meaning": "Brooding on objects creates attachment; from attachment springs craving, and from unfulfilled craving comes anger. Anger leads to delusion, delusion causes loss of memory, loss of memory ruins intellect, and from ruined intellect one falls.",
+      "hindi_meaning": "विषयों का निरंतर ध्यान करने से उनमें आसक्ति होती है। आसक्ति से कामना उत्पन्न होती है, और कामना में बाधा आने पर क्रोध उत्पन्न होता है। क्रोध से सम्मोहन, सम्मोहन से स्मृति-भ्रम, स्मृति-भ्रम से बुद्धि का नाश होता है, और बुद्धि नष्ट होने पर मनुष्य का पतन हो जाता है।",
+      "problem_analysis": "The Gita maps the neuropsychological escalation of anger: brooding fixation creates explosive sympathetic arousal, shutting down prefrontal executive control and distorting rational memory.",
+      "practical_solution": "Interrupt the escalating chain reaction early. The moment you feel the flush of frustration or betrayal, pause for 10 seconds before reacting. Take 3 deep diaphragmatic breaths to restore prefrontal blood flow.",
+      "applicable_emotions": [
+        "anger",
+        "frustration",
+        "resentment",
+        "betrayal",
+        "restlessness"
+      ],
+      "root_themes": [
+        "unmet_expectations",
+        "interpersonal_conflict",
+        "feeling_wronged",
+        "loss_of_calm"
+      ],
+      "speech_text_en": "In Chapter 2, Verses 62 and 63, the Gita provides a brilliant map of anger: ruminating on what went wrong creates intense agitation, which clouds our memory and hijacks our clear thinking. When anger surges, our nervous system enters fight mode. The Gita's practical wisdom is to pause before the chain reaction takes over. Step back, exhale slowly, and give yourself space so your inner wisdom, your Buddhi, can guide your response instead of raw impulse.",
+      "speech_text_hi": "भगवद्गीता के अध्याय 2 में श्रीकृष्ण क्रोध के उद्गम को समझाते हैं: जब हमारी अपेक्षाएं टूटती हैं, तब क्रोध हमारे विवेक को ढक लेता है और हम सही निर्णय नहीं ले पाते। क्रोध में हमारी बुद्धि और स्मृति भ्रमित हो जाती है। गीता का व्यावहारिक समाधान यह है कि क्रोध की पहली लहर उठते ही तुरंत प्रतिक्रिया न दें। कुछ पल का मौन रखें, गहरी सांस लें और अपनी प्रज्ञा को पुनः जाग्रत होने दें।"
+    },
+    {
+      "id": "bg_6_35",
+      "reference": "Chapter 6, Verse 35",
+      "reference_code": "BG 6.35",
+      "sanskrit": "असंशयं महाबाहो मनो दुर्निग्रहं चलम्।\nअभ्यासेन तु कौन्तेय वैराग्येण च गृह्यते॥",
+      "transliteration": "asaṁśayaṁ mahā-bāho mano durnigrahaṁ calam |\nabhyāsena tu kaunteya vairāgyeṇa ca gṛhyate ||",
+      "english_meaning": "Without doubt, O mighty-armed one, the mind is restless and difficult to curb. But by practice (Abhyasa) and detachment (Vairagya), it can be mastered.",
+      "hindi_meaning": "हे महाबाहो, इसमें कोई संशय नहीं कि मन अत्यंत चंचल और वश में करने में कठिन है। परन्तु हे कुंतीपुत्र, अभ्यास और वैराग्य के द्वारा इसे वश में किया जा सकता है।",
+      "problem_analysis": "When overthinking and mental restlessness strike, we often judge ourselves harshly for our racing thoughts, compounding our distress. Krishna validates that the restless mind is indeed difficult to tame for everyone, but responds to gentle training.",
+      "practical_solution": "Treat your restless mind like a lively puppy, not an enemy. Do not force thoughts to stop. Instead, practice gentle refocusing: whenever a runaway thought appears, simply notice it without self-blame and return attention to your breath.",
+      "applicable_emotions": [
+        "overthinking",
+        "anxiety",
+        "restlessness",
+        "self-doubt"
+      ],
+      "root_themes": [
+        "racing_mind",
+        "lack_of_focus",
+        "mental_chatter",
+        "cognitive_exhaustion"
+      ],
+      "speech_text_en": "In Chapter 6, Verse 35, Arjuna asks how to calm a mind as wild as the wind, and Krishna empathetically agrees: 'Asanshayam maha-baho mano durnigraham chalam.' Yes, the mind is restless and stubborn. But it can be calmed through two pillars: Abhyasa, consistent gentle practice, and Vairagya, letting go of obsessive attachment. Do not be angry with yourself for overthinking. Each time your mind wanders, gently and patiently escort it back to the present moment.",
+      "speech_text_hi": "भगवद्गीता के अध्याय 6, श्लोक 35 में अर्जुन जब मन की चंचलता की शिकायत करते हैं, तो भगवान श्रीकृष्ण उनकी व्यथा को स्वीकार करते हुए कहते हैं: 'असंशयं महाबाहो मनो दुर्निग्रहं चलम्।' मन निश्चय ही चंचल और कठिन है, पर 'अभ्यास' और 'वैराग्य' से इसे शांत किया जा सकता है। अपने अनियंत्रित विचारों के लिए खुद को दोष न दें। जब भी विचार भटकें, धीरे से उन्हें वर्तमान श्वास पर वापस ले आएं।"
+    },
+    {
+      "id": "bg_6_5",
+      "reference": "Chapter 6, Verse 5",
+      "reference_code": "BG 6.5",
+      "sanskrit": "उद्धरेदात्मनात्मानं नात्मानमवसादयेत्।\nआत्मैव ह्यात्मनो बन्धुरात्मैव रिपुरात्मनः॥",
+      "transliteration": "uddhared ātmanātmānaṁ nātmānam avasādayet |\nātmaiva hy ātmano bandhur ātmaiva ripur ātmanaḥ ||",
+      "english_meaning": "Elevate yourself through your own mind, and do not degrade yourself. For the mind can be your greatest friend, or your worst enemy.",
+      "hindi_meaning": "मनुष्य को चाहिए कि वह अपने मन के द्वारा अपना उद्धार करे, अपने आपको नीचे न गिराए; क्योंकि यह मन ही मनुष्य का मित्र है और मन ही उसका शत्रु है।",
+      "problem_analysis": "In states of guilt, shame, imposter syndrome, and low motivation, our own inner dialogue turns hostile, berating and devaluing us.",
+      "practical_solution": "Choose to become an ally to yourself. Replace harsh self-criticism with self-compassion. Ask yourself: 'Would I speak to a wounded friend the way my mind is speaking to me right now?'",
+      "applicable_emotions": [
+        "guilt",
+        "shame",
+        "low motivation",
+        "loneliness",
+        "sadness"
+      ],
+      "root_themes": [
+        "harsh_inner_critic",
+        "self_worth_crisis",
+        "feeling_unworthy",
+        "helplessness"
+      ],
+      "speech_text_en": "In Chapter 6, Verse 5, the Gita delivers a profound truth on mental health: 'Uddhared atmanatmanam natmanam avasadayet.' Lift yourself up through your own mind; do not pull yourself down. Your mind can either be your fiercest friend or your cruelest adversary. When you feel bogged down by shame or lack of motivation, notice how your inner voice is speaking to you. Turn that internal critic into a compassionate friend who supports and lifts you up.",
+      "speech_text_hi": "भगवद्गीता के अध्याय 6, श्लोक 5 में कहा गया है: 'उद्धरेदात्मनात्मानं नात्मानमवसादयेत्।' अपने मन से अपना उद्धार करो, स्वयं को हीन भावना में मत गिराओ; क्योंकि मन ही आपका सबसे सच्चा मित्र है और मन ही शत्रु। जब आत्म-ग्लानि या हीनता सताए, तो याद रखें कि स्वयं के प्रति दयालु होना ही पहला उपचार है। अपने भीतर के कठोर आलोचक को अपना सच्चा मार्गदर्शक मित्र बनाएं।"
+    },
+    {
+      "id": "bg_6_16_17",
+      "reference": "Chapter 6, Verses 16-17",
+      "reference_code": "BG 6.16-17",
+      "sanskrit": "नात्यश्नतस्तु योगोऽस्ति न चैकान्तमनश्नतः।\nन चातिस्वप्नशीलस्य जाग्रतो नैव चार्जुन॥\nयुक्ताहारविहारस्य युक्तचेष्टस्य कर्मसु।\nयुक्तस्वप्नावबोधस्य योगो भवति दुःखहा॥",
+      "transliteration": "nāty-aśnatas tu yogo 'sti na caikāntam anaśnataḥ |\nna cāti-svapna-śīlasya jāgrato naiva cārjuna ||\nyuktāhāra-vihārasya yukta-ceṣṭasya karmasu |\nyukta-svapnāvabodhasya yogo bhavati duḥkha-hā ||",
+      "english_meaning": "Yoga is not for one who eats too much or starves, nor for one who sleeps too much or stays awake all night. For one who is moderate in eating, recreation, work, and sleep, yoga destroys all sorrow.",
+      "hindi_meaning": "हे अर्जुन! यह योग न तो बहुत अधिक खाने वाले का, न बिल्कुल न खाने वाले का, न बहुत अधिक सोने वाले का और न सदा जागते रहने वाले का सिद्ध होता है। जिसका आहार और विहार संतुलित है, कर्मों में चेष्टा संतुलित है, तथा सोने और जागने का नियम संतुलित है, उसका योग सब दुःखों का नाश करने वाला होता है।",
+      "problem_analysis": "Stress, chronic burnout, and autonomic dysregulation stem from physiological extremes—overworking, irregular sleep, skipped meals, and sensory overload.",
+      "practical_solution": "Adopt Krishna's principle of 'Yukta' (balance and harmony). Re-establish basic somatic rhythms today: eat a nourishing meal without screens, set a firm bedtime, and take micro-breaks between tasks.",
+      "applicable_emotions": [
+        "stress",
+        "overthinking",
+        "low motivation",
+        "anxiety"
+      ],
+      "root_themes": [
+        "burnout_and_exhaustion",
+        "workplace_overload",
+        "somatic_dysregulation",
+        "unbalanced_lifestyle"
+      ],
+      "speech_text_en": "In Chapter 6, Verses 16 and 17, the Gita outlines the golden rule of holistic equilibrium: 'Yuktahara-viharasya yukta-cestasya karmasu.' Wellness cannot exist in extremes—neither in endless work without rest, nor in sleepless nights. For someone who balances their food, their movement, their effort, and their sleep, the practice of yoga dissolves all suffering. If you are burned out, start with the body: allow yourself to rest, nourish yourself, and bring gentle moderation to your day.",
+      "speech_text_hi": "भगवद्गीता के अध्याय 6 में श्रीकृष्ण जीवन में संतुलन का सिद्धांत देते हैं: 'युक्ताहारविहारस्य युक्तचेष्टस्य कर्मसु।' जो व्यक्ति अपने खान-पान, कार्य, विश्राम और नींद में संतुलन रखता है, उसके सभी शारीरिक और मानसिक दुःख नष्ट हो जाते हैं। जब तनाव और थकावट अत्यधिक हो, तो अति-प्रयास छोड़ें। थोड़ा विश्राम करें, संतुलित आहार लें और अपने शरीर की लय को पुनः स्थापित करें।"
+    }
+  ]
+}

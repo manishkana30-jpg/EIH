@@ -489,6 +489,12 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
   const stage3 = parsedStages.stages.find(s => s.stage === 3);
   const stage4 = parsedStages.stages.find(s => s.stage === 4);
 
+  const stage2SpokenShloka = isHindi && stage2?.meta?.shlokaDevanagari && stage2.meta.shlokaDevanagari.length > 0
+    ? stage2.meta.shlokaDevanagari.join('। ')
+    : (stage2?.meta?.shlokaRoman && stage2.meta.shlokaRoman.length > 0
+        ? stage2.meta.shlokaRoman.join('. ')
+        : (stage2?.meta?.shlokaDevanagari ? stage2.meta.shlokaDevanagari.join('. ') : ''));
+
   const handleConfirmS1 = () => {
     setLocalStage(2);
     if (onConfirmStage1) {
@@ -496,19 +502,12 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
     } else if (onAdvanceStage) {
       onAdvanceStage(message.id, 2);
     }
-    if (onPlayStageVoice && stage2?.speechText) {
-      onPlayStageVoice(message.id, 2, stage2.speechText);
-    }
   };
 
   const handleAdvanceTo = (nextStage: number) => {
     setLocalStage(nextStage);
     if (onAdvanceStage) {
       onAdvanceStage(message.id, nextStage);
-    }
-    const targetStageData = parsedStages.stages.find(s => s.stage === nextStage);
-    if (onPlayStageVoice && targetStageData?.speechText) {
-      onPlayStageVoice(message.id, nextStage, targetStageData.speechText);
     }
   };
 
@@ -594,12 +593,9 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
                   <div className="flex items-start gap-2">
                     <span className="text-purple-400 font-bold">•</span>
                     <div>
-                      <span className="text-slate-400 text-xs">
-                        {isHindi ? "पहचाना गया मनोभाव:" : "Understood Emotion:"}{" "}
-                      </span>
                       <strong className="text-purple-200 text-sm font-semibold">
                         {renderTokenizedText(
-                          selectedAdjustEmotion || stage1.meta.emotionName || stage1.title,
+                          `${isHindi ? "पहचाना गया मनोभाव:" : "Understood Emotion:"} ${selectedAdjustEmotion || stage1.meta.emotionName || stage1.title}`,
                           1,
                           isSpeaking,
                           activeKaraoke,
@@ -615,11 +611,8 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
                     <div className="flex items-start gap-2 text-xs">
                       <span className="text-purple-400 font-bold">•</span>
                       <span className="text-slate-300">
-                        <strong className="text-slate-400 font-medium">
-                          {isHindi ? "पीड़ा व तंत्रिका तंत्र:" : "Severity & Autonomic State:"}
-                        </strong>{" "}
                         {renderTokenizedText(
-                          `${stage1.meta.severity}${stage1.meta.autonomicState ? ` | ${stage1.meta.autonomicState}` : ""}`,
+                          `${isHindi ? "पीड़ा व तंत्रिका तंत्र:" : "Severity and autonomic state:"} ${stage1.meta.severity}${stage1.meta.autonomicState ? ` ${stage1.meta.autonomicState}` : ""}`,
                           1,
                           isSpeaking,
                           activeKaraoke,
@@ -635,11 +628,8 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
                     <div className="flex items-start gap-2 text-xs">
                       <span className="text-purple-400 font-bold">•</span>
                       <span className="text-slate-300">
-                        <strong className="text-slate-400 font-medium">
-                          {isHindi ? "शारीरिक संवेदनाएं:" : "Bodily Sensations:"}
-                        </strong>{" "}
                         {renderTokenizedText(
-                          stage1.meta.bodilyBurden,
+                          `${isHindi ? "शारीरिक संवेदनाएं:" : "Bodily sensations:"} ${stage1.meta.bodilyBurden}`,
                           1,
                           isSpeaking,
                           activeKaraoke,
@@ -777,22 +767,39 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
                   </div>
                 </div>
 
-                {/* Shloka in plain text format inside Shreemadh Bhagwatgita Aatam Darshan */}
-                {stage2.meta.shlokaBlock && (
-                  <div data-tts-silent="true" data-tts-skip="true" className="tts-skip select-text my-2">
+                {/* Shloka with Real-Time Word-by-Word Red Karaoke */}
+                {stage2SpokenShloka ? (
+                  <div className="my-2 p-3 sm:p-3.5 rounded-xl bg-gradient-to-br from-amber-950/60 via-amber-950/30 to-slate-900/80 border border-amber-500/35 text-amber-200 shadow-md">
+                    {stage2.meta.chapterVerse && (
+                      <div className="text-[10px] font-mono text-amber-400 font-bold mb-1.5 tracking-wider uppercase flex items-center gap-1">
+                        <span>🕉️</span>
+                        <span>{stage2.meta.chapterVerse}</span>
+                      </div>
+                    )}
+                    <div className="font-serif text-sm sm:text-base leading-relaxed tracking-wide text-amber-100 italic">
+                      {renderTokenizedText(
+                        stage2SpokenShloka,
+                        2,
+                        isSpeaking,
+                        activeKaraoke,
+                        activeWordRef,
+                        card2Counter,
+                        "text-amber-100 font-serif"
+                      )}
+                    </div>
+                  </div>
+                ) : stage2.meta.shlokaBlock ? (
+                  <div className="my-2">
                     <GitaShlokaCard shlokaContent={stage2.meta.shlokaBlock} variant="inline" />
                   </div>
-                )}
+                ) : null}
 
                 {/* Gita Spiritual Wisdom & Actionable Duty */}
                 <div className="space-y-1.5 text-slate-100 text-xs sm:text-sm">
                   {stage2.meta.meaning && (
                     <div className="text-slate-200 leading-relaxed">
-                      <strong className="text-amber-300">
-                        {isHindi ? "भगवान श्रीकृष्ण का पावन संदेश:" : "Divine Teaching:"}{" "}
-                      </strong>
                       {renderTokenizedText(
-                        stage2.meta.meaning,
+                        `${isHindi ? "भगवान श्रीकृष्ण का पावन संदेश:" : "Divine Teaching:"} ${stage2.meta.meaning}`,
                         2,
                         isSpeaking,
                         activeKaraoke,
@@ -804,11 +811,8 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
                   )}
                   {stage2.meta.reflection && (
                     <div className="text-slate-300 leading-relaxed">
-                      <strong className="text-amber-400/90">
-                        {isHindi ? "जीवन में उतारें:" : "Spiritual Reflection:"}{" "}
-                      </strong>
                       {renderTokenizedText(
-                        stage2.meta.reflection,
+                        `${isHindi ? "जीवन में उतारें:" : "Spiritual Reflection:"} ${stage2.meta.reflection}`,
                         2,
                         isSpeaking,
                         activeKaraoke,
@@ -820,23 +824,21 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
                   )}
                   {stage2.meta.duty && (
                     <div className="p-2.5 rounded-lg bg-amber-950/20 border border-amber-500/25 text-amber-200 leading-relaxed">
-                      <strong>{isHindi ? "वर्तमान कर्तव्य (निष्काम कर्म):" : "Your Duty Right Now:"} </strong>
                       {renderTokenizedText(
-                        stage2.meta.duty,
+                        `${isHindi ? "वर्तमान कर्तव्य:" : "Your Duty Right Now:"} ${stage2.meta.duty}`,
                         2,
                         isSpeaking,
                         activeKaraoke,
                         activeWordRef,
                         card2Counter,
-                        "text-amber-200"
+                        "text-amber-200 font-medium"
                       )}
                     </div>
                   )}
                   {stage2.meta.avoid && (
                     <div className="text-xs text-amber-300/80 leading-relaxed">
-                      <strong className="text-amber-400/90">{isHindi ? "विशेष रूप से इस भूल से बचें:" : "Pitfall to Avoid:"} </strong>
                       {renderTokenizedText(
-                        stage2.meta.avoid,
+                        `${isHindi ? "विशेष रूप से इस भूल से बचें:" : "Pitfall to Avoid:"} ${stage2.meta.avoid}`,
                         2,
                         isSpeaking,
                         activeKaraoke,

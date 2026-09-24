@@ -17,6 +17,7 @@ import type { LanguageItem } from "@/lib/i18n/language-catalog";
 
 export interface LeftNavProps {
   isBackendHealthy: boolean | null;
+  onOpenWellnessFlow?: () => void;
   onOpenCBT: () => void;
   onOpenPranayama: () => void;
   onOpenHistory: () => void;
@@ -31,6 +32,7 @@ export interface LeftNavProps {
 
 export const LeftNav: React.FC<LeftNavProps> = React.memo(({
   isBackendHealthy,
+  onOpenWellnessFlow,
   onOpenCBT,
   onOpenPranayama,
   onOpenHistory,
@@ -74,6 +76,24 @@ export const LeftNav: React.FC<LeftNavProps> = React.memo(({
 
         {/* Navigation Action Buttons */}
         <nav className="space-y-1.5">
+          {onOpenWellnessFlow && (
+            <button
+              onClick={onOpenWellnessFlow}
+              className="flex items-center gap-3 w-full p-2.5 rounded-xl bg-gradient-to-r from-emerald-500/15 via-teal-500/10 to-transparent hover:from-emerald-500/25 border border-emerald-500/40 text-emerald-300 font-semibold transition-all duration-300 group shadow-sm active:scale-95"
+              title="Voice-First 4-Phase Guided Wellness Conversation (Mood -> Gita -> CBT -> Trataka)"
+            >
+              <div className="w-5 h-5 rounded-lg bg-emerald-500/20 flex items-center justify-center text-xs">
+                ✨
+              </div>
+              <span className="hidden md:inline text-xs font-bold tracking-wide">
+                4-Phase Guided Flow
+              </span>
+              <span className="hidden md:inline text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-400 text-slate-950 ml-auto">
+                VOICE
+              </span>
+            </button>
+          )}
+
           <a
             href="#clinical-guide"
             onClick={(e) => {

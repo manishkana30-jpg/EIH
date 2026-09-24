@@ -23,6 +23,7 @@ export interface MobileNavProps {
   isOpen: boolean;
   onClose: () => void;
   isBackendHealthy: boolean | null;
+  onOpenWellnessFlow?: () => void;
   onOpenCBT: () => void;
   onOpenPranayama: () => void;
   onOpenHistory: () => void;
@@ -39,6 +40,7 @@ export const MobileNav: React.FC<MobileNavProps> = React.memo(({
   isOpen,
   onClose,
   isBackendHealthy,
+  onOpenWellnessFlow,
   onOpenCBT,
   onOpenPranayama,
   onOpenHistory,
@@ -106,6 +108,24 @@ export const MobileNav: React.FC<MobileNavProps> = React.memo(({
 
               {/* Navigation Action Buttons */}
               <nav className="space-y-2">
+                {onOpenWellnessFlow && (
+                  <button
+                    onClick={() => {
+                      onClose();
+                      onOpenWellnessFlow();
+                    }}
+                    className="flex items-center gap-3 w-full p-3 rounded-xl bg-gradient-to-r from-emerald-500/20 via-teal-500/15 to-transparent border border-emerald-500/40 text-emerald-300 font-bold transition-all shadow-sm"
+                  >
+                    <span className="text-base">✨</span>
+                    <span className="text-sm tracking-wide">
+                      4-Phase Guided Flow
+                    </span>
+                    <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-400 text-slate-950 ml-auto">
+                      VOICE
+                    </span>
+                  </button>
+                )}
+
                 <Link
                   href="/library"
                   onClick={onClose}

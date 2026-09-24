@@ -1,0 +1,213 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "version": "1.0.0",
+  "title": "Trataka (Neuro-Ocular Gazing) Meditation Library",
+  "description": "5 evidence-based Trataka variants with selection rules based on mood, intensity, and time of day, complete with on-screen visual descriptors and gentle voice cues.",
+  "variants": {
+    "candle_flame": {
+      "id": "candle_flame",
+      "mode_key": "flame",
+      "name_en": "Candle Flame Gazing (Jyoti Trataka)",
+      "name_hi": "ज्योति त्राटक (दीप शिखा दर्शन)",
+      "sanskrit_name": "ज्योति त्राटक",
+      "visual_type": "candle",
+      "focal_target_en": "The warm, luminous teardrop tip of a living golden flame.",
+      "focal_target_hi": "दीपक की स्थिर, सुनहरी और सौम्य लौ की नोक।",
+      "default_duration_seconds": 120,
+      "min_duration_seconds": 60,
+      "max_duration_seconds": 180,
+      "neuro_mechanism_en": "Holding a gentle focal fixation on a warm, rhythmic luminance recalibrates retinal photoreceptors, soothing sympathetic hyperarousal and breaking repetitive anxious rumination.",
+      "neuro_mechanism_hi": "दीपक की स्थिर लौ पर सौम्य दृष्टि केंद्रित करने से तंत्रिका तंत्र शांत होता है और चिंता व विचारों का भटकाव थमता है।",
+      "selection_rationale_en": "Chosen for you because candle flame gazing is clinically ideal for calming racing anxiety, mental overthinking, and evening restlessness.",
+      "selection_rationale_hi": "यह विधि आपके लिए चुनी गई है क्योंकि ज्योति त्राटक मन की घबराहट, दौड़ते विचारों और शाम के समय तनाव को शांत करने के लिए सर्वोत्तम है।",
+      "voice_cues": {
+        "begin_en": "Let your posture be upright yet effortless. Softly rest your eyes upon the brightest apex of the flame. Take a slow, comforting breath in.",
+        "begin_hi": "अपनी रीढ़ को सीधा और आरामदायक रखें। अपनी दृष्टि को दीपक की सुनहरी लौ पर टिकाएं। एक गहरी और सुखद सांस भीतर लें।",
+        "blink_en": "Keep your gaze soft and receptive. There is no need to stare forcefully; blink naturally and easily whenever you feel the urge.",
+        "blink_hi": "दृष्टि को कोमल रखें, आंखों पर कोई दबाव न डालें। जब भी आवश्यकता हो, स्वाभाविक रूप से पलकें झपकाएं।",
+        "close_eyes_en": "Now, gently close your eyelids. Allow the golden residual impression of the flame to glow peacefully in the space between your eyebrows.",
+        "close_eyes_hi": "अब धीरे से अपनी पलकें बंद कर लें। लौ के उस सुनहरे आभास को अपने दोनों भौंहों के बीच शांत भाव से देखें।",
+        "relax_en": "Release your shoulders down. Soften your jaw, soften your forehead. Bask in the warm, steady stillness within you.",
+        "relax_hi": "अपने कंधों और चेहरे को पूरी तरह ढीला छोड़ दें। अपने भीतर की इस मौन, स्थिर शांति का अनुभव करें।"
+      },
+      "step_by_step_guidance_en": [
+        "Position yourself comfortably, approximately 2 to 3 feet from the screen at eye level.",
+        "Rest your gaze gently upon the glowing center of the flame without straining.",
+        "Breathe with a natural, steady rhythm: 4 seconds in, 6 seconds out.",
+        "When the timer finishes, close your eyes and rest in the calm warmth of your awareness."
+      ],
+      "step_by_step_guidance_hi": [
+        "स्क्रीन से लगभग 2-3 फीट की दूरी पर आराम से बैठें।",
+        "बिना किसी तनाव के लौ के मध्य भाग पर अपनी दृष्टि टिकाएं।",
+        "प्राकृतिक गति से सांस लें: 4 सेकंड श्वास लें, 6 सेकंड छोड़ें।",
+        "समय समाप्त होने पर आंखें बंद करें और भीतर की शांति में विश्राम करें।"
+      ],
+      "closing_reflection_en": "Notice how the agitated chatter of the mind has settled like dust after rain. You carry this steady inner flame wherever you go.",
+      "closing_reflection_hi": "अनुभव करें कि मन की चंचलता किस प्रकार शांत हो चुकी है। यह आंतरिक शांति सदैव आपके साथ है।"
+    },
+    "bindu_dot": {
+      "id": "bindu_dot",
+      "mode_key": "bindu",
+      "name_en": "Bindu (Point) Gazing (Bindu Trataka)",
+      "name_hi": "बिन्दु त्राटक (केन्द्रित बिन्दु दर्शन)",
+      "sanskrit_name": "बिन्दु त्राटक",
+      "visual_type": "bindu",
+      "focal_target_en": "A solitary, radiant golden amber point of concentrated light.",
+      "focal_target_hi": "एक एकाग्र, स्थिर और चमकदार सुनहरा बिन्दु।",
+      "default_duration_seconds": 120,
+      "min_duration_seconds": 60,
+      "max_duration_seconds": 180,
+      "neuro_mechanism_en": "Single-point ocular convergence grounds visual saccades, directly inhibiting amygdala fight-or-flight signaling and dissolving high-intensity anger or restlessness.",
+      "neuro_mechanism_hi": "एक स्थिर बिन्दु पर दृष्टि केंद्रित करने से मस्तिष्क का उत्तेजना केन्द्र शांत होता है और तीव्र क्रोध व अशांति दूर होती है।",
+      "selection_rationale_en": "Selected for you because single-point Bindu gazing swiftly grounds intense anger, internal irritation, and high autonomic restlessness into prefrontal laser focus.",
+      "selection_rationale_hi": "यह विधि इसलिए चुनी गई है क्योंकि बिन्दु त्राटक तीव्र क्रोध, चिड़चिड़ेपन और आंतरिक बेचैनी को तुरंत शांत कर मानसिक एकाग्रता लौटाता है।",
+      "voice_cues": {
+        "begin_en": "Anchor your eyes directly upon the golden bindu at the center. As your gaze steadies, let your thoughts gather into this single point.",
+        "begin_hi": "अपनी दृष्टि को केंद्र में स्थित सुनहरे बिन्दु पर स्थिर करें। जैसे-जैसे आपकी दृष्टि थमेगी, आपके विचार भी स्थिर होने लगेंगे।",
+        "blink_en": "Maintain a calm, unforced gaze. Blink whenever your eyes need comfort, then effortlessly return to the golden center.",
+        "blink_hi": "दृष्टि को सहज रखें। जब भी आवश्यकता हो पलक झपकाएं, और पुनः बिन्दु पर ध्यान केंद्रित करें।",
+        "close_eyes_en": "Slowly close your eyes. Retain the luminous image of that golden dot in the vast expanse of your quiet mind.",
+        "close_eyes_hi": "धीरे-धीरे आंखें बंद करें। अपने शांत मन के भीतर उस चमकते बिन्दु की स्मृति को संजोएं।",
+        "relax_en": "Feel the grounded stability spreading through your chest and limbs. You are solid, centered, and undisturbed.",
+        "relax_hi": "अपने पूरे शरीर में एक गहरी स्थिरता का अनुभव करें। आप शांत, संतुलित और अडिग हैं।"
+      },
+      "step_by_step_guidance_en": [
+        "Sit upright with your spine aligned and relax your facial muscles.",
+        "Hold your gaze motionless on the golden center point.",
+        "Allow the edges of the room to soften into peripheral blur.",
+        "Finish by rubbing your palms together until warm and gently cupping them over your eyes."
+      ],
+      "step_by_step_guidance_hi": [
+        "रीढ़ को सीधा रखकर बैठें और चेहरे की मांसपेशियों को ढीला करें।",
+        "सुनहरे बिन्दु पर बिना हिले-डुले ध्यान टिकाएं।",
+        "आस-पास के वातावरण को धुंधला होने दें, केवल बिन्दु पर ध्यान रखें।",
+        "अंत में दोनों हथेलियों को रगड़कर गर्म करें और आंखों पर रखकर आराम दें।"
+      ],
+      "closing_reflection_en": "All scattered mental energy has concentrated back into your center. You are grounded and sovereign in this moment.",
+      "closing_reflection_hi": "आपकी सारी बिखरी हुई मानसिक ऊर्जा पुनः एक बिंदु पर केंद्रित हो चुकी है। आप पूरी तरह शांत और सशक्त हैं।"
+    },
+    "om_symbol": {
+      "id": "om_symbol",
+      "mode_key": "om",
+      "name_en": "Om & Sacred Symbol Gazing (Murti Trataka)",
+      "name_hi": "ॐ व मण्डल त्राटक (पवित्र प्रतीक दर्शन)",
+      "sanskrit_name": "मूर्ति / मण्डल त्राटक",
+      "visual_type": "om",
+      "focal_target_en": "A glowing sacred ॐ (Om) symbol radiating harmonious concentric geometry.",
+      "focal_target_hi": "सौम्य आभायुक्त पवित्र ॐ प्रतीक और सामंजस्यपूर्ण ज्यामिति।",
+      "default_duration_seconds": 120,
+      "min_duration_seconds": 60,
+      "max_duration_seconds": 180,
+      "neuro_mechanism_en": "Symmetric sacred geometry and archetype visualization stimulates occipital-parietal neural integration, uplifting low mood and reconnecting to meaning.",
+      "neuro_mechanism_hi": "पवित्र प्रतीक और ज्यामिति का दर्शन मस्तिष्क के दोनों गोलार्धों में सामंजस्य स्थापित कर उदासी को दूर करता है।",
+      "selection_rationale_en": "Recommended for you because sacred Om gazing uplifts feelings of low mood, sadness, and existential loneliness by evoking sacred connection and inner elevation.",
+      "selection_rationale_hi": "यह आपके लिए अनुशंसित है क्योंकि ॐ त्राटक उदासी, अकेलेपन और निराशा को दूर कर हृदय में एक उच्च आध्यात्मिक ऊर्जा का संचार करता है।",
+      "voice_cues": {
+        "begin_en": "Rest your gaze on the sacred curves of the ॐ symbol. Let its harmonious form bring an uplifting grace into your heart.",
+        "begin_hi": "अपनी दृष्टि को पवित्र ॐ के स्वरूप पर टिकाएं। इसकी सौम्य आकृति को अपने हृदय में शांति और दिव्यता भरने दें।",
+        "blink_en": "Blink softly whenever you need to. Allow the symmetry and grace of the symbol to fill your visual field.",
+        "blink_hi": "सहजता से पलकें झपकाएं। इस पवित्र प्रतीक के स्वरूप को अपनी चेतना में उतरने दें।",
+        "close_eyes_en": "Gently close your eyes. Sense the timeless, primordial vibration of Om echoing softly within your breath.",
+        "close_eyes_hi": "धीरे से आंखें बंद करें। अपनी श्वास के साथ ॐ की मौन ध्वनि को अपने भीतर गूंजते हुए महसूस करें।",
+        "relax_en": "You are held in a vast, benevolent space. Let all heavy sorrow dissolve into this sacred silence.",
+        "relax_hi": "आप एक अत्यंत सुरक्षित और पवित्र संरक्षण में हैं। अपने समस्त भारीपन को इस मौन में विलीन होने दें।"
+      },
+      "step_by_step_guidance_en": [
+        "Take a comfortable seated posture with your hands resting gently on your lap.",
+        "Trace the flowing curves of the Om symbol with your eyes, then rest at its heart.",
+        "Inhale deeply, feeling lightness fill your chest.",
+        "Close your eyes at the bell and savor the quiet reverence within."
+      ],
+      "step_by_step_guidance_hi": [
+        "हाथों को गोद में रखकर सुखद आसन में बैठें।",
+        "ॐ की घुमावदार रेखाओं को देखते हुए उसके केंद्र पर दृष्टि स्थिर करें।",
+        "गहरी सांस लें और छाती में हल्कापन अनुभव करें।",
+        "घंटी की ध्वनि पर आंखें बंद करें और भीतर की दिव्यता को महसूस करें।"
+      ],
+      "closing_reflection_en": "You are never truly alone. The same universal consciousness that breathes life into the cosmos is alive within you right now.",
+      "closing_reflection_hi": "आप कभी अकेले नहीं हैं। जो चेतना इस सम्पूर्ण ब्रह्मांड को चला रही है, वही आपके भीतर इस क्षण जाग्रत है।"
+    },
+    "moon_star": {
+      "id": "moon_star",
+      "mode_key": "moon",
+      "name_en": "Moon & Star Gazing (Shoonya Trataka)",
+      "name_hi": "चंद्र व तारा त्राटक (शून्य व आकाश दर्शन)",
+      "sanskrit_name": "शून्य / तारा त्राटक",
+      "visual_type": "moon",
+      "focal_target_en": "A luminous, serene crescent moon against a quiet night sky of breathing stars.",
+      "focal_target_hi": "शांत रात्रि आकाश में मंद-मंद चमकता शीतल चंद्रमा और तारे।",
+      "default_duration_seconds": 120,
+      "min_duration_seconds": 60,
+      "max_duration_seconds": 180,
+      "neuro_mechanism_en": "Transitioning from narrow foveal fixation to expansive, panoramic night sky vision instantly down-regulates adrenergic tone and quiets the Default Mode Network.",
+      "neuro_mechanism_hi": "विशाल आकाश और शीतल चंद्रमा के दर्शन से मस्तिष्क का तनाव तंत्र तुरंत शांत होता है और गहरी शांति मिलती है।",
+      "selection_rationale_en": "Selected for you because nocturnal lunar gazing naturally cools mental heat, dissolves mental fatigue, and opens panoramic spaciousness—ideal during evening or night hours.",
+      "selection_rationale_hi": "यह विधि इसलिए चुनी गई है क्योंकि चंद्रमा और तारों का दर्शन मानसिक थकावट, गर्मी और रात के तनाव को शीतल शांति में बदल देता है।",
+      "voice_cues": {
+        "begin_en": "Allow your gaze to expand across the deep blue night sky, resting softly on the gentle light of the moon.",
+        "begin_hi": "अपनी दृष्टि को गहरे नीले आकाश पर फैलाएं, और चंद्रमा के शीतल प्रकाश पर सौम्यता से टिकाएं।",
+        "blink_en": "Blink naturally. Let your vision widen so you take in both the moon and the twinkling stars at the edges of your view.",
+        "blink_hi": "सहजता से पलक झपकाएं। अपनी दृष्टि को विस्तृत करें ताकि चंद्रमा के साथ-साथ तारे भी आपकी परिधि में आएं।",
+        "close_eyes_en": "Close your eyes now. Feel as if the boundless, cool stillness of the night sky is resting peacefully in your mind.",
+        "close_eyes_hi": "अब आंखें बंद कर लें। अनुभव करें कि रात्रि के आकाश की असीम, शीतल शांति आपके मन में छा गई है।",
+        "relax_en": "Every worry is small against the vastness of the cosmos. Breathe out all fatigue and rest in deep calm.",
+        "relax_hi": "इस विशाल ब्रह्मांड के सामने हर चिंता छोटी है। अपनी समस्त थकान को बाहर छोड़ दें और विश्राम करें।"
+      },
+      "step_by_step_guidance_en": [
+        "Dim the lights in your room if possible to create a nocturnal sanctuary.",
+        "Soften your vision so you take in the open, spacious horizon.",
+        "Let your exhalations be long, slow, and cool.",
+        "Close your eyes and visualize the soothing silver moonlight washing over you."
+      ],
+      "step_by_step_guidance_hi": [
+        "यदि संभव हो तो कमरे की बत्तियां मद्धिम कर लें।",
+        "अपनी दृष्टि को खुला और कोमल रखें।",
+        "लंबी और शीतल सांसें बाहर छोड़ें।",
+        "आंखें बंद कर अनुभव करें कि चंद्रमा की शीतल किरणें आपके मन को शांत कर रही हैं।"
+      ],
+      "closing_reflection_en": "Like the vast night sky that holds all stars without strain, your awareness is open, peaceful, and unburdened.",
+      "closing_reflection_hi": "जिस प्रकार आकाश बिना किसी प्रयास के तारों को थामे रहता है, उसी प्रकार आपका मन अब पूरी तरह मुक्त और शांत है।"
+    },
+    "mirror_reflection": {
+      "id": "mirror_reflection",
+      "mode_key": "mirror",
+      "name_en": "Mirror & Eye-Reflection Gazing (Pratibimb Trataka)",
+      "name_hi": "प्रतिबिम्ब त्राटक (नेत्र व दर्पण दर्शन)",
+      "sanskrit_name": "प्रतिबिम्ब त्राटक",
+      "visual_type": "mirror",
+      "focal_target_en": "The compassionate reflection of your own eyes in a softly illuminated mirror or camera portal.",
+      "focal_target_hi": "दर्पण या कैमरे में अपनी ही आंखों का स्नेहमयी और कोमल प्रतिबिंब।",
+      "default_duration_seconds": 120,
+      "min_duration_seconds": 60,
+      "max_duration_seconds": 180,
+      "neuro_mechanism_en": "Frontoparietal mirror-neuron activation combined with compassionate eye contact engages the ventral vagal social engagement complex, dissolving toxic self-criticism and shame.",
+      "neuro_mechanism_hi": "स्वयं की आंखों में करुणा से देखने से आत्म-ग्लानि और हीन भावना समाप्त होती है और आत्म-स्वीकृति का जन्म होता है।",
+      "selection_rationale_en": "Chosen specifically for you because sacred mirror gazing directly neutralizes toxic shame, imposter guilt, and self-doubt through courageous self-acceptance.",
+      "selection_rationale_hi": "यह विधि विशेष रूप से आपके लिए चुनी गई है क्योंकि दर्पण त्राटक आत्म-ग्लानि, अपराधबोध और स्वयं के प्रति कठोरता को मिटाकर आत्म-प्रेम जगाता है।",
+      "voice_cues": {
+        "begin_en": "Look directly into the pupils of your own reflection. Gaze not with judgment, but with the profound kindness you would offer a loved one.",
+        "begin_hi": "अपने प्रतिबिंब की आंखों में सीधे देखें। किसी आलोचना के बिना, केवल उस स्नेह के साथ देखें जो आप अपने प्रियजन को देते हैं।",
+        "blink_en": "Blink whenever needed. Soften your facial expression and welcome yourself exactly as you are right now.",
+        "blink_hi": "सहजता से पलक झपकाएं। अपने चेहरे को सौम्य बनाएं और स्वयं को उसी रूप में स्वीकार करें जैसे आप हैं।",
+        "close_eyes_en": "Close your eyes now. Place your right hand gently over your heart and feel your own warm, steady heartbeat.",
+        "close_eyes_hi": "अब आंखें बंद कर लें। अपना दाहिना हाथ अपने हृदय पर रखें और अपनी धड़कन की ऊष्मा को महसूस करें।",
+        "relax_en": "Whisper inwardly: 'I see you. You are worthy. You are safe.' Let self-forgiveness saturate your whole being.",
+        "relax_hi": "मन में कहें: 'मैं तुम्हें स्वीकार करता हूँ। तुम मूल्यवान हो। तुम सुरक्षित हो।' आत्म-करुणा को अपने रोम-रोम में बहने दें।"
+      },
+      "step_by_step_guidance_en": [
+        "Position yourself so your eyes are reflected in the center of the screen or mirror portal.",
+        "Look into your own pupils with steady, non-judgmental presence.",
+        "Notice any critical self-talk and consciously replace it with gentle compassion.",
+        "Conclude with your hands over your heart, honoring your courage."
+      ],
+      "step_by_step_guidance_hi": [
+        "स्क्रीन के मध्य में अपनी आंखों के प्रतिबिंब पर ध्यान केंद्रित करें।",
+        "बिना किसी दोषारोपण के अपनी आंखों में देखें।",
+        "यदि मन में कोई कटु विचार आए, तो उसे करुणा से विदा करें।",
+        "अंत में हृदय पर हाथ रखकर स्वयं के प्रति कृतज्ञता व्यक्त करें।"
+      ],
+      "closing_reflection_en": "You are your own safest sanctuary. Never abandon yourself, for your true nature is whole, resilient, and worthy.",
+      "closing_reflection_hi": "आप स्वयं अपना सबसे सुरक्षित शरणस्थल हैं। आपका वास्तविक स्वरूप पूर्ण, पवित्र और सामर्थ्यवान है।"
+    }
+  }
+}

@@ -32,6 +32,7 @@ require('./test-seo-verification.js');
 require('./test-karaoke-engine-modular.js');
 require('./test-text-only-gita-library.js');
 require('./test-sequential-card-flow.js');
+require('./test-sequential-cards-and-karaoke.js');
 
 
 console.log('================================================================');
@@ -49,6 +50,8 @@ async function main() {
     await testGitaClinicalTratakTrio();
     await testTriPillarSynergyDiagnostic();
     await runKaraokeAndTextVisualsTests();
+    const { runWellnessFlowTests } = require('./wellness-flow.test.js');
+    runWellnessFlowTests();
     await import('./test-greeting-and-mic-test.js');
     await import('./test-incomplete-utterance-guardrails.js');
     console.log('================================================================');

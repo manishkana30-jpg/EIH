@@ -29,6 +29,10 @@ const PwaInstallModal = dynamic(
   () => import("./components/PwaInstallModal").then((m) => (m.PwaInstallModal ? { default: m.PwaInstallModal } : m)),
   { ssr: false }
 );
+const GuidedWellnessConversation = dynamic(
+  () => import("@/components/wellness-flow/GuidedWellnessConversation"),
+  { ssr: false }
+);
 
 import { browserSpeechController } from "@/lib/audio/browser-speech";
 import { VoiceAcousticState } from "@/lib/types/emotions";
@@ -86,6 +90,7 @@ export default function SanctuarySessionPage() {
   const [isPranayamaOpen, setIsPranayamaOpen] = useState(false);
   const [isTratakaOpen, setIsTratakaOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [isWellnessFlowOpen, setIsWellnessFlowOpen] = useState(false);
   const [isCrisisModalOpen, setIsCrisisModalOpen] = useState(false);
   const [activeCrisisData, setActiveCrisisData] = useState<any>(null);
   const [isPwaModalOpen, setIsPwaModalOpen] = useState(false);
@@ -471,7 +476,14 @@ export default function SanctuarySessionPage() {
       const currentSpeaking = activeSpeakingStageRef.current;
       if (currentSpeaking) {
         const { messageId, stage } = currentSpeaking;
-        const parsed = parsedStagesCacheRef.current[messageId];
+        let parsed = parsedStagesCacheRef.current[messageId];
+        if (!parsed) {
+          const msg = messagesRef.current.find((m) => m.id === messageId);
+          if (msg) {
+            parsed = parseTherapeuticStages(msg.text, userLocaleRef.current);
+            parsedStagesCacheRef.current[messageId] = parsed;
+          }
+        }
 
         if (stage === 2) {
           // Card 2 (Gita) finished reading -> auto-advance to Card 3 (CBT) and read aloud
@@ -564,15 +576,38 @@ export default function SanctuarySessionPage() {
   // ─── Sequential Card Progression Handlers ───
   const handleConfirmStage1 = useCallback(
     (messageId: string) => {
+      // 1. Instantly stop any previous audio or speech
+      if (activeAudioRef.current) {
+        try {
+          activeAudioRef.current.pause();
+          activeAudioRef.current.src = "";
+        } catch (_) {}
+        activeAudioRef.current = null;
+      }
+      browserSpeechController.cancelSpeech();
+      setIsPlayingAudio(false);
+      isPlayingAudioRef.current = false;
+      setActiveKaraoke(null);
+
       setMessageStages((prev) => ({ ...prev, [messageId]: 2 }));
       messageStagesRef.current = { ...messageStagesRef.current, [messageId]: 2 };
 
-      const parsed = parsedStagesCacheRef.current[messageId];
+      let parsed = parsedStagesCacheRef.current[messageId];
+      if (!parsed) {
+        const msg = messagesRef.current.find((m) => m.id === messageId);
+        if (msg) {
+          parsed = parseTherapeuticStages(msg.text, userLocaleRef.current);
+          parsedStagesCacheRef.current[messageId] = parsed;
+        }
+      }
+
       if (parsed) {
         const stage2 = parsed.stages.find((s: any) => s.stage === 2);
         if (stage2) {
           activeSpeakingStageRef.current = { messageId, stage: 2 };
-          playVoiceRef.current(stage2.speechText, undefined, messageId);
+          setTimeout(() => {
+            playVoiceRef.current(stage2.speechText, undefined, messageId);
+          }, 120);
         }
       }
     },
@@ -581,15 +616,37 @@ export default function SanctuarySessionPage() {
 
   const handleAdvanceStage = useCallback(
     (messageId: string, nextStage: number) => {
+      if (activeAudioRef.current) {
+        try {
+          activeAudioRef.current.pause();
+          activeAudioRef.current.src = "";
+        } catch (_) {}
+        activeAudioRef.current = null;
+      }
+      browserSpeechController.cancelSpeech();
+      setIsPlayingAudio(false);
+      isPlayingAudioRef.current = false;
+      setActiveKaraoke(null);
+
       setMessageStages((prev) => ({ ...prev, [messageId]: nextStage }));
       messageStagesRef.current = { ...messageStagesRef.current, [messageId]: nextStage };
 
-      const parsed = parsedStagesCacheRef.current[messageId];
+      let parsed = parsedStagesCacheRef.current[messageId];
+      if (!parsed) {
+        const msg = messagesRef.current.find((m) => m.id === messageId);
+        if (msg) {
+          parsed = parseTherapeuticStages(msg.text, userLocaleRef.current);
+          parsedStagesCacheRef.current[messageId] = parsed;
+        }
+      }
+
       if (parsed) {
         const targetStage = parsed.stages.find((s: any) => s.stage === nextStage);
         if (targetStage) {
           activeSpeakingStageRef.current = { messageId, stage: nextStage };
-          playVoiceRef.current(targetStage.speechText, undefined, messageId);
+          setTimeout(() => {
+            playVoiceRef.current(targetStage.speechText, undefined, messageId);
+          }, 120);
         }
       }
     },
@@ -652,14 +709,26 @@ export default function SanctuarySessionPage() {
     // an affirmative response ("yes", "haan", "correct", etc.), advance directly to Stage 2 (Gita Card & Gyan)
     // without sending a redundant backend request (stopping repetitive loops completely).
     const lastAiMsg = [...messagesRef.current].reverse().find((m) => m.sender === "ai");
-    const isAwaitingStage1 =
-      lastAiMsg &&
-      messageStagesRef.current[lastAiMsg.id] === 1 &&
-      parsedStagesCacheRef.current[lastAiMsg.id]?.isStructured;
+    let isAwaitingStage1 = false;
+    let parsedForAiMsg: any = null;
 
+    if (lastAiMsg) {
+      parsedForAiMsg = parsedStagesCacheRef.current[lastAiMsg.id];
+      if (!parsedForAiMsg) {
+        parsedForAiMsg = parseTherapeuticStages(lastAiMsg.text, userLocaleRef.current);
+        parsedStagesCacheRef.current[lastAiMsg.id] = parsedForAiMsg;
+      }
+      const curStage = messageStagesRef.current[lastAiMsg.id] ?? 1;
+      isAwaitingStage1 = !!(parsedForAiMsg?.isStructured && curStage === 1);
+    }
+
+    const cleanInput = messageText.trim().toLowerCase().replace(/[.,!?;:"]/g, "");
     const isAffirmativeConfirmation =
-      /^(yes|yeah|yep|right|correct|that's right|thats right|haan|sahi|sahi hai|bilkul|ha|si|oui|ja|yes please|exactly|true|agree|affirmative|y)\b/i.test(
-        messageText.trim().replace(/[.,!]/g, "")
+      /^(yes|yeah|yep|right|correct|that's right|thats right|haan|sahi|sahi hai|bilkul|ha|si|oui|ja|yes please|exactly|true|agree|affirmative|y|theek hai|thik hai|ji haan|ji|haanji|okay|ok)\b/i.test(
+        cleanInput
+      ) ||
+      /\b(yes that is right|yes it is|yes correct|yes right|haan sahi|sahi hai|bilkul sahi|yes this is right|yes i am|it is right|thats right|that is right)\b/i.test(
+        cleanInput
       );
 
     if (isAwaitingStage1 && isAffirmativeConfirmation && lastAiMsg) {
@@ -958,6 +1027,7 @@ export default function SanctuarySessionPage() {
           isOpen={isMobileNavOpen}
           onClose={() => setIsMobileNavOpen(false)}
           isBackendHealthy={isBackendHealthy}
+          onOpenWellnessFlow={() => setIsWellnessFlowOpen(true)}
           onOpenCBT={() => setIsCBTModalOpen(true)}
           onOpenPranayama={() => setIsPranayamaOpen(true)}
           onOpenHistory={() => setIsHistoryOpen(true)}
@@ -973,6 +1043,7 @@ export default function SanctuarySessionPage() {
         {/* Desktop Left Navigation Column: renders LeftNav with overflow-y-auto, Share Sanctuary, Link Copied!, and Install App */}
         <LeftNav
           isBackendHealthy={isBackendHealthy}
+          onOpenWellnessFlow={() => setIsWellnessFlowOpen(true)}
           onOpenCBT={() => setIsCBTModalOpen(true)}
           onOpenPranayama={() => setIsPranayamaOpen(true)}
           onOpenHistory={() => setIsHistoryOpen(true)}
@@ -1006,6 +1077,7 @@ export default function SanctuarySessionPage() {
           onLanguageChange={handleLanguageChange}
           onOpenMobileNav={() => setIsMobileNavOpen(true)}
           onOpenMobileTelemetry={() => setIsMobileTelemetryOpen(true)}
+          onOpenWellnessFlow={() => setIsWellnessFlowOpen(true)}
           onOpenTrataka={(mode?: string) => {
             if (mode) setRecommendedTrataka(normalizeTratakaMode(mode));
             setIsTratakaOpen(true);
@@ -1134,6 +1206,13 @@ export default function SanctuarySessionPage() {
           deferredPrompt={deferredPrompt}
           isInstalled={isAppInstalled}
           onInstallSuccess={() => setIsAppInstalled(true)}
+        />
+
+        {/* 4-Phase Guided Wellness Conversation Modal */}
+        <GuidedWellnessConversation
+          isOpen={isWellnessFlowOpen}
+          onClose={() => setIsWellnessFlowOpen(false)}
+          initialLanguage={currentLanguage.code === "hi" ? "hi" : "en"}
         />
       </section>
 
