@@ -6,7 +6,7 @@
  * Manages explicit microphone consent tracking.
  */
 
-import { encryptData, decryptData, EncryptedPayload } from '../db/crypto';
+import { encryptData, decryptData, type EncryptedPayload } from '../db/crypto.ts';
 import type { PersistentSessionData } from './types';
 
 const WELLNESS_SESSION_STORAGE_KEY = 'eih_wellness_session_encrypted';

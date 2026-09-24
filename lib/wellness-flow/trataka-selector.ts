@@ -15,7 +15,7 @@
  * 5. Mirror/eye-reflection gazing (mirror_reflection)
  */
 
-import tratakaData from '../../data/wellness_flow/trataka_instructions.json';
+import tratakaData from '../../data/wellness_flow/trataka_instructions.json' with { type: 'json' };
 import type { MoodProfile, TratakaVariantKey, TratakaVariantData, TratakaSelectionResult } from './types';
 
 export type TimeOfDay = 'morning' | 'afternoon' | 'evening' | 'night';

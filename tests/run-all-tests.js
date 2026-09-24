@@ -52,6 +52,8 @@ async function main() {
     await runKaraokeAndTextVisualsTests();
     const { runWellnessFlowTests } = require('./wellness-flow.test.js');
     runWellnessFlowTests();
+    const { runConfirmVoiceFlowTests } = require('./test-confirm-voice-flow.js');
+    runConfirmVoiceFlowTests();
     await import('./test-greeting-and-mic-test.js');
     await import('./test-incomplete-utterance-guardrails.js');
     console.log('================================================================');

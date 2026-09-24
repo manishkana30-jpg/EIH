@@ -11,7 +11,7 @@
  * 6. Deterministic crisis & safety detector interrupt with Tele-MANAS helpline details.
  */
 
-import { detectCrisis, CrisisDetectionResult } from '../safety/crisis-detector';
+import { detectCrisis, type CrisisDetectionResult } from '../safety/crisis-detector.ts';
 import type { VoiceAcousticState } from '../types/emotions';
 import type { MoodProfile, ClarificationTurn, WellnessLanguage } from './types';
 

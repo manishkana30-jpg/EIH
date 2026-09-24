@@ -14,15 +14,15 @@
  * - Immediate safety crisis lockdown.
  */
 
-import gitaVersesData from '../../data/wellness_flow/gita_verses.json';
-import cbtScriptsData from '../../data/wellness_flow/cbt_scripts.json';
-import { emotionEngine } from './emotion-engine';
-import { tratakaSelector, getTimeOfDay } from './trataka-selector';
+import gitaVersesData from '../../data/wellness_flow/gita_verses.json' with { type: 'json' };
+import cbtScriptsData from '../../data/wellness_flow/cbt_scripts.json' with { type: 'json' };
+import { emotionEngine } from './emotion-engine.ts';
+import { tratakaSelector, getTimeOfDay } from './trataka-selector.ts';
 import {
   saveEncryptedWellnessSession,
   loadEncryptedWellnessSession,
   clearEncryptedWellnessSession,
-} from './storage-encryption';
+} from './storage-encryption.ts';
 import type { VoiceAcousticState } from '../types/emotions';
 import type {
   WellnessFlowState,

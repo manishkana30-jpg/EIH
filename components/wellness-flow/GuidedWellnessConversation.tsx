@@ -30,6 +30,8 @@ import {
 import { wellnessStateMachine } from '@/lib/wellness-flow/wellness-state-machine';
 import { getMicConsent, setMicConsent } from '@/lib/wellness-flow/storage-encryption';
 import { browserSpeechController } from '@/lib/audio/browser-speech';
+import { ConfirmVoiceManager, type ConfirmVoiceStatus } from '@/lib/wellness-flow/confirm-voice-manager';
+import { parseYesNoIntent, logConfirmDebug } from '@/lib/wellness-flow/confirm-intent-parser';
 import type { VoiceAcousticState } from '@/lib/types/emotions';
 import type {
   WellnessFlowState,
@@ -63,6 +65,13 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
   const [speechTranscript, setSpeechTranscript] = useState('');
   const [voiceTelemetry, setVoiceTelemetry] = useState<VoiceAcousticState | null>(null);
   const [activeVoicePrompt, setActiveVoicePrompt] = useState<string>('');
+
+  // ─── Phase 1 Dedicated Confirmation Voice State ───
+  const [confirmStatus, setConfirmStatus] = useState<ConfirmVoiceStatus>('idle');
+  const [confirmStatusMessage, setConfirmStatusMessage] = useState<string>('');
+  const [liveConfirmTranscript, setLiveConfirmTranscript] = useState<string>('');
+  const confirmVoiceManagerRef = useRef<ConfirmVoiceManager | null>(null);
+  const hasTransitionedRef = useRef<boolean>(false);
 
   // ─── Privacy & Consent Modal ───
   const [showConsentModal, setShowConsentModal] = useState(false);
@@ -150,11 +159,92 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
     }
   }, [isOpen, currentState]);
 
+  // ─── Phase 1 Confirmation Transition Handler (Guarded against duplicate executions) ───
+  const handleConfirmSelection = useCallback(
+    (isAffirmative: boolean) => {
+      if (hasTransitionedRef.current) {
+        logConfirmDebug('GUARD', 'Ignoring duplicate confirmation trigger: already transitioned');
+        return;
+      }
+      hasTransitionedRef.current = true;
+
+      if (confirmVoiceManagerRef.current) {
+        confirmVoiceManagerRef.current.destroy();
+        confirmVoiceManagerRef.current = null;
+      }
+
+      setConfirmStatus('processing');
+      setLiveConfirmTranscript('');
+
+      logConfirmDebug(
+        'TRANSITION',
+        `Executing Phase 1 confirmation transition: isAffirmative=${isAffirmative} -> ${
+          isAffirmative ? 'GITA' : 'CLARIFY_LOOP'
+        }`
+      );
+
+      const next = wellnessStateMachine.handleConfirmationResponse(isAffirmative);
+      speakAloud(next.nextSpeechText);
+    },
+    [speakAloud]
+  );
+
+  // ─── Phase 1 Dedicated Confirmation Voice Flow ───
+  useEffect(() => {
+    if (!isOpen || currentState !== 'CONFIRM') {
+      if (confirmVoiceManagerRef.current) {
+        confirmVoiceManagerRef.current.destroy();
+        confirmVoiceManagerRef.current = null;
+      }
+      return;
+    }
+
+    if (!session.confirmationStatement) return;
+
+    hasTransitionedRef.current = false;
+    setLiveConfirmTranscript('');
+
+    const manager = new ConfirmVoiceManager(
+      {
+        onStatusChange: (status, message) => {
+          setConfirmStatus(status);
+          setConfirmStatusMessage(message);
+        },
+        onLiveTranscript: (text) => {
+          setLiveConfirmTranscript(text);
+        },
+        onIntentResolved: (intent) => {
+          handleConfirmSelection(intent === 'yes');
+        },
+        onError: (errMsg) => {
+          setConfirmStatusMessage(errMsg);
+        },
+      },
+      languageRef.current
+    );
+
+    confirmVoiceManagerRef.current = manager;
+    manager.startConfirmationFlow(session.confirmationStatement);
+
+    return () => {
+      manager.destroy();
+      confirmVoiceManagerRef.current = null;
+    };
+  }, [isOpen, currentState, session.confirmationStatement, handleConfirmSelection]);
+
   // ─── Voice Recording Toggle with Explicit Consent ───
   const handleToggleListening = async () => {
     if (!hasMicConsent) {
       setShowConsentModal(true);
       return;
+    }
+
+    // In CONFIRM phase, route directly to dedicated short-session recognizer
+    if (currentState === 'CONFIRM') {
+      if (confirmVoiceManagerRef.current) {
+        confirmVoiceManagerRef.current.startDedicatedListeningSession(1);
+        return;
+      }
     }
 
     if (isListening) {
@@ -214,19 +304,21 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
         speakAloud(result.confirmationText);
         return;
       }
-      speakAloud(result.confirmationText);
+      // Note: wellnessStateMachine.handleMoodInput transitioned state to 'CONFIRM',
+      // so the ConfirmVoiceManager useEffect triggers automatically!
     } else if (currentState === 'CONFIRM') {
-      // Check affirmative vs negative by text
-      const clean = raw.toLowerCase();
-      const isYes = /^(yes|yeah|yep|haan|sahi|bilkul|correct|true|exactly|agree|right)\b/i.test(clean);
-      const isNo = /^(no|nah|nahi|na|incorrect|wrong|not really|differently)\b/i.test(clean);
-
-      if (isYes || !isNo) {
-        const next = wellnessStateMachine.handleConfirmationResponse(true);
-        speakAloud(next.nextSpeechText);
+      // Evaluate typed or dictated response with robust multilingual intent parser
+      const parsedIntent = parseYesNoIntent(raw);
+      if (parsedIntent === 'yes') {
+        handleConfirmSelection(true);
+      } else if (parsedIntent === 'no') {
+        handleConfirmSelection(false);
       } else {
-        const next = wellnessStateMachine.handleConfirmationResponse(false);
-        speakAloud(next.nextSpeechText);
+        confirmVoiceManagerRef.current?.triggerButtonFallback(
+          language === 'hi'
+            ? 'समझ नहीं पाए। कृपया नीचे बटन से चुनें।'
+            : "I didn't quite catch that. Please select using the buttons below."
+        );
       }
     } else if (currentState === 'CLARIFY_LOOP') {
       const loopResult = wellnessStateMachine.handleClarificationAnswer(raw, voice || voiceTelemetry || undefined);
@@ -633,7 +725,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
                 <motion.div
                   initial={{ opacity: 0, scale: 0.98 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="p-4 rounded-2xl bg-gradient-to-br from-purple-950/40 to-slate-900/80 border border-purple-500/40 space-y-3 shadow-lg"
+                  className="p-4 rounded-2xl bg-gradient-to-br from-purple-950/40 to-slate-900/80 border border-purple-500/40 space-y-3.5 shadow-lg"
                 >
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-mono text-purple-300 font-bold uppercase tracking-wider">
@@ -648,18 +740,71 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
                     {session.confirmationStatement}
                   </p>
 
+                  {/* VISIBLE LISTENING & STATUS FEEDBACK BANNER */}
+                  <div className="p-3 rounded-xl bg-slate-950/70 border border-purple-500/30 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        {confirmStatus === 'listening' ? (
+                          <span className="relative flex h-3 w-3">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                            <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500" />
+                          </span>
+                        ) : confirmStatus === 'speaking_prompt' || confirmStatus === 'retry_prompt' ? (
+                          <Volume2 className="w-3.5 h-3.5 text-teal-400 animate-pulse" />
+                        ) : (
+                          <HelpCircle className="w-3.5 h-3.5 text-purple-400" />
+                        )}
+                        <span className="text-xs font-semibold text-slate-200">
+                          {confirmStatusMessage ||
+                            (confirmStatus === 'listening'
+                              ? language === 'hi'
+                                ? 'सुन रहे हैं... (हाँ या नहीं कहें)'
+                                : 'Listening... (Say Yes or No)'
+                              : language === 'hi'
+                              ? 'पुष्टि की प्रतीक्षा है'
+                              : 'Awaiting confirmation')}
+                        </span>
+                      </div>
+
+                      {/* Manual Re-listen button if in fallback mode */}
+                      {confirmStatus === 'fallback_buttons' && (
+                        <button
+                          onClick={() => {
+                            confirmVoiceManagerRef.current?.startDedicatedListeningSession(1);
+                          }}
+                          className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-800 hover:bg-slate-700 text-purple-300 text-[10px] font-medium border border-slate-700 transition-all"
+                        >
+                          <Mic className="w-3 h-3" />
+                          <span>{language === 'hi' ? 'पुनः बोलें' : 'Speak again'}</span>
+                        </button>
+                      )}
+                    </div>
+
+                    {/* LIVE TRANSCRIBED TEXT BADGE */}
+                    {liveConfirmTranscript && (
+                      <div className="text-xs font-mono bg-purple-950/50 border border-purple-500/40 rounded-lg px-2.5 py-1.5 text-purple-200 flex items-center gap-2">
+                        <span className="text-[10px] uppercase font-bold text-purple-400">Heard:</span>
+                        <span className="italic truncate">&ldquo;{liveConfirmTranscript}&rdquo;</span>
+                      </div>
+                    )}
+                  </div>
+
                   {/* LARGE YES / NO BUTTONS AS REQUIRED */}
                   <div className="pt-2 flex flex-wrap items-center gap-3">
                     <button
-                      onClick={() => handleSendUserReply('yes')}
-                      className="flex-1 py-3 px-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all active:scale-95 flex items-center justify-center gap-2"
+                      onClick={() => handleConfirmSelection(true)}
+                      className={`flex-1 py-3 px-4 rounded-2xl font-bold text-sm transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg ${
+                        confirmStatus === 'fallback_buttons'
+                          ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 ring-2 ring-emerald-300 ring-offset-2 ring-offset-slate-900 scale-[1.02] animate-pulse'
+                          : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950'
+                      }`}
                     >
                       <Check className="w-4 h-4" />
                       <span>{language === 'hi' ? 'हाँ, यह सही है' : 'Yes, that’s right'}</span>
                     </button>
 
                     <button
-                      onClick={() => handleSendUserReply('no')}
+                      onClick={() => handleConfirmSelection(false)}
                       className="flex-1 py-3 px-4 rounded-2xl bg-slate-800/90 hover:bg-slate-700 border border-slate-700 text-slate-200 font-medium text-sm transition-all active:scale-95 flex items-center justify-center gap-2"
                     >
                       <X className="w-4 h-4" />
