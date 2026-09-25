@@ -1,0 +1,354 @@
+{
+  "timestamp": "2026-09-25T16:27:34.058Z",
+  "initialProbe": {
+    "origin": "http://localhost:3001",
+    "isSecureContext": true,
+    "micPermission": "granted",
+    "hasSpeechRec": true,
+    "hasGUM": true,
+    "gumState": "success: 1 tracks",
+    "speechSynthSpeaking": false
+  },
+  "moodPhaseTest": {
+    "foundMicButton": true,
+    "initialMicTitle": "Speak your reply",
+    "consentModalAppeared": true,
+    "grantedConsent": true,
+    "postConsentMicTitle": "Speak your reply",
+    "isListeningClass": false
+  },
+  "consoleLogs": [
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+      "time": 1790353648448
+    },
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+      "time": 1790353649291
+    }
+  ],
+  "networkRequests": [
+    {
+      "url": "http://localhost:3001/icons/icon.svg",
+      "method": "GET",
+      "time": 1790353648574
+    },
+    {
+      "url": "http://localhost:3001/icons/icon-512x512.png",
+      "method": "GET",
+      "time": 1790353648581
+    },
+    {
+      "url": "http://localhost:3001/api/library/sync",
+      "method": "GET",
+      "time": 1790353648711
+    },
+    {
+      "url": "http://localhost:3001/api/version?_t=1790353648678",
+      "method": "GET",
+      "time": 1790353648712
+    },
+    {
+      "url": "http://127.0.0.1:8000/health",
+      "method": "GET",
+      "time": 1790353648713
+    },
+    {
+      "url": "http://localhost:3001/api/library/sync",
+      "method": "GET",
+      "time": 1790353648713
+    },
+    {
+      "url": "http://localhost:3001/api/version?_t=1790353648704",
+      "method": "GET",
+      "time": 1790353648713
+    },
+    {
+      "url": "http://localhost:3001/api/location",
+      "method": "GET",
+      "time": 1790353648716
+    },
+    {
+      "url": "http://localhost:3001/api/location",
+      "method": "GET",
+      "time": 1790353648717
+    },
+    {
+      "url": "http://localhost:3001/api/location",
+      "method": "GET",
+      "time": 1790353648717
+    },
+    {
+      "url": "http://localhost:3001/api/location",
+      "method": "GET",
+      "time": 1790353648717
+    },
+    {
+      "url": "http://localhost:3001/api/location",
+      "method": "GET",
+      "time": 1790353648717
+    },
+    {
+      "url": "http://localhost:3001/api/health",
+      "method": "GET",
+      "time": 1790353648726
+    },
+    {
+      "url": "http://localhost:3001/_next/static/chunks/_app-pages-browser_app_session_components_SessionModals_tsx.js",
+      "method": "GET",
+      "time": 1790353648737
+    },
+    {
+      "url": "http://localhost:3001/_next/static/chunks/_app-pages-browser_app_session_components_TratakaModule_tsx.js",
+      "method": "GET",
+      "time": 1790353648737
+    },
+    {
+      "url": "http://localhost:3001/_next/static/chunks/_app-pages-browser_app_session_components_PwaInstallModal_tsx.js",
+      "method": "GET",
+      "time": 1790353648738
+    },
+    {
+      "url": "http://localhost:3001/_next/static/chunks/_app-pages-browser_components_wellness-flow_GuidedWellnessConversation_tsx.js",
+      "method": "GET",
+      "time": 1790353648738
+    },
+    {
+      "url": "http://localhost:3001/_next/static/chunks/_app-pages-browser_components_seo_EditorialGuide_tsx.js",
+      "method": "GET",
+      "time": 1790353648738
+    },
+    {
+      "url": "http://localhost:3001/",
+      "method": "GET",
+      "time": 1790353648756
+    },
+    {
+      "url": "http://localhost:3001/api/location",
+      "method": "GET",
+      "time": 1790353648797
+    },
+    {
+      "url": "http://localhost:3001/api/location",
+      "method": "GET",
+      "time": 1790353648798
+    },
+    {
+      "url": "http://localhost:3001/_next/static/chunks/_app-pages-browser_app_session_components_GitaContemplationModal_tsx.js",
+      "method": "GET",
+      "time": 1790353648803
+    },
+    {
+      "url": "http://localhost:3001/_next/static/chunks/_app-pages-browser_app_session_components_CBTKnowledgeModal_tsx.js",
+      "method": "GET",
+      "time": 1790353648803
+    },
+    {
+      "url": "http://localhost:3001/_next/static/chunks/_app-pages-browser_app_session_components_PranayamaGuide_tsx.js",
+      "method": "GET",
+      "time": 1790353648803
+    },
+    {
+      "url": "http://localhost:3001/_next/static/chunks/_app-pages-browser_app_session_components_EncryptedHistoryModal_tsx.js",
+      "method": "GET",
+      "time": 1790353648804
+    },
+    {
+      "url": "http://localhost:3001/_next/static/chunks/_app-pages-browser_app_session_components_CrisisModal_tsx.js",
+      "method": "GET",
+      "time": 1790353648804
+    },
+    {
+      "url": "http://localhost:3001/_next/static/css/app/layout.css?v=1790353648797",
+      "method": "GET",
+      "time": 1790353648872
+    },
+    {
+      "url": "http://localhost:3001/_next/static/chunks/webpack.js?v=1790353648797",
+      "method": "GET",
+      "time": 1790353648872
+    },
+    {
+      "url": "http://localhost:3001/_next/static/chunks/main-app.js?v=1790353648797",
+      "method": "GET",
+      "time": 1790353648872
+    },
+    {
+      "url": "http://localhost:3001/_next/static/chunks/app-pages-internals.js",
+      "method": "GET",
+      "time": 1790353648872
+    },
+    {
+      "url": "http://localhost:3001/_next/static/chunks/app/(session)/page.js",
+      "method": "GET",
+      "time": 1790353648873
+    },
+    {
+      "url": "http://localhost:3001/_next/static/chunks/app/not-found.js",
+      "method": "GET",
+      "time": 1790353648873
+    },
+    {
+      "url": "http://localhost:3001/_next/static/chunks/app/error.js",
+      "method": "GET",
+      "time": 1790353648873
+    },
+    {
+      "url": "http://localhost:3001/_next/static/chunks/app/layout.js",
+      "method": "GET",
+      "time": 1790353648873
+    },
+    {
+      "url": "http://localhost:3001/_next/static/chunks/app/global-error.js",
+      "method": "GET",
+      "time": 1790353648873
+    },
+    {
+      "url": "http://localhost:3001/manifest.webmanifest",
+      "method": "GET",
+      "time": 1790353648874
+    },
+    {
+      "url": "http://localhost:3001/icons/icon.svg",
+      "method": "GET",
+      "time": 1790353649386
+    },
+    {
+      "url": "http://localhost:3001/icons/icon-512x512.png",
+      "method": "GET",
+      "time": 1790353649392
+    },
+    {
+      "url": "http://localhost:3001/api/library/sync",
+      "method": "GET",
+      "time": 1790353649484
+    },
+    {
+      "url": "http://localhost:3001/api/version?_t=1790353649475",
+      "method": "GET",
+      "time": 1790353649485
+    },
+    {
+      "url": "http://127.0.0.1:8000/health",
+      "method": "GET",
+      "time": 1790353649487
+    },
+    {
+      "url": "http://localhost:3001/api/library/sync",
+      "method": "GET",
+      "time": 1790353649487
+    },
+    {
+      "url": "http://localhost:3001/api/version?_t=1790353649481",
+      "method": "GET",
+      "time": 1790353649487
+    },
+    {
+      "url": "http://localhost:3001/api/location",
+      "method": "GET",
+      "time": 1790353649487
+    },
+    {
+      "url": "http://localhost:3001/api/location",
+      "method": "GET",
+      "time": 1790353649487
+    },
+    {
+      "url": "http://localhost:3001/api/location",
+      "method": "GET",
+      "time": 1790353649488
+    },
+    {
+      "url": "http://localhost:3001/api/location",
+      "method": "GET",
+      "time": 1790353649488
+    },
+    {
+      "url": "http://localhost:3001/api/location",
+      "method": "GET",
+      "time": 1790353649488
+    },
+    {
+      "url": "http://localhost:3001/_next/static/chunks/_app-pages-browser_app_session_components_SessionModals_tsx.js",
+      "method": "GET",
+      "time": 1790353649508
+    },
+    {
+      "url": "http://localhost:3001/_next/static/chunks/_app-pages-browser_app_session_components_TratakaModule_tsx.js",
+      "method": "GET",
+      "time": 1790353649508
+    },
+    {
+      "url": "http://localhost:3001/_next/static/chunks/_app-pages-browser_app_session_components_PwaInstallModal_tsx.js",
+      "method": "GET",
+      "time": 1790353649508
+    },
+    {
+      "url": "http://localhost:3001/_next/static/chunks/_app-pages-browser_components_wellness-flow_GuidedWellnessConversation_tsx.js",
+      "method": "GET",
+      "time": 1790353649508
+    },
+    {
+      "url": "http://localhost:3001/_next/static/chunks/_app-pages-browser_components_seo_EditorialGuide_tsx.js",
+      "method": "GET",
+      "time": 1790353649508
+    },
+    {
+      "url": "http://localhost:3001/api/location",
+      "method": "GET",
+      "time": 1790353649544
+    },
+    {
+      "url": "http://localhost:3001/api/location",
+      "method": "GET",
+      "time": 1790353649544
+    },
+    {
+      "url": "http://localhost:3001/_next/static/chunks/_app-pages-browser_app_session_components_GitaContemplationModal_tsx.js",
+      "method": "GET",
+      "time": 1790353649551
+    },
+    {
+      "url": "http://localhost:3001/_next/static/chunks/_app-pages-browser_app_session_components_CBTKnowledgeModal_tsx.js",
+      "method": "GET",
+      "time": 1790353649560
+    },
+    {
+      "url": "http://localhost:3001/_next/static/chunks/_app-pages-browser_app_session_components_PranayamaGuide_tsx.js",
+      "method": "GET",
+      "time": 1790353649564
+    },
+    {
+      "url": "http://localhost:3001/_next/static/chunks/_app-pages-browser_app_session_components_EncryptedHistoryModal_tsx.js",
+      "method": "GET",
+      "time": 1790353649566
+    },
+    {
+      "url": "http://localhost:3001/_next/static/chunks/_app-pages-browser_app_session_components_CrisisModal_tsx.js",
+      "method": "GET",
+      "time": 1790353649567
+    },
+    {
+      "url": "http://localhost:3001/api/location",
+      "method": "GET",
+      "time": 1790353650531
+    },
+    {
+      "url": "http://localhost:3001/api/location",
+      "method": "GET",
+      "time": 1790353650531
+    },
+    {
+      "url": "http://localhost:3001/api/location",
+      "method": "GET",
+      "time": 1790353650562
+    },
+    {
+      "url": "http://localhost:3001/api/location",
+      "method": "GET",
+      "time": 1790353650562
+    }
+  ]
+}
