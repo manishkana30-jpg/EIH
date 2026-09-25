@@ -127,7 +127,7 @@ async function getKeyMetadata(keyId = 'user_byok_key') {
   else if (key.startsWith('sk-ant-')) providerType = 'Anthropic';
   else if (key.startsWith('AIzaSy') || key.startsWith('AIza')) providerType = 'Gemini';
   else if (key.startsWith('gsk_')) providerType = 'Groq';
-  else if (key.startsWith('wss://') || key.startsWith('ws://')) providerType = 'LiveKit';
+  else if (key.startsWith('wss://') || key.startsWith('ws://')) providerType = 'WebSocketAudio';
 
   const maskedPreview = key.length > 8 ? `${key.slice(0, 4)}••••••••${key.slice(-4)}` : '••••••••';
   return {

@@ -18,7 +18,6 @@ import {
 } from 'lucide-react';
 import { CrisisDetectionResult } from '@/lib/safety/crisis-detector';
 import { browserSpeechController } from '@/lib/audio/browser-speech';
-import { liveKitAudioClient } from '@/lib/audio/livekit-client';
 import {
   CountryCrisisProfile,
   getCrisisProfileByCountry,
@@ -79,7 +78,6 @@ export const CrisisModal: React.FC<CrisisModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       browserSpeechController.cancelSpeech();
-      liveKitAudioClient.handleBargeInInterruption();
       if (typeof window !== 'undefined' && window.speechSynthesis) {
         window.speechSynthesis.cancel();
       }

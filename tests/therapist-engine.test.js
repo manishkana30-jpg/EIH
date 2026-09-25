@@ -1,6 +1,6 @@
 /**
  * Unit & Integration Test Suite: Therapist Engine Inference & Cascade
- * Verifies search grounding integration and multi-tier Groq -> Gemini -> Offline Safety fallback.
+ * Verifies search grounding integration and keyless local daemon -> offline safety fallback.
  */
 
 const assert = require('assert');

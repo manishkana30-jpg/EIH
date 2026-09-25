@@ -54,8 +54,8 @@ for (const tc of searchCases) {
   console.log(`  ✓ Query: "${tc.input.slice(0, 45)}..." -> Extracted: "${extracted}"`);
 }
 
-// 3. Test LiveKit Token Interoperability Structure
-console.log('\n--- 3. Testing Token Compatibility (wsUrl & serverUrl) ---');
+// 3. Test WebSocket Audio Connector Interoperability Structure
+console.log('\n--- 3. Testing WebSocket Audio Token Compatibility (wsUrl & serverUrl) ---');
 
 function mockTokenHandler(tokenResponse) {
   const wsUrl = tokenResponse.wsUrl || tokenResponse.serverUrl;
@@ -63,11 +63,11 @@ function mockTokenHandler(tokenResponse) {
   return wsUrl;
 }
 
-const legacyResponse = { token: "jwt-test-token", serverUrl: "wss://demo.livekit.cloud" };
-const updatedResponse = { token: "jwt-test-token", wsUrl: "wss://demo.livekit.cloud", serverUrl: "wss://demo.livekit.cloud" };
+const legacyResponse = { token: "jwt-test-token", serverUrl: "ws://127.0.0.1:8000" };
+const updatedResponse = { token: "jwt-test-token", wsUrl: "ws://127.0.0.1:8000", serverUrl: "ws://127.0.0.1:8000" };
 
-assert.strictEqual(mockTokenHandler(legacyResponse), "wss://demo.livekit.cloud");
-assert.strictEqual(mockTokenHandler(updatedResponse), "wss://demo.livekit.cloud");
+assert.strictEqual(mockTokenHandler(legacyResponse), "ws://127.0.0.1:8000");
+assert.strictEqual(mockTokenHandler(updatedResponse), "ws://127.0.0.1:8000");
 console.log('  ✓ Token connector verified: seamlessly connects with both serverUrl and wsUrl schemas');
 
 // 4. Test Multi-Evasion with Psychosis & Self-Harm

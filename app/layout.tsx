@@ -118,9 +118,6 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.webmanifest" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        {/* Preconnect to critical third-party API origins — eliminates DNS+TLS latency */}
-        <link rel="preconnect" href="https://api.groq.com" />
-        <link rel="preconnect" href="https://generativelanguage.googleapis.com" />
         <link rel="dns-prefetch" href="https://eutils.ncbi.nlm.nih.gov" />
         <link rel="dns-prefetch" href="https://en.wikipedia.org" />
       </head>

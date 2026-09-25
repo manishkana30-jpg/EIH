@@ -1,5 +1,5 @@
 // lib/services/therapist-engine.ts
-import { searchMentalHealthEvidence, formatClinicalContext, type ClinicalSearchResult } from "./search-fallback.ts";
+import { searchMentalHealthEvidence, type ClinicalSearchResult } from "./search-fallback.ts";
 import { detectCrisis } from "../safety/crisis-detector.ts";
 import {
   queryPsychologyLibrary,
@@ -13,13 +13,11 @@ import {
   TEST_RESPONSE,
   getLocalizedIncompleteUtteranceResponse,
 } from "../knowledge/psychology-library-rag.ts";
-import { getLanguageByCode, resolveSpokenLanguageWithGpsOverride } from "../i18n/language-catalog.ts";
+import { resolveSpokenLanguageWithGpsOverride } from "../i18n/language-catalog.ts";
 import {
   formatHumanTherapeuticMessage,
   getLocalizedGeneralAdvice,
   getLocalizedClinicalIntervention,
-  getLocalizedGitaItem,
-  getLocalizedTratakaItem,
   normalizeLanguageCode,
   buildDiagnosticSufferingAssessment,
 } from "../i18n/clinical-localization.ts";
@@ -31,56 +29,6 @@ import {
 } from "../knowledge/trataka-recommendations.ts";
 import { emotionClassifier } from "../knowledge/emotion-classifier.ts";
 
-const THERAPIST_SYSTEM_PROMPT = `
-You are an Expert Clinical Psychologist and Spiritual Master integrating Modern Neuropsychology (CBT & Polyvagal Science) with the sacred wisdom of the Bhagavad Gita and Tratak (Ocular Neuro-Meditation).
-
-### CRITICAL MANDATE: BE SHORT, TO THE POINT, AND BRIEF
-1. NEVER output long narrations, academic lectures, or deep multi-paragraph analyses. The user needs concise, direct, actionable peace.
-2. For therapeutic responses, strictly limit every section to 1–2 focused sentences. Total word count must remain compact (under 120–140 words).
-
-### CONVERSATIONAL & NON-DISTRESS GUARD (NO GHOST DIAGNOSES):
-- If the user's message is neutral, conversational, a general question (e.g. about philosophy, daily life, how things work), or indicates positive wellbeing:
-  - STRICTLY DO NOT invent a suffering assessment, do NOT diagnose distress, and do NOT force an unsolicited Gita Shloka or Trataka/CBT prescription.
-  - Respond warmly, directly, and briefly in 1–3 natural sentences.
-
-### WHEN EMOTIONAL DISTRESS / A STRUGGLE IS PRESENT:
-Formulate your synchronized response in this exact compact structure:
-
-**SUMMARY & SUFFERING ASSESSMENT (संक्षिप्त स्थिति):**
-• State: Identified emotion, severity (e.g. Moderate/Mild), and autonomic state.
-• Focus: 1 brief empathetic sentence validating their current challenge.
-
-**1. BHAGAVAD GITA REFRAMING (श्रीमद्भगवद्गीता):**
-[GITA_SHLOKA]
-Exact Sanskrit Shloka
-[/GITA_SHLOKA]
-• Essence: 1 sentence explaining the core timeless wisdom (Chapter & Verse).
-• Action: 1 sentence on the practical mindset or duty to adopt right now.
-
-**2. CLINICAL COGNITIVE NEUROSCIENCE (CBT & Somatic Grounding):**
-• Reframe: 1 sentence challenging the automatic thought or cognitive distortion.
-• Somatic Anchor: 1 sentence prescribing immediate breath regulation or physical grounding.
-
-**3. TRATAK NEURO-OCULAR PROTOCOL (त्राटक ध्यान):**
-• Prescribe the synchronized mode (Bindu, Jyoti Flame, Mandala, Pratibimb, or Shoonya).
-• 1 sentence specifying the visual target, softness of gaze, and duration (2-3 minutes).
-
-**4. TRI-PILLAR SYNERGISTIC RESOLUTION (एकीकृत समाधान):**
-• 1-2 brief sentences explaining how Gita detachment, CBT reframing, and Tratak gaze fixation combine right now to bring immediate calm.
-
-### STRICT CONVERSATIONAL DIRECTIVES:
-1. LOCKSTEP SYNCHRONIZATION:
-- Gita Updesh, CBT Reframe, and Tratak MUST address the exact same primary emotional anchor. If addressing Anxiety/Worry, Gita must be on Detached Action (e.g. 2.47/2.48), CBT on Decatastrophizing, Trataka on Bindu. Never mismatch disciplines.
-
-2. CURRENT-TURN EMOTIONAL GROUNDING (NO STICKY EMOTIONS):
-- Classify emotion solely based on the MOST RECENT input. Discard previous negative context if user feels better or neutral. Never assume sadness persists when the user declares otherwise.
-
-3. ANTI-REPETITION ENFORCEMENT:
-- Inspect your last two responses. Never reuse identical opening phrases, sympathy tropes ("I hear how much pain...", "I understand..."), or repeated questions.
-
-4. TEXT & SHLOKA PACING (AUDIO/KARAOKE):
-- Output each line cleanly with standard whitespace. Never concatenate words without spaces.
-`;
 
 export interface ConversationTurn {
   role?: "user" | "assistant" | "system";
@@ -90,98 +38,7 @@ export interface ConversationTurn {
 }
 
 /**
- * Tier 1: Groq Cloud (Free Llama 3.3 70B with repetition penalties)
- */
-async function callGroq(
-  prompt: string,
-  systemPrompt: string,
-  history?: ConversationTurn[]
-): Promise<string> {
-  const apiKey = process.env.GROQ_API_KEY;
-  if (!apiKey) throw new Error("Missing GROQ_API_KEY");
-
-  const messages: Array<{ role: string; content: string }> = [
-    { role: "system", content: systemPrompt }
-  ];
-
-  if (history && history.length > 0) {
-    for (const h of history.slice(-6)) {
-      const role = h.role === "assistant" || h.sender === "ai" ? "assistant" : "user";
-      const text = h.content || h.text || "";
-      if (text.trim()) {
-        messages.push({ role, content: text });
-      }
-    }
-  }
-
-  messages.push({ role: "user", content: prompt });
-
-  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${apiKey}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      model: "llama-3.3-70b-versatile",
-      messages,
-      temperature: 0.7,
-      max_tokens: 1200,
-      frequency_penalty: 0.5,
-      presence_penalty: 0.5
-    })
-  });
-
-  if (!res.ok) throw new Error(`Groq HTTP Error: ${res.status}`);
-  const data = await res.json();
-  return data.choices[0].message.content;
-}
-
-/**
- * Tier 2: Google Gemini Flash (Free Tier via Google AI Studio)
- */
-async function callGemini(
-  prompt: string,
-  systemPrompt: string,
-  history?: ConversationTurn[]
-): Promise<string> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error("Missing GEMINI_API_KEY");
-
-  const contents: Array<{ role?: string; parts: Array<{ text: string }> }> = [];
-
-  if (history && history.length > 0) {
-    for (const h of history.slice(-6)) {
-      const role = h.role === "assistant" || h.sender === "ai" ? "model" : "user";
-      const text = h.content || h.text || "";
-      if (text.trim()) {
-        contents.push({ role, parts: [{ text }] });
-      }
-    }
-  }
-
-  contents.push({ role: "user", parts: [{ text: prompt }] });
-
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: systemPrompt }] },
-        contents,
-        generationConfig: { maxOutputTokens: 1200, temperature: 0.7, topP: 0.95 }
-      })
-    }
-  );
-
-  if (!res.ok) throw new Error(`Gemini HTTP Error: ${res.status}`);
-  const data = await res.json();
-  return data.candidates[0].content.parts[0].text;
-}
-
-/**
- * Tier 3: Local Keyless Healer FastAPI Backend (Zero API Key)
+ * Local Keyless Healer FastAPI Backend (Zero API Key, Local LLM/Heuristics Daemon)
  */
 async function callLocalKeylessHealer(
   prompt: string,
@@ -248,18 +105,6 @@ function extractCitedGitaIdsFromHistory(history?: ConversationTurn[]): string[] 
   return citedIds;
 }
 
-/**
- * Extracts the last two assistant responses from conversation history
- * to inspect and forbid repetition of sentence structures, sympathy tropes, or questions.
- */
-function extractRecentAssistantSnippets(history?: ConversationTurn[]): string[] {
-  if (!history || history.length === 0) return [];
-  return history
-    .filter((h) => h.role === "assistant" || h.sender === "ai")
-    .map((h) => (h.content || h.text || "").trim())
-    .filter(Boolean)
-    .slice(-2);
-}
 
 /**
  * Master Conversational Function: Search + Inference with Fallback & Anti-Looping Protection
@@ -280,7 +125,6 @@ export async function generateTherapeuticResponse(
   // 0. Accurately resolve spoken language and explicitly override GPS/locale
   const spokenResolution = resolveSpokenLanguageWithGpsOverride(userMessage, language, locale);
   const normLang = normalizeLanguageCode(spokenResolution.langCode);
-  const langItem = getLanguageByCode(normLang);
 
   // 1. Instant Crisis Safety Interception (Zero-False-Negative)
   const crisis = detectCrisis(userMessage);
@@ -380,10 +224,7 @@ export async function generateTherapeuticResponse(
     });
   }
 
-  // normLang and langItem resolved with full spoken language GPS override at start of handler
-
-  const locGita = getLocalizedGitaItem(gitaItem, normLang);
-  const locTratak = getLocalizedTratakaItem(tratakPrescription, normLang);
+  // normLang resolved with full spoken language GPS override at start of handler
 
   const diagnosticSummary = buildDiagnosticSufferingAssessment(
     userMessage,
@@ -391,46 +232,6 @@ export async function generateTherapeuticResponse(
     libraryRag?.condition?.name,
     normLang
   );
-
-  const diagnosticGroundingBlock = `[USER INPUT & SUFFERING DIAGNOSTIC]:
-Emotion: ${diagnosticSummary.emotionName}
-Suffering Severity: ${diagnosticSummary.severityLabel} (Distress Score: ${diagnosticSummary.distressScore}/10)
-Autonomic Nervous System: ${diagnosticSummary.nervousSystem}
-Bodily Distress Symptoms: ${diagnosticSummary.bodilyMarkers}
-Empathic Summary of User Situation: ${diagnosticSummary.inputSummary}`;
-
-  const clinicalGroundingBlock = formatClinicalContext(clinicalEvidence);
-  const gitaGroundingBlock = `[BHAGAVAD GITA WISDOM]:
-Chapter ${gitaItem.chapter}, Verse ${gitaItem.verse} (${gitaItem.theme})
-${gitaBlock}
-Meaning: ${locGita.meaning}
-Clinical Reframe: ${locGita.reflection}
-What To Do: ${locGita.what_to_do}
-What Not To Do: ${locGita.what_not_to_do}`;
-
-  const tratakaGroundingBlock = `[TRATAK PROTOCOL]:
-Mode: ${locTratak.name}
-Focal Point: ${locTratak.focalTarget}
-Neuro Mechanism: ${locTratak.neuroMechanism}
-Guidance (${tratakPrescription.durationMinutes} min): ${locTratak.guidance}`;
-
-  const contextBlocks = [diagnosticGroundingBlock, gitaGroundingBlock, tratakaGroundingBlock, clinicalGroundingBlock];
-  if (libraryRag) {
-    const localizedIntervention = getLocalizedClinicalIntervention(libraryRag.condition.id, normLang, libraryRag.condition);
-    const clinicalSnippet = normLang !== 'en'
-      ? `[CLINICAL CONDITION WISDOM]:\nCondition: ${localizedIntervention.conditionName}\nValidation: ${localizedIntervention.validation}\nCBT Reframing: ${localizedIntervention.cbt_reframing}\nSomatic Anchor: ${localizedIntervention.somatic_anchor}\nPranayama: ${localizedIntervention.pranayama}`
-      : libraryRag.promptSnippet;
-    contextBlocks.unshift(clinicalSnippet);
-  }
-  const contextString = contextBlocks.join("\n\n");
-
-  const langDirective =
-    normLang !== "en"
-      ? `\n\n### MANDATORY MULTILINGUAL CLINICAL DIRECTIVE:
-You MUST formulate your ENTIRE therapeutic response in ${langItem.name} (${langItem.nativeName}).
-Strictly DO NOT mix English sentences, phrases, or raw English jargon into your response.
-Keep the Sanskrit Shloka in Devanagari script wrapped in [GITA_SHLOKA] and [/GITA_SHLOKA], and provide all reflections, CBT reframes, and Tratak instructions purely in ${langItem.name}.`
-      : "";
 
   const hasDistressKeywords = /(?:distress|anxious|anxiety|depress|depressed|depression|sad|sadness|fear|scared|panic|stress|stressed|overwhelm|overwhelmed|worry|worried|grief|pain|burnout|lonely|loneliness|angry|anger|trauma|shame|guilt|fail|failed|failure|terrif|crying|tears|breakup|heartbreak|heartbroken|debt|debts|financial|burden|burdened|broke|struggling|struggle|loans|bills|hopeless|hopelessness|empty|numb|insomnia|can't sleep|cant sleep|insecure|rejection|rejected|abandoned|confused|restless|exhausted|fatigue|unmotivated|frustrated|frustration|hurting|suffering|mental problem|mental health|overthinking|racing thoughts|fight|argument|conflict|alone|nobody cares|chinta|tanaav|udas|gussa|troubled|need help|please help me|help me please|someone help me|help me i'm|help me i am|दर्द|रोना|रो |रोने|रोऊ|दुःख|दुख|तनाव|चिंता|उदासी|डर|घबराहट|घबरा|ब्रेकअप|परेशान|पीड़ा|कष्ट|क्रोध|अकेला|हार|असफल|टूटा|कर्ज|कर्जा|ऋण|बोझ|निराश|निराशा|उलझन|बेचैन|बेचैनी|थकान|थका)/i.test(userMessage);
 
@@ -451,40 +252,6 @@ Keep the Sanskrit Shloka in Devanagari script wrapped in [GITA_SHLOKA] and [/GIT
      emotionDiagnostic.dimensionId === 'awe' ||
      emotionDiagnostic.dimensionId === 'interest' ||
      emotionDiagnostic.coreAffect.valence >= 0.15);
-
-  const currentTurnGroundingDirective = isDirectPositive
-    ? `\n\n### MANDATORY CURRENT-TURN EMOTIONAL GROUNDING (NO STICKY EMOTIONS):
-The user explicitly states their current emotional state in this turn: "${userMessage}".
-1. Discard and flush ANY previous sadness, distress, panic, or negative context from earlier conversation turns.
-2. Direct user assertions override all past context. NEVER assume sadness or distress persists when the user explicitly declares happiness, calm, or relief.
-3. In Section 1 (SUMMARY & SUFFERING ASSESSMENT), celebrate their positive ventral vagal state (Distress Index: 1/10, Ventral Vagal Safe), acknowledge their genuine wellbeing, and do NOT prescribe crisis or trauma reframing.
-4. For Gita wisdom, present teachings on sustaining equanimity, gratitude, and detached joy (Sakshi Bhava / Shanta Rasa).
-5. For CBT, highlight gratitude anchoring and positive neuroplasticity savoring (holding positive sensations for 20 seconds).`
-    : `\n\n### CURRENT-TURN EMOTIONAL GROUNDING DIRECTIVE:
-Ground your response solely in the user's MOST RECENT input ("${userMessage}").
-Direct user assertions override past context; if the user's emotional state has shifted, discard previous negative assumptions.`;
-
-  const recentAssistantSnippets = extractRecentAssistantSnippets(history);
-  let antiRepetitionDirective = "";
-  if (recentAssistantSnippets.length > 0) {
-    const priorOpenings = recentAssistantSnippets
-      .map((s, idx) => {
-        const firstLine = s.split("\n")[0] || s.slice(0, 100);
-        return `- Response -${recentAssistantSnippets.length - idx}: "${firstLine.slice(0, 100)}..."`;
-      })
-      .join("\n");
-
-    antiRepetitionDirective = `\n\n### MANDATORY ANTI-REPETITION DIRECTIVE (RULE 2):
-Your recent responses opened with or contained:
-${priorOpenings}
-
-STRICT ANTI-REPETITION CONSTRAINTS:
-1. You are STRICTLY FORBIDDEN from reusing identical sentence structures, sympathy tropes (e.g. "I hear how much pain...", "I understand...", "It sounds like..."), or repeated questions from the above responses.
-2. Break the pattern immediately: do NOT give the same advice or acknowledge the same issue again.
-3. Match the user's current energy, acknowledge their shift, and move forward to the next natural topic with fresh phrasing.`;
-  }
-
-  const systemPrompt = `${THERAPIST_SYSTEM_PROMPT}${langDirective}${currentTurnGroundingDirective}${antiRepetitionDirective}\n\n[CLINICAL RESEARCH & RETRIEVED WISDOM]:\n${contextString}`;
 
   const isSolutionRequest = isExplicitSolutionOrTherapyRequest(userMessage);
 
@@ -555,7 +322,7 @@ STRICT ANTI-REPETITION CONSTRAINTS:
       triguna_analysis: (localResult as any).triguna_analysis,
     };
   } catch {
-    // Fallback to cloud LLMs
+    // Local daemon offline or unreachable: Immediately use built-in deterministic clinical synthesis (Zero External Dependency, 100% Offline)
   }
 
   const defaultRecTrataka = tratakPrescription.mode;
@@ -564,84 +331,7 @@ STRICT ANTI-REPETITION CONSTRAINTS:
     return detectTratakaModeFromText(replyText) || normalizeTratakaMode(fallbackMode || defaultRecTrataka);
   };
 
-  try {
-    const reply = await callGroq(userMessage, systemPrompt, history);
-    const hasGita = reply && (reply.includes("[GITA_SHLOKA]") || reply.toLowerCase().includes("gita") || reply.includes("गीता"));
-    if (reply && reply.length > 50 && hasGita) {
-      return {
-        reply: ensureDiagnosticAndGita(reply, gitaBlock),
-        sources: allSources,
-        providerUsed: "Groq (Llama 3.3 70B)",
-        isCrisis: false,
-        recommended_trataka: syncTratakaWithReply(reply, defaultRecTrataka),
-      };
-    }
-  } catch {
-    // Fallback to Gemini
-  }
-
-  try {
-    const reply = await callGemini(userMessage, systemPrompt, history);
-    const hasGita = reply && (reply.includes("[GITA_SHLOKA]") || reply.toLowerCase().includes("gita") || reply.includes("गीता"));
-    if (reply && reply.length > 50 && hasGita) {
-      return {
-        reply: ensureDiagnosticAndGita(reply, gitaBlock),
-        sources: allSources,
-        providerUsed: "Google Gemini 2.0 Flash",
-        isCrisis: false,
-        recommended_trataka: syncTratakaWithReply(reply, defaultRecTrataka),
-      };
-    }
-  } catch {
-    // Fallback to Free Open Inference / Companion
-  }
-
-  // 4. Free Open Inference (Fast reasoning model with 15s timeout)
-  try {
-    const messagesPayload = [
-      { role: "system", content: systemPrompt },
-      ...(history || []).slice(-4).map((h) => ({
-        role: h.role === "assistant" || h.sender === "ai" ? "assistant" : "user",
-        content: h.content || h.text || ""
-      })),
-      { role: "user", content: userMessage }
-    ];
-    const pollRes = await fetch("https://text.pollinations.ai/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        messages: messagesPayload,
-        model: "openai-fast",
-        seed: Math.floor(Math.random() * 10000000)
-      }),
-      signal: AbortSignal.timeout(15000)
-    });
-    const text = await pollRes.text();
-    const cleaned = text.trim();
-    const lower = cleaned.toLowerCase();
-    const isUpstreamError =
-      cleaned.startsWith("{") ||
-      lower.includes("error") ||
-      lower.includes("credit") ||
-      lower.includes("quota") ||
-      lower.includes("api key") ||
-      lower.includes("top up") ||
-      lower.includes("rate limit") ||
-      lower.includes("queue") ||
-      lower.includes("unauthorized");
-
-    if (cleaned && cleaned.length > 50 && !isUpstreamError) {
-      return {
-        reply: ensureDiagnosticAndGita(cleaned, gitaBlock),
-        sources: allSources,
-        providerUsed: "Free Edge AI (Cognitive LLM)",
-        isCrisis: false,
-        recommended_trataka: syncTratakaWithReply(cleaned, defaultRecTrataka),
-      };
-    }
-  } catch {}
-
-  // 5. Infallible Tier 5: Pure Deterministic Healer Synthesis (Zero External Dependency, 100% Offline)
+  // Infallible Deterministic Healer Synthesis (Zero External Dependency, 100% Offline)
   const targetLanguage = normLang;
   const isFollowUp = Boolean(history && history.length >= 2);
 
