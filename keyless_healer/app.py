@@ -48,6 +48,10 @@ try:
     from keyless_healer.lib.clinical_search import (
         ClinicalSearchEngine,
     )
+    from keyless_healer.lib.gita_rag import (
+        detect_existential_dilemma,
+        gita_rag,
+    )
     from keyless_healer.lib.psychologist_partner import (
         PsychologistPartner,
         TherapeuticResponse,
@@ -55,10 +59,6 @@ try:
     from keyless_healer.lib.psychology_library_rag import psychology_rag
     from keyless_healer.lib.self_learning_therapist import (
         self_learning_therapist,
-    )
-    from keyless_healer.lib.gita_rag import (
-        detect_existential_dilemma,
-        gita_rag,
     )
 except ImportError:
     try:

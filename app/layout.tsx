@@ -92,6 +92,10 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
+  icons: {
+    icon: '/icons/icon.svg',
+    apple: '/icons/apple-touch-icon.png',
+  },
   category: 'Health & Medical Psychotherapy',
 };
 

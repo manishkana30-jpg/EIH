@@ -6,10 +6,10 @@ Provides:
 3. Guaranteed, robust fallback to English (en/en-US) whenever a language is unsupported.
 """
 
-from typing import Dict, Any, Optional
-import re
+from typing import Any
 
-def normalize_language_code(code: Optional[str]) -> str:
+
+def normalize_language_code(code: str | None) -> str:
     if not code:
         return "en"
     c = code.lower().strip().split("-")[0].split("_")[0]
@@ -24,7 +24,7 @@ def normalize_language_code(code: Optional[str]) -> str:
     return "en"
 
 
-CLINICAL_LOCALIZATION_CATALOG: Dict[str, Dict[str, Dict[str, str]]] = {
+CLINICAL_LOCALIZATION_CATALOG: dict[str, dict[str, dict[str, str]]] = {
     "gad": {
         "en": {
             "name": "Generalized Anxiety & Chronic Worry",
@@ -220,6 +220,7 @@ CLINICAL_LOCALIZATION_CATALOG: Dict[str, Dict[str, Dict[str, str]]] = {
 import json
 import os
 
+
 def _init_localization_catalog() -> None:
     candidates = [
         os.path.abspath("data/clinical_localization.json"),
@@ -250,7 +251,7 @@ def _init_localization_catalog() -> None:
 
 _init_localization_catalog()
 
-GENERAL_LOCALIZED_ADVICE: Dict[str, Dict[str, str]] = {
+GENERAL_LOCALIZED_ADVICE: dict[str, dict[str, str]] = {
     "en": {
         "default": "I acknowledge the emotional weight you are holding right now. Notice that intense thoughts are transient mental events rather than permanent definitions of reality. Take a slow diaphragmatic inhale for 4 counts, hold gently for 4 counts, and extend your exhale for 6 counts to settle your nervous system."
     },
@@ -270,9 +271,9 @@ GENERAL_LOCALIZED_ADVICE: Dict[str, Dict[str, str]] = {
 
 def build_diagnostic_suffering_assessment(
     user_message: str = "",
-    emotion_hint: Optional[str] = None,
-    condition_name: Optional[str] = None,
-    lang_code: Optional[str] = "en"
+    emotion_hint: str | None = None,
+    condition_name: str | None = None,
+    lang_code: str | None = "en"
 ) -> dict[str, Any]:
     norm = normalize_language_code(lang_code)
     text = (user_message or "").strip().lower()
@@ -380,9 +381,9 @@ def build_diagnostic_suffering_assessment(
 
 
 def build_tri_pillar_synergy_resolution(
-    lang_code: Optional[str] = "en",
-    tratak_name: Optional[str] = None,
-    gita_theme: Optional[str] = None
+    lang_code: str | None = "en",
+    tratak_name: str | None = None,
+    gita_theme: str | None = None
 ) -> str:
     norm = normalize_language_code(lang_code)
     t_name = tratak_name or "Tratak Gazing"
@@ -414,7 +415,7 @@ def build_tri_pillar_synergy_resolution(
             f"3. **Neuro-Ocular Stabilization (Tratak Gazing Meditation):**\n"
             f"   Tratak provides the physiological foundation for both Gita and CBT. Involuntary micro-saccadic eye movements directly stimulate the brain's alarm center (the amygdala). By fixing your gaze on a single point ({t_name}), Tratak mechanically stops ocular flutter, locking your autonomic nervous system into stability and clearing mental static.\n\n"
             f"4. **Your Integrated Recovery Sequence:**\n"
-            f"   • **Phase 1 (Stabilize Brainstem):** Practice {t_name} for 3–5 minutes to arrest rapid eye saccades and de-escalate amygdala hyperarousal.\n"
+            f"   • **Phase 1 (Stabilize Brainstem):** Practice {t_name} for 3-5 minutes to arrest rapid eye saccades and de-escalate amygdala hyperarousal.\n"
             f"   • **Phase 2 (Regulate Physiology):** Perform your prescribed somatic breathwork to release visceral tension from your chest and gut.\n"
             f"   • **Phase 3 (Reframe the Mind):** Internalize the CBT cognitive reframe to replace automatic catastrophic thoughts with objective truth.\n"
             f"   • **Phase 4 (Soul-Centered Action):** Execute the Gita's actionable guidance immediately, focusing entirely on your present duty without fear of results."
@@ -423,7 +424,7 @@ def build_tri_pillar_synergy_resolution(
 
 def format_human_therapeutic_message(
     cond_id: str,
-    lang_code: Optional[str] = "en",
+    lang_code: str | None = "en",
     user_message: str = ""
 ) -> str:
     norm = normalize_language_code(lang_code)
@@ -470,7 +471,7 @@ def format_human_therapeutic_message(
 # BHAGAVAD GITA & TRATAK COMPLETE LOCALIZATION CATALOGS (100% Pure Target Language)
 # =============================================================================
 
-GITA_LOCALIZATION_CATALOG: Dict[str, Dict[str, Dict[str, str]]] = {
+GITA_LOCALIZATION_CATALOG: dict[str, dict[str, dict[str, str]]] = {
     "bg_2_47": {
         "hi": {
             "meaning": "भगवान श्रीकृष्ण अर्जुन से कहते हैं: तुम्हारा अधिकार केवल निष्काम भाव से कर्तव्य कर्म करने पर है, कर्म के फलों पर कभी नहीं। कर्म के फल की इच्छा को अपने कर्म का कारण मत बनने दो, और न ही कभी कर्म त्यागने (अकर्मण्यता) के वश में आओ।",
@@ -811,7 +812,7 @@ GITA_LOCALIZATION_CATALOG: Dict[str, Dict[str, Dict[str, str]]] = {
     },
 }
 
-TRATAKA_LOCALIZATION_CATALOG: Dict[str, Dict[str, Dict[str, str]]] = {
+TRATAKA_LOCALIZATION_CATALOG: dict[str, dict[str, dict[str, str]]] = {
     "bindu": {
         "hi": {
             "name": "बिन्दु त्राटक (शांत एकाग्रता दीप)",
@@ -944,7 +945,7 @@ TRATAKA_LOCALIZATION_CATALOG: Dict[str, Dict[str, Dict[str, str]]] = {
     },
 }
 
-def get_localized_gita_item(gita_id_or_item: Any, lang_code: Optional[str] = "en") -> Dict[str, str]:
+def get_localized_gita_item(gita_id_or_item: Any, lang_code: str | None = "en") -> dict[str, str]:
     """Retrieves human-translated Gita item for target language code."""
     norm = normalize_language_code(lang_code)
     if isinstance(gita_id_or_item, str):
@@ -969,7 +970,7 @@ def get_localized_gita_item(gita_id_or_item: Any, lang_code: Optional[str] = "en
         "what_not_to_do": guidance.get("what_not_to_do", "Release attachment to hypothetical results you cannot control."),
     }
 
-def get_localized_trataka_item(mode: str, lang_code: Optional[str] = "en") -> Dict[str, str]:
+def get_localized_trataka_item(mode: str, lang_code: str | None = "en") -> dict[str, str]:
     """Retrieves human-translated Trataka instructions for target language code."""
     norm = normalize_language_code(lang_code)
     clean_mode = (mode or "bindu").lower().strip()

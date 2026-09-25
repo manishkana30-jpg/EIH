@@ -6,10 +6,7 @@ import {
   Volume2,
   VolumeX,
   Mic,
-  MicOff,
   Send,
-  Play,
-  Pause,
   SkipForward,
   RotateCcw,
   ArrowLeft,
@@ -17,14 +14,10 @@ import {
   HelpCircle,
   ShieldAlert,
   ShieldCheck,
-  Eye,
   Heart,
   Sparkles,
   PhoneCall,
   Check,
-  ChevronRight,
-  RefreshCw,
-  AlertTriangle,
   X,
 } from 'lucide-react';
 import { wellnessStateMachine } from '@/lib/wellness-flow/wellness-state-machine';
@@ -36,7 +29,6 @@ import type { VoiceAcousticState } from '@/lib/types/emotions';
 import type {
   WellnessFlowState,
   WellnessLanguage,
-  MoodProfile,
   PersistentSessionData,
 } from '@/lib/wellness-flow/types';
 
@@ -61,8 +53,6 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
   // ─── Interaction & Input State ───
   const [inputText, setInputText] = useState('');
   const [isListening, setIsListening] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const [speechTranscript, setSpeechTranscript] = useState('');
   const [voiceTelemetry, setVoiceTelemetry] = useState<VoiceAcousticState | null>(null);
   const [activeVoicePrompt, setActiveVoicePrompt] = useState<string>('');
 
@@ -84,10 +74,11 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
   const [tratakaSecondsRemaining, setTratakaSecondsRemaining] = useState<number>(120);
   const [isTratakaRunning, setIsTratakaRunning] = useState<boolean>(false);
   const [currentTratakaCue, setCurrentTratakaCue] = useState<string>('');
-  const [postRatingVal, setPostRatingVal] = useState<number>(5);
 
   // ─── Camera Mirror Stream for Pratibimb Trataka ───
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+  const cameraStreamRef = useRef<MediaStream | null>(null);
+  cameraStreamRef.current = cameraStream;
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   // Refs
@@ -111,8 +102,8 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
       unsub();
       browserSpeechController.cancelSpeech();
       browserSpeechController.stopRecognition();
-      if (cameraStream) {
-        cameraStream.getTracks().forEach((t) => t.stop());
+      if (cameraStreamRef.current) {
+        cameraStreamRef.current.getTracks().forEach((t) => t.stop());
       }
     };
   }, []);
@@ -125,7 +116,6 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
         return;
       }
 
-      setIsSpeaking(true);
       isSpeakingRef.current = true;
       setActiveVoicePrompt(text);
 
@@ -136,7 +126,6 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
         text,
         undefined,
         () => {
-          setIsSpeaking(false);
           isSpeakingRef.current = false;
           if (onEnded) onEnded();
         },
@@ -153,11 +142,12 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
     if (currentState === 'MOOD_INPUT' && !session.initialUtterance) {
       const greeting = wellnessStateMachine.getInitialGreeting();
       const textToSpeak = language === 'hi' ? greeting.text_hi : greeting.text_en;
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         speakAloud(textToSpeak);
       }, 300);
+      return () => clearTimeout(timer);
     }
-  }, [isOpen, currentState]);
+  }, [isOpen, currentState, language, session.initialUtterance, speakAloud]);
 
   // ─── Phase 1 Confirmation Transition Handler (Guarded against duplicate executions) ───
   const handleConfirmSelection = useCallback(
@@ -259,14 +249,14 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
     try {
       browserSpeechController.cancelSpeech();
       setIsListening(true);
-      setSpeechTranscript('');
+      setInputText('');
 
       await browserSpeechController.startListening(
         (transcript, isFinal, vState) => {
           if (vState) {
             setVoiceTelemetry(vState);
           }
-          setSpeechTranscript(transcript);
+          setInputText(transcript);
           if (isFinal && transcript.trim().length > 0) {
             setIsListening(false);
             browserSpeechController.stopRecognition();
@@ -298,7 +288,6 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
     if (!raw) return;
 
     setInputText('');
-    setSpeechTranscript('');
 
     if (currentState === 'MOOD_INPUT') {
       const result = wellnessStateMachine.handleMoodInput(raw, voice || voiceTelemetry || undefined);
@@ -454,11 +443,10 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [isTratakaRunning, tratakaSecondsRemaining, isPaused, language, cameraStream]);
+  }, [isTratakaRunning, tratakaSecondsRemaining, isPaused, language, cameraStream, speakAloud]);
 
   // ─── Summary Post-Session Rating ───
   const handleSubmitRating = (rating: number) => {
-    setPostRatingVal(rating);
     wellnessStateMachine.submitPostSessionMoodRating(rating);
   };
 

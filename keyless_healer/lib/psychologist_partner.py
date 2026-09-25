@@ -12,7 +12,7 @@ import os
 import re
 import time
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any
 
 import httpx
 
@@ -28,10 +28,18 @@ try:
     from keyless_healer.lib.psychology_library_rag import is_greeting_text, is_test_text, psychology_rag
 except ImportError:
     try:
-        from lib.psychology_library_rag import is_greeting_text, is_test_text, psychology_rag  # type: ignore[import-not-found]
+        from lib.psychology_library_rag import (  # type: ignore[import-not-found]
+            is_greeting_text,
+            is_test_text,
+            psychology_rag,
+        )
     except ImportError:
         try:
-            from psychology_library_rag import is_greeting_text, is_test_text, psychology_rag  # type: ignore[import-not-found]
+            from psychology_library_rag import (  # type: ignore[import-not-found]
+                is_greeting_text,
+                is_test_text,
+                psychology_rag,
+            )
         except ImportError:
             def is_greeting_text(text: str) -> bool:  # type: ignore[misc]
                 return text.lower().strip() in {"hello", "hi", "hey"}
@@ -81,29 +89,29 @@ except ImportError:
 
 try:
     from keyless_healer.lib.clinical_localization import (
-        format_human_therapeutic_message,
         GENERAL_LOCALIZED_ADVICE,
+        format_human_therapeutic_message,
         normalize_language_code,
     )
 except ImportError:
     try:
         from lib.clinical_localization import (  # type: ignore[import-not-found]
-            format_human_therapeutic_message,
             GENERAL_LOCALIZED_ADVICE,
+            format_human_therapeutic_message,
             normalize_language_code,
         )
     except ImportError:
         try:
             from clinical_localization import (  # type: ignore[import-not-found]
-                format_human_therapeutic_message,
                 GENERAL_LOCALIZED_ADVICE,
+                format_human_therapeutic_message,
                 normalize_language_code,
             )
         except ImportError:
             cbt_loader = None  # type: ignore[assignment]
             def normalize_language_code(code: str) -> str:
                 return "en"
-            def format_human_therapeutic_message(cond_id: str, lang_code: Optional[str] = "en", user_message: str = "") -> str:
+            def format_human_therapeutic_message(cond_id: str, lang_code: str | None = "en", user_message: str = "") -> str:
                 return "Take a deep breath and center your awareness on this moment."
             GENERAL_LOCALIZED_ADVICE: dict[str, dict[str, str]] = {
                 "en": {"default": "Take a moment to breathe and reground your nervous system."}

@@ -16,31 +16,31 @@ logger = logging.getLogger("GitaLibraryRAG")
 
 try:
     from keyless_healer.lib.clinical_localization import (
-        get_localized_gita_item,
-        get_localized_trataka_item,
-        normalize_language_code,
         CLINICAL_LOCALIZATION_CATALOG,
         build_diagnostic_suffering_assessment,
         build_tri_pillar_synergy_resolution,
+        get_localized_gita_item,
+        get_localized_trataka_item,
+        normalize_language_code,
     )
 except ImportError:
     try:
         from lib.clinical_localization import (  # type: ignore[import-not-found]
-            get_localized_gita_item,
-            get_localized_trataka_item,
-            normalize_language_code,
             CLINICAL_LOCALIZATION_CATALOG,
             build_diagnostic_suffering_assessment,
             build_tri_pillar_synergy_resolution,
+            get_localized_gita_item,
+            get_localized_trataka_item,
+            normalize_language_code,
         )
     except ImportError:
         from clinical_localization import (  # type: ignore[import-not-found]
-            get_localized_gita_item,
-            get_localized_trataka_item,
-            normalize_language_code,
             CLINICAL_LOCALIZATION_CATALOG,
             build_diagnostic_suffering_assessment,
             build_tri_pillar_synergy_resolution,
+            get_localized_gita_item,
+            get_localized_trataka_item,
+            normalize_language_code,
         )
 
 try:
