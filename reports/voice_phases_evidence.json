@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-09-25T16:22:14.056Z",
+  "moodTest": {
+    "modalOpened": true,
+    "foundMicButton": true,
+    "storedConsent": null,
+    "consentModalAppeared": false,
+    "isSpeaking": false
+  },
+  "confirmTest": {
+    "error": "Input not found"
+  },
+  "mainChatVoiceTest": {
+    "foundMainMic": true,
+    "mainMicClicked": true
+  },
+  "capturedLogs": []
+}

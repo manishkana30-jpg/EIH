@@ -83,3 +83,4 @@ clinical_memory_db/
 bin/
 .vercel/
 *.log
+scratch_chrome_*/

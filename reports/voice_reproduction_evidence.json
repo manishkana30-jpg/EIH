@@ -1,0 +1,161 @@
+{
+  "timestamp": "2026-09-25T16:21:49.509Z",
+  "envProbe": {
+    "origin": "http://localhost:3001",
+    "isSecureContext": true,
+    "protocol": "http:",
+    "micPermission": "granted",
+    "hasGetUserMedia": true,
+    "hasSpeechRecognition": true,
+    "speechRecConstructorName": "SpeechRecognition",
+    "hasSpeechSynthesis": true,
+    "speechSynthSpeaking": false,
+    "speechSynthPending": false,
+    "getUserMediaSuccess": true,
+    "tracks": [
+      {
+        "label": "Fake Default Audio Input",
+        "enabled": true,
+        "readyState": "live"
+      }
+    ]
+  },
+  "speechRecTest": {
+    "log": [
+      "rec.start() called",
+      "onstart",
+      "onaudiostart",
+      "onsoundstart",
+      "onspeechstart"
+    ],
+    "finalState": "timeout_stopped"
+  },
+  "consoleLogs": [],
+  "networkRequests": [
+    {
+      "url": "http://localhost:3001/_next/static/css/app/layout.css?v=1790353303265",
+      "method": "GET",
+      "timestamp": 1790353303360
+    },
+    {
+      "url": "http://localhost:3001/_next/static/chunks/webpack.js?v=1790353303265",
+      "method": "GET",
+      "timestamp": 1790353303360
+    },
+    {
+      "url": "http://localhost:3001/_next/static/chunks/main-app.js?v=1790353303265",
+      "method": "GET",
+      "timestamp": 1790353303361
+    },
+    {
+      "url": "http://localhost:3001/_next/static/chunks/app-pages-internals.js",
+      "method": "GET",
+      "timestamp": 1790353303361
+    },
+    {
+      "url": "http://localhost:3001/_next/static/chunks/app/(session)/page.js",
+      "method": "GET",
+      "timestamp": 1790353303362
+    },
+    {
+      "url": "http://localhost:3001/_next/static/chunks/app/not-found.js",
+      "method": "GET",
+      "timestamp": 1790353303363
+    },
+    {
+      "url": "http://localhost:3001/_next/static/chunks/app/error.js",
+      "method": "GET",
+      "timestamp": 1790353303363
+    },
+    {
+      "url": "http://localhost:3001/_next/static/chunks/app/layout.js",
+      "method": "GET",
+      "timestamp": 1790353303363
+    },
+    {
+      "url": "http://localhost:3001/_next/static/chunks/app/global-error.js",
+      "method": "GET",
+      "timestamp": 1790353303363
+    },
+    {
+      "url": "http://localhost:3001/manifest.webmanifest",
+      "method": "GET",
+      "timestamp": 1790353303364
+    },
+    {
+      "url": "http://localhost:3001/icons/icon.svg",
+      "method": "GET",
+      "timestamp": 1790353304152
+    },
+    {
+      "url": "http://localhost:3001/icons/icon-512x512.png",
+      "method": "GET",
+      "timestamp": 1790353304152
+    },
+    {
+      "url": "http://localhost:3001/",
+      "method": "GET",
+      "timestamp": 1790353304466
+    },
+    {
+      "url": "http://localhost:3001/_next/static/css/app/layout.css?v=1790353304481",
+      "method": "GET",
+      "timestamp": 1790353304559
+    },
+    {
+      "url": "http://localhost:3001/_next/static/chunks/webpack.js?v=1790353304481",
+      "method": "GET",
+      "timestamp": 1790353304559
+    },
+    {
+      "url": "http://localhost:3001/_next/static/chunks/main-app.js?v=1790353304481",
+      "method": "GET",
+      "timestamp": 1790353304560
+    },
+    {
+      "url": "http://localhost:3001/_next/static/chunks/app-pages-internals.js",
+      "method": "GET",
+      "timestamp": 1790353304560
+    },
+    {
+      "url": "http://localhost:3001/_next/static/chunks/app/(session)/page.js",
+      "method": "GET",
+      "timestamp": 1790353304560
+    },
+    {
+      "url": "http://localhost:3001/_next/static/chunks/app/not-found.js",
+      "method": "GET",
+      "timestamp": 1790353304561
+    },
+    {
+      "url": "http://localhost:3001/_next/static/chunks/app/error.js",
+      "method": "GET",
+      "timestamp": 1790353304561
+    },
+    {
+      "url": "http://localhost:3001/_next/static/chunks/app/layout.js",
+      "method": "GET",
+      "timestamp": 1790353304561
+    },
+    {
+      "url": "http://localhost:3001/_next/static/chunks/app/global-error.js",
+      "method": "GET",
+      "timestamp": 1790353304561
+    },
+    {
+      "url": "http://localhost:3001/manifest.webmanifest",
+      "method": "GET",
+      "timestamp": 1790353304562
+    },
+    {
+      "url": "http://localhost:3001/icons/icon.svg",
+      "method": "GET",
+      "timestamp": 1790353304805
+    },
+    {
+      "url": "http://localhost:3001/icons/icon-512x512.png",
+      "method": "GET",
+      "timestamp": 1790353304805
+    }
+  ]
+}
