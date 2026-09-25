@@ -179,41 +179,68 @@ export class BrowserSpeechController {
   }
 
   /**
-   * Starts Dual-Engine Voice Capture & Recognition.
+   * Starts Dual-Engine Voice Capture & Recognition with defensive guards:
+   * 1. Secure context (HTTPS/localhost) verification.
+   * 2. Browser API support check (fallback to text with user-visible notice on Firefox etc.).
+   * 3. Explicit permission pre-flight check.
+   * 4. Sequential audio guarantee: releases TTS audio focus + 200ms buffer delay before STT starts.
+   * 5. Fresh recognizer per attempt (no stale singleton state).
    */
   public async startRecognition(existingStream?: MediaStream): Promise<boolean> {
     if (typeof window === 'undefined') return false;
-    this.shouldBeListening = true;
 
-    if (this.isSpeaking) {
-      return true;
+    // Defensive Guard 1: Secure Context Check (Browsers silently block getUserMedia on non-HTTPS/non-localhost)
+    if (window.isSecureContext === false) {
+      const errMsg = 'Microphone access requires a secure connection (HTTPS or localhost).';
+      console.warn('[BrowserSpeechController] Insecure context:', errMsg);
+      this.callbacks.onError?.(errMsg);
+      return false;
     }
 
+    // Defensive Guard 2: Web Speech API Availability Check (Firefox / unsupported browser fallback)
+    const SpeechRec =
+      (window as unknown as { SpeechRecognition?: new () => ISpeechRecognition; webkitSpeechRecognition?: new () => ISpeechRecognition }).SpeechRecognition ||
+      (window as unknown as { webkitSpeechRecognition?: new () => ISpeechRecognition }).webkitSpeechRecognition;
+
+    if (!SpeechRec) {
+      const errMsg = 'Speech recognition is not supported in this browser. Please use the text input below.';
+      console.warn('[BrowserSpeechController] SpeechRecognition API unavailable:', errMsg);
+      this.callbacks.onError?.(errMsg);
+      return false;
+    }
+
+    // Defensive Guard 3: Explicit Permission Pre-flight Check
+    if (typeof navigator !== 'undefined' && navigator.permissions?.query) {
+      try {
+        const permStatus = await navigator.permissions.query({ name: 'microphone' as PermissionName });
+        if (permStatus.state === 'denied') {
+          const errMsg = 'Microphone access is blocked in your browser settings. Please click the lock or camera icon in the address bar to allow microphone access.';
+          console.warn('[BrowserSpeechController] Permission blocked:', errMsg);
+          this.callbacks.onError?.(errMsg);
+          return false;
+        }
+      } catch (_) {
+        // Permissions query may not be supported for 'microphone' in all browsers (e.g. Safari); proceed to direct invocation
+      }
+    }
+
+    // Defensive Guard 4: Sequential Audio Control - Guarantee TTS is completely stopped & audio device released
+    if (this.isSpeaking) {
+      this.cancelSpeech();
+      // Sequential buffer delay: 200ms allows OS and browser audio drivers to finish flushing output buffers
+      await new Promise((r) => setTimeout(r, 200));
+    }
+
+    this.shouldBeListening = true;
     this.isProcessingUtterance = false;
     this.liveInterimTranscript = '';
     this.accumulatedFinalText = '';
 
-    const hasSpeechRec =
-      typeof window !== 'undefined' &&
-      !!(
-        (window as unknown as { SpeechRecognition?: any; webkitSpeechRecognition?: any }).SpeechRecognition ||
-        (window as unknown as { webkitSpeechRecognition?: any }).webkitSpeechRecognition
-      );
+    // 1. Initialize Microphone Audio Stream for real-time visualizer & acoustic prosody (no competing MediaRecorder lock)
+    await this.startMediaStreamAndVAD(existingStream);
 
-    const isMobile =
-      typeof navigator !== 'undefined' &&
-      /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-    if (hasSpeechRec && isMobile) {
-      // On mobile browsers, avoid Web Audio / MediaRecorder contention so the OS dictation engine has clean mic access
-      this.initWebSpeechRecognition();
-    } else {
-      // 1. Initialize Microphone Audio Stream & RMS VAD Engine
-      await this.startMediaStreamAndVAD(existingStream);
-
-      // 2. Initialize Web Speech Recognition in parallel
-      this.initWebSpeechRecognition();
-    }
+    // 2. Initialize fresh Web Speech Recognition instance
+    this.initWebSpeechRecognition();
 
     this.isListening = true;
     this.callbacks.onRecognitionState?.(true);
@@ -242,7 +269,9 @@ export class BrowserSpeechController {
       if (existingStream && existingStream.active) {
         this.mediaStream = existingStream;
       } else if (!this.mediaStream || !this.mediaStream.active) {
-        if (!navigator.mediaDevices?.getUserMedia) return;
+        if (!navigator.mediaDevices?.getUserMedia) {
+          throw new Error('getUserMedia not available on this device');
+        }
         this.mediaStream = await navigator.mediaDevices.getUserMedia({
           audio: {
             echoCancellation: true,
@@ -272,42 +301,19 @@ export class BrowserSpeechController {
         source.connect(this.analyser);
       }
 
-      // Initialize MediaRecorder for fail-safe audio chunking
-      if (this.mediaStream && typeof MediaRecorder !== 'undefined') {
-        try {
-          const supportedType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-            ? 'audio/webm;codecs=opus'
-            : MediaRecorder.isTypeSupported('audio/webm')
-            ? 'audio/webm'
-            : MediaRecorder.isTypeSupported('audio/mp4')
-            ? 'audio/mp4'
-            : '';
+      // Root Cause Fix: Do NOT run continuous 250ms MediaRecorder in parallel with SpeechRecognition.
+      // In Chromium, concurrent MediaRecorder + Web Audio locks the raw audio pipeline and starves
+      // webkitSpeechRecognition of frames, causing permanent silence or audio-capture errors.
+      // AudioContext analyser alone handles real-time amplitude and prosody telemetry.
 
-          this.mediaRecorderMimeType = supportedType;
-          this.mediaRecorder = supportedType
-            ? new MediaRecorder(this.mediaStream, { mimeType: supportedType })
-            : new MediaRecorder(this.mediaStream);
-
-          this.recordedChunks = [];
-          this.mediaRecorder.ondataavailable = (event) => {
-            if (event.data && event.data.size > 0) {
-              this.recordedChunks.push(event.data);
-              // Prevent unbounded memory growth if user stays silent
-              if (!this.isUserSpeaking && this.recordedChunks.length > 50) {
-                this.recordedChunks.splice(0, this.recordedChunks.length - 15);
-              }
-            }
-          };
-          this.mediaRecorder.start(250);
-        } catch (recorderError) {
-          console.warn('MediaRecorder VAD backup notice:', recorderError);
-        }
-      }
-
-      // Start RMS Amplitude VAD Loop
       this.startVADLoop();
-    } catch (err) {
-      console.warn('Microphone stream initialization notice:', err);
+    } catch (err: any) {
+      console.warn('[BrowserSpeechController] Microphone stream initialization notice:', err);
+      if (err?.name === 'NotAllowedError' || err?.name === 'PermissionDeniedError') {
+        this.callbacks.onError?.('Microphone access blocked. Please click the lock or camera icon in your address bar to enable microphone.');
+      } else if (err?.name === 'NotFoundError' || err?.name === 'DevicesNotFoundError') {
+        this.callbacks.onError?.('No microphone hardware detected on your device.');
+      }
     }
   }
 
@@ -340,8 +346,8 @@ export class BrowserSpeechController {
       const normalizedLevel = Math.min(1, Math.max(avg / 128, frameResult.rms * 5));
       this.callbacks.onAudioLevel?.(normalizedLevel);
 
-      // VAD voiced indicator: user is actively vibrating vocal cords or speaking
-      this.isUserSpeaking = frameResult.isVoiced || avg > 14;
+      // User actively vocalizing: voiced biomarker with positive RMS energy
+      this.isUserSpeaking = frameResult.isVoiced && frameResult.rms > 0.015;
 
       // 3. Periodically evaluate and broadcast live vocal prosody
       const now = Date.now();
@@ -358,17 +364,26 @@ export class BrowserSpeechController {
   }
 
   /**
-   * Web Speech Recognition initialization with full sentence & paragraph buffering.
+   * Fresh Web Speech Recognition initialization per attempt:
+   * 1. Fully destroys and detaches any previous instance to prevent InvalidStateError.
+   * 2. Attaches all event listeners (onstart, onresult, onerror, onend) before calling .start().
+   * 3. Surfaces human-readable errors via callbacks.onError (never swallows silently).
+   * 4. Normalizes BCP-47 locale tags (en-US, hi-IN).
    */
   private initWebSpeechRecognition(): void {
     const SpeechRec =
       (window as unknown as { SpeechRecognition?: new () => ISpeechRecognition; webkitSpeechRecognition?: new () => ISpeechRecognition }).SpeechRecognition ||
       (window as unknown as { webkitSpeechRecognition?: new () => ISpeechRecognition }).webkitSpeechRecognition;
 
-    if (!SpeechRec) return;
+    if (!SpeechRec) {
+      this.callbacks.onError?.('Speech recognition is not supported in this browser. Please use text input.');
+      return;
+    }
 
+    // Always cleanly destroy and remove listeners from existing instance before starting fresh
     if (this.speechRecognition) {
       try {
+        this.speechRecognition.onstart = null;
         this.speechRecognition.onresult = null;
         this.speechRecognition.onerror = null;
         this.speechRecognition.onend = null;
@@ -382,11 +397,21 @@ export class BrowserSpeechController {
       recognition.continuous = true;
       recognition.interimResults = true;
       recognition.maxAlternatives = 1;
-      const preferredLang =
+
+      // Ensure proper BCP-47 locale format
+      let preferredLang =
         this.currentLanguageLocale ||
         (typeof navigator !== 'undefined' && navigator.language) ||
         'en-US';
+      if (preferredLang === 'en') preferredLang = 'en-US';
+      if (preferredLang === 'hi') preferredLang = 'hi-IN';
       recognition.lang = preferredLang;
+
+      // Attach all listeners before .start()
+      recognition.onstart = () => {
+        this.isListening = true;
+        this.callbacks.onRecognitionState?.(true);
+      };
 
       recognition.onresult = (event: SpeechRecognitionEvent) => {
         if (this.isSpeaking) {
@@ -396,6 +421,7 @@ export class BrowserSpeechController {
 
         let interimText = '';
         let newFinalText = '';
+        let hasFinalResult = false;
 
         for (let i = event.resultIndex || 0; i < event.results.length; ++i) {
           const res = event.results[i];
@@ -403,6 +429,7 @@ export class BrowserSpeechController {
             const transcript = res[0].transcript || '';
             if (res.isFinal) {
               newFinalText += transcript + ' ';
+              hasFinalResult = true;
             } else {
               interimText += transcript;
             }
@@ -416,67 +443,98 @@ export class BrowserSpeechController {
         const candidate = (this.accumulatedFinalText + (interimText ? ' ' + interimText : '')).trim();
         if (candidate) {
           this.liveInterimTranscript = candidate;
-          // Zero-latency word-by-word interim transcript streaming
+          // Zero-latency word-by-word streaming to UI
           this.callbacks.onInterimTranscript?.(candidate);
         }
 
-        // Clinical turn-taking debouncer (never interrupts while user is speaking)
-        this.armSilenceDebouncer(candidate);
+        // Debounce turn-taking pause (shorter for final chunks, never trapped by noise floor)
+        this.armSilenceDebouncer(candidate, hasFinalResult);
       };
 
       recognition.onerror = (e: SpeechRecognitionErrorEvent) => {
-        if (e.error !== 'no-speech' && e.error !== 'aborted') {
-          console.warn('Web Speech API note:', e.error);
-        }
-        if (this.shouldBeListening && !this.isSpeaking) {
-          setTimeout(() => {
-            if (this.shouldBeListening && !this.isSpeaking && !this.isProcessingUtterance) {
-              this.initWebSpeechRecognition();
-            }
-          }, 300);
-        }
-      };
+        const errType = e.error || 'unknown';
+        console.warn('[Web Speech API]', errType, e.message || '');
 
-      recognition.onend = () => {
-        // Critical Fix: Do NOT prematurely terminate user speech if continuous listening is active.
-        // Web Speech engines (Chrome desktop & mobile) trigger onend during short 500ms breath pauses.
-        // If the user explicitly stopped listening (!this.shouldBeListening), finalize immediately.
-        // Otherwise, restart recognition to keep buffering so the user can complete their sentence!
-        if (!this.isSpeaking && !this.isProcessingUtterance && !this.shouldBeListening && (this.liveInterimTranscript.trim().length > 0 || this.accumulatedFinalText.trim().length > 0)) {
-          this.handleEndOfUserSpeech();
+        if (errType === 'not-allowed' || errType === 'service-not-allowed') {
+          this.shouldBeListening = false;
+          this.isListening = false;
+          this.callbacks.onRecognitionState?.(false);
+          this.callbacks.onError?.('Microphone access blocked. Click the lock/camera icon in your address bar to enable microphone.');
           return;
         }
 
-        this.isListening = false;
+        if (errType === 'network') {
+          this.shouldBeListening = false;
+          this.isListening = false;
+          this.callbacks.onRecognitionState?.(false);
+          this.callbacks.onError?.('Speech service network error. Please check your internet connection or use text input.');
+          return;
+        }
+
+        if (errType === 'audio-capture') {
+          this.shouldBeListening = false;
+          this.isListening = false;
+          this.callbacks.onRecognitionState?.(false);
+          this.callbacks.onError?.('Could not capture audio. Please ensure no other application is using your microphone.');
+          return;
+        }
+
+        // Non-fatal pauses ('no-speech' or 'aborted') - restart gracefully if user is still in listening mode
         if (this.shouldBeListening && !this.isSpeaking && !this.isProcessingUtterance) {
           setTimeout(() => {
             if (this.shouldBeListening && !this.isSpeaking && !this.isProcessingUtterance) {
               this.initWebSpeechRecognition();
-              this.isListening = true;
-              this.callbacks.onRecognitionState?.(true);
+            }
+          }, 250);
+        }
+      };
+
+      recognition.onend = () => {
+        this.isListening = false;
+        // If user finished speaking and candidate text was captured, finalize immediately!
+        if (this.liveInterimTranscript.trim().length > 0 || this.accumulatedFinalText.trim().length > 0) {
+          this.handleEndOfUserSpeech();
+          return;
+        }
+
+        // If continuous listening is desired and no utterance was captured, restart cleanly
+        if (this.shouldBeListening && !this.isSpeaking && !this.isProcessingUtterance) {
+          setTimeout(() => {
+            if (this.shouldBeListening && !this.isSpeaking && !this.isProcessingUtterance) {
+              this.initWebSpeechRecognition();
             }
           }, 150);
+        } else {
+          this.callbacks.onRecognitionState?.(false);
         }
       };
 
       recognition.start();
       this.speechRecognition = recognition;
-      this.isListening = true;
-      this.callbacks.onRecognitionState?.(true);
-    } catch (err) {
-      console.warn('SpeechRecognition startup notice:', err);
+    } catch (err: any) {
+      console.warn('[BrowserSpeechController] Recognition startup notice:', err);
+      if (err?.name === 'InvalidStateError') {
+        // Asynchronous abort recovery: retry once after 200ms
+        setTimeout(() => {
+          if (this.shouldBeListening && !this.isSpeaking) {
+            this.initWebSpeechRecognition();
+          }
+        }, 200);
+      } else {
+        this.callbacks.onError?.('Failed to start speech recognition: ' + (err?.message || 'Unknown error'));
+      }
     }
   }
 
   /**
    * Adaptive clinical turn-taking silence debouncer:
-   * 1. Grants 2600ms base silence delay to allow natural breathing and formulation of thoughts.
-   * 2. Automatically detects incomplete clauses, trailing conjunctions ("and", "because", "but", "so", "aur", "kyunki"),
-   *    or dangling pronouns and extends the delay to 3400ms.
-   * 3. VAD Voice Activity Guard: As long as the user's vocal cords produce acoustic energy (isUserSpeaking = true),
-   *    the debouncer re-arms and NEVER cuts off the user mid-thought!
+   * 1. 800ms for short affirmative confirmations ("yes", "haan", "correct").
+   * 2. 1100ms when native SpeechRecognition already tagged a final chunk.
+   * 3. 2400ms for trailing conjunctions/incomplete thoughts ("because...", "and...").
+   * 4. 1400ms base silence delay for standard phrases.
+   * 5. Root Cause Fix: Removed the ambient noise trap (avg > 14) that permanently blocked speech finalization!
    */
-  private armSilenceDebouncer(candidateText: string): void {
+  private armSilenceDebouncer(candidateText: string, hasFinalChunk = false): void {
     if (this.speechSilenceTimer) {
       clearTimeout(this.speechSilenceTimer);
       this.speechSilenceTimer = null;
@@ -489,19 +547,12 @@ export class BrowserSpeechController {
     const isTrailingConjunction = /\b(and|or|but|because|cause|cuz|so|if|when|then|like|that|with|to|for|about|i|my|me|mein|main|mai|aur|lekin|par|kyunki|ki|toh|jaise|kuch|kya|kyun)\s*$/i.test(clean);
     const isIncomplete = isTrailingConjunction || isIncompleteUtterance(clean);
     const wordCount = clean.split(/\s+/).length;
-    // Check for quick affirmative answers ("yes", "haan", "sahi", "correct", etc.) so confirmation is prompt
     const isShortAffirmation = /^(yes|yeah|yep|haan|ha|sahi|sahi hai|bilkul|correct|right|ok|okay|sure|agree)\b/i.test(clean.toLowerCase().replace(/[.,!]/g, '')) && wordCount <= 3;
-    // Patient turn-taking: 1400ms for short affirmative confirmations, 6000ms for trailing conjunctions/incomplete thoughts, 5000ms for short thoughts, 4200ms base
-    const silenceDelay = isShortAffirmation ? 1400 : (isIncomplete ? 6000 : (wordCount < 4 ? 5000 : this.silenceTimeoutMs));
+
+    const silenceDelay = isShortAffirmation ? 800 : (hasFinalChunk ? 1100 : (isIncomplete ? 2400 : 1400));
 
     this.speechSilenceTimer = setTimeout(() => {
-      // VAD Voice Activity Guard: if microphone detects vocal energy, do NOT cut off!
-      if (this.isUserSpeaking) {
-        this.armSilenceDebouncer(this.liveInterimTranscript);
-        return;
-      }
-
-      if (!this.isSpeaking && !this.isProcessingUtterance && this.liveInterimTranscript.trim().length > 0) {
+      if (!this.isSpeaking && !this.isProcessingUtterance && (this.liveInterimTranscript.trim().length > 0 || this.accumulatedFinalText.trim().length > 0)) {
         this.handleEndOfUserSpeech();
       }
     }, silenceDelay);
@@ -1130,8 +1181,8 @@ export class BrowserSpeechController {
     };
 
     const wordCount = cleanText.split(/\s+/).length;
-    // Failsafe safety duration: generous margin so speech is never cut off halfway
-    const computeSafetyDuration = () => Math.max(45000, (wordCount / 0.7) * 1000 + 40000);
+    // Responsive failsafe safety duration: avoids 45s lockup while giving adequate reading time
+    const computeSafetyDuration = () => Math.min(25000, Math.max(4500, Math.ceil((wordCount / 1.8) * 1000) + 3500));
 
     const resetWatchdog = () => {
       if (this.ttsWatchdogTimer) {
@@ -1377,7 +1428,6 @@ export class BrowserSpeechController {
     }
     this.isSpeaking = false;
     this.isProcessingUtterance = false;
-    this.shouldBeListening = false;
     this.currentUtterance = null;
     if (typeof window !== 'undefined') {
       (window as any).__activeUtterance = null;

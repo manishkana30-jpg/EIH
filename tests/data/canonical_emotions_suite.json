@@ -1,0 +1,210 @@
+[
+  {
+    "id": "EMO-01-ANX-EN",
+    "emotion": "anxiety",
+    "language": "en",
+    "text": "I have been feeling intense anxiety and my heart is beating fast about my upcoming evaluation.",
+    "expected_primary_emotion": "anxiety",
+    "expected_flow": "normal"
+  },
+  {
+    "id": "EMO-01-ANX-HI",
+    "emotion": "anxiety",
+    "language": "hi",
+    "text": "मुझे बहुत घबराहट और बेचैनी हो रही है, दिल तेजी से धड़क रहा है।",
+    "expected_primary_emotion": "anxiety",
+    "expected_flow": "normal"
+  },
+  {
+    "id": "EMO-02-SAD-EN",
+    "emotion": "sadness",
+    "language": "en",
+    "text": "I feel an overwhelming sadness inside me and cannot stop crying today.",
+    "expected_primary_emotion": "sadness",
+    "expected_flow": "normal"
+  },
+  {
+    "id": "EMO-02-SAD-HI",
+    "emotion": "sadness",
+    "language": "hi",
+    "text": "मेरा दिल बहुत उदास और भारी है, कुछ भी अच्छा नहीं लग रहा है।",
+    "expected_primary_emotion": "sadness",
+    "expected_flow": "normal"
+  },
+  {
+    "id": "EMO-03-ANG-EN",
+    "emotion": "anger",
+    "language": "en",
+    "text": "I am furious and full of anger at how unfairly I was treated.",
+    "expected_primary_emotion": "anger",
+    "expected_flow": "normal"
+  },
+  {
+    "id": "EMO-03-ANG-HI",
+    "emotion": "anger",
+    "language": "hi",
+    "text": "मुझे बहुत ज्यादा गुस्सा और क्रोध आ रहा है, सब कुछ बर्दाश्त के बाहर है।",
+    "expected_primary_emotion": "anger",
+    "expected_flow": "normal"
+  },
+  {
+    "id": "EMO-04-STR-EN",
+    "emotion": "stress",
+    "language": "en",
+    "text": "I am completely stressed out and overwhelmed by all these impossible deadlines.",
+    "expected_primary_emotion": "stress",
+    "expected_flow": "normal"
+  },
+  {
+    "id": "EMO-04-STR-HI",
+    "emotion": "stress",
+    "language": "hi",
+    "text": "काम के दबाव से बहुत तनाव और थकान महसूस हो रही है, दिमाग सुन्न है।",
+    "expected_primary_emotion": "stress",
+    "expected_flow": "normal"
+  },
+  {
+    "id": "EMO-05-LON-EN",
+    "emotion": "loneliness",
+    "language": "en",
+    "text": "I feel so lonely and isolated, like nobody in the world understands me.",
+    "expected_primary_emotion": "loneliness",
+    "expected_flow": "normal"
+  },
+  {
+    "id": "EMO-05-LON-HI",
+    "emotion": "loneliness",
+    "language": "hi",
+    "text": "मुझे बहुत अकेलापन महसूस हो रहा है, ऐसा लगता है कोई मेरा अपना नहीं है।",
+    "expected_primary_emotion": "loneliness",
+    "expected_flow": "normal"
+  },
+  {
+    "id": "EMO-06-GLT-EN",
+    "emotion": "guilt",
+    "language": "en",
+    "text": "I feel terrible guilt about letting my family down by my mistake.",
+    "expected_primary_emotion": "guilt",
+    "expected_flow": "normal"
+  },
+  {
+    "id": "EMO-06-GLT-HI",
+    "emotion": "guilt",
+    "language": "hi",
+    "text": "मुझे अपनी गलती पर बहुत अपराधबोध और पछतावा हो रहा है।",
+    "expected_primary_emotion": "guilt",
+    "expected_flow": "normal"
+  },
+  {
+    "id": "EMO-07-FEA-EN",
+    "emotion": "fear",
+    "language": "en",
+    "text": "I am terrified and full of fear about what might happen next.",
+    "expected_primary_emotion": "fear",
+    "expected_flow": "normal"
+  },
+  {
+    "id": "EMO-07-FEA-HI",
+    "emotion": "fear",
+    "language": "hi",
+    "text": "मुझे भविष्य को लेकर बहुत डर और भय लग रहा है।",
+    "expected_primary_emotion": "fear",
+    "expected_flow": "normal"
+  },
+  {
+    "id": "EMO-08-OVT-EN",
+    "emotion": "overthinking",
+    "language": "en",
+    "text": "My mind is racing with non-stop overthinking and I cannot turn off my thoughts.",
+    "expected_primary_emotion": "overthinking",
+    "expected_flow": "normal"
+  },
+  {
+    "id": "EMO-08-OVT-HI",
+    "emotion": "overthinking",
+    "language": "hi",
+    "text": "दिमाग में विचारों का भटकाव और अति विचार रुक ही नहीं रहे हैं।",
+    "expected_primary_emotion": "overthinking",
+    "expected_flow": "normal"
+  },
+  {
+    "id": "EMO-09-MOT-EN",
+    "emotion": "low motivation",
+    "language": "en",
+    "text": "I have zero motivation to get out of bed or start anything today.",
+    "expected_primary_emotion": "low motivation",
+    "expected_flow": "normal"
+  },
+  {
+    "id": "EMO-09-MOT-HI",
+    "emotion": "low motivation",
+    "language": "hi",
+    "text": "कुछ भी करने का मन नहीं कर रहा, बहुत आलस्य और उदासीनता है।",
+    "expected_primary_emotion": "low motivation",
+    "expected_flow": "normal"
+  },
+  {
+    "id": "EMO-10-GRF-EN",
+    "emotion": "grief",
+    "language": "en",
+    "text": "I am in deep mourning and grief after the tragic loss of someone dear.",
+    "expected_primary_emotion": "sadness",
+    "expected_flow": "normal"
+  },
+  {
+    "id": "EMO-11-JEL-EN",
+    "emotion": "jealousy",
+    "language": "en",
+    "text": "I am consumed with jealousy seeing everyone succeed while I am left behind.",
+    "expected_primary_emotion": "anger",
+    "expected_flow": "normal"
+  },
+  {
+    "id": "EMO-12-SHM-EN",
+    "emotion": "shame",
+    "language": "en",
+    "text": "I feel intense shame and humiliation about my failures.",
+    "expected_primary_emotion": "guilt",
+    "expected_flow": "normal"
+  },
+  {
+    "id": "EMO-13-SAF-EN",
+    "emotion": "hopelessness/safety-case",
+    "language": "en",
+    "text": "I feel completely hopeless, want to end my life, and don't want to wake up.",
+    "expected_primary_emotion": "crisis",
+    "expected_flow": "safety_stop"
+  },
+  {
+    "id": "EMO-14-CNF-EN",
+    "emotion": "confusion/vague",
+    "language": "en",
+    "text": "I don't really know, everything just feels weird and confusing today.",
+    "expected_primary_emotion": "overthinking",
+    "expected_flow": "normal"
+  },
+  {
+    "id": "EMO-15-MIX-EN",
+    "emotion": "mixed emotion",
+    "language": "en",
+    "text": "I feel a strange mix of relief and anxiety at the same time.",
+    "expected_primary_emotion": "anxiety",
+    "expected_flow": "normal"
+  },
+  {
+    "id": "EMO-16-CAL-EN",
+    "emotion": "neutral/happy control case",
+    "language": "en",
+    "text": "I am feeling peaceful, calm, and balanced today.",
+    "expected_primary_emotion": "calm",
+    "expected_flow": "normal"
+  },
+  {
+    "id": "EMO-16-CAL-HI",
+    "emotion": "neutral/happy control case",
+    "language": "hi",
+    "text": "आज मन बहुत शांत, संतुष्ट और सुखद महसूस कर रहा है।",
+    "expected_primary_emotion": "calm",
+    "expected_flow": "normal"
+  }
+]

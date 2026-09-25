@@ -216,6 +216,15 @@ export class ConfirmVoiceManager {
         ? (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
         : null;
 
+    if (typeof window !== 'undefined' && window.isSecureContext === false) {
+      logConfirmDebug('STT', 'Insecure context: SpeechRecognition blocked -> button fallback');
+      this.isListeningActive = false;
+      this.triggerButtonFallback(
+        this.language === 'hi' ? 'सुरक्षित कनेक्शन (HTTPS) आवश्यक है। कृपया बटन दबाकर चुनें।' : 'Microphone requires secure HTTPS. Please tap Yes or No below.'
+      );
+      return;
+    }
+
     if (!SpeechRec) {
       logConfirmDebug('STT', 'SpeechRecognition not supported in browser environment -> button fallback');
       this.isListeningActive = false;
@@ -350,6 +359,11 @@ export class ConfirmVoiceManager {
     } catch (err: any) {
       logConfirmDebug('STT', 'Exception starting SpeechRecognition', err);
       if (err?.name === 'InvalidStateError') {
+        setTimeout(() => {
+          if (this.isListeningActive && !this.transitionFired && !this.isDestroyed) {
+            this.createAndStartRecognizer();
+          }
+        }, 200);
         return;
       }
       this.isListeningActive = false;

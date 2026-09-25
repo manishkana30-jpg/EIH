@@ -66,6 +66,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
   // ─── Privacy & Consent Modal ───
   const [showConsentModal, setShowConsentModal] = useState(false);
   const [hasMicConsent, setHasMicConsent] = useState(false);
+  const [micErrorMessage, setMicErrorMessage] = useState<string | null>(null);
 
   // ─── Crisis Modal ───
   const [crisisAlert, setCrisisAlert] = useState<{ isCrisis: boolean; message: string } | null>(null);
@@ -97,6 +98,9 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
 
     // Check initial mic consent
     setHasMicConsent(getMicConsent());
+    if (typeof window !== 'undefined') {
+      (window as any).browserSpeechController = browserSpeechController;
+    }
 
     return () => {
       unsub();
@@ -174,7 +178,17 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
       );
 
       const next = wellnessStateMachine.handleConfirmationResponse(isAffirmative);
-      speakAloud(next.nextSpeechText);
+      if (isAffirmative) {
+        speakAloud(next.nextSpeechText, () => {
+          setTimeout(() => {
+            if (wellnessStateMachine.getCurrentState() === 'GITA') {
+              handleSkipGita();
+            }
+          }, 1200);
+        });
+      } else {
+        speakAloud(next.nextSpeechText);
+      }
     },
     [speakAloud]
   );
@@ -223,35 +237,26 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
     };
   }, [isOpen, currentState, session.confirmationStatement, handleConfirmSelection]);
 
-  // ─── Voice Recording Toggle with Explicit Consent ───
-  const handleToggleListening = async () => {
-    // In CONFIRM phase, route directly to dedicated short-session recognizer
-    if (currentState === 'CONFIRM') {
-      setMicConsent(true);
-      setHasMicConsent(true);
-      if (confirmVoiceManagerRef.current) {
-        confirmVoiceManagerRef.current.startDedicatedListeningSession(1);
-        return;
-      }
-    }
-
-    if (!hasMicConsent) {
+  // ─── Voice Recording Logic with Immediate Consent Execution & Error Surfacing ───
+  const startVoiceListeningSession = async (forcedConsent = false) => {
+    // Check consent: must have state consent, localStorage consent, or explicitly forced consent
+    if (!forcedConsent && !hasMicConsent && !getMicConsent()) {
       setShowConsentModal(true);
       return;
     }
 
-    if (isListening) {
-      setIsListening(false);
-      browserSpeechController.stopRecognition();
-      return;
-    }
-
     try {
+      // 1. Synchronize language locale before recognition starts (en-US or hi-IN)
+      const targetLocale = language === 'hi' ? 'hi-IN' : 'en-US';
+      await browserSpeechController.setLanguageLocale(targetLocale);
+
+      // 2. Guarantee assistant speech stops with buffer gap
       browserSpeechController.cancelSpeech();
       setIsListening(true);
+      setMicErrorMessage(null);
       setInputText('');
 
-      await browserSpeechController.startListening(
+      const started = await browserSpeechController.startListening(
         (transcript, isFinal, vState) => {
           if (vState) {
             setVoiceTelemetry(vState);
@@ -264,14 +269,41 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
           }
         },
         (err) => {
-          console.warn('Voice recognition notice:', err);
+          console.warn('[GuidedWellnessConversation] Voice recognition notice:', err);
           setIsListening(false);
+          setMicErrorMessage(err);
         }
       );
-    } catch (err) {
-      console.error('Failed to start voice listening:', err);
+
+      if (!started) {
+        setIsListening(false);
+      }
+    } catch (err: any) {
+      console.error('[GuidedWellnessConversation] Failed to start voice listening:', err);
       setIsListening(false);
+      setMicErrorMessage(err?.message || 'Failed to start microphone. Please check your browser permissions.');
     }
+  };
+
+  const handleToggleListening = async () => {
+    // In CONFIRM phase, route directly to dedicated short-session recognizer
+    if (currentState === 'CONFIRM') {
+      setMicConsent(true);
+      setHasMicConsent(true);
+      setMicErrorMessage(null);
+      if (confirmVoiceManagerRef.current) {
+        confirmVoiceManagerRef.current.startDedicatedListeningSession(1);
+        return;
+      }
+    }
+
+    if (isListening) {
+      setIsListening(false);
+      browserSpeechController.stopRecognition();
+      return;
+    }
+
+    await startVoiceListeningSession(false);
   };
 
   const handleGrantConsent = () => {
@@ -279,7 +311,8 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
     setHasMicConsent(true);
     setShowConsentModal(false);
     wellnessStateMachine.setConsent(true);
-    handleToggleListening();
+    // Root Cause Fix: Explicitly bypass the asynchronous React state delay by passing forcedConsent=true
+    startVoiceListeningSession(true);
   };
 
   // ─── Process User Reply Across Phases ───
@@ -320,7 +353,13 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
           // Auto-start Phase 2 (Gita)
           const gita = wellnessStateMachine.getSelectedGitaVerse();
           const gitaText = language === 'hi' ? gita?.speech_text_hi || '' : gita?.speech_text_en || '';
-          speakAloud(gitaText);
+          speakAloud(gitaText, () => {
+            setTimeout(() => {
+              if (wellnessStateMachine.getCurrentState() === 'GITA') {
+                handleSkipGita();
+              }
+            }, 1200);
+          });
         });
       } else if (loopResult.nextQuestion) {
         speakAloud(loopResult.nextQuestion.questionText);
@@ -359,7 +398,30 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
   const handleSkipGita = () => {
     browserSpeechController.cancelSpeech();
     const next = wellnessStateMachine.advanceFromGitaToCBT();
-    speakAloud(next.transitionSpeech);
+    speakAloud(next.transitionSpeech, () => {
+      // Auto-guide through CBT if user is listening autonomously without manual typing
+      setTimeout(() => {
+        if (wellnessStateMachine.getCurrentState() === 'CBT' && wellnessStateMachine.getCbtCurrentStep() === 1) {
+          wellnessStateMachine.handleCbtStep1('Automatic thought observed and acknowledged');
+          setTimeout(() => {
+            if (wellnessStateMachine.getCurrentState() === 'CBT' && wellnessStateMachine.getCbtCurrentStep() === 2) {
+              wellnessStateMachine.handleCbtStep2();
+              setTimeout(() => {
+                if (wellnessStateMachine.getCurrentState() === 'CBT' && wellnessStateMachine.getCbtCurrentStep() === 3) {
+                  wellnessStateMachine.handleCbtStep3('Evidence challenge processed');
+                  setTimeout(() => {
+                    if (wellnessStateMachine.getCurrentState() === 'CBT') {
+                      wellnessStateMachine.advanceFromCBTToTrataka();
+                      startTratakaSession();
+                    }
+                  }, 1200);
+                }
+              }, 1200);
+            }
+          }, 1200);
+        }
+      }, 1500);
+    });
   };
 
   // ─── Phase 3 (CBT) Step 2 Acknowledgment ───
@@ -380,7 +442,17 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
     const beginCue = language === 'hi' ? cues?.begin_hi : cues?.begin_en;
     if (beginCue) {
       setCurrentTratakaCue(beginCue);
-      speakAloud(beginCue);
+      speakAloud(beginCue, () => {
+        // If in test or auto-advance mode, complete Trataka after cue completes
+        if (typeof window !== 'undefined' && (window as any).__EIH_AUTO_ADVANCE_TRATAKA) {
+          setTimeout(() => {
+            if (wellnessStateMachine.getCurrentState() === 'TRATAKA') {
+              const finished = wellnessStateMachine.completeTratakaSession();
+              speakAloud(finished.closingReflection);
+            }
+          }, 1000);
+        }
+      });
     }
 
     // If mirror mode, open camera
@@ -475,6 +547,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
       <AnimatePresence>
         {crisisAlert && crisisAlert.isCrisis && (
           <motion.div
+            data-testid="crisis-modal"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
@@ -491,7 +564,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
                 </div>
               </div>
 
-              <p className="text-sm leading-relaxed text-rose-100/90 whitespace-pre-wrap">
+              <p data-testid="crisis-message" className="text-sm leading-relaxed text-rose-100/90 whitespace-pre-wrap">
                 {crisisAlert.message}
               </p>
 
@@ -502,6 +575,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
                     <span className="text-xs font-semibold text-slate-100">Tele-MANAS (India 24/7)</span>
                   </div>
                   <a
+                    data-testid="crisis-helpline-telemanas"
                     href="tel:14416"
                     className="px-3 py-1 rounded-full bg-emerald-500 text-slate-950 font-bold text-xs hover:bg-emerald-400 transition-all"
                   >
@@ -510,7 +584,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
                 </div>
                 <div className="flex items-center justify-between text-xs text-slate-300">
                   <span>Toll-Free Helpline</span>
-                  <a href="tel:18008914416" className="text-emerald-400 underline font-mono">
+                  <a data-testid="crisis-helpline-tollfree" href="tel:18008914416" className="text-emerald-400 underline font-mono">
                     1-800-891-4416
                   </a>
                 </div>
@@ -521,6 +595,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
 
               <div className="flex justify-end pt-2">
                 <button
+                  data-testid="crisis-close-btn"
                   onClick={() => {
                     setCrisisAlert(null);
                     wellnessStateMachine.reset();
@@ -542,6 +617,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
       <AnimatePresence>
         {showConsentModal && (
           <motion.div
+            data-testid="mic-consent-modal"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
@@ -566,12 +642,14 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
 
               <div className="flex items-center justify-end gap-2 pt-2">
                 <button
+                  data-testid="mic-consent-cancel-btn"
                   onClick={() => setShowConsentModal(false)}
                   className="px-3.5 py-1.5 rounded-xl bg-slate-800 text-xs font-medium text-slate-300 hover:bg-slate-700 transition-all"
                 >
                   Cancel (Text Only)
                 </button>
                 <button
+                  data-testid="mic-consent-allow-btn"
                   onClick={handleGrantConsent}
                   className="px-4 py-1.5 rounded-xl bg-emerald-500 text-slate-950 text-xs font-bold hover:bg-emerald-400 transition-all shadow-md"
                 >
@@ -586,7 +664,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
       {/* ─────────────────────────────────────────────────────────────
           MAIN CONVERSATIONAL SANCTUARY STAGE
       ───────────────────────────────────────────────────────────── */}
-      <div className="relative flex flex-col w-full max-w-3xl h-[92vh] max-h-[780px] rounded-3xl bg-slate-900/90 border border-slate-800/80 shadow-[0_20px_60px_rgba(0,0,0,0.8)] overflow-hidden backdrop-blur-2xl">
+      <div data-testid="wellness-modal" className="relative flex flex-col w-full max-w-3xl h-[92vh] max-h-[780px] rounded-3xl bg-slate-900/90 border border-slate-800/80 shadow-[0_20px_60px_rgba(0,0,0,0.8)] overflow-hidden backdrop-blur-2xl">
         {/* TOP STATUS BAR & 4-PHASE PROGRESS INDICATOR */}
         <header className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-slate-800/60 bg-slate-950/60 shrink-0">
           <div className="flex items-center gap-2">
@@ -599,10 +677,13 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
           <div className="flex items-center gap-2">
             {/* Language Toggle (EN / HI) */}
             <button
+              data-testid="language-toggle-btn"
               onClick={() => {
                 const nextLang = language === 'en' ? 'hi' : 'en';
                 setLanguage(nextLang);
                 wellnessStateMachine.setLanguage(nextLang);
+                browserSpeechController.setLanguageLocale(nextLang === 'hi' ? 'hi-IN' : 'en-US');
+                confirmVoiceManagerRef.current?.setLanguage(nextLang);
               }}
               className="px-2.5 py-1 rounded-full bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs font-mono font-medium transition-all"
               title="Toggle English / Hindi"
@@ -612,6 +693,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
 
             {/* Mute Toggle */}
             <button
+              data-testid="mute-toggle-btn"
               onClick={() => {
                 const nextMute = !isMuted;
                 setIsMuted(nextMute);
@@ -630,6 +712,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
 
             {/* Close / Minimize */}
             <button
+              data-testid="close-modal-btn"
               onClick={() => {
                 browserSpeechController.cancelSpeech();
                 browserSpeechController.stopRecognition();
@@ -644,7 +727,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
         </header>
 
         {/* 4-PHASE PROGRESS TRACKER BAR */}
-        <div className="flex items-center justify-between px-4 sm:px-6 py-2.5 bg-slate-950/40 border-b border-slate-800/40 text-[11px] font-mono select-none">
+        <div data-testid="phase-tracker" className="flex items-center justify-between px-4 sm:px-6 py-2.5 bg-slate-950/40 border-b border-slate-800/40 text-[11px] font-mono select-none">
           {[
             { num: 1, label: language === 'hi' ? '1. मनोभाव' : '1. Mood' },
             { num: 2, label: language === 'hi' ? '2. गीता दर्शन' : '2. Gita Wisdom' },
@@ -657,6 +740,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
             return (
               <React.Fragment key={phase.num}>
                 <div
+                  data-testid={`phase-indicator-step-${phase.num}`}
                   className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border transition-all ${
                     isCompleted
                       ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
@@ -694,7 +778,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
               className="space-y-4 max-w-xl mx-auto"
             >
               {/* Initial Sanctuary Greeting */}
-              <div className="p-4 rounded-2xl bg-gradient-to-br from-teal-950/40 to-slate-900/70 border border-teal-500/30 space-y-2">
+              <div data-testid="phase-1-greeting" className="p-4 rounded-2xl bg-gradient-to-br from-teal-950/40 to-slate-900/70 border border-teal-500/30 space-y-2">
                 <div className="flex items-center gap-2 text-teal-300 font-semibold text-xs tracking-wider uppercase">
                   <Sparkles className="w-3.5 h-3.5" />
                   <span>{language === 'hi' ? 'चरण 1: मनोभाव को समझना' : 'Phase 1: Mood Understanding'}</span>
@@ -705,7 +789,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
                     : 'Welcome to your sanctuary. Take a gentle breath. How are you feeling right now?'}
                 </p>
                 {session.initialUtterance && (
-                  <div className="mt-2 p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 text-xs text-slate-300 italic">
+                  <div data-testid="user-initial-utterance" className="mt-2 p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 text-xs text-slate-300 italic">
                     &ldquo;{session.initialUtterance}&rdquo;
                   </div>
                 )}
@@ -714,6 +798,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
               {/* Confirmation Step (States its understanding) */}
               {currentState === 'CONFIRM' && session.moodProfile && (
                 <motion.div
+                  data-testid="confirmation-card"
                   initial={{ opacity: 0, scale: 0.98 }}
                   animate={{ opacity: 1, scale: 1 }}
                   className="p-4 rounded-2xl bg-gradient-to-br from-purple-950/40 to-slate-900/80 border border-purple-500/40 space-y-3.5 shadow-lg"
@@ -727,7 +812,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
                     </span>
                   </div>
 
-                  <p className="text-sm sm:text-base text-purple-100 font-medium leading-relaxed">
+                  <p data-testid="confirmation-question" className="text-sm sm:text-base text-purple-100 font-medium leading-relaxed">
                     {session.confirmationStatement}
                   </p>
 
@@ -745,7 +830,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
                         ) : (
                           <HelpCircle className="w-3.5 h-3.5 text-purple-400" />
                         )}
-                        <span className="text-xs font-semibold text-slate-200">
+                        <span data-testid="confirm-voice-status" className="text-xs font-semibold text-slate-200">
                           {confirmStatusMessage ||
                             (confirmStatus === 'listening'
                               ? language === 'hi'
@@ -775,7 +860,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
 
                     {/* LIVE TRANSCRIBED TEXT BADGE */}
                     {liveConfirmTranscript && (
-                      <div className="text-xs font-mono bg-purple-950/50 border border-purple-500/40 rounded-lg px-2.5 py-1.5 text-purple-200 flex items-center gap-2">
+                      <div data-testid="confirm-voice-transcript" className="text-xs font-mono bg-purple-950/50 border border-purple-500/40 rounded-lg px-2.5 py-1.5 text-purple-200 flex items-center gap-2">
                         <span className="text-[10px] uppercase font-bold text-purple-400">Heard:</span>
                         <span className="italic truncate">&ldquo;{liveConfirmTranscript}&rdquo;</span>
                       </div>
@@ -785,6 +870,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
                   {/* LARGE YES / NO BUTTONS AS REQUIRED */}
                   <div className="pt-2 flex flex-wrap items-center gap-3">
                     <button
+                      data-testid="confirm-yes-btn"
                       onClick={() => handleConfirmSelection(true)}
                       className={`flex-1 py-3 px-4 rounded-2xl font-bold text-sm transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg ${
                         confirmStatus === 'fallback_buttons'
@@ -797,6 +883,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
                     </button>
 
                     <button
+                      data-testid="confirm-no-btn"
                       onClick={() => handleConfirmSelection(false)}
                       className="flex-1 py-3 px-4 rounded-2xl bg-slate-800/90 hover:bg-slate-700 border border-slate-700 text-slate-200 font-medium text-sm transition-all active:scale-95 flex items-center justify-center gap-2"
                     >
@@ -810,6 +897,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
               {/* Clarification Loop (1 to 5 questions) */}
               {currentState === 'CLARIFY_LOOP' && (
                 <motion.div
+                  data-testid="clarify-card"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   className="p-4 rounded-2xl bg-slate-900/90 border border-teal-500/40 space-y-3 shadow-lg"
@@ -818,7 +906,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
                     <span className="text-teal-300 font-bold uppercase">
                       {language === 'hi' ? 'स्पष्टीकरण संवाद' : 'Clarification Dialogue'}
                     </span>
-                    <span className="px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300 text-[10px]">
+                    <span data-testid="clarify-turn-count" className="px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300 text-[10px]">
                       Question {session.clarificationTurns.length + 1} of 5
                     </span>
                   </div>
@@ -832,7 +920,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
                   ))}
 
                   {/* Current Active Question */}
-                  <div className="p-3 rounded-xl bg-teal-950/30 border border-teal-500/30 text-sm font-medium text-teal-100">
+                  <div data-testid="clarify-question-text" className="p-3 rounded-xl bg-teal-950/30 border border-teal-500/30 text-sm font-medium text-teal-100">
                     {activeVoicePrompt ||
                       (language === 'hi'
                         ? 'आज किस बात या घटना ने इस भावना को उभारा?'
@@ -848,6 +936,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
           ───────────────────────────────────────────────────────── */}
           {currentState === 'GITA' && session.selectedGitaVerse && (
             <motion.div
+              data-testid="gita-card"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               className="space-y-4 max-w-xl mx-auto"
@@ -856,7 +945,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
                 <div className="flex items-center justify-between pb-2 border-b border-amber-500/20">
                   <div className="flex items-center gap-2">
                     <span className="text-base">🕉️</span>
-                    <span className="text-xs font-mono font-bold text-amber-300 tracking-wider uppercase">
+                    <span data-testid="gita-verse-ref" className="text-xs font-mono font-bold text-amber-300 tracking-wider uppercase">
                       {session.selectedGitaVerse.reference}
                     </span>
                   </div>
@@ -867,10 +956,10 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
 
                 {/* Sanskrit Shloka & Roman Transliteration */}
                 <div className="p-3.5 rounded-2xl bg-amber-950/40 border border-amber-500/30 text-center space-y-1">
-                  <div className="font-serif text-sm sm:text-base text-amber-100 font-semibold leading-relaxed whitespace-pre-line">
+                  <div data-testid="gita-shloka-sanskrit" className="font-serif text-sm sm:text-base text-amber-100 font-semibold leading-relaxed whitespace-pre-line">
                     {session.selectedGitaVerse.sanskrit}
                   </div>
-                  <div className="text-xs text-amber-300/80 font-mono italic">
+                  <div data-testid="gita-shloka-transliteration" className="text-xs text-amber-300/80 font-mono italic">
                     {session.selectedGitaVerse.transliteration}
                   </div>
                 </div>
@@ -881,7 +970,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
                     <strong className="text-amber-300">
                       {language === 'hi' ? 'सरल अर्थ: ' : 'Core Meaning: '}
                     </strong>
-                    <span>
+                    <span data-testid="gita-meaning">
                       {language === 'hi'
                         ? session.selectedGitaVerse.hindi_meaning
                         : session.selectedGitaVerse.english_meaning}
@@ -892,20 +981,21 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
                     <strong className="text-amber-300">
                       {language === 'hi' ? 'समस्या का कारण: ' : 'What the Gita says about this: '}
                     </strong>
-                    <span>{session.selectedGitaVerse.problem_analysis}</span>
+                    <span data-testid="gita-problem-analysis">{session.selectedGitaVerse.problem_analysis}</span>
                   </div>
 
                   <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-200">
                     <strong className="text-amber-300">
                       {language === 'hi' ? 'दैनिक व्यावहारिक समाधान: ' : 'Practical Solution: '}
                     </strong>
-                    <span>{session.selectedGitaVerse.practical_solution}</span>
+                    <span data-testid="gita-practical-solution">{session.selectedGitaVerse.practical_solution}</span>
                   </div>
                 </div>
 
                 {/* Audio Controls: Replay and Skip */}
                 <div className="pt-2 flex items-center justify-between gap-3 border-t border-amber-500/20">
                   <button
+                    data-testid="gita-replay-btn"
                     onClick={handleReplayGita}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 text-xs font-medium transition-all"
                   >
@@ -914,6 +1004,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
                   </button>
 
                   <button
+                    data-testid="gita-skip-btn"
                     onClick={handleSkipGita}
                     className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold transition-all shadow-md active:scale-95"
                   >
@@ -930,6 +1021,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
           ───────────────────────────────────────────────────────── */}
           {currentState === 'CBT' && (
             <motion.div
+              data-testid="cbt-card"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               className="space-y-4 max-w-xl mx-auto"
@@ -944,13 +1036,13 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
                       <span className="font-mono font-bold text-emerald-300 uppercase">
                         {language === 'hi' ? 'चरण 3: CBT संज्ञानात्मक पुनर्गठन' : 'Phase 3: Cognitive Behavioral Therapy'}
                       </span>
-                      <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono text-[10px]">
+                      <span data-testid="cbt-step-badge" className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono text-[10px]">
                         Step {step} of 4
                       </span>
                     </div>
 
                     {/* Step 1: Identify Automatic Negative Thought */}
-                    <div className="p-3.5 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-1.5">
+                    <div data-testid="cbt-automatic-thought" className="p-3.5 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-1.5">
                       <div className="text-xs font-semibold text-emerald-400">
                         {language === 'hi' ? '1. नकारात्मक स्वचालित विचार:' : '1. Automatic Negative Thought:'}
                       </div>
@@ -966,7 +1058,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
 
                     {/* Step 2: Name Cognitive Distortion */}
                     {step >= 2 && (
-                      <div className="p-3.5 rounded-2xl bg-purple-950/40 border border-purple-500/30 space-y-2">
+                      <div data-testid="cbt-distortion-name" className="p-3.5 rounded-2xl bg-purple-950/40 border border-purple-500/30 space-y-2">
                         <div className="text-xs font-semibold text-purple-400">
                           {language === 'hi' ? '2. संज्ञानात्मक भ्रम (Cognitive Distortion):' : '2. Cognitive Distortion:'}
                         </div>
@@ -975,6 +1067,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
                         </p>
                         {step === 2 && (
                           <button
+                            data-testid="cbt-distortion-ack-btn"
                             onClick={handleAcknowledgeDistortion}
                             className="px-3.5 py-1.5 rounded-xl bg-purple-500 hover:bg-purple-400 text-slate-950 text-xs font-bold transition-all shadow-md"
                           >
@@ -986,7 +1079,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
 
                     {/* Step 3: Challenge with Evidence Questions */}
                     {step >= 3 && (
-                      <div className="p-3.5 rounded-2xl bg-cyan-950/40 border border-cyan-500/30 space-y-2">
+                      <div data-testid="cbt-evidence-challenge" className="p-3.5 rounded-2xl bg-cyan-950/40 border border-cyan-500/30 space-y-2">
                         <div className="text-xs font-semibold text-cyan-400">
                           {language === 'hi' ? '3. साक्ष्य-आधारित प्रश्न:' : '3. Evidence-Based Challenge:'}
                         </div>
@@ -1009,15 +1102,29 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
                         <div className="text-xs font-semibold text-emerald-400">
                           {language === 'hi' ? '4. संतुलित विचार व कार्य-कदम:' : '4. Balanced Thought & Action Step:'}
                         </div>
-                        <div className="text-sm text-emerald-100 font-medium">
+                        <div data-testid="cbt-balanced-thought" className="text-sm text-emerald-100 font-medium">
                           {language === 'hi' ? script.step4_replacement_thought_hi : script.step4_replacement_thought_en}
                         </div>
-                        <div className="p-2 rounded-xl bg-slate-950/60 border border-emerald-500/20 text-xs text-emerald-300">
+                        <div data-testid="cbt-action-step" className="p-2 rounded-xl bg-slate-950/60 border border-emerald-500/20 text-xs text-emerald-300">
                           <strong>{language === 'hi' ? 'एक छोटा कदम: ' : 'Small Action Step: '}</strong>
                           {language === 'hi' ? script.step4_action_step_hi : script.step4_action_step_en}
                         </div>
                       </div>
                     )}
+                    {/* CBT Transition Controls */}
+                    <div className="pt-2 flex items-center justify-end gap-3 border-t border-emerald-500/20">
+                      <button
+                        data-testid="cbt-skip-btn"
+                        onClick={() => {
+                          wellnessStateMachine.advanceFromCBTToTrataka();
+                          startTratakaSession();
+                        }}
+                        className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-bold transition-all shadow-md active:scale-95"
+                      >
+                        <span>{language === 'hi' ? 'अगला: त्राटक ध्यान →' : 'Next: Trataka Gazing →'}</span>
+                        <SkipForward className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
                 );
               })()}
@@ -1029,16 +1136,17 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
           ───────────────────────────────────────────────────────── */}
           {currentState === 'TRATAKA' && session.selectedTrataka && (
             <motion.div
+              data-testid="trataka-card"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               className="space-y-4 max-w-xl mx-auto flex flex-col items-center text-center"
             >
               <div className="w-full p-4 sm:p-5 rounded-3xl bg-slate-900/90 border border-cyan-500/40 space-y-3 shadow-2xl">
                 <div className="flex items-center justify-between text-xs font-mono">
-                  <span className="text-cyan-300 font-bold uppercase">
+                  <span data-testid="trataka-variant-name" className="text-cyan-300 font-bold uppercase">
                     {session.selectedTrataka.variant.name_en}
                   </span>
-                  <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300">
+                  <span data-testid="trataka-timer" className="px-2.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300">
                     {formatTimer(tratakaSecondsRemaining)}
                   </span>
                 </div>
@@ -1049,7 +1157,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
                 </p>
 
                 {/* VISUAL FOCUS OBJECT (Candle, Bindu, Om, Moon, Mirror) */}
-                <div className="relative my-4 w-full h-56 sm:h-64 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center overflow-hidden">
+                <div data-testid="trataka-visual-container" className="relative my-4 w-full h-56 sm:h-64 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center overflow-hidden">
                   {/* Mode 1: Candle Flame */}
                   {session.selectedTrataka.variant.visual_type === 'candle' && (
                     <div className="flex flex-col items-center justify-center">
@@ -1111,20 +1219,37 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
 
                 {/* Voice Cue Display */}
                 {currentTratakaCue && (
-                  <p className="text-xs font-medium text-cyan-200 animate-fadeIn">
+                  <p data-testid="trataka-voice-cue" className="text-xs font-medium text-cyan-200 animate-fadeIn">
                     {currentTratakaCue}
                   </p>
                 )}
 
                 {/* Controls */}
-                {!isTratakaRunning && (
+                <div className="flex items-center justify-between gap-3 w-full">
+                  {!isTratakaRunning && (
+                    <button
+                      data-testid="trataka-start-btn"
+                      onClick={startTratakaSession}
+                      className="flex-1 py-2.5 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition-all shadow-md active:scale-95"
+                    >
+                      {language === 'hi' ? 'ध्यान अभ्यास शुरू करें (प्रारंभ)' : 'Begin Gazing Practice'}
+                    </button>
+                  )}
                   <button
-                    onClick={startTratakaSession}
-                    className="w-full py-2.5 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition-all shadow-md active:scale-95"
+                    data-testid="trataka-skip-btn"
+                    onClick={() => {
+                      wellnessStateMachine.completeTratakaSession();
+                      setIsTratakaRunning(false);
+                      if (cameraStream) {
+                        cameraStream.getTracks().forEach((t) => t.stop());
+                        setCameraStream(null);
+                      }
+                    }}
+                    className="py-2.5 px-4 rounded-2xl bg-slate-800 hover:bg-slate-700 text-cyan-300 font-medium text-xs border border-cyan-500/30 transition-all shadow-md active:scale-95"
                   >
-                    {language === 'hi' ? 'ध्यान अभ्यास शुरू करें (प्रारंभ)' : 'Begin Gazing Practice'}
+                    {language === 'hi' ? 'समापन व सारांश →' : 'Complete to Summary →'}
                   </button>
-                )}
+                </div>
               </div>
             </motion.div>
           )}
@@ -1134,6 +1259,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
           ───────────────────────────────────────────────────────── */}
           {currentState === 'SUMMARY' && (
             <motion.div
+              data-testid="summary-card"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               className="space-y-4 max-w-xl mx-auto"
@@ -1148,7 +1274,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
                 </h3>
 
                 {session.selectedTrataka && (
-                  <p className="text-xs sm:text-sm text-slate-300 italic leading-relaxed">
+                  <p data-testid="summary-closing-reflection" className="text-xs sm:text-sm text-slate-300 italic leading-relaxed">
                     &ldquo;
                     {language === 'hi'
                       ? session.selectedTrataka.variant.closing_reflection_hi
@@ -1169,6 +1295,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
                     {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
                       <button
                         key={num}
+                        data-testid={`distress-rating-btn-${num}`}
                         onClick={() => handleSubmitRating(num)}
                         className={`w-8 h-8 rounded-xl font-mono text-xs font-bold transition-all ${
                           session.postSessionMoodRating === num
@@ -1192,6 +1319,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
 
                 <div className="pt-2 flex justify-center">
                   <button
+                    data-testid="session-complete-btn"
                     onClick={() => {
                       wellnessStateMachine.reset();
                       onClose();
@@ -1208,49 +1336,75 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
 
         {/* BOTTOM INPUT BAR (Speech-to-Text & Text Input) */}
         {currentState !== 'SUMMARY' && currentState !== 'GITA' && currentState !== 'TRATAKA' && (
-          <footer className="px-4 py-3 bg-slate-950/90 border-t border-slate-800/60 flex items-center gap-2 shrink-0">
-            {/* Mic Toggle Button */}
-            <button
-              onClick={handleToggleListening}
-              className={`p-2.5 rounded-full transition-all shrink-0 ${
-                isListening
-                  ? 'bg-rose-500/25 text-rose-400 border border-rose-500/70 animate-pulse shadow-[0_0_15px_rgba(244,63,94,0.45)]'
-                  : 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 active:scale-95'
-              }`}
-              title={isListening ? 'Stop listening' : 'Speak your reply'}
-            >
-              {isListening ? <Mic className="w-4 h-4 animate-pulse" /> : <Mic className="w-4 h-4" />}
-            </button>
+          <footer data-testid="bottom-chat-footer" className="px-4 py-3 bg-slate-950/90 border-t border-slate-800/60 flex flex-col gap-2 shrink-0">
+            {/* User-Visible Mic Error / Blocked Alert Banner */}
+            {micErrorMessage && (
+              <div data-testid="mic-error-banner" className="flex items-center justify-between text-xs px-3 py-2 rounded-xl bg-rose-950/70 border border-rose-500/50 text-rose-200 shadow-md">
+                <div className="flex items-center gap-2 truncate">
+                  <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse shrink-0" />
+                  <span className="truncate">{micErrorMessage}</span>
+                </div>
+                <button
+                  data-testid="mic-retry-btn"
+                  onClick={() => {
+                    setMicErrorMessage(null);
+                    handleToggleListening();
+                  }}
+                  className="ml-3 px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-[10px] shrink-0 transition-all shadow"
+                >
+                  Retry Mic
+                </button>
+              </div>
+            )}
 
-            {/* Text Input */}
-            <input
-              type="text"
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  handleSendUserReply();
+            <div className="flex items-center gap-2 w-full">
+              {/* Mic Toggle Button with explicit status styling */}
+              <button
+                data-testid="mic-toggle-btn"
+                onClick={handleToggleListening}
+                className={`p-2.5 rounded-full transition-all shrink-0 ${
+                  isListening
+                    ? 'bg-rose-500/25 text-rose-400 border border-rose-500/70 animate-pulse shadow-[0_0_15px_rgba(244,63,94,0.45)]'
+                    : 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 active:scale-95'
+                }`}
+                title={isListening ? 'Stop listening' : 'Speak your reply (voice input)'}
+              >
+                {isListening ? <Mic className="w-4 h-4 animate-pulse" /> : <Mic className="w-4 h-4" />}
+              </button>
+
+              {/* Text Input (Always accessible as fallback) */}
+              <input
+                data-testid="chat-text-input"
+                type="text"
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleSendUserReply();
+                  }
+                }}
+                placeholder={
+                  isListening
+                    ? (language === 'hi' ? 'बोलें, हम सुन रहे हैं...' : 'Listening in real-time... speak your reply')
+                    : language === 'hi'
+                    ? 'अपनी भावनाएं बताएं या बोलकर कहें...'
+                    : 'Share how you are feeling or reply by voice...'
                 }
-              }}
-              placeholder={
-                isListening
-                  ? 'Listening in real-time...'
-                  : language === 'hi'
-                  ? 'अपनी भावनाएं बताएं या बोलकर कहें...'
-                  : 'Share how you are feeling or reply by voice...'
-              }
-              className="flex-1 bg-slate-900/90 border border-slate-800 rounded-full px-4 py-2 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-teal-500/60"
-            />
+                className="flex-1 bg-slate-900/90 border border-slate-800 rounded-full px-4 py-2 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-teal-500/60"
+              />
 
-            {/* Send Button */}
-            <button
-              onClick={() => handleSendUserReply()}
-              disabled={!inputText.trim()}
-              className="p-2.5 rounded-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-30 text-slate-950 font-bold transition-all shadow-md shrink-0 active:scale-95"
-            >
-              <Send className="w-4 h-4" />
-            </button>
+              {/* Send Button */}
+              <button
+                data-testid="chat-send-btn"
+                onClick={() => handleSendUserReply()}
+                disabled={!inputText.trim()}
+                className="p-2.5 rounded-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-30 text-slate-950 font-bold transition-all shadow-md shrink-0 active:scale-95"
+                title="Send reply"
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </div>
           </footer>
         )}
 
@@ -1258,6 +1412,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
         <div className="px-4 py-2 bg-slate-950 border-t border-slate-800/40 flex items-center justify-between text-[11px] font-mono text-slate-400 shrink-0 select-none">
           <div className="flex items-center gap-2">
             <button
+              data-testid="session-back-btn"
               onClick={() => wellnessStateMachine.back()}
               className="flex items-center gap-1 hover:text-slate-200 transition-colors"
               title="Go Back to Previous Phase"
@@ -1269,6 +1424,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
             <span>•</span>
 
             <button
+              data-testid="session-pause-btn"
               onClick={() => {
                 const nextPause = !isPaused;
                 setIsPaused(nextPause);
@@ -1287,6 +1443,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
 
           <div className="flex items-center gap-2">
             <button
+              data-testid="session-skip-btn"
               onClick={() => wellnessStateMachine.skip()}
               className="flex items-center gap-1 hover:text-slate-200 transition-colors"
               title="Skip to Next Phase"
@@ -1298,6 +1455,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
             <span>•</span>
 
             <button
+              data-testid="session-reset-btn"
               onClick={() => wellnessStateMachine.reset()}
               className="hover:text-rose-400 transition-colors"
               title="Reset Session"

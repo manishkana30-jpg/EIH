@@ -860,7 +860,9 @@ export default function SanctuarySessionPage() {
           stream = await getCleanAudioStream();
           activeStreamRef.current = stream;
           setRecordingStream(stream);
-        } catch (_) {}
+        } catch (streamErr) {
+          console.warn("[Audio Pipeline] Audio stream notice:", streamErr);
+        }
       }
 
       setIsRecording(true);
@@ -883,8 +885,11 @@ export default function SanctuarySessionPage() {
         },
         (err) => {
           console.warn("Speech recognition notice:", err);
-          if (err && (err.includes("not-allowed") || err.includes("permission"))) {
-            setErrorMessage("Microphone access denied. Please allow microphone permission in your mobile browser settings.");
+          setIsRecording(false);
+          if (err && (err.includes("not-allowed") || err.includes("permission") || err.includes("blocked"))) {
+            setErrorMessage("Microphone access blocked. Click the lock/camera icon in your address bar to enable microphone access.");
+          } else if (err) {
+            setErrorMessage(err);
           }
         },
         stream || undefined

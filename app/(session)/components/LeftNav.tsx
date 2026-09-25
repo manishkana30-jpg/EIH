@@ -78,6 +78,7 @@ export const LeftNav: React.FC<LeftNavProps> = React.memo(({
         <nav className="space-y-1.5">
           {onOpenWellnessFlow && (
             <button
+              data-testid="open-wellness-flow-btn"
               onClick={onOpenWellnessFlow}
               className="flex items-center gap-3 w-full p-2.5 rounded-xl bg-gradient-to-r from-emerald-500/15 via-teal-500/10 to-transparent hover:from-emerald-500/25 border border-emerald-500/40 text-emerald-300 font-semibold transition-all duration-300 group shadow-sm active:scale-95"
               title="Voice-First 4-Phase Guided Wellness Conversation (Mood -> Gita -> CBT -> Trataka)"

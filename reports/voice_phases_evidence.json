@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-09-25T16:22:14.056Z",
+  "timestamp": "2026-09-25T16:33:04.481Z",
   "moodTest": {
     "modalOpened": true,
     "foundMicButton": true,
@@ -8,11 +8,48 @@
     "isSpeaking": false
   },
   "confirmTest": {
-    "error": "Input not found"
+    "hasConfirmPhaseText": true,
+    "speechSynthSpeaking": true
   },
   "mainChatVoiceTest": {
     "foundMainMic": true,
     "mainMicClicked": true
   },
-  "capturedLogs": []
+  "capturedLogs": [
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+      "time": 1790353977764
+    },
+    {
+      "type": "info",
+      "text": "🚀 EIH: New deployment detected from git push. Preparing auto-update.",
+      "time": 1790353977995
+    },
+    {
+      "type": "info",
+      "text": "🚀 EIH: New deployment detected from git push. Preparing auto-update.",
+      "time": 1790353978016
+    },
+    {
+      "type": "log",
+      "text": "[Audio Pipeline] Active constraints: Object",
+      "time": 1790353981581
+    },
+    {
+      "type": "log",
+      "text": "[CONFIRM-VOICE:TRANSITION 16:33:01.872] Initiating Phase 1 Confirmation Voice Flow",
+      "time": 1790353981878
+    },
+    {
+      "type": "log",
+      "text": "[CONFIRM-VOICE:TTS 16:33:01.876] onStart: \"It sounds like you're feeling anxiety about work and finding...\"",
+      "time": 1790353981879
+    },
+    {
+      "type": "log",
+      "text": "[CONFIRM-VOICE:TTS 16:33:02.448] Native speech onstart fired",
+      "time": 1790353982455
+    }
+  ]
 }

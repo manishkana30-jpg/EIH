@@ -1,0 +1,86 @@
+{
+  "timestamp": "2026-09-25T16:38:07.177Z",
+  "allPassed": true,
+  "results": [
+    {
+      "testCase": "First-time mic permission prompt",
+      "browser": "Chrome",
+      "device": "Desktop",
+      "expected": "Prompt appears, granting starts listening",
+      "pass": true,
+      "evidence": "Consent modal shown: true, transition to listening: true"
+    },
+    {
+      "testCase": "Permission previously denied",
+      "browser": "Chrome",
+      "device": "Desktop",
+      "expected": "Clear message with instructions to re-enable, no silent hang",
+      "pass": true,
+      "evidence": "Surfaced banner: \"Microphone access is blocked in your browser settings. Please click the lock or camera icon in the address bar to allow microphone access.\nRetry Mic\" (no silent hang)"
+    },
+    {
+      "testCase": "Mic granted, normal speech",
+      "browser": "Chrome",
+      "device": "Desktop",
+      "expected": "Transcribed correctly, state advances",
+      "pass": true,
+      "evidence": "Mic listening confirmed, speech transcribed and advanced state to CONFIRM phase"
+    },
+    {
+      "testCase": "Silence for 10s",
+      "browser": "Chrome",
+      "device": "Desktop/Mobile",
+      "expected": "Times out gracefully, retry or fallback shown, no infinite hang",
+      "pass": true,
+      "evidence": "Silence window timed out gracefully after 7s; Yes/No fallback buttons active and operational"
+    },
+    {
+      "testCase": "TTS playing then user tries to speak (barge-in)",
+      "browser": "Chrome/Safari",
+      "device": "Desktop/Mobile",
+      "expected": "Either blocked gracefully with message, or barge-in works, never both conflicting",
+      "pass": true,
+      "evidence": "Barge-in immediately halted TTS (speaking=false) and transitioned smoothly to listening"
+    },
+    {
+      "testCase": "Network drop mid-listen",
+      "browser": "Chrome/Edge",
+      "device": "Desktop/Mobile",
+      "expected": "Error surfaced, retry option shown",
+      "pass": true,
+      "evidence": "Network error surfaced cleanly to UI with retry button (\"network error handled\")"
+    },
+    {
+      "testCase": "Non-HTTPS origin",
+      "browser": "Any Browser",
+      "device": "Desktop/Mobile",
+      "expected": "Clear blocked message, no silent failure",
+      "pass": true,
+      "evidence": "Insecure context guard fired: \"Microphone access requires a secure connection (HTTPS or localhost).\nRetry Mic\" (no silent failure)"
+    },
+    {
+      "testCase": "Browser without Speech API support",
+      "browser": "Firefox / Simulated",
+      "device": "Desktop",
+      "expected": "Falls back to text input with message",
+      "pass": true,
+      "evidence": "Detected unsupported Speech API: \"Speech recognition is not supported in this browser. Please use the text input below.\nRetry Mic\"; text input fallback active"
+    },
+    {
+      "testCase": "Rapid repeated phase transitions (stress test)",
+      "browser": "Chrome",
+      "device": "Desktop",
+      "expected": "No leaked listeners, no duplicate recognizer instances, no crash",
+      "pass": true,
+      "evidence": "10 rapid toggle cycles completed without crash or leaked recognizer instances"
+    },
+    {
+      "testCase": "Backgrounding the tab/app mid-listen",
+      "browser": "Chrome/Safari",
+      "device": "Mobile",
+      "expected": "Gracefully stops/resumes, no permanent stuck state",
+      "pass": true,
+      "evidence": "Tab visibility toggle (hidden -> visible) handled cleanly without stuck state"
+    }
+  ]
+}
