@@ -110,6 +110,7 @@ export const MobileNav: React.FC<MobileNavProps> = React.memo(({
               <nav className="space-y-2">
                 {onOpenWellnessFlow && (
                   <button
+                    data-testid="mobile-open-wellness-flow-btn"
                     onClick={() => {
                       onClose();
                       onOpenWellnessFlow();

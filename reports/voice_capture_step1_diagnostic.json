@@ -1,0 +1,358 @@
+[
+  {
+    "environment": "Chrome Desktop",
+    "type": "desktop_chrome",
+    "timestamp": "2026-09-25T18:46:48.461Z",
+    "check1_micTriggerOnGesture": true,
+    "check1_autoTriggerAfterTts": false,
+    "check2_getUserMediaCalled": true,
+    "check2_getUserMediaResult": "resolved",
+    "check2_getUserMediaError": null,
+    "check3_permQueryState": "granted",
+    "check4_devicesList": [
+      {
+        "kind": "audioinput",
+        "label": "Fake Default Audio Input",
+        "deviceId": "present"
+      },
+      {
+        "kind": "audioinput",
+        "label": "Fake Audio Input 1",
+        "deviceId": "present"
+      },
+      {
+        "kind": "audioinput",
+        "label": "Fake Audio Input 2",
+        "deviceId": "present"
+      },
+      {
+        "kind": "videoinput",
+        "label": "fake_device_0",
+        "deviceId": "present"
+      },
+      {
+        "kind": "audiooutput",
+        "label": "Fake Default Audio Output",
+        "deviceId": "present"
+      },
+      {
+        "kind": "audiooutput",
+        "label": "Fake Audio Output 1",
+        "deviceId": "present"
+      },
+      {
+        "kind": "audiooutput",
+        "label": "Fake Audio Output 2",
+        "deviceId": "present"
+      }
+    ],
+    "check5_audioContextState": "running",
+    "check5_audioSignalRms": 0.014702376427738839,
+    "check5_audioSignalPeak": 0.807843137254902,
+    "check6_speechRecStarted": true,
+    "check6_speechRecState": "started",
+    "check6_speechRecError": null,
+    "check7_focusAndVisibility": {
+      "visibilityState": "visible",
+      "hasFocus": true
+    },
+    "check8_environmentType": "desktop_chrome",
+    "check9_exclusiveLockIssue": false,
+    "check10_stoppedState": {
+      "controllerListening": false,
+      "hasMediaStream": false,
+      "streamActive": false
+    },
+    "check10_restartedAudit": {
+      "hasStream": true,
+      "streamActive": true,
+      "trackStates": [
+        {
+          "id": "90ff28b8-937c-4e30-947b-edaf4160653e",
+          "readyState": "live",
+          "enabled": true,
+          "muted": false
+        }
+      ],
+      "isListening": true,
+      "getUserMediaCount": true
+    },
+    "screenshot": "C:\\Users\\manis\\EIH\\reports\\screenshots\\voice_audit\\step1_desktop_chrome.png",
+    "controllerState": {
+      "isListening": true,
+      "shouldBeListening": true,
+      "hasMediaStream": true,
+      "mediaStreamActive": true,
+      "hasAudioCtx": true,
+      "audioCtxState": "running",
+      "hasAnalyser": true
+    }
+  },
+  {
+    "environment": "Chrome Android",
+    "type": "mobile_chrome",
+    "timestamp": "2026-09-25T18:46:59.272Z",
+    "check1_micTriggerOnGesture": true,
+    "check1_autoTriggerAfterTts": false,
+    "check2_getUserMediaCalled": true,
+    "check2_getUserMediaResult": "resolved",
+    "check2_getUserMediaError": null,
+    "check3_permQueryState": "granted",
+    "check4_devicesList": [
+      {
+        "kind": "audioinput",
+        "label": "Fake Default Audio Input",
+        "deviceId": "present"
+      },
+      {
+        "kind": "audioinput",
+        "label": "Fake Audio Input 1",
+        "deviceId": "present"
+      },
+      {
+        "kind": "audioinput",
+        "label": "Fake Audio Input 2",
+        "deviceId": "present"
+      },
+      {
+        "kind": "videoinput",
+        "label": "fake_device_0",
+        "deviceId": "present"
+      },
+      {
+        "kind": "audiooutput",
+        "label": "Fake Default Audio Output",
+        "deviceId": "present"
+      },
+      {
+        "kind": "audiooutput",
+        "label": "Fake Audio Output 1",
+        "deviceId": "present"
+      },
+      {
+        "kind": "audiooutput",
+        "label": "Fake Audio Output 2",
+        "deviceId": "present"
+      }
+    ],
+    "check5_audioContextState": "running",
+    "check5_audioSignalRms": 0.0759439322986179,
+    "check5_audioSignalPeak": 0.9725490196078431,
+    "check6_speechRecStarted": true,
+    "check6_speechRecState": "started",
+    "check6_speechRecError": null,
+    "check7_focusAndVisibility": {
+      "visibilityState": "visible",
+      "hasFocus": true
+    },
+    "check8_environmentType": "mobile_chrome",
+    "check9_exclusiveLockIssue": false,
+    "check10_stoppedState": {
+      "controllerListening": false,
+      "hasMediaStream": false,
+      "streamActive": false
+    },
+    "check10_restartedAudit": {
+      "hasStream": true,
+      "streamActive": true,
+      "trackStates": [
+        {
+          "id": "8e703f2c-ca04-4cf7-9644-d002944a545c",
+          "readyState": "live",
+          "enabled": true,
+          "muted": false
+        }
+      ],
+      "isListening": true,
+      "getUserMediaCount": true
+    },
+    "screenshot": "C:\\Users\\manis\\EIH\\reports\\screenshots\\voice_audit\\step1_mobile_chrome.png",
+    "controllerState": {
+      "isListening": true,
+      "shouldBeListening": true,
+      "hasMediaStream": true,
+      "mediaStreamActive": true,
+      "hasAudioCtx": true,
+      "audioCtxState": "running",
+      "hasAnalyser": true
+    }
+  },
+  {
+    "environment": "Safari iOS",
+    "type": "mobile_safari",
+    "timestamp": "2026-09-25T18:47:10.090Z",
+    "check1_micTriggerOnGesture": true,
+    "check1_autoTriggerAfterTts": false,
+    "check2_getUserMediaCalled": true,
+    "check2_getUserMediaResult": "resolved",
+    "check2_getUserMediaError": null,
+    "check3_permQueryState": "granted",
+    "check4_devicesList": [
+      {
+        "kind": "audioinput",
+        "label": "Fake Default Audio Input",
+        "deviceId": "present"
+      },
+      {
+        "kind": "audioinput",
+        "label": "Fake Audio Input 1",
+        "deviceId": "present"
+      },
+      {
+        "kind": "audioinput",
+        "label": "Fake Audio Input 2",
+        "deviceId": "present"
+      },
+      {
+        "kind": "videoinput",
+        "label": "fake_device_0",
+        "deviceId": "present"
+      },
+      {
+        "kind": "audiooutput",
+        "label": "Fake Default Audio Output",
+        "deviceId": "present"
+      },
+      {
+        "kind": "audiooutput",
+        "label": "Fake Audio Output 1",
+        "deviceId": "present"
+      },
+      {
+        "kind": "audiooutput",
+        "label": "Fake Audio Output 2",
+        "deviceId": "present"
+      }
+    ],
+    "check5_audioContextState": "running",
+    "check5_audioSignalRms": 0.07512002389070803,
+    "check5_audioSignalPeak": 0.9725490196078431,
+    "check6_speechRecStarted": true,
+    "check6_speechRecState": "started",
+    "check6_speechRecError": null,
+    "check7_focusAndVisibility": {
+      "visibilityState": "visible",
+      "hasFocus": true
+    },
+    "check8_environmentType": "mobile_safari",
+    "check9_exclusiveLockIssue": false,
+    "check10_stoppedState": {
+      "controllerListening": false,
+      "hasMediaStream": false,
+      "streamActive": false
+    },
+    "check10_restartedAudit": {
+      "hasStream": true,
+      "streamActive": true,
+      "trackStates": [
+        {
+          "id": "977c0562-56bb-4696-ae9a-5f1322acf891",
+          "readyState": "live",
+          "enabled": true,
+          "muted": false
+        }
+      ],
+      "isListening": true,
+      "getUserMediaCount": true
+    },
+    "screenshot": "C:\\Users\\manis\\EIH\\reports\\screenshots\\voice_audit\\step1_mobile_safari.png",
+    "controllerState": {
+      "isListening": true,
+      "shouldBeListening": true,
+      "hasMediaStream": true,
+      "mediaStreamActive": true,
+      "hasAudioCtx": true,
+      "audioCtxState": "running",
+      "hasAnalyser": true
+    }
+  },
+  {
+    "environment": "Edge Desktop",
+    "type": "desktop_edge",
+    "timestamp": "2026-09-25T18:47:21.242Z",
+    "check1_micTriggerOnGesture": true,
+    "check1_autoTriggerAfterTts": false,
+    "check2_getUserMediaCalled": true,
+    "check2_getUserMediaResult": "resolved",
+    "check2_getUserMediaError": null,
+    "check3_permQueryState": "granted",
+    "check4_devicesList": [
+      {
+        "kind": "audioinput",
+        "label": "Fake Default Audio Input",
+        "deviceId": "present"
+      },
+      {
+        "kind": "audioinput",
+        "label": "Fake Audio Input 1",
+        "deviceId": "present"
+      },
+      {
+        "kind": "audioinput",
+        "label": "Fake Audio Input 2",
+        "deviceId": "present"
+      },
+      {
+        "kind": "videoinput",
+        "label": "fake_device_0",
+        "deviceId": "present"
+      },
+      {
+        "kind": "audiooutput",
+        "label": "Fake Default Audio Output",
+        "deviceId": "present"
+      },
+      {
+        "kind": "audiooutput",
+        "label": "Fake Audio Output 1",
+        "deviceId": "present"
+      },
+      {
+        "kind": "audiooutput",
+        "label": "Fake Audio Output 2",
+        "deviceId": "present"
+      }
+    ],
+    "check5_audioContextState": "running",
+    "check5_audioSignalRms": 0.014789224580766773,
+    "check5_audioSignalPeak": 0.807843137254902,
+    "check6_speechRecStarted": true,
+    "check6_speechRecState": "started",
+    "check6_speechRecError": null,
+    "check7_focusAndVisibility": {
+      "visibilityState": "visible",
+      "hasFocus": true
+    },
+    "check8_environmentType": "desktop_edge",
+    "check9_exclusiveLockIssue": false,
+    "check10_stoppedState": {
+      "controllerListening": false,
+      "hasMediaStream": false,
+      "streamActive": false
+    },
+    "check10_restartedAudit": {
+      "hasStream": true,
+      "streamActive": true,
+      "trackStates": [
+        {
+          "id": "917af6b9-8b30-4e66-95a3-301577b89183",
+          "readyState": "live",
+          "enabled": true,
+          "muted": false
+        }
+      ],
+      "isListening": true,
+      "getUserMediaCount": true
+    },
+    "screenshot": "C:\\Users\\manis\\EIH\\reports\\screenshots\\voice_audit\\step1_desktop_edge.png",
+    "controllerState": {
+      "isListening": true,
+      "shouldBeListening": true,
+      "hasMediaStream": true,
+      "mediaStreamActive": true,
+      "hasAudioCtx": true,
+      "audioCtxState": "running",
+      "hasAnalyser": true
+    }
+  }
+]

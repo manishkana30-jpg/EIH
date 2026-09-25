@@ -209,26 +209,19 @@ export class BrowserSpeechController {
       return false;
     }
 
-    // Defensive Guard 3: Explicit Permission Pre-flight Check
-    if (typeof navigator !== 'undefined' && navigator.permissions?.query) {
-      try {
-        const permStatus = await navigator.permissions.query({ name: 'microphone' as PermissionName });
-        if (permStatus.state === 'denied') {
-          const errMsg = 'Microphone access is blocked in your browser settings. Please click the lock or camera icon in the address bar to allow microphone access.';
-          console.warn('[BrowserSpeechController] Permission blocked:', errMsg);
-          this.callbacks.onError?.(errMsg);
-          return false;
-        }
-      } catch (_) {
-        // Permissions query may not be supported for 'microphone' in all browsers (e.g. Safari); proceed to direct invocation
-      }
+    // Defensive Guard 3: Explicit Insecure Context Check
+    if ((window as any).isSecureContext === false) {
+      const errMsg = 'Microphone access requires a secure connection (HTTPS or localhost).';
+      console.warn('[BrowserSpeechController] Insecure context:', errMsg);
+      this.callbacks.onError?.(errMsg);
+      return false;
     }
 
-    // Defensive Guard 4: Sequential Audio Control - Guarantee TTS is completely stopped & audio device released
+    // Defensive Guard 4: Sequential Audio Control - Stop TTS immediately without async delay
+    // Critical: Do NOT await a setTimeout here, as any async tick before getUserMedia
+    // violates browser user-gesture requirements on iOS Safari and mobile browsers!
     if (this.isSpeaking) {
       this.cancelSpeech();
-      // Sequential buffer delay: 200ms allows OS and browser audio drivers to finish flushing output buffers
-      await new Promise((r) => setTimeout(r, 200));
     }
 
     this.shouldBeListening = true;
@@ -236,8 +229,16 @@ export class BrowserSpeechController {
     this.liveInterimTranscript = '';
     this.accumulatedFinalText = '';
 
-    // 1. Initialize Microphone Audio Stream for real-time visualizer & acoustic prosody (no competing MediaRecorder lock)
+    // 1. Initialize Microphone Audio Stream fresh for real-time visualizer & acoustic prosody
     await this.startMediaStreamAndVAD(existingStream);
+
+    // If microphone acquisition failed, do not proceed with speech recognition
+    if (!this.mediaStream && !existingStream) {
+      this.shouldBeListening = false;
+      this.isListening = false;
+      this.callbacks.onRecognitionState?.(false);
+      return false;
+    }
 
     // 2. Initialize fresh Web Speech Recognition instance
     this.initWebSpeechRecognition();
@@ -268,10 +269,36 @@ export class BrowserSpeechController {
     try {
       if (existingStream && existingStream.active) {
         this.mediaStream = existingStream;
-      } else if (!this.mediaStream || !this.mediaStream.active) {
+      } else {
+        // Fresh Stream Guarantee (Check 10 fix):
+        // Always cleanly stop and null out any previous stream or tracks before requesting a fresh stream.
+        // Reusing a stream whose tracks were stopped leaves a dead stream that silently captures nothing.
+        if (this.mediaStream) {
+          try {
+            this.mediaStream.getTracks().forEach((t) => t.stop());
+          } catch (_) {}
+          this.mediaStream = null;
+        }
+
         if (!navigator.mediaDevices?.getUserMedia) {
           throw new Error('getUserMedia not available on this device');
         }
+
+        // Explicit device pre-flight check if enumerateDevices is available
+        if (navigator.mediaDevices.enumerateDevices) {
+          try {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const hasAudioInput = devices.some((d) => d.kind === 'audioinput');
+            if (devices.length > 0 && !hasAudioInput) {
+              const noMicErr = new Error('No microphone hardware detected on your device.');
+              noMicErr.name = 'NotFoundError';
+              throw noMicErr;
+            }
+          } catch (e: any) {
+            if (e.name === 'NotFoundError') throw e;
+          }
+        }
+
         this.mediaStream = await navigator.mediaDevices.getUserMedia({
           audio: {
             echoCancellation: true,
@@ -294,11 +321,15 @@ export class BrowserSpeechController {
         await this.audioCtx.resume();
       }
 
-      if (this.audioCtx && this.mediaStream && !this.analyser) {
-        const source = this.audioCtx.createMediaStreamSource(this.mediaStream);
-        this.analyser = this.audioCtx.createAnalyser();
-        this.analyser.fftSize = 1024;
-        source.connect(this.analyser);
+      if (this.audioCtx && this.mediaStream) {
+        try {
+          const source = this.audioCtx.createMediaStreamSource(this.mediaStream);
+          this.analyser = this.audioCtx.createAnalyser();
+          this.analyser.fftSize = 1024;
+          source.connect(this.analyser);
+        } catch (ctxErr) {
+          console.warn('[BrowserSpeechController] Failed to connect analyser node:', ctxErr);
+        }
       }
 
       // Root Cause Fix: Do NOT run continuous 250ms MediaRecorder in parallel with SpeechRecognition.
@@ -309,10 +340,21 @@ export class BrowserSpeechController {
       this.startVADLoop();
     } catch (err: any) {
       console.warn('[BrowserSpeechController] Microphone stream initialization notice:', err);
-      if (err?.name === 'NotAllowedError' || err?.name === 'PermissionDeniedError') {
-        this.callbacks.onError?.('Microphone access blocked. Please click the lock or camera icon in your address bar to enable microphone.');
-      } else if (err?.name === 'NotFoundError' || err?.name === 'DevicesNotFoundError') {
+      this.shouldBeListening = false;
+      this.isListening = false;
+      this.callbacks.onRecognitionState?.(false);
+      this.callbacks.onAudioLevel?.(0);
+
+      // Differentiated error UI feedback
+      const errName = err?.name || '';
+      if (errName === 'NotAllowedError' || errName === 'PermissionDeniedError' || errName === 'SecurityError') {
+        this.callbacks.onError?.('Microphone access is blocked in your browser settings. Please click the lock or camera icon in the address bar to allow microphone access.');
+      } else if (errName === 'NotFoundError' || errName === 'DevicesNotFoundError') {
         this.callbacks.onError?.('No microphone hardware detected on your device.');
+      } else if (errName === 'NotReadableError' || errName === 'TrackStartError') {
+        this.callbacks.onError?.('Microphone is in use by another application or locked by the system.');
+      } else {
+        this.callbacks.onError?.(`Microphone error: ${err?.message || 'Failed to start microphone'}`);
       }
     }
   }

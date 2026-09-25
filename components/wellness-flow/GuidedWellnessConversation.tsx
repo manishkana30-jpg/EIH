@@ -53,6 +53,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
   // ─── Interaction & Input State ───
   const [inputText, setInputText] = useState('');
   const [isListening, setIsListening] = useState(false);
+  const [audioLevel, setAudioLevel] = useState<number>(0);
   const [voiceTelemetry, setVoiceTelemetry] = useState<VoiceAcousticState | null>(null);
   const [activeVoicePrompt, setActiveVoicePrompt] = useState<string>('');
 
@@ -139,7 +140,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
     []
   );
 
-  // ─── Initial Greeting Trigger ───
+  // ─── Initial Greeting Trigger with Auto-Listening Hand-off ───
   useEffect(() => {
     if (!isOpen) return;
 
@@ -147,11 +148,19 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
       const greeting = wellnessStateMachine.getInitialGreeting();
       const textToSpeak = language === 'hi' ? greeting.text_hi : greeting.text_en;
       const timer = setTimeout(() => {
-        speakAloud(textToSpeak);
+        speakAloud(textToSpeak, () => {
+          // Root Cause Fix: Auto-trigger capture after assistant prompt finishes asking for input
+          // Hands-free turn taking: seamlessly start listening if mic consent is present
+          if (wellnessStateMachine.getCurrentState() === 'MOOD_INPUT') {
+            if (hasMicConsent || getMicConsent()) {
+              startVoiceListeningSession(true);
+            }
+          }
+        });
       }, 300);
       return () => clearTimeout(timer);
     }
-  }, [isOpen, currentState, language, session.initialUtterance, speakAloud]);
+  }, [isOpen, currentState, language, session.initialUtterance, speakAloud, hasMicConsent]);
 
   // ─── Phase 1 Confirmation Transition Handler (Guarded against duplicate executions) ───
   const handleConfirmSelection = useCallback(
@@ -179,15 +188,17 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
 
       const next = wellnessStateMachine.handleConfirmationResponse(isAffirmative);
       if (isAffirmative) {
-        speakAloud(next.nextSpeechText, () => {
-          setTimeout(() => {
-            if (wellnessStateMachine.getCurrentState() === 'GITA') {
-              handleSkipGita();
-            }
-          }, 1200);
-        });
-      } else {
+        // Speak Gita wisdom naturally. Allow user to absorb the wisdom without auto-skipping.
         speakAloud(next.nextSpeechText);
+      } else {
+        // Clarify question: Speak question and auto-trigger listening for user's clarification answer
+        speakAloud(next.nextSpeechText, () => {
+          if (wellnessStateMachine.getCurrentState() === 'CLARIFY_LOOP') {
+            if (hasMicConsent || getMicConsent()) {
+              startVoiceListeningSession(true);
+            }
+          }
+        });
       }
     },
     [speakAloud]
@@ -237,7 +248,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
     };
   }, [isOpen, currentState, session.confirmationStatement, handleConfirmSelection]);
 
-  // ─── Voice Recording Logic with Immediate Consent Execution & Error Surfacing ───
+  // ─── Voice Recording Logic with Zero-Async User-Gesture & Real-Time Audio Level ───
   const startVoiceListeningSession = async (forcedConsent = false) => {
     // Check consent: must have state consent, localStorage consent, or explicitly forced consent
     if (!forcedConsent && !hasMicConsent && !getMicConsent()) {
@@ -246,15 +257,23 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
     }
 
     try {
-      // 1. Synchronize language locale before recognition starts (en-US or hi-IN)
+      // 1. Synchronize language locale synchronously (do not await, to preserve browser user gesture stack)
       const targetLocale = language === 'hi' ? 'hi-IN' : 'en-US';
-      await browserSpeechController.setLanguageLocale(targetLocale);
+      browserSpeechController.setLanguageLocale(targetLocale).catch(() => {});
 
-      // 2. Guarantee assistant speech stops with buffer gap
+      // 2. Guarantee assistant speech stops immediately
       browserSpeechController.cancelSpeech();
       setIsListening(true);
+      setAudioLevel(0);
       setMicErrorMessage(null);
       setInputText('');
+
+      // 3. Wire real-time audio level callback to drive the live audio meter visualizer
+      browserSpeechController.setCallbacks({
+        onAudioLevel: (lvl: number) => {
+          setAudioLevel(lvl);
+        }
+      });
 
       const started = await browserSpeechController.startListening(
         (transcript, isFinal, vState) => {
@@ -264,6 +283,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
           setInputText(transcript);
           if (isFinal && transcript.trim().length > 0) {
             setIsListening(false);
+            setAudioLevel(0);
             browserSpeechController.stopRecognition();
             handleSendUserReply(transcript.trim(), vState);
           }
@@ -271,21 +291,24 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
         (err) => {
           console.warn('[GuidedWellnessConversation] Voice recognition notice:', err);
           setIsListening(false);
+          setAudioLevel(0);
           setMicErrorMessage(err);
         }
       );
 
       if (!started) {
         setIsListening(false);
+        setAudioLevel(0);
       }
     } catch (err: any) {
       console.error('[GuidedWellnessConversation] Failed to start voice listening:', err);
       setIsListening(false);
+      setAudioLevel(0);
       setMicErrorMessage(err?.message || 'Failed to start microphone. Please check your browser permissions.');
     }
   };
 
-  const handleToggleListening = async () => {
+  const handleToggleListening = () => {
     // In CONFIRM phase, route directly to dedicated short-session recognizer
     if (currentState === 'CONFIRM') {
       setMicConsent(true);
@@ -299,11 +322,13 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
 
     if (isListening) {
       setIsListening(false);
+      setAudioLevel(0);
       browserSpeechController.stopRecognition();
       return;
     }
 
-    await startVoiceListeningSession(false);
+    // Synchronous execution on click: preserves browser user gesture
+    startVoiceListeningSession(false);
   };
 
   const handleGrantConsent = () => {
@@ -350,19 +375,44 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
       if (loopResult.completedLoop) {
         const confirmSpeech = loopResult.confirmationText || '';
         speakAloud(confirmSpeech, () => {
-          // Auto-start Phase 2 (Gita)
+          // Advance to Phase 2 (Gita)
           const gita = wellnessStateMachine.getSelectedGitaVerse();
           const gitaText = language === 'hi' ? gita?.speech_text_hi || '' : gita?.speech_text_en || '';
-          speakAloud(gitaText, () => {
-            setTimeout(() => {
-              if (wellnessStateMachine.getCurrentState() === 'GITA') {
-                handleSkipGita();
-              }
-            }, 1200);
-          });
+          speakAloud(gitaText);
         });
       } else if (loopResult.nextQuestion) {
-        speakAloud(loopResult.nextQuestion.questionText);
+        // Speak follow-up question and auto-listen for user's clarification reply
+        speakAloud(loopResult.nextQuestion.questionText, () => {
+          if (wellnessStateMachine.getCurrentState() === 'CLARIFY_LOOP') {
+            if (hasMicConsent || getMicConsent()) {
+              startVoiceListeningSession(true);
+            }
+          }
+        });
+      }
+    } else if (currentState === 'GITA') {
+      const lower = raw.toLowerCase().trim();
+      if (
+        lower.includes('next') ||
+        lower.includes('cbt') ||
+        lower.includes('continue') ||
+        lower.includes('skip') ||
+        lower.includes('step') ||
+        lower.includes('आगे') ||
+        lower.includes('चलो') ||
+        lower.includes('शुरू')
+      ) {
+        handleSkipGita();
+      } else if (
+        lower.includes('replay') ||
+        lower.includes('again') ||
+        lower.includes('repeat') ||
+        lower.includes('सुनाओ') ||
+        lower.includes('दोबारा')
+      ) {
+        handleReplayGita();
+      } else {
+        handleSkipGita();
       }
     } else if (currentState === 'CBT') {
       const step = wellnessStateMachine.getCbtCurrentStep();
@@ -374,15 +424,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
         const speech = language === 'hi'
           ? `आपका नया संतुलित विचार: ${res.replacementThought}। आपका आज का छोटा कदम: ${res.actionStep}`
           : `Your balanced replacement thought: ${res.replacementThought}. Your small action step today: ${res.actionStep}`;
-        speakAloud(speech, () => {
-          // Auto-start Phase 4
-          setTimeout(() => {
-            const next = wellnessStateMachine.advanceFromCBTToTrataka();
-            speakAloud(next.announcementSpeech, () => {
-              startTratakaSession();
-            });
-          }, 1200);
-        });
+        speakAloud(speech);
       }
     }
   };
@@ -399,28 +441,12 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
     browserSpeechController.cancelSpeech();
     const next = wellnessStateMachine.advanceFromGitaToCBT();
     speakAloud(next.transitionSpeech, () => {
-      // Auto-guide through CBT if user is listening autonomously without manual typing
-      setTimeout(() => {
-        if (wellnessStateMachine.getCurrentState() === 'CBT' && wellnessStateMachine.getCbtCurrentStep() === 1) {
-          wellnessStateMachine.handleCbtStep1('Automatic thought observed and acknowledged');
-          setTimeout(() => {
-            if (wellnessStateMachine.getCurrentState() === 'CBT' && wellnessStateMachine.getCbtCurrentStep() === 2) {
-              wellnessStateMachine.handleCbtStep2();
-              setTimeout(() => {
-                if (wellnessStateMachine.getCurrentState() === 'CBT' && wellnessStateMachine.getCbtCurrentStep() === 3) {
-                  wellnessStateMachine.handleCbtStep3('Evidence challenge processed');
-                  setTimeout(() => {
-                    if (wellnessStateMachine.getCurrentState() === 'CBT') {
-                      wellnessStateMachine.advanceFromCBTToTrataka();
-                      startTratakaSession();
-                    }
-                  }, 1200);
-                }
-              }, 1200);
-            }
-          }, 1200);
+      // Auto-trigger voice listening for CBT Step 1 if mic consent is present
+      if (wellnessStateMachine.getCurrentState() === 'CBT' && wellnessStateMachine.getCbtCurrentStep() === 1) {
+        if (hasMicConsent || getMicConsent()) {
+          startVoiceListeningSession(true);
         }
-      }, 1500);
+      }
     });
   };
 
@@ -428,7 +454,14 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
   const handleAcknowledgeDistortion = () => {
     const res = wellnessStateMachine.handleCbtStep2();
     const challengeText = res.challengeQuestions[0] || '';
-    speakAloud(challengeText);
+    speakAloud(challengeText, () => {
+      // Auto-trigger voice listening for CBT Step 3 evidence challenge
+      if (wellnessStateMachine.getCurrentState() === 'CBT' && wellnessStateMachine.getCbtCurrentStep() === 3) {
+        if (hasMicConsent || getMicConsent()) {
+          startVoiceListeningSession(true);
+        }
+      }
+    });
   };
 
   // ─── Phase 4 (Trataka) Session Runner ───
@@ -1335,7 +1368,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
         </div>
 
         {/* BOTTOM INPUT BAR (Speech-to-Text & Text Input) */}
-        {currentState !== 'SUMMARY' && currentState !== 'GITA' && currentState !== 'TRATAKA' && (
+        {currentState !== 'SUMMARY' && currentState !== 'TRATAKA' && (
           <footer data-testid="bottom-chat-footer" className="px-4 py-3 bg-slate-950/90 border-t border-slate-800/60 flex flex-col gap-2 shrink-0">
             {/* User-Visible Mic Error / Blocked Alert Banner */}
             {micErrorMessage && (
@@ -1358,19 +1391,56 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
             )}
 
             <div className="flex items-center gap-2 w-full">
-              {/* Mic Toggle Button with explicit status styling */}
+              {/* Mic Toggle Button with dynamic live audio scaling */}
               <button
                 data-testid="mic-toggle-btn"
                 onClick={handleToggleListening}
                 className={`p-2.5 rounded-full transition-all shrink-0 ${
                   isListening
-                    ? 'bg-rose-500/25 text-rose-400 border border-rose-500/70 animate-pulse shadow-[0_0_15px_rgba(244,63,94,0.45)]'
+                    ? 'bg-rose-500/25 text-rose-400 border border-rose-500/70 shadow-[0_0_15px_rgba(244,63,94,0.45)]'
                     : 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 active:scale-95'
                 }`}
                 title={isListening ? 'Stop listening' : 'Speak your reply (voice input)'}
               >
-                {isListening ? <Mic className="w-4 h-4 animate-pulse" /> : <Mic className="w-4 h-4" />}
+                {isListening ? (
+                  <Mic
+                    className="w-4 h-4 text-rose-400"
+                    style={{
+                      transform: `scale(${1 + Math.min(0.5, audioLevel * 0.8)})`,
+                      transition: 'transform 0.08s ease-out'
+                    }}
+                  />
+                ) : (
+                  <Mic className="w-4 h-4" />
+                )}
               </button>
+
+              {/* Real-Time Live Volume Meter & Audio Level Indicator */}
+              {isListening && (
+                <div
+                  data-testid="live-audio-meter"
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-950/60 border border-rose-500/40 shrink-0 transition-all shadow-sm"
+                  title={`Live Microphone Audio: ${Math.round(audioLevel * 100)}%`}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                  <span className="text-[10px] font-mono text-rose-300 font-bold uppercase tracking-wider mr-0.5">
+                    LIVE
+                  </span>
+                  {[0.15, 0.35, 0.55, 0.75, 0.95].map((threshold, idx) => (
+                    <span
+                      key={idx}
+                      className={`w-1 rounded-full transition-all duration-75 ${
+                        audioLevel >= threshold * 0.3
+                          ? 'bg-rose-400 h-3.5 shadow-[0_0_6px_rgba(244,63,94,0.9)]'
+                          : 'bg-rose-950/80 h-1.5'
+                      }`}
+                    />
+                  ))}
+                  <span className="text-[10px] font-mono text-rose-400 font-semibold ml-0.5">
+                    {Math.round(audioLevel * 100)}%
+                  </span>
+                </div>
+              )}
 
               {/* Text Input (Always accessible as fallback) */}
               <input
@@ -1387,6 +1457,8 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
                 placeholder={
                   isListening
                     ? (language === 'hi' ? 'बोलें, हम सुन रहे हैं...' : 'Listening in real-time... speak your reply')
+                    : currentState === 'GITA'
+                    ? (language === 'hi' ? 'बोलें या लिखें: "आगे", "दोबारा"...' : 'Speak or type: "Next", "Replay"...')
                     : language === 'hi'
                     ? 'अपनी भावनाएं बताएं या बोलकर कहें...'
                     : 'Share how you are feeling or reply by voice...'

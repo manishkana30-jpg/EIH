@@ -140,6 +140,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
         <div className="flex items-center gap-2 sm:gap-2.5">
           {/* Mobile Navigation Drawer Trigger */}
           <button
+            data-testid="mobile-menu-btn"
             onClick={onOpenMobileNav}
             className="md:hidden p-1.5 rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800/80 active:scale-95 transition-all"
             aria-label="Open navigation menu"

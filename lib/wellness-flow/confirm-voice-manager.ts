@@ -183,9 +183,8 @@ export class ConfirmVoiceManager {
     this.isListeningActive = true;
     logConfirmDebug('STT', `Starting dedicated recognizer session: Attempt ${attempt}/2`);
 
-    // Guarantee any residual TTS or speech recognition is completely halted
+    // Guarantee any residual TTS is halted before dedicated short-session recognition
     browserSpeechController.cancelSpeech();
-    browserSpeechController.stopRecognition();
 
     this.callbacks.onLiveTranscript('');
 
@@ -489,8 +488,7 @@ export class ConfirmVoiceManager {
       this.overallSafetyTimer = null;
     }
     this.stopAllAudioAndTimers();
-    browserSpeechController.cancelSpeech();
-    browserSpeechController.stopRecognition();
+    // Isolate cross-phase cleanup: do not cancel downstream phase speech or destroy shared browserSpeechController media streams
   }
 
   /**

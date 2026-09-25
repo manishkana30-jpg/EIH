@@ -1,0 +1,226 @@
+[
+  {
+    "environment": "Chrome Desktop",
+    "type": "desktop_chrome",
+    "timestamp": "2026-09-25T19:15:52.212Z",
+    "step1_ten_checks": {
+      "check1_triggerFired": true,
+      "check1_autoTriggerAfterTts": false,
+      "check3_permState": "granted",
+      "check4_devicesFound": 3
+    },
+    "live_volume_meter_verified": true,
+    "live_volume_readings": [
+      {
+        "meterText": "LIVE\n38%",
+        "analyserPresent": true,
+        "streamActive": true
+      },
+      {
+        "meterText": "LIVE\n17%",
+        "analyserPresent": true,
+        "streamActive": true
+      },
+      {
+        "meterText": "LIVE\n5%",
+        "analyserPresent": true,
+        "streamActive": true
+      },
+      {
+        "meterText": "LIVE\n1%",
+        "analyserPresent": true,
+        "streamActive": true
+      },
+      {
+        "meterText": "LIVE\n49%",
+        "analyserPresent": true,
+        "streamActive": true
+      },
+      {
+        "meterText": "LIVE\n16%",
+        "analyserPresent": true,
+        "streamActive": true
+      }
+    ],
+    "consecutive_attempts_5_passes": 5,
+    "phase_switch_test_passed": true,
+    "error_states_verified": {
+      "permission_denied": true,
+      "no_device": true,
+      "device_busy": true
+    },
+    "end_to_end_passed": true,
+    "screenshots": {
+      "live_meter": "C:\\Users\\manis\\EIH\\reports\\screenshots\\voice_audit_step4\\desktop_chrome_live_meter.png",
+      "e2e_complete": "C:\\Users\\manis\\EIH\\reports\\screenshots\\voice_audit_step4\\desktop_chrome_e2e_complete.png"
+    }
+  },
+  {
+    "environment": "Chrome Android",
+    "type": "mobile_chrome",
+    "timestamp": "2026-09-25T19:16:13.434Z",
+    "step1_ten_checks": {
+      "check1_triggerFired": true,
+      "check1_autoTriggerAfterTts": false,
+      "check3_permState": "granted",
+      "check4_devicesFound": 3
+    },
+    "live_volume_meter_verified": true,
+    "live_volume_readings": [
+      {
+        "meterText": "LIVE\n34%",
+        "analyserPresent": true,
+        "streamActive": true
+      },
+      {
+        "meterText": "LIVE\n14%",
+        "analyserPresent": true,
+        "streamActive": true
+      },
+      {
+        "meterText": "LIVE\n4%",
+        "analyserPresent": true,
+        "streamActive": true
+      },
+      {
+        "meterText": "LIVE\n0%",
+        "analyserPresent": true,
+        "streamActive": true
+      },
+      {
+        "meterText": "LIVE\n100%",
+        "analyserPresent": true,
+        "streamActive": true
+      },
+      {
+        "meterText": "LIVE\n25%",
+        "analyserPresent": true,
+        "streamActive": true
+      }
+    ],
+    "consecutive_attempts_5_passes": 5,
+    "phase_switch_test_passed": true,
+    "error_states_verified": {
+      "permission_denied": true,
+      "no_device": true,
+      "device_busy": true
+    },
+    "end_to_end_passed": true,
+    "screenshots": {
+      "live_meter": "C:\\Users\\manis\\EIH\\reports\\screenshots\\voice_audit_step4\\mobile_chrome_live_meter.png",
+      "e2e_complete": "C:\\Users\\manis\\EIH\\reports\\screenshots\\voice_audit_step4\\mobile_chrome_e2e_complete.png"
+    }
+  },
+  {
+    "environment": "Safari iOS",
+    "type": "mobile_safari",
+    "timestamp": "2026-09-25T19:16:34.437Z",
+    "step1_ten_checks": {
+      "check1_triggerFired": true,
+      "check1_autoTriggerAfterTts": false,
+      "check3_permState": "granted",
+      "check4_devicesFound": 3
+    },
+    "live_volume_meter_verified": true,
+    "live_volume_readings": [
+      {
+        "meterText": "LIVE\n37%",
+        "analyserPresent": true,
+        "streamActive": true
+      },
+      {
+        "meterText": "LIVE\n8%",
+        "analyserPresent": true,
+        "streamActive": true
+      },
+      {
+        "meterText": "LIVE\n1%",
+        "analyserPresent": true,
+        "streamActive": true
+      },
+      {
+        "meterText": "LIVE\n0%",
+        "analyserPresent": true,
+        "streamActive": true
+      },
+      {
+        "meterText": "LIVE\n100%",
+        "analyserPresent": true,
+        "streamActive": true
+      },
+      {
+        "meterText": "LIVE\n28%",
+        "analyserPresent": true,
+        "streamActive": true
+      }
+    ],
+    "consecutive_attempts_5_passes": 5,
+    "phase_switch_test_passed": true,
+    "error_states_verified": {
+      "permission_denied": true,
+      "no_device": true,
+      "device_busy": true
+    },
+    "end_to_end_passed": true,
+    "screenshots": {
+      "live_meter": "C:\\Users\\manis\\EIH\\reports\\screenshots\\voice_audit_step4\\mobile_safari_live_meter.png",
+      "e2e_complete": "C:\\Users\\manis\\EIH\\reports\\screenshots\\voice_audit_step4\\mobile_safari_e2e_complete.png"
+    }
+  },
+  {
+    "environment": "Edge Desktop",
+    "type": "desktop_edge",
+    "timestamp": "2026-09-25T19:16:55.301Z",
+    "step1_ten_checks": {
+      "check1_triggerFired": true,
+      "check1_autoTriggerAfterTts": false,
+      "check3_permState": "granted",
+      "check4_devicesFound": 3
+    },
+    "live_volume_meter_verified": true,
+    "live_volume_readings": [
+      {
+        "meterText": "LIVE\n100%",
+        "analyserPresent": true,
+        "streamActive": true
+      },
+      {
+        "meterText": "LIVE\n13%",
+        "analyserPresent": true,
+        "streamActive": true
+      },
+      {
+        "meterText": "LIVE\n3%",
+        "analyserPresent": true,
+        "streamActive": true
+      },
+      {
+        "meterText": "LIVE\n0%",
+        "analyserPresent": true,
+        "streamActive": true
+      },
+      {
+        "meterText": "LIVE\n100%",
+        "analyserPresent": true,
+        "streamActive": true
+      },
+      {
+        "meterText": "LIVE\n19%",
+        "analyserPresent": true,
+        "streamActive": true
+      }
+    ],
+    "consecutive_attempts_5_passes": 5,
+    "phase_switch_test_passed": true,
+    "error_states_verified": {
+      "permission_denied": true,
+      "no_device": true,
+      "device_busy": true
+    },
+    "end_to_end_passed": true,
+    "screenshots": {
+      "live_meter": "C:\\Users\\manis\\EIH\\reports\\screenshots\\voice_audit_step4\\desktop_edge_live_meter.png",
+      "e2e_complete": "C:\\Users\\manis\\EIH\\reports\\screenshots\\voice_audit_step4\\desktop_edge_e2e_complete.png"
+    }
+  }
+]
