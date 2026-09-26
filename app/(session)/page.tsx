@@ -48,6 +48,11 @@ import {
   resolveSpokenLanguageWithGpsOverride,
   getLanguageByCode,
 } from "@/lib/i18n/language-catalog";
+import {
+  parseYesNoIntentDetailed,
+  parseStageNavigationIntent,
+  getLocalizedClarificationPrompt,
+} from "@/lib/wellness-flow/confirm-intent-parser";
 import { saveLivePsychologyTelemetry, clearPsychologyTelemetry } from "@/lib/telemetry/psychology-store";
 import { getConditionById } from "@/lib/knowledge/psychology-library-rag";
 import { saveSessionMessage, resetActiveSessionId, purgeAllAppStorage } from "@/lib/db/indexed-db";
@@ -303,6 +308,8 @@ export default function SanctuarySessionPage() {
 
       setCurrentLanguage(matchedLang);
       setUserLocale(matchedLang.speechLocale);
+      currentLanguageRef.current = matchedLang;
+      userLocaleRef.current = matchedLang.speechLocale;
       browserSpeechController.setLanguageLocale(matchedLang.speechLocale);
 
       if (typeof window !== "undefined") {
@@ -704,49 +711,7 @@ export default function SanctuarySessionPage() {
       }
     }, 50);
 
-    // Affirmative confirmation check:
-    // If the latest AI message is awaiting Stage 1 confirmation ("Is this right?"), and user sends
-    // an affirmative response ("yes", "haan", "correct", etc.), advance directly to Stage 2 (Gita Card & Gyan)
-    // without sending a redundant backend request (stopping repetitive loops completely).
-    const lastAiMsg = [...messagesRef.current].reverse().find((m) => m.sender === "ai");
-    let isAwaitingStage1 = false;
-    let parsedForAiMsg: any = null;
-
-    if (lastAiMsg) {
-      parsedForAiMsg = parsedStagesCacheRef.current[lastAiMsg.id];
-      if (!parsedForAiMsg) {
-        parsedForAiMsg = parseTherapeuticStages(lastAiMsg.text, userLocaleRef.current);
-        parsedStagesCacheRef.current[lastAiMsg.id] = parsedForAiMsg;
-      }
-      const curStage = messageStagesRef.current[lastAiMsg.id] ?? 1;
-      isAwaitingStage1 = !!(parsedForAiMsg?.isStructured && curStage === 1);
-    }
-
-    const cleanInput = messageText.trim().toLowerCase().replace(/[.,!?;:"]/g, "");
-    const isAffirmativeConfirmation =
-      /^(yes|yeah|yep|right|correct|that's right|thats right|haan|sahi|sahi hai|bilkul|ha|si|oui|ja|yes please|exactly|true|agree|affirmative|y|theek hai|thik hai|ji haan|ji|haanji|okay|ok)\b/i.test(
-        cleanInput
-      ) ||
-      /\b(yes that is right|yes it is|yes correct|yes right|haan sahi|sahi hai|bilkul sahi|yes this is right|yes i am|it is right|thats right|that is right)\b/i.test(
-        cleanInput
-      );
-
-    if (isAwaitingStage1 && isAffirmativeConfirmation && lastAiMsg) {
-      isSendingRef.current = false;
-      setIsLoading(false);
-      handleConfirmStage1(lastAiMsg.id);
-      return;
-    }
-
-    const historyPayload: ChatHistoryItem[] = messagesRef.current
-      .filter((m) => m.text.trim())
-      .slice(-8)
-      .map((m) => ({
-        sender: m.sender,
-        text: m.text,
-      }));
-
-    // Understand user spoken language and explicitly override GPS language for replying
+    // 1. Understand user spoken language and explicitly override GPS language for replying
     const spokenResolution = resolveSpokenLanguageWithGpsOverride(
       messageText,
       currentLanguageRef.current.code,
@@ -766,6 +731,133 @@ export default function SanctuarySessionPage() {
         browserSpeechController.setLanguageLocale(spokenResolution.speechLocale);
       }
     }
+
+    // 2. Multilingual Intent & Stage Navigation Check
+    const lastAiMsg = [...messagesRef.current].reverse().find((m) => m.sender === "ai");
+    let parsedForAiMsg: any = null;
+    let curStage = 1;
+
+    if (lastAiMsg) {
+      parsedForAiMsg = parsedStagesCacheRef.current[lastAiMsg.id];
+      if (!parsedForAiMsg) {
+        parsedForAiMsg = parseTherapeuticStages(lastAiMsg.text, userLocaleRef.current);
+        parsedStagesCacheRef.current[lastAiMsg.id] = parsedForAiMsg;
+      }
+      curStage = messageStagesRef.current[lastAiMsg.id] ?? 1;
+    }
+
+    const confirmIntent = parseYesNoIntentDetailed(messageText);
+    const navIntent = parseStageNavigationIntent(messageText);
+
+    // 3. Stage Progression & Navigation Handlers (Prevents redundant LLM re-prompts)
+    if (lastAiMsg && parsedForAiMsg?.isStructured) {
+      // ─── Stage 1 Confirmation Handling ───
+      if (curStage === 1) {
+        if (confirmIntent.intent === "yes" || navIntent === "next" || navIntent === "gita") {
+          isSendingRef.current = false;
+          setIsLoading(false);
+          handleConfirmStage1(lastAiMsg.id);
+          return;
+        }
+
+        if (confirmIntent.intent === "no") {
+          const isShortDenial = messageText.trim().split(/\s+/).length <= 4;
+          if (isShortDenial) {
+            isSendingRef.current = false;
+            setIsLoading(false);
+            const clarificationPrompt = getLocalizedClarificationPrompt(spokenResolution.langCode);
+            const clarifyAiMsg: ChatMessage = {
+              id: `${Date.now()}-ai-clarify`,
+              sender: "ai",
+              text: clarificationPrompt,
+              timestamp: getFormattedTime(),
+            };
+            setMessages((prev) => [...prev, clarifyAiMsg]);
+            playVoice(clarificationPrompt, undefined, clarifyAiMsg.id);
+            return;
+          }
+          // If the user provided a substantive explanation with their 'no', let it proceed to backend
+          // so the model accurately re-evaluates and refines Stage 1!
+        }
+      }
+
+      // ─── Stage 2 (Gita Wisdom) Navigation ───
+      if (curStage === 2) {
+        if (navIntent === "next" || navIntent === "cbt") {
+          isSendingRef.current = false;
+          setIsLoading(false);
+          handleAdvanceStage(lastAiMsg.id, 3);
+          return;
+        }
+        if (navIntent === "trataka") {
+          isSendingRef.current = false;
+          setIsLoading(false);
+          handleAdvanceStage(lastAiMsg.id, 4);
+          return;
+        }
+        if (navIntent === "repeat") {
+          isSendingRef.current = false;
+          setIsLoading(false);
+          const s2 = parsedForAiMsg.stages.find((s: any) => s.stage === 2);
+          if (s2) playVoice(s2.speechText, undefined, lastAiMsg.id);
+          return;
+        }
+      }
+
+      // ─── Stage 3 (CBT Cognitive Reframe) Navigation ───
+      if (curStage === 3) {
+        if (navIntent === "next" || navIntent === "trataka") {
+          isSendingRef.current = false;
+          setIsLoading(false);
+          handleAdvanceStage(lastAiMsg.id, 4);
+          return;
+        }
+        if (navIntent === "gita") {
+          isSendingRef.current = false;
+          setIsLoading(false);
+          handleAdvanceStage(lastAiMsg.id, 2);
+          return;
+        }
+        if (navIntent === "repeat") {
+          isSendingRef.current = false;
+          setIsLoading(false);
+          const s3 = parsedForAiMsg.stages.find((s: any) => s.stage === 3);
+          if (s3) playVoice(s3.speechText, undefined, lastAiMsg.id);
+          return;
+        }
+      }
+
+      // ─── Stage 4 (Trataka Somatic Focus) Navigation ───
+      if (curStage === 4) {
+        if (navIntent === "repeat") {
+          isSendingRef.current = false;
+          setIsLoading(false);
+          const s4 = parsedForAiMsg.stages.find((s: any) => s.stage === 4);
+          if (s4) playVoice(s4.speechText, undefined, lastAiMsg.id);
+          return;
+        }
+        if (navIntent === "gita") {
+          isSendingRef.current = false;
+          setIsLoading(false);
+          handleAdvanceStage(lastAiMsg.id, 2);
+          return;
+        }
+        if (navIntent === "cbt") {
+          isSendingRef.current = false;
+          setIsLoading(false);
+          handleAdvanceStage(lastAiMsg.id, 3);
+          return;
+        }
+      }
+    }
+
+    const historyPayload: ChatHistoryItem[] = messagesRef.current
+      .filter((m) => m.text.trim())
+      .slice(-8)
+      .map((m) => ({
+        sender: m.sender,
+        text: m.text,
+      }));
 
     try {
       const response = await healerClient.sendMessage(

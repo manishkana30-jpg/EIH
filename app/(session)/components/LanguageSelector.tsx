@@ -125,17 +125,21 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
       {variant === 'header' ? (
         <button
           onClick={() => setIsOpen(true)}
-          className={`group flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/80 hover:bg-slate-800/90 border border-emerald-500/30 hover:border-emerald-400/60 text-xs text-slate-200 transition-all shadow-md backdrop-blur-md shrink-0 ${className}`}
-          title="Switch Language or Geolocation"
+          className={`group flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-full bg-slate-900/80 hover:bg-slate-800/90 border border-emerald-500/30 hover:border-emerald-400/60 text-xs text-slate-200 transition-all shadow-md backdrop-blur-md shrink-0 ${className}`}
+          title="Switch Language or Geolocation (GPS / IP Auto-Detection)"
         >
           <span className="text-sm">{currentLanguage.flag}</span>
-          <span className="font-semibold text-emerald-300 group-hover:text-emerald-200 tracking-wide">
+          <span className="font-semibold text-emerald-300 group-hover:text-emerald-200 tracking-wide text-xs">
             {currentLanguage.name}
           </span>
           {detectedLocation && (
-            <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-mono text-slate-400 border-l border-slate-700 pl-2">
-              <MapPin className="w-2.5 h-2.5 text-emerald-400" />
-              <span className="truncate max-w-[90px]">
+            <span className="inline-flex items-center gap-1 text-[10px] font-mono text-slate-400 border-l border-slate-700 pl-1.5 sm:pl-2">
+              {detectedLocation.isGps || detectedLocation.source === 'gps' ? (
+                <Radio className="w-2.5 h-2.5 text-emerald-400 animate-pulse" />
+              ) : (
+                <MapPin className="w-2.5 h-2.5 text-teal-400" />
+              )}
+              <span className="truncate max-w-[70px] sm:max-w-[100px]">
                 {detectedLocation.city || detectedLocation.countryName}
               </span>
             </span>

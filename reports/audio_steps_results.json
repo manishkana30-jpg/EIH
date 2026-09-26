@@ -94,7 +94,7 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2316,
+                      "duration": 2431,
                       "errors": [],
                       "stdout": [
                         {
@@ -103,7 +103,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-09-26T13:39:35.839Z",
+                      "startTime": "2026-09-26T19:07:19.150Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -162,12 +162,12 @@
                           "text": "[STEP 2] Initial mic button state: \"idle\"\n"
                         },
                         {
-                          "text": "[STEP 2] Mic activation transition verified in 164ms\n"
+                          "text": "[STEP 2] Mic activation transition verified in 193ms\n"
                         }
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-09-26T13:39:38.368Z",
+                      "startTime": "2026-09-26T19:07:21.792Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -219,16 +219,16 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 3487,
+                      "duration": 3418,
                       "errors": [],
                       "stdout": [
                         {
-                          "text": "[STEP 3] Live audio signal captured: level=1.00 (36%)\n"
+                          "text": "[STEP 3] Live audio signal captured: level=0.15 (13%)\n"
                         }
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-09-26T13:39:40.707Z",
+                      "startTime": "2026-09-26T19:07:24.131Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -280,7 +280,7 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2425,
+                      "duration": 2424,
                       "errors": [],
                       "stdout": [
                         {
@@ -289,7 +289,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-09-26T13:39:44.222Z",
+                      "startTime": "2026-09-26T19:07:27.586Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -341,7 +341,7 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2351,
+                      "duration": 2446,
                       "errors": [],
                       "stdout": [
                         {
@@ -353,7 +353,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-09-26T13:39:46.672Z",
+                      "startTime": "2026-09-26T19:07:30.038Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -405,7 +405,7 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2449,
+                      "duration": 2331,
                       "errors": [],
                       "stdout": [
                         {
@@ -414,7 +414,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-09-26T13:39:49.047Z",
+                      "startTime": "2026-09-26T19:07:32.515Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -466,7 +466,7 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2431,
+                      "duration": 2655,
                       "errors": [],
                       "stdout": [
                         {
@@ -475,7 +475,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-09-26T13:39:51.521Z",
+                      "startTime": "2026-09-26T19:07:34.875Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -527,7 +527,7 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2536,
+                      "duration": 2731,
                       "errors": [],
                       "stdout": [
                         {
@@ -539,7 +539,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-09-26T13:39:53.981Z",
+                      "startTime": "2026-09-26T19:07:37.557Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -574,7 +574,7 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2317,
+                      "duration": 2541,
                       "errors": [],
                       "stdout": [
                         {
@@ -586,7 +586,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-09-26T13:39:56.537Z",
+                      "startTime": "2026-09-26T19:07:40.318Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -638,7 +638,7 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 3916,
+                      "duration": 4290,
                       "errors": [],
                       "stdout": [
                         {
@@ -650,7 +650,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-09-26T13:39:58.881Z",
+                      "startTime": "2026-09-26T19:07:42.890Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -702,7 +702,7 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 4488,
+                      "duration": 5485,
                       "errors": [],
                       "stdout": [
                         {
@@ -715,12 +715,12 @@
                           "text": "[STEP 10] Cycle 2 Mic activated successfully (data-state=listening)\n"
                         },
                         {
-                          "text": "[STEP 10] Cycle 2 Audio signal verified: level=0.52\n"
+                          "text": "[STEP 10] Cycle 2 Audio signal verified: level=0.46\n"
                         }
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-09-26T13:40:02.823Z",
+                      "startTime": "2026-09-26T19:07:47.206Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -772,7 +772,7 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 7219,
+                      "duration": 6549,
                       "errors": [],
                       "stdout": [
                         {
@@ -794,7 +794,7 @@
                           "text": "[CHAIN STEP 3] Verifying live audio amplitude meter receives signal\n"
                         },
                         {
-                          "text": "[CHAIN STEP 3 PASSED] Audio signal verified at level=0.38\n"
+                          "text": "[CHAIN STEP 3 PASSED] Audio signal verified at level=0.05\n"
                         },
                         {
                           "text": "[CHAIN STEP 4] Injecting user voice input\n"
@@ -847,7 +847,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-09-26T13:40:07.333Z",
+                      "startTime": "2026-09-26T19:07:52.722Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -873,8 +873,8 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-09-26T13:39:35.374Z",
-    "duration": 39800.433000000005,
+    "startTime": "2026-09-26T19:07:18.798Z",
+    "duration": 41075.748,
     "expected": 12,
     "skipped": 0,
     "unexpected": 0,
