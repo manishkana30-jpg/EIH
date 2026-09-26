@@ -140,6 +140,10 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
     []
   );
 
+  const hasMicConsentRef = useRef<boolean>(hasMicConsent);
+  hasMicConsentRef.current = hasMicConsent;
+  const startVoiceListeningSessionRef = useRef<(forcedConsent?: boolean) => Promise<void>>(() => Promise.resolve());
+
   // ─── Initial Greeting Trigger with Auto-Listening Hand-off ───
   useEffect(() => {
     if (!isOpen) return;
@@ -152,15 +156,15 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
           // Root Cause Fix: Auto-trigger capture after assistant prompt finishes asking for input
           // Hands-free turn taking: seamlessly start listening if mic consent is present
           if (wellnessStateMachine.getCurrentState() === 'MOOD_INPUT') {
-            if (hasMicConsent || getMicConsent()) {
-              startVoiceListeningSession(true);
+            if (hasMicConsentRef.current || getMicConsent()) {
+              startVoiceListeningSessionRef.current(true);
             }
           }
         });
       }, 300);
       return () => clearTimeout(timer);
     }
-  }, [isOpen, currentState, language, session.initialUtterance, speakAloud, hasMicConsent]);
+  }, [isOpen, currentState, language, session.initialUtterance, speakAloud]);
 
   // ─── Phase 1 Confirmation Transition Handler (Guarded against duplicate executions) ───
   const handleConfirmSelection = useCallback(
@@ -194,8 +198,8 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
         // Clarify question: Speak question and auto-trigger listening for user's clarification answer
         speakAloud(next.nextSpeechText, () => {
           if (wellnessStateMachine.getCurrentState() === 'CLARIFY_LOOP') {
-            if (hasMicConsent || getMicConsent()) {
-              startVoiceListeningSession(true);
+            if (hasMicConsentRef.current || getMicConsent()) {
+              startVoiceListeningSessionRef.current(true);
             }
           }
         });
@@ -307,6 +311,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
       setMicErrorMessage(err?.message || 'Failed to start microphone. Please check your browser permissions.');
     }
   };
+  startVoiceListeningSessionRef.current = startVoiceListeningSession;
 
   const handleToggleListening = () => {
     // In CONFIRM phase, route directly to dedicated short-session recognizer
