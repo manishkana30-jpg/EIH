@@ -32,6 +32,7 @@ export function AutoUpdateBanner() {
   // 2. Poll for New PWA Deployments & Git Pushes
   const checkForAppUpdates = async () => {
     if (typeof window === 'undefined' || !navigator.onLine || isUpdating) return;
+    if (typeof window !== 'undefined' && (localStorage.getItem('disable_auto_reload') === 'true' || (window as any).__PLAYWRIGHT_TEST__)) return;
 
     try {
       // Fetch with cache-busting timestamp

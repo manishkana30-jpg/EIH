@@ -1489,6 +1489,25 @@ export class BrowserSpeechController {
   public getIsListening(): boolean {
     return this.isListening;
   }
+
+  public injectTranscript(text: string, isFinal = true, voiceState?: VoiceAcousticState): void {
+    if (isFinal) {
+      if (this.callbacks.onUserSpeech) {
+        this.callbacks.onUserSpeech(text, true, voiceState);
+      }
+    } else {
+      if (this.callbacks.onInterimTranscript) {
+        this.callbacks.onInterimTranscript(text);
+      }
+      if (this.callbacks.onUserSpeech) {
+        this.callbacks.onUserSpeech(text, false, voiceState);
+      }
+    }
+  }
+
+  public getActiveCallbacks(): Partial<BrowserSpeechCallbacks> {
+    return this.callbacks;
+  }
 }
 
 export const browserSpeechController = BrowserSpeechController.getInstance();

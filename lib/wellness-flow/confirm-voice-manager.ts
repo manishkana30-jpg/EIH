@@ -67,6 +67,19 @@ export class ConfirmVoiceManager {
     this.language = lang;
   }
 
+  public injectTranscript(candidateText: string): void {
+    if (this.transitionFired || this.isDestroyed) return;
+    this.callbacks.onLiveTranscript(candidateText);
+    const parsed = parseYesNoIntentDetailed(candidateText);
+    if (parsed.intent === 'yes' || parsed.intent === 'no') {
+      if (this.transitionFired) return;
+      this.transitionFired = true;
+      this.isListeningActive = false;
+      this.stopAllAudioAndTimers();
+      this.callbacks.onIntentResolved(parsed.intent);
+    }
+  }
+
   /**
    * Begins the Phase 1 Confirmation Voice Flow:
    * 1. Plays confirmation prompt via TTS.
@@ -74,6 +87,9 @@ export class ConfirmVoiceManager {
    * 3. Spawns dedicated Yes/No short-session listener.
    */
   public startConfirmationFlow(confirmationPromptText: string): void {
+    if (typeof window !== 'undefined') {
+      (window as any).confirmVoiceManager = this;
+    }
     this.isDestroyed = false;
     this.transitionFired = false;
     this.currentAttempt = 0;

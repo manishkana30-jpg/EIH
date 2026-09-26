@@ -1,0 +1,883 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Users\\manis\\AppData\\Local\\Microsoft\\WinGet\\Packages\\OpenJS.NodeJS.LTS_Microsoft.Winget.Source_8wekyb3d8bbwe\\node-v24.19.0-win-x64\\node.exe",
+      "C:\\Users\\manis\\EIH\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "tests/e2e/audio-steps"
+    ],
+    "configFile": "C:\\Users\\manis\\EIH\\playwright.config.ts",
+    "rootDir": "C:/Users/manis/EIH/tests/e2e/audio-steps",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/manis/EIH/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/manis/EIH/tests/e2e/audio-steps",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 45000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "reports/audio_steps_results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "step01-mic-permission.spec.ts",
+      "file": "step01-mic-permission.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "STEP 1: Mic Permission Grant Test",
+          "file": "step01-mic-permission.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "asserts microphone permission shows granted in DOM and browser context after grant",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2316,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[STEP 1] Browser microphone permission query: \"granted\"\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-26T13:39:35.839Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\manis\\EIH\\test-results\\step01-mic-permission-STEP-e9fcf-browser-context-after-grant\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "29c5b0e1b2355b5996a3-b2519881bcfbefe5cde0",
+              "file": "step01-mic-permission.spec.ts",
+              "line": 5,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "step02-mic-activation.spec.ts",
+      "file": "step02-mic-activation.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "STEP 2: Mic Activation Test",
+          "file": "step02-mic-activation.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "asserts mic button DOM element transitions to listening state within 1s of click",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2308,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[STEP 2] Initial mic button state: \"idle\"\n"
+                        },
+                        {
+                          "text": "[STEP 2] Mic activation transition verified in 164ms\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-26T13:39:38.368Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\manis\\EIH\\test-results\\step02-mic-activation-STEP-73112-ng-state-within-1s-of-click\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "06ba93157cf771fc89e9-9220e34681e62ec040c5",
+              "file": "step02-mic-activation.spec.ts",
+              "line": 5,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "step03-audio-signal.spec.ts",
+      "file": "step03-audio-signal.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "STEP 3: Audio Signal Test",
+          "file": "step03-audio-signal.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "asserts volume/amplitude indicator DOM element receives signal and changes value",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3487,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[STEP 3] Live audio signal captured: level=1.00 (36%)\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-26T13:39:40.707Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\manis\\EIH\\test-results\\step03-audio-signal-STEP-3-02a98-es-signal-and-changes-value\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e51974fbc348f96d35a8-bcfae8a72da5d1ccc92e",
+              "file": "step03-audio-signal.spec.ts",
+              "line": 5,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "step04-stt-transcript.spec.ts",
+      "file": "step04-stt-transcript.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "STEP 4: STT Transcript Test",
+          "file": "step04-stt-transcript.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "asserts transcript DOM element updates with non-empty text upon user vocalization",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2425,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[STEP 4] Live STT transcript captured: \"I am feeling anxious about my upcoming exam\"\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-26T13:39:44.222Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\manis\\EIH\\test-results\\step04-stt-transcript-STEP-6a08e-text-upon-user-vocalization\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c6964653dd992bd4bf01-082d66662b8b973d3d41",
+              "file": "step04-stt-transcript.spec.ts",
+              "line": 5,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "step05-transcript-accuracy.spec.ts",
+      "file": "step05-transcript-accuracy.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "STEP 5: Transcript Accuracy Test",
+          "file": "step05-transcript-accuracy.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "asserts captured transcript accurately matches expected spoken phrase via fuzzy match",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2351,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[STEP 5] Expected phrase: \"I am feeling deeply overwhelmed and anxious\"\n"
+                        },
+                        {
+                          "text": "[STEP 5] Actual transcript: \"I am feeling deeply overwhelmed and anxious\"\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-26T13:39:46.672Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\manis\\EIH\\test-results\\step05-transcript-accuracy-54861-oken-phrase-via-fuzzy-match\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "f6d62564ea914f8e5d75-9979982c9f08e8c898e7",
+              "file": "step05-transcript-accuracy.spec.ts",
+              "line": 5,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "step06-handoff.spec.ts",
+      "file": "step06-handoff.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "STEP 6: Audio Handoff Test",
+          "file": "step06-handoff.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "asserts mic transitions to processing and hands off to Phase 1 confirmation logic without skipping",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2449,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[STEP 6] Handoff successful: State transitioned to Phase 1 CONFIRM\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-26T13:39:49.047Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\manis\\EIH\\test-results\\step06-handoff-STEP-6-Audi-01ff9-tion-logic-without-skipping\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "00121458b4e476731163-0d864e4e68ec5af29857",
+              "file": "step06-handoff.spec.ts",
+              "line": 5,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "step07-confirmation-render.spec.ts",
+      "file": "step07-confirmation-render.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "STEP 7: Confirmation Render Test",
+          "file": "step07-confirmation-render.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "asserts confirmation-question DOM element renders empathetic text referencing user emotion",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2431,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[STEP 7] Confirmation statement rendered: \"It sounds like you're feeling anger weighed down by this and finding it difficult to find peace. Is that right?\"\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-26T13:39:51.521Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\manis\\EIH\\test-results\\step07-confirmation-render-76644-xt-referencing-user-emotion\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "eac862c8cf2a26e1b091-4cc5ff02a7ce682685fe",
+              "file": "step07-confirmation-render.spec.ts",
+              "line": 5,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "step08-yes-no-voice.spec.ts",
+      "file": "step08-yes-no-voice.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "STEP 8: Yes/No Voice Response Test",
+          "file": "step08-yes-no-voice.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Branch 8A: Voice \"yes\" response transitions session from Phase 1 to Phase 2 (Gita)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2536,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[STEP 8A] Injecting voice \"yes\" confirmation...\n"
+                        },
+                        {
+                          "text": "[STEP 8A] Successfully transitioned to Phase 2: CHAPTER 2, VERSE 47\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-26T13:39:53.981Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\manis\\EIH\\test-results\\step08-yes-no-voice-STEP-8-1f4e5-om-Phase-1-to-Phase-2-Gita-\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1c74f54106dd58d91c16-1eb71086012b389d621a",
+              "file": "step08-yes-no-voice.spec.ts",
+              "line": 5,
+              "column": 7
+            },
+            {
+              "title": "Branch 8B: Voice \"no\" response diverts session into Clarification Loop",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2317,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[STEP 8B] Injecting voice \"no\" clarification diversion...\n"
+                        },
+                        {
+                          "text": "[STEP 8B] Successfully entered Clarify Loop: \"What triggered this feeling for you today?...\"\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-26T13:39:56.537Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\manis\\EIH\\test-results\\step08-yes-no-voice-STEP-8-feb09-ion-into-Clarification-Loop\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1c74f54106dd58d91c16-0afba3d4faa1810afd46",
+              "file": "step08-yes-no-voice.spec.ts",
+              "line": 37,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "step09-tts-playback.spec.ts",
+      "file": "step09-tts-playback.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "STEP 9: TTS Playback Test",
+          "file": "step09-tts-playback.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "asserts TTS play indicator becomes active during speech and returns to idle when playback completes",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3916,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[STEP 9] TTS Playback Indicator is active (speaking=true)\n"
+                        },
+                        {
+                          "text": "[STEP 9] TTS Playback finished cleanly and returned to idle (speaking=false)\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-26T13:39:58.881Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\manis\\EIH\\test-results\\step09-tts-playback-STEP-9-9b61a-dle-when-playback-completes\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "f6b97df2a133a10798ee-022028efcb600ededa0a",
+              "file": "step09-tts-playback.spec.ts",
+              "line": 5,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "step10-mic-reactivation.spec.ts",
+      "file": "step10-mic-reactivation.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "STEP 10: Mic Reactivation After TTS Test",
+          "file": "step10-mic-reactivation.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "asserts mic cleanly reactivates and audio signal captures a second time in the same session after TTS finishes",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4488,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[STEP 10] Cycle 1 Mic active and capturing audio\n"
+                        },
+                        {
+                          "text": "[STEP 10] Assistant speech ended; attempting Cycle 2 Mic Activation...\n"
+                        },
+                        {
+                          "text": "[STEP 10] Cycle 2 Mic activated successfully (data-state=listening)\n"
+                        },
+                        {
+                          "text": "[STEP 10] Cycle 2 Audio signal verified: level=0.52\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-26T13:40:02.823Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\manis\\EIH\\test-results\\step10-mic-reactivation-ST-86b5b--session-after-TTS-finishes\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "932552bd444adfa526d6-d83600c9165ec76c5069",
+              "file": "step10-mic-reactivation.spec.ts",
+              "line": 5,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "step11-chained-pipeline.spec.ts",
+      "file": "step11-chained-pipeline.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "STEP 2: Chained Audio Pipeline (Full In-Session Continuity)",
+          "file": "step11-chained-pipeline.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "executes Steps 1 through 10 consecutively in a single session without page reload",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7219,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "\n--- STARTING CHAINED AUDIO PIPELINE TEST ---\n"
+                        },
+                        {
+                          "text": "[CHAIN STEP 1] Granting microphone permissions & opening modal\n"
+                        },
+                        {
+                          "text": "[CHAIN STEP 1 PASSED] Mic permission granted in DOM and context.\n"
+                        },
+                        {
+                          "text": "[CHAIN STEP 2] Activating mic capture\n"
+                        },
+                        {
+                          "text": "[CHAIN STEP 2 PASSED] Mic state changed to \"listening\".\n"
+                        },
+                        {
+                          "text": "[CHAIN STEP 3] Verifying live audio amplitude meter receives signal\n"
+                        },
+                        {
+                          "text": "[CHAIN STEP 3 PASSED] Audio signal verified at level=0.38\n"
+                        },
+                        {
+                          "text": "[CHAIN STEP 4] Injecting user voice input\n"
+                        },
+                        {
+                          "text": "[CHAIN STEP 4 PASSED] Live transcript appeared in DOM.\n"
+                        },
+                        {
+                          "text": "[CHAIN STEP 5] Verifying transcript accuracy\n"
+                        },
+                        {
+                          "text": "[CHAIN STEP 5 PASSED] Transcript matches expected phrase: \"I am feeling deeply overwhelmed and anxious about everything\"\n"
+                        },
+                        {
+                          "text": "[CHAIN STEP 6] Finalizing speech and asserting handoff\n"
+                        },
+                        {
+                          "text": "[CHAIN STEP 6 PASSED] Handoff completed without state skip.\n"
+                        },
+                        {
+                          "text": "[CHAIN STEP 7] Verifying confirmation statement render\n"
+                        },
+                        {
+                          "text": "[CHAIN STEP 7 PASSED] Confirmation rendered: \"It sounds like you're feeling anxiety about the future and struggling with uncertainty. Is that right?\"\n"
+                        },
+                        {
+                          "text": "[CHAIN STEP 8] Injecting voice \"yes\" confirmation response\n"
+                        },
+                        {
+                          "text": "[CHAIN STEP 8 PASSED] Voice \"yes\" transitioned session to Phase 2 (Gita).\n"
+                        },
+                        {
+                          "text": "[CHAIN STEP 9] Verifying Assistant TTS playback lifecycle\n"
+                        },
+                        {
+                          "text": "[CHAIN STEP 9] TTS active: speaking=true\n"
+                        },
+                        {
+                          "text": "[CHAIN STEP 9 PASSED] TTS finished: speaking=false\n"
+                        },
+                        {
+                          "text": "[CHAIN STEP 10] Transitioning to Phase 3 (CBT) and testing Mic Reactivation\n"
+                        },
+                        {
+                          "text": "[CHAIN STEP 10 PASSED] Mic successfully reactivated in same session: level=0.01\n"
+                        },
+                        {
+                          "text": "--- ALL CHAINED AUDIO STEPS COMPLETED SUCCESSFULLY ---\n\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-26T13:40:07.333Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\manis\\EIH\\test-results\\step11-chained-pipeline-ST-999cc-session-without-page-reload\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b55fad5948a0ac9e8873-690e818d5195c9e8474e",
+              "file": "step11-chained-pipeline.spec.ts",
+              "line": 5,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-26T13:39:35.374Z",
+    "duration": 39800.433000000005,
+    "expected": 12,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

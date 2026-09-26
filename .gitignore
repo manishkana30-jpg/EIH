@@ -64,6 +64,8 @@ ehthumbs.db
 htmlcov/
 .pytest_cache/
 .nyc_output/
+test-results/
+playwright-report/
 
 # Faster-Whisper / ML model cache & Vector Databases
 whisper_models/

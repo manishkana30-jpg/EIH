@@ -53,6 +53,8 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
   // ─── Interaction & Input State ───
   const [inputText, setInputText] = useState('');
   const [isListening, setIsListening] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [audioLevel, setAudioLevel] = useState<number>(0);
   const [voiceTelemetry, setVoiceTelemetry] = useState<VoiceAcousticState | null>(null);
   const [activeVoicePrompt, setActiveVoicePrompt] = useState<string>('');
@@ -101,6 +103,17 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
     setHasMicConsent(getMicConsent());
     if (typeof window !== 'undefined') {
       (window as any).browserSpeechController = browserSpeechController;
+      browserSpeechController.setCallbacks({
+        onAssistantEnd: () => {
+          isSpeakingRef.current = false;
+          setIsSpeaking(false);
+          setActiveVoicePrompt('');
+        },
+        onAssistantStart: () => {
+          isSpeakingRef.current = true;
+          setIsSpeaking(true);
+        },
+      });
     }
 
     return () => {
@@ -117,11 +130,13 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
   const speakAloud = useCallback(
     (text: string, onEnded?: () => void) => {
       if (wellnessStateMachine.getIsMuted() || !text || typeof window === 'undefined') {
+        setIsSpeaking(false);
         if (onEnded) onEnded();
         return;
       }
 
       isSpeakingRef.current = true;
+      setIsSpeaking(true);
       setActiveVoicePrompt(text);
 
       const targetLocale = languageRef.current === 'hi' ? 'hi-IN' : 'en-US';
@@ -132,6 +147,8 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
         undefined,
         () => {
           isSpeakingRef.current = false;
+          setIsSpeaking(false);
+          setActiveVoicePrompt('');
           if (onEnded) onEnded();
         },
         targetLocale
@@ -191,6 +208,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
       );
 
       const next = wellnessStateMachine.handleConfirmationResponse(isAffirmative);
+      setConfirmStatus('idle');
       if (isAffirmative) {
         // Speak Gita wisdom naturally. Allow user to absorb the wisdom without auto-skipping.
         speakAloud(next.nextSpeechText);
@@ -244,9 +262,15 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
     );
 
     confirmVoiceManagerRef.current = manager;
+    if (typeof window !== 'undefined') {
+      (window as any).confirmVoiceManager = manager;
+    }
     manager.startConfirmationFlow(session.confirmationStatement);
 
     return () => {
+      if (typeof window !== 'undefined') {
+        (window as any).confirmVoiceManager = null;
+      }
       manager.destroy();
       confirmVoiceManagerRef.current = null;
     };
@@ -255,9 +279,13 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
   // ─── Voice Recording Logic with Zero-Async User-Gesture & Real-Time Audio Level ───
   const startVoiceListeningSession = async (forcedConsent = false) => {
     // Check consent: must have state consent, localStorage consent, or explicitly forced consent
-    if (!forcedConsent && !hasMicConsent && !getMicConsent()) {
+    const consentGranted = forcedConsent || hasMicConsent || getMicConsent();
+    if (!consentGranted) {
       setShowConsentModal(true);
       return;
+    }
+    if (!hasMicConsent) {
+      setHasMicConsent(true);
     }
 
     try {
@@ -267,6 +295,10 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
 
       // 2. Guarantee assistant speech stops immediately
       browserSpeechController.cancelSpeech();
+      isSpeakingRef.current = false;
+      setIsSpeaking(false);
+      setIsProcessing(false);
+      setConfirmStatus('idle');
       setIsListening(true);
       setAudioLevel(0);
       setMicErrorMessage(null);
@@ -287,6 +319,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
           setInputText(transcript);
           if (isFinal && transcript.trim().length > 0) {
             setIsListening(false);
+            setIsProcessing(true);
             setAudioLevel(0);
             browserSpeechController.stopRecognition();
             handleSendUserReply(transcript.trim(), vState);
@@ -295,6 +328,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
         (err) => {
           console.warn('[GuidedWellnessConversation] Voice recognition notice:', err);
           setIsListening(false);
+          setIsProcessing(false);
           setAudioLevel(0);
           setMicErrorMessage(err);
         }
@@ -302,11 +336,13 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
 
       if (!started) {
         setIsListening(false);
+        setIsProcessing(false);
         setAudioLevel(0);
       }
     } catch (err: any) {
       console.error('[GuidedWellnessConversation] Failed to start voice listening:', err);
       setIsListening(false);
+      setIsProcessing(false);
       setAudioLevel(0);
       setMicErrorMessage(err?.message || 'Failed to start microphone. Please check your browser permissions.');
     }
@@ -327,6 +363,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
 
     if (isListening) {
       setIsListening(false);
+      setIsProcessing(false);
       setAudioLevel(0);
       browserSpeechController.stopRecognition();
       return;
@@ -348,9 +385,13 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
   // ─── Process User Reply Across Phases ───
   const handleSendUserReply = (text?: string, voice?: VoiceAcousticState) => {
     const raw = (text !== undefined ? text : inputText).trim();
-    if (!raw) return;
+    if (!raw) {
+      setIsProcessing(false);
+      return;
+    }
 
     setInputText('');
+    setIsProcessing(false);
 
     if (currentState === 'MOOD_INPUT') {
       const result = wellnessStateMachine.handleMoodInput(raw, voice || voiceTelemetry || undefined);
@@ -571,6 +612,17 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
       ? 3
       : 4;
 
+  const micButtonState: 'idle' | 'listening' | 'processing' | 'error' =
+    isProcessing || (currentState === 'CONFIRM' && confirmStatus === 'processing')
+      ? 'processing'
+      : isListening
+      ? 'listening'
+      : micErrorMessage
+      ? 'error'
+      : 'idle';
+
+  const isSpeakingNow = isSpeaking || confirmStatus === 'speaking_prompt' || confirmStatus === 'retry_prompt';
+
   const formatTimer = (secs: number) => {
     const m = Math.floor(secs / 60);
     const s = secs % 60;
@@ -710,6 +762,28 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
             <span className="text-xs sm:text-sm font-semibold tracking-wide text-slate-100">
               4-Phase Guided Wellness Conversation
             </span>
+
+            {/* DOM Audio Permission Status for Automation */}
+            <div
+              data-testid="audio-permission-status"
+              data-permission={hasMicConsent || getMicConsent() ? 'granted' : 'prompt'}
+              className="hidden"
+              aria-hidden="true"
+            />
+
+            {/* Live Assistant TTS Speaking Indicator */}
+            <div
+              data-testid="tts-play-indicator"
+              data-speaking={isSpeakingNow ? 'true' : 'false'}
+              className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono transition-all ${
+                isSpeakingNow
+                  ? 'tts-speaking active bg-teal-500/20 text-teal-300 border border-teal-500/40 shadow-[0_0_10px_rgba(20,184,166,0.35)]'
+                  : 'tts-idle text-slate-500 hidden'
+              }`}
+            >
+              <Volume2 className="w-3.5 h-3.5 text-teal-400 animate-pulse" />
+              <span>{isSpeakingNow ? (language === 'hi' ? 'बोल रहे हैं...' : 'Speaking...') : 'Idle'}</span>
+            </div>
           </div>
 
           <div className="flex items-center gap-2">
@@ -764,8 +838,22 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
           </div>
         </header>
 
+        {/* State & Phase Indicator for Test Automation */}
+        <div
+          data-testid="phase-state-indicator"
+          data-phase={currentState}
+          data-phase-index={currentPhaseIndex}
+          className="hidden"
+          aria-hidden="true"
+        />
+
         {/* 4-PHASE PROGRESS TRACKER BAR */}
-        <div data-testid="phase-tracker" className="flex items-center justify-between px-4 sm:px-6 py-2.5 bg-slate-950/40 border-b border-slate-800/40 text-[11px] font-mono select-none">
+        <div
+          data-testid="phase-tracker"
+          data-current-state={currentState}
+          data-phase-index={currentPhaseIndex}
+          className="flex items-center justify-between px-4 sm:px-6 py-2.5 bg-slate-950/40 border-b border-slate-800/40 text-[11px] font-mono select-none"
+        >
           {[
             { num: 1, label: language === 'hi' ? '1. मनोभाव' : '1. Mood' },
             { num: 2, label: language === 'hi' ? '2. गीता दर्शन' : '2. Gita Wisdom' },
@@ -1377,7 +1465,10 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
           <footer data-testid="bottom-chat-footer" className="px-4 py-3 bg-slate-950/90 border-t border-slate-800/60 flex flex-col gap-2 shrink-0">
             {/* User-Visible Mic Error / Blocked Alert Banner */}
             {micErrorMessage && (
-              <div data-testid="mic-error-banner" className="flex items-center justify-between text-xs px-3 py-2 rounded-xl bg-rose-950/70 border border-rose-500/50 text-rose-200 shadow-md">
+              <div
+                data-testid="audio-error-message"
+                className="flex items-center justify-between text-xs px-3 py-2 rounded-xl bg-rose-950/70 border border-rose-500/50 text-rose-200 shadow-md"
+              >
                 <div className="flex items-center gap-2 truncate">
                   <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse shrink-0" />
                   <span className="truncate">{micErrorMessage}</span>
@@ -1396,16 +1487,29 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
             )}
 
             <div className="flex items-center gap-2 w-full">
-              {/* Mic Toggle Button with dynamic live audio scaling */}
+              {/* Mic Toggle Button with dynamic live audio scaling & state */}
               <button
                 data-testid="mic-toggle-btn"
+                data-state={micButtonState}
                 onClick={handleToggleListening}
                 className={`p-2.5 rounded-full transition-all shrink-0 ${
-                  isListening
+                  micButtonState === 'listening'
                     ? 'bg-rose-500/25 text-rose-400 border border-rose-500/70 shadow-[0_0_15px_rgba(244,63,94,0.45)]'
+                    : micButtonState === 'processing'
+                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/50 animate-pulse'
+                    : micButtonState === 'error'
+                    ? 'bg-red-500/20 text-red-400 border border-red-500/60'
                     : 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 active:scale-95'
                 }`}
-                title={isListening ? 'Stop listening' : 'Speak your reply (voice input)'}
+                title={
+                  micButtonState === 'listening'
+                    ? 'Stop listening'
+                    : micButtonState === 'processing'
+                    ? 'Processing speech...'
+                    : micButtonState === 'error'
+                    ? 'Microphone error'
+                    : 'Speak your reply (voice input)'
+                }
               >
                 {isListening ? (
                   <Mic
@@ -1424,6 +1528,8 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
               {isListening && (
                 <div
                   data-testid="live-audio-meter"
+                  data-audio-level={audioLevel.toFixed(2)}
+                  data-audio-percentage={Math.round(audioLevel * 100)}
                   className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-950/60 border border-rose-500/40 shrink-0 transition-all shadow-sm"
                   title={`Live Microphone Audio: ${Math.round(audioLevel * 100)}%`}
                 >
@@ -1441,11 +1547,21 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
                       }`}
                     />
                   ))}
-                  <span className="text-[10px] font-mono text-rose-400 font-semibold ml-0.5">
+                  <span data-testid="live-audio-percentage" className="text-[10px] font-mono text-rose-400 font-semibold ml-0.5">
                     {Math.round(audioLevel * 100)}%
                   </span>
                 </div>
               )}
+
+              {/* Live Transcript / Recognized Text Display Element */}
+              <div
+                data-testid="voice-transcript-display"
+                data-has-transcript={Boolean((inputText || liveConfirmTranscript).trim()) ? 'true' : 'false'}
+                className="hidden"
+                aria-hidden="true"
+              >
+                {inputText || liveConfirmTranscript}
+              </div>
 
               {/* Text Input (Always accessible as fallback) */}
               <input
