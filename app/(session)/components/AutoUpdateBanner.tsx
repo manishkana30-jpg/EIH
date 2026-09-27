@@ -183,9 +183,9 @@ export function AutoUpdateBanner() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -30, scale: 0.95 }}
             transition={{ duration: 0.35, ease: 'easeOut' }}
-            className="fixed top-3 inset-x-0 z-[100] flex justify-center px-4 pointer-events-auto"
+            className="fixed top-3 inset-x-0 z-[100] flex justify-center px-4 pointer-events-none"
           >
-            <div className="flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-teal-950/95 via-slate-900/95 to-cyan-950/95 border border-teal-500/40 shadow-2xl shadow-teal-500/20 backdrop-blur-xl max-w-lg w-full text-xs">
+            <div className="flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-teal-950/95 via-slate-900/95 to-cyan-950/95 border border-teal-500/40 shadow-2xl shadow-teal-500/20 backdrop-blur-xl max-w-lg w-full text-xs pointer-events-auto">
               <div className="w-8 h-8 rounded-xl bg-teal-500/20 border border-teal-400/30 flex items-center justify-center shrink-0">
                 <Sparkles className="w-4 h-4 text-teal-300 animate-pulse" />
               </div>

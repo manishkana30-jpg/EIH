@@ -9,15 +9,15 @@
 
 | Performance Metric | Step 0 Baseline | Post-Optimization (Steps 1–4) | Absolute Delta / Improvement | Status |
 | :--- | :--- | :--- | :--- | :--- |
-| **Initial TTFB** | **21.4 ms** | **28.9 ms** | ~0 ms (consistently instant) | Excellent |
-| **First Contentful Paint (FCP)** | **112.0 ms** | **116.0 ms** | **-4.0 ms faster** | Fast initial render |
-| **DOM Content Loaded (DCL)** | **106.6 ms** | **89.6 ms** | **17.0 ms faster** | Instant parsing |
-| **Karaoke Animation FPS** | **130.6 fps** (Min 106 fps) | **111.5 fps** (Min 59.8 fps) | Ultra-smooth 120Hz+ render | Zero layout reflow |
-| **Long Tasks (>50ms)** | **2 tasks** | **3 tasks** | Minimal CPU blocking | Smooth main thread |
-| **Initial JS Heap** | **11.98 MB** | **10.94 MB** | **1.04 MB reduced** | Lighter memory footprint |
-| **Heap After Session 1 (post-GC)** | **9.32 MB** | **8.38 MB** | Stable | Leak-free |
-| **Heap After Session 3 (post-GC)** | ~9.60 MB | **8.87 MB** | Flat baseline | No accumulation |
-| **Heap After 5 Repeated Sessions** | ~10.97 MB (4 sess) | **9.15 MB** (5 sess) | Stable (9.15 MB / 9.93 MB total) | Zero monotonic memory leak |
+| **Initial TTFB** | **21.4 ms** | **15.6 ms** | ~0 ms (consistently instant) | Excellent |
+| **First Contentful Paint (FCP)** | **112.0 ms** | **100.0 ms** | **12.0 ms faster** | Fast initial render |
+| **DOM Content Loaded (DCL)** | **106.6 ms** | **50.9 ms** | **55.7 ms faster** | Instant parsing |
+| **Karaoke Animation FPS** | **130.6 fps** (Min 106 fps) | **137.6 fps** (Min 128.3 fps) | Ultra-smooth 120Hz+ render | Zero layout reflow |
+| **Long Tasks (>50ms)** | **2 tasks** | **2 tasks** | Minimal CPU blocking | Smooth main thread |
+| **Initial JS Heap** | **11.98 MB** | **10.98 MB** | **1.00 MB reduced** | Lighter memory footprint |
+| **Heap After Session 1 (post-GC)** | **9.32 MB** | **8.02 MB** | Stable | Leak-free |
+| **Heap After Session 3 (post-GC)** | ~9.60 MB | **8.89 MB** | Flat baseline | No accumulation |
+| **Heap After 5 Repeated Sessions** | ~10.97 MB (4 sess) | **9.16 MB** (5 sess) | Stable (9.16 MB / 10.19 MB total) | Zero monotonic memory leak |
 | **Zombie Files Cleaned** | 806.45 MB | **0 MB** | **806.45 MB disk freed** | Completely purged |
 | **Test Suite Pass Rate** | 13/13 audio tests passed | **13/13 audio tests passed** | **100% Zero-Regression Pass** | Verified Safe |
 
@@ -77,7 +77,7 @@
    * Moved `container.getBoundingClientRect()` and `activeEl.getBoundingClientRect()` in the auto-scroll handler into `requestAnimationFrame`.
    * Replaced center-snapping auto-scroll with viewport boundary padding (70px top, 90px bottom) to eliminate continuous `scrollBy` micro-thrashing.
    * Formatted active word styling in `globals.css` with symmetrical `box-sizing: border-box; padding: 0 2px; outline: 1px solid...` so word activation produces zero geometric layout reflow.
-   * Frame rate during active karaoke word tracking runs smoothly at **111.5 fps**.
+   * Frame rate during active karaoke word tracking runs smoothly at **137.6 fps**.
 
 ---
 
@@ -88,9 +88,9 @@
    * `browserSpeechController.cancelSpeech()` revokes blob URLs via `URL.revokeObjectURL`, pauses audio elements, clears source nodes, and clears watchdog timers.
    * Singleton `AudioContext` maintained across sessions rather than creating redundant contexts.
 2. **Repeated Session Heap Retention:**
-   * Session 1 (Post-GC): **8.38 MB**
-   * Session 3 (Post-GC): **8.87 MB**
-   * Session 5 (Post-GC): **9.15 MB**
+   * Session 1 (Post-GC): **8.02 MB**
+   * Session 3 (Post-GC): **8.89 MB**
+   * Session 5 (Post-GC): **9.16 MB**
    * Memory returns to baseline with **zero monotonic growth**, proving all audio recognizers, contexts, and timers are cleanly collected.
 
 ---

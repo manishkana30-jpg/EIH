@@ -77,7 +77,7 @@
     "emotion": "anxiety",
     "language": "hi",
     "pathMode": "Yes",
-    "phase1Result": "Confirmed (\"ऐसा लग रहा है कि आप भविष्य की अनिश्चितता को ल...\")",
+    "phase1Result": "Confirmed (\"It sounds like you're feeling anxiety about t...\")",
     "reachedPhase2": "Yes (CHAPTER 2, VERSE 47)",
     "reachedPhase3": "Yes (Step 1 of 4)",
     "reachedPhase4": "Yes (CANDLE FLAME GAZING (JYOTI TRATAKA))",
@@ -158,10 +158,7 @@
     "tratakaVariant": "MOON & STAR GAZING (SHOONYA TRATAKA)",
     "gitaVerse": "CHAPTER 2, VERSE 14",
     "clarifyQuestionsCount": 0,
-    "consoleErrors": [
-      "Failed to load resource: net::ERR_FAILED",
-      "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
-    ],
+    "consoleErrors": [],
     "screenshots": [
       "reports/screenshots/EMO-02-SAD-EN_yes_voice_phase1_confirm.png",
       "reports/screenshots/EMO-02-SAD-EN_yes_voice_phase2_gita.png",
@@ -209,10 +206,7 @@
     "tratakaVariant": "BINDU (POINT) GAZING (BINDU TRATAKA)",
     "gitaVerse": "CHAPTER 2, VERSES 62-63",
     "clarifyQuestionsCount": 0,
-    "consoleErrors": [
-      "Failed to load resource: net::ERR_FAILED",
-      "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
-    ],
+    "consoleErrors": [],
     "screenshots": [
       "reports/screenshots/EMO-03-ANG-EN_yes_text_phase1_confirm.png",
       "reports/screenshots/EMO-03-ANG-EN_yes_text_phase2_gita.png",
@@ -236,10 +230,7 @@
     "tratakaVariant": "BINDU (POINT) GAZING (BINDU TRATAKA)",
     "gitaVerse": "CHAPTER 2, VERSES 62-63",
     "clarifyQuestionsCount": 0,
-    "consoleErrors": [
-      "Failed to load resource: net::ERR_CONNECTION_REFUSED",
-      "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
-    ],
+    "consoleErrors": [],
     "screenshots": [
       "reports/screenshots/EMO-03-ANG-EN_yes_voice_phase1_confirm.png",
       "reports/screenshots/EMO-03-ANG-EN_yes_voice_phase2_gita.png",
@@ -255,7 +246,7 @@
     "emotion": "anger",
     "language": "hi",
     "pathMode": "Yes",
-    "phase1Result": "Confirmed (\"ऐसा लग रहा है कि आप इस परिस्थिति को लेकर क्रो...\")",
+    "phase1Result": "Confirmed (\"It sounds like you're feeling anger weighed d...\")",
     "reachedPhase2": "Yes (CHAPTER 2, VERSES 62-63)",
     "reachedPhase3": "Yes (Step 1 of 4)",
     "reachedPhase4": "Yes (BINDU (POINT) GAZING (BINDU TRATAKA))",
@@ -311,10 +302,7 @@
     "tratakaVariant": "CANDLE FLAME GAZING (JYOTI TRATAKA)",
     "gitaVerse": "CHAPTER 2, VERSE 47",
     "clarifyQuestionsCount": 0,
-    "consoleErrors": [
-      "Failed to load resource: net::ERR_FAILED",
-      "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
-    ],
+    "consoleErrors": [],
     "screenshots": [
       "reports/screenshots/EMO-04-STR-EN_yes_voice_phase1_confirm.png",
       "reports/screenshots/EMO-04-STR-EN_yes_voice_phase2_gita.png",
@@ -330,7 +318,7 @@
     "emotion": "stress",
     "language": "hi",
     "pathMode": "Yes",
-    "phase1Result": "Confirmed (\"ऐसा लग रहा है कि आप इस परिस्थिति को लेकर मानस...\")",
+    "phase1Result": "Confirmed (\"It sounds like you're feeling stress weighed ...\")",
     "reachedPhase2": "Yes (CHAPTER 2, VERSE 47)",
     "reachedPhase3": "Yes (Step 1 of 4)",
     "reachedPhase4": "Yes (CANDLE FLAME GAZING (JYOTI TRATAKA))",
@@ -362,10 +350,7 @@
     "tratakaVariant": "MOON & STAR GAZING (SHOONYA TRATAKA)",
     "gitaVerse": "CHAPTER 2, VERSE 14",
     "clarifyQuestionsCount": 0,
-    "consoleErrors": [
-      "Failed to load resource: net::ERR_FAILED",
-      "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
-    ],
+    "consoleErrors": [],
     "screenshots": [
       "reports/screenshots/EMO-05-LON-EN_yes_text_phase1_confirm.png",
       "reports/screenshots/EMO-05-LON-EN_yes_text_phase2_gita.png",
@@ -389,10 +374,7 @@
     "tratakaVariant": "MOON & STAR GAZING (SHOONYA TRATAKA)",
     "gitaVerse": "CHAPTER 2, VERSE 14",
     "clarifyQuestionsCount": 0,
-    "consoleErrors": [
-      "Failed to load resource: net::ERR_FAILED",
-      "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
-    ],
+    "consoleErrors": [],
     "screenshots": [
       "reports/screenshots/EMO-05-LON-HI_yes_text_phase1_confirm.png",
       "reports/screenshots/EMO-05-LON-HI_yes_text_phase2_gita.png",
@@ -432,7 +414,7 @@
     "emotion": "guilt",
     "language": "hi",
     "pathMode": "Yes",
-    "phase1Result": "Confirmed (\"ऐसा लग रहा है कि आप इस परिस्थिति को लेकर आत्म...\")",
+    "phase1Result": "Confirmed (\"It sounds like you're feeling guilt weighed d...\")",
     "reachedPhase2": "Yes (CHAPTER 6, VERSE 5)",
     "reachedPhase3": "Yes (Step 1 of 4)",
     "reachedPhase4": "Yes (MIRROR & EYE-REFLECTION GAZING (PRATIBIMB TRATAKA))",
@@ -580,15 +562,12 @@
     "phase1Result": "Confirmed (\"ऐसा लग रहा है कि आप इस परिस्थिति को लेकर दौड़...\")",
     "reachedPhase2": "Yes (CHAPTER 6, VERSE 35)",
     "reachedPhase3": "Yes (Step 1 of 4)",
-    "reachedPhase4": "Yes (MOON & STAR GAZING (SHOONYA TRATAKA))",
+    "reachedPhase4": "Yes (CANDLE FLAME GAZING (JYOTI TRATAKA))",
     "summaryReached": "Yes",
-    "tratakaVariant": "MOON & STAR GAZING (SHOONYA TRATAKA)",
+    "tratakaVariant": "CANDLE FLAME GAZING (JYOTI TRATAKA)",
     "gitaVerse": "CHAPTER 6, VERSE 35",
     "clarifyQuestionsCount": 0,
-    "consoleErrors": [
-      "Failed to load resource: net::ERR_FAILED",
-      "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
-    ],
+    "consoleErrors": [],
     "screenshots": [
       "reports/screenshots/EMO-08-OVT-HI_yes_text_phase1_confirm.png",
       "reports/screenshots/EMO-08-OVT-HI_yes_text_phase2_gita.png",
@@ -636,10 +615,7 @@
     "tratakaVariant": "MOON & STAR GAZING (SHOONYA TRATAKA)",
     "gitaVerse": "CHAPTER 2, VERSE 47",
     "clarifyQuestionsCount": 0,
-    "consoleErrors": [
-      "Failed to load resource: net::ERR_FAILED",
-      "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
-    ],
+    "consoleErrors": [],
     "screenshots": [
       "reports/screenshots/EMO-09-MOT-HI_yes_text_phase1_confirm.png",
       "reports/screenshots/EMO-09-MOT-HI_yes_text_phase2_gita.png",
@@ -663,10 +639,7 @@
     "tratakaVariant": "MOON & STAR GAZING (SHOONYA TRATAKA)",
     "gitaVerse": "CHAPTER 2, VERSE 14",
     "clarifyQuestionsCount": 0,
-    "consoleErrors": [
-      "Failed to load resource: net::ERR_FAILED",
-      "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
-    ],
+    "consoleErrors": [],
     "screenshots": [
       "reports/screenshots/EMO-10-GRF-EN_yes_text_phase1_confirm.png",
       "reports/screenshots/EMO-10-GRF-EN_yes_text_phase2_gita.png",
@@ -753,9 +726,9 @@
     "phase1Result": "Confirmed (\"It sounds like you're feeling overthinking ca...\")",
     "reachedPhase2": "Yes (CHAPTER 6, VERSE 35)",
     "reachedPhase3": "Yes (Step 1 of 4)",
-    "reachedPhase4": "Yes (MOON & STAR GAZING (SHOONYA TRATAKA))",
+    "reachedPhase4": "Yes (CANDLE FLAME GAZING (JYOTI TRATAKA))",
     "summaryReached": "Yes",
-    "tratakaVariant": "MOON & STAR GAZING (SHOONYA TRATAKA)",
+    "tratakaVariant": "CANDLE FLAME GAZING (JYOTI TRATAKA)",
     "gitaVerse": "CHAPTER 6, VERSE 35",
     "clarifyQuestionsCount": 0,
     "consoleErrors": [],
@@ -782,10 +755,7 @@
     "tratakaVariant": "CANDLE FLAME GAZING (JYOTI TRATAKA)",
     "gitaVerse": "CHAPTER 2, VERSE 47",
     "clarifyQuestionsCount": 0,
-    "consoleErrors": [
-      "Failed to load resource: net::ERR_FAILED",
-      "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
-    ],
+    "consoleErrors": [],
     "screenshots": [
       "reports/screenshots/EMO-15-MIX-EN_yes_text_phase1_confirm.png",
       "reports/screenshots/EMO-15-MIX-EN_yes_text_phase2_gita.png",
@@ -809,10 +779,7 @@
     "tratakaVariant": "MOON & STAR GAZING (SHOONYA TRATAKA)",
     "gitaVerse": "CHAPTER 2, VERSE 70",
     "clarifyQuestionsCount": 0,
-    "consoleErrors": [
-      "Failed to load resource: net::ERR_FAILED",
-      "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
-    ],
+    "consoleErrors": [],
     "screenshots": [
       "reports/screenshots/EMO-16-CAL-EN_yes_text_phase1_confirm.png",
       "reports/screenshots/EMO-16-CAL-EN_yes_text_phase2_gita.png",

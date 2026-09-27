@@ -81,8 +81,11 @@ async function runSingleEmotionTest(browser, tc, options = {}) {
   try {
     // 1. Init scripts: Mock speech recognition if testing voice path
     await page.addInitScript(({ isVoiceMode, mockUtterance }) => {
+      window.__PLAYWRIGHT_TEST__ = true;
+      localStorage.setItem('disable_auto_reload', 'true');
       window.__EIH_AUTO_ADVANCE_TRATAKA = true;
       localStorage.setItem('eih_mic_consent_granted', 'true');
+      localStorage.setItem('wellness_mic_consent', 'true');
 
       if (isVoiceMode) {
         class MockSpeechRecognition extends EventTarget {
@@ -166,11 +169,8 @@ async function runSingleEmotionTest(browser, tc, options = {}) {
       const typedVal = await page.locator('[data-testid="chat-text-input"]').inputValue();
       if (!typedVal || typedVal.trim().length === 0) {
         await page.locator('[data-testid="chat-text-input"]').fill(tc.text);
-        await page.locator('[data-testid="chat-send-btn"]').click();
-      } else {
-        const sendBtn = page.locator('[data-testid="chat-send-btn"]');
-        if (await sendBtn.isVisible()) await sendBtn.click().catch(() => {});
       }
+      await page.locator('[data-testid="chat-send-btn"]').click();
     } else {
       // Text path: fill real input and click send
       await page.locator('[data-testid="chat-text-input"]').fill(tc.text);
