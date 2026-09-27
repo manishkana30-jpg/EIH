@@ -3,8 +3,7 @@
     "argv": [
       "C:\\Users\\manis\\AppData\\Local\\Microsoft\\WinGet\\Packages\\OpenJS.NodeJS.LTS_Microsoft.Winget.Source_8wekyb3d8bbwe\\node-v24.19.0-win-x64\\node.exe",
       "C:\\Users\\manis\\EIH\\node_modules\\@playwright\\test\\cli.js",
-      "test",
-      "tests/e2e/audio-steps"
+      "test"
     ],
     "configFile": "C:\\Users\\manis\\EIH\\playwright.config.ts",
     "rootDir": "C:/Users/manis/EIH/tests/e2e/audio-steps",
@@ -94,7 +93,7 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2431,
+                      "duration": 12878,
                       "errors": [],
                       "stdout": [
                         {
@@ -103,7 +102,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-09-26T19:07:19.150Z",
+                      "startTime": "2026-09-27T13:37:49.940Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -155,19 +154,19 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2308,
+                      "duration": 13162,
                       "errors": [],
                       "stdout": [
                         {
-                          "text": "[STEP 2] Initial mic button state: \"idle\"\n"
+                          "text": "[STEP 2] Initial mic button state: \"listening\"\n"
                         },
                         {
-                          "text": "[STEP 2] Mic activation transition verified in 193ms\n"
+                          "text": "[STEP 2] Mic activation transition verified in 151ms\n"
                         }
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-09-26T19:07:21.792Z",
+                      "startTime": "2026-09-27T13:38:03.055Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -219,16 +218,16 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 3418,
+                      "duration": 13062,
                       "errors": [],
                       "stdout": [
                         {
-                          "text": "[STEP 3] Live audio signal captured: level=0.15 (13%)\n"
+                          "text": "[STEP 3] Live audio signal captured: level=0.17 (10%)\n"
                         }
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-09-26T19:07:24.131Z",
+                      "startTime": "2026-09-27T13:38:16.251Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -280,7 +279,7 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2424,
+                      "duration": 12979,
                       "errors": [],
                       "stdout": [
                         {
@@ -289,7 +288,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-09-26T19:07:27.586Z",
+                      "startTime": "2026-09-27T13:38:29.350Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -341,7 +340,7 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2446,
+                      "duration": 12944,
                       "errors": [],
                       "stdout": [
                         {
@@ -353,7 +352,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-09-26T19:07:30.038Z",
+                      "startTime": "2026-09-27T13:38:42.358Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -405,7 +404,7 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2331,
+                      "duration": 12830,
                       "errors": [],
                       "stdout": [
                         {
@@ -414,7 +413,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-09-26T19:07:32.515Z",
+                      "startTime": "2026-09-27T13:38:55.332Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -466,7 +465,7 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2655,
+                      "duration": 12985,
                       "errors": [],
                       "stdout": [
                         {
@@ -475,7 +474,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-09-26T19:07:34.875Z",
+                      "startTime": "2026-09-27T13:39:08.194Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -527,7 +526,7 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2731,
+                      "duration": 13226,
                       "errors": [],
                       "stdout": [
                         {
@@ -539,7 +538,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-09-26T19:07:37.557Z",
+                      "startTime": "2026-09-27T13:39:21.207Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -574,7 +573,7 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2541,
+                      "duration": 12928,
                       "errors": [],
                       "stdout": [
                         {
@@ -586,7 +585,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-09-26T19:07:40.318Z",
+                      "startTime": "2026-09-27T13:39:34.452Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -638,7 +637,7 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 4290,
+                      "duration": 14401,
                       "errors": [],
                       "stdout": [
                         {
@@ -650,7 +649,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-09-26T19:07:42.890Z",
+                      "startTime": "2026-09-27T13:39:47.411Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -702,7 +701,7 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 5485,
+                      "duration": 14607,
                       "errors": [],
                       "stdout": [
                         {
@@ -715,12 +714,12 @@
                           "text": "[STEP 10] Cycle 2 Mic activated successfully (data-state=listening)\n"
                         },
                         {
-                          "text": "[STEP 10] Cycle 2 Audio signal verified: level=0.46\n"
+                          "text": "[STEP 10] Cycle 2 Audio signal verified: level=0.00\n"
                         }
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-09-26T19:07:47.206Z",
+                      "startTime": "2026-09-27T13:40:01.839Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -772,7 +771,7 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 6549,
+                      "duration": 16257,
                       "errors": [],
                       "stdout": [
                         {
@@ -794,7 +793,7 @@
                           "text": "[CHAIN STEP 3] Verifying live audio amplitude meter receives signal\n"
                         },
                         {
-                          "text": "[CHAIN STEP 3 PASSED] Audio signal verified at level=0.05\n"
+                          "text": "[CHAIN STEP 3 PASSED] Audio signal verified at level=0.19\n"
                         },
                         {
                           "text": "[CHAIN STEP 4] Injecting user voice input\n"
@@ -847,7 +846,7 @@
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-09-26T19:07:52.722Z",
+                      "startTime": "2026-09-27T13:40:16.479Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -869,13 +868,74 @@
           ]
         }
       ]
+    },
+    {
+      "title": "step12-hindi-distress-transcript.spec.ts",
+      "file": "step12-hindi-distress-transcript.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Hindi Distress Transcript & Sequential Progression E2E",
+          "file": "step12-hindi-distress-transcript.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "reproduces exact transcript, asserts real Gita/CBT/Trataka content, and asserts accurate step counter",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 20951,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✓ Hindi Distress Transcript E2E passed. Screenshot saved to C:\\Users\\manis\\EIH\\reports\\screenshots\\hindi_distress_regression_passed.png\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-27T13:40:32.773Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\manis\\EIH\\test-results\\step12-hindi-distress-tran-a2db1-serts-accurate-step-counter\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "feb2ea7486092726e7be-911e8c147707d720d447",
+              "file": "step12-hindi-distress-transcript.spec.ts",
+              "line": 6,
+              "column": 7
+            }
+          ]
+        }
+      ]
     }
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-09-26T19:07:18.798Z",
-    "duration": 41075.748,
-    "expected": 12,
+    "startTime": "2026-09-27T13:37:49.578Z",
+    "duration": 186081.25400000002,
+    "expected": 13,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0
