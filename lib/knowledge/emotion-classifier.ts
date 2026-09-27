@@ -85,6 +85,19 @@ const VALENCE_MAP: Record<string, number> = {
   normal: 0.5, okay: 0.5, fine: 0.5, alright: 0.5, good: 0.6, 'doing well': 0.7,
   girlfriend: 0.7, boyfriend: 0.7, partner: 0.7, dating: 0.7,
   'new girlfriend': 0.85, 'new boyfriend': 0.85, 'in love': 0.9, love: 0.8,
+  // Hindi Negative Affect
+  'उदास': -0.8, 'उदासी': -0.85, 'दुख': -0.8, 'दुःख': -0.8, 'दुखी': -0.8,
+  'तनाव': -0.7, 'टेंशन': -0.75, 'चिंता': -0.75, 'परेशान': -0.65, 'परेशानी': -0.7,
+  'घबराहट': -0.8, 'घबरा': -0.75, 'डर': -0.75, 'भय': -0.75, 'बेचैन': -0.65,
+  'बेचैनी': -0.7, 'दर्द': -0.75, 'पीड़ा': -0.8, 'कष्ट': -0.75, 'रोना': -0.75,
+  'निराश': -0.85, 'निराशा': -0.85, 'थकान': -0.6, 'थका': -0.6, 'अकेला': -0.75,
+  'उलझन': -0.6, 'भारी': -0.6, 'भारीपन': -0.65, 'बुरा': -0.7, 'खराब': -0.7,
+  'अच्छा नहीं': -0.75, 'कुछ अच्छा नहीं': -0.85, 'ठीक नहीं': -0.7, 'मन नहीं': -0.7,
+
+  // Hindi Positive Affect
+  'खुश': 0.8, 'प्रसन्न': 0.85, 'आनंद': 0.9, 'शांत': 0.75, 'शांति': 0.8,
+  'बढ़िया': 0.7, 'सुंदर': 0.7, 'प्यार': 0.85, 'प्रेम': 0.85, 'कृतज्ञ': 0.85,
+  'राहत': 0.75, 'सुकून': 0.8, 'सब ठीक': 0.7, 'अच्छा': 0.6,
 };
 
 const AROUSAL_MAP: Record<string, number> = {
@@ -94,16 +107,62 @@ const AROUSAL_MAP: Record<string, number> = {
   shocked: 0.85, alarmed: 0.8, excited: 0.8, intense: 0.75, pounding: 0.8,
   surprised: 0.75, agitated: 0.7, rushing: 0.7, hyper: 0.75, vibrating: 0.7,
   burden: 0.65, burdened: 0.7, debt: 0.7, debts: 0.75,
+  'घबराहट': 0.85, 'घबरा': 0.8, 'तनाव': 0.75, 'टेंशन': 0.8, 'चिंता': 0.7,
+  'डर': 0.75, 'भय': 0.8, 'गुस्सा': 0.85, 'क्रोध': 0.9, 'बेचैन': 0.75, 'बेचैनी': 0.75,
 
   // Low Arousal
   heavy: -0.6, drained: -0.65, empty: -0.6, lifeless: -0.8, bored: -0.6,
   still: -0.65, quiet: -0.6, calm: -0.7, relaxed: -0.7, peaceful: -0.65,
   grounded: -0.5, resting: -0.7, slow: -0.5, mellow: -0.6, unmotivated: -0.6,
+  'उदास': -0.65, 'उदासी': -0.7, 'थकान': -0.65, 'थका': -0.6, 'भारी': -0.6,
+  'भारीपन': -0.65, 'निराश': -0.7, 'निराशा': -0.75, 'शांत': -0.7, 'शांति': -0.7,
 };
 
 function escapeRegex(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
+
+function matchesEmotionTerm(text: string, term: string): boolean {
+  if (!term) return false;
+  const lowerTerm = term.toLowerCase();
+  if (lowerTerm.includes(' ')) {
+    return text.includes(lowerTerm);
+  }
+  if (/[^\x00-\x7F]/.test(lowerTerm)) {
+    const escaped = escapeRegex(lowerTerm);
+    const regex = new RegExp(`(?:^|[^\\p{L}\\p{N}])${escaped}(?:$|[^\\p{L}\\p{N}])`, 'u');
+    return regex.test(text);
+  }
+  const regex = new RegExp(`\\b${escapeRegex(lowerTerm)}\\b`, 'i');
+  return regex.test(text);
+}
+
+const HINDI_DIMENSION_KEYWORDS: Record<string, string[]> = {
+  sadness: [
+    'उदास', 'उदासी', 'दुख', 'दुःख', 'दुखी', 'रोना', 'रोने', 'कुछ अच्छा नहीं लग रहा', 'अच्छा नहीं लग रहा',
+    'कुछ अच्छा नहीं', 'अच्छा नहीं', 'मन नहीं लग रहा', 'मन उदास', 'निराश', 'निराशा', 'अकेला', 'अकेलापन',
+    'टूटा', 'पीड़ा', 'कष्ट', 'भारीपन', 'दर्द', 'रोऊ'
+  ],
+  anxiety: [
+    'तनाव', 'टेंशन', 'चिंता', 'घबराहट', 'घबरा', 'डर', 'भय', 'बेचैन', 'बेचैनी', 'उलझन',
+    'परेशान', 'परेशानी', 'टेंशन हो रही', 'घबराहट हो रही', 'कांप', 'कंपकंपी', 'हड़बड़ाहट'
+  ],
+  fear: [
+    'डर', 'भय', 'खौफ', 'दहशत', 'डर लग रहा'
+  ],
+  anger: [
+    'गुस्सा', 'क्रोध', 'नाराज', 'नाराजगी', 'खीझ'
+  ],
+  confusion: [
+    'असमंजस', 'द्वंद्व', 'उलझन', 'कुछ समझ नहीं आ रहा', 'भ्रम'
+  ],
+  calmness: [
+    'शांत', 'शांति', 'सुकून', 'स्थिर'
+  ],
+  joy: [
+    'खुश', 'प्रसन्न', 'आनंद', 'हर्ष', 'उत्साह', 'बढ़िया', 'सब ठीक'
+  ],
+};
 
 export interface CowenDimension {
   id: string;
@@ -192,8 +251,6 @@ export class NeuroscienceEmotionClassifier {
       lower.includes('it is shallow') ||
       lower.includes('it is slow') ||
       lower.includes('it is fine') ||
-      lower.includes('it is deep') ||
-      lower.includes('it is tight') ||
       lower.includes("can't catch my breath") ||
       lower.includes('short of breath') ||
       lower.includes('heavy breathing');
@@ -212,22 +269,24 @@ export class NeuroscienceEmotionClassifier {
       scores.set(dim.id, 0);
     }
 
-    const words = lower.split(/[^a-zA-Z0-9_']+/).filter((w) => w.length > 2);
+    const words = lower.split(/[^\p{L}\p{N}_']+/u).filter((w) => w.length >= 2);
 
     for (const dim of this.dimensions) {
       let score = 0;
 
-      // Match full multi-word keyword phrases
+      // Match full multi-word keyword phrases and words
       for (const kw of dim.keywords) {
-        const kwLower = kw.toLowerCase();
-        if (kwLower.includes(' ')) {
-          if (lower.includes(kwLower)) {
-            score += 3.0;
-          }
-        } else {
-          const regex = new RegExp(`\\b${escapeRegex(kwLower)}\\b`, 'i');
-          if (regex.test(lower)) {
-            score += 1.5;
+        if (matchesEmotionTerm(lower, kw)) {
+          score += kw.includes(' ') ? 3.0 : 1.5;
+        }
+      }
+
+      // Match Hindi localized emotion keywords
+      const hindiTerms = HINDI_DIMENSION_KEYWORDS[dim.id];
+      if (hindiTerms) {
+        for (const hKw of hindiTerms) {
+          if (matchesEmotionTerm(lower, hKw)) {
+            score += hKw.includes(' ') ? 4.0 : 2.5;
           }
         }
       }
@@ -236,46 +295,22 @@ export class NeuroscienceEmotionClassifier {
       if (dim.lexical_triggers) {
         if (dim.lexical_triggers.primary) {
           for (const pKw of dim.lexical_triggers.primary) {
-            const pKwLower = pKw.toLowerCase();
-            if (pKwLower.includes(' ')) {
-              if (lower.includes(pKwLower)) {
-                score += 3.5;
-              }
-            } else {
-              const regex = new RegExp(`\\b${escapeRegex(pKwLower)}\\b`, 'i');
-              if (regex.test(lower)) {
-                score += 2.0;
-              }
+            if (matchesEmotionTerm(lower, pKw)) {
+              score += pKw.includes(' ') ? 3.5 : 2.0;
             }
           }
         }
         if (dim.lexical_triggers.secondary) {
           for (const sKw of dim.lexical_triggers.secondary) {
-            const sKwLower = sKw.toLowerCase();
-            if (sKwLower.includes(' ')) {
-              if (lower.includes(sKwLower)) {
-                score += 2.0;
-              }
-            } else {
-              const regex = new RegExp(`\\b${escapeRegex(sKwLower)}\\b`, 'i');
-              if (regex.test(lower)) {
-                score += 1.0;
-              }
+            if (matchesEmotionTerm(lower, sKw)) {
+              score += sKw.includes(' ') ? 2.0 : 1.0;
             }
           }
         }
         if (dim.lexical_triggers.synonyms) {
           for (const nKw of dim.lexical_triggers.synonyms) {
-            const nKwLower = nKw.toLowerCase();
-            if (nKwLower.includes(' ')) {
-              if (lower.includes(nKwLower)) {
-                score += 0.6;
-              }
-            } else {
-              const regex = new RegExp(`\\b${escapeRegex(nKwLower)}\\b`, 'i');
-              if (regex.test(lower)) {
-                score += 0.6;
-              }
+            if (matchesEmotionTerm(lower, nKw)) {
+              score += 0.6;
             }
           }
         }
@@ -426,6 +461,19 @@ export class NeuroscienceEmotionClassifier {
         }
       }
 
+      for (const phrase in VALENCE_MAP) {
+        if (phrase.includes(' ') && lower.includes(phrase)) {
+          estValence += VALENCE_MAP[phrase] * 2;
+          valenceHits += 2;
+        }
+      }
+      for (const phrase in AROUSAL_MAP) {
+        if (phrase.includes(' ') && lower.includes(phrase)) {
+          estArousal += AROUSAL_MAP[phrase] * 2;
+          arousalHits += 2;
+        }
+      }
+
       if (valenceHits > 0 || arousalHits > 0) {
         const v = valenceHits > 0 ? estValence / valenceHits : 0;
         const a = arousalHits > 0 ? estArousal / arousalHits : 0;
@@ -455,6 +503,8 @@ export class NeuroscienceEmotionClassifier {
           bestDim = this.dimensions.find((d) => d.id === 'sadness') || bestDim;
         } else if (voiceState && voiceState.state === 'acute_hyperarousal') {
           bestDim = this.dimensions.find((d) => d.id === 'anxiety') || bestDim;
+        } else if (estValence < -0.15) {
+          bestDim = this.dimensions.find((d) => d.id === 'sadness') || bestDim;
         } else {
           bestDim = this.dimensions.find((d) => d.id === 'calmness') || bestDim;
         }

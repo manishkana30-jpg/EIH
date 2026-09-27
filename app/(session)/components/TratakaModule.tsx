@@ -434,6 +434,7 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
   if (tratakaMode === null) {
     return (
       <div
+        data-testid="trataka-module-dialog"
         className="fixed inset-0 z-[100] flex flex-col justify-between overflow-y-auto select-none bg-black/95 backdrop-blur-2xl text-slate-100 font-sans p-4 sm:p-8"
         role="dialog"
         aria-modal="true"
@@ -461,6 +462,8 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
           </div>
 
           <button
+            type="button"
+            data-testid="trataka-modal-close-btn"
             onClick={handleForceExit}
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 hover:text-white text-xs font-semibold transition-all group cursor-pointer"
             title="Close Trataka (Press ESC)"
@@ -624,6 +627,7 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
 
   return (
     <div
+      data-testid="trataka-module-dialog"
       className="fixed inset-0 z-[100] flex flex-col justify-between overflow-hidden select-none bg-black text-slate-100 font-sans"
       role="dialog"
       aria-modal="true"
@@ -729,8 +733,10 @@ export const TratakaModule: React.FC<TratakaModuleProps> = ({
 
           {/* CRITICAL: FORCE EXIT BUTTON */}
           <button
+            type="button"
+            data-testid="trataka-modal-close-btn"
             onClick={handleForceExit}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-rose-600/20 hover:bg-rose-600/40 border border-rose-500/50 hover:border-rose-400 text-rose-200 hover:text-white font-semibold text-xs transition-all shadow-[0_0_15px_rgba(244,63,94,0.25)] group"
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-rose-600/20 hover:bg-rose-600/40 border border-rose-500/50 hover:border-rose-400 text-rose-200 hover:text-white font-semibold text-xs transition-all shadow-[0_0_15px_rgba(244,63,94,0.25)] group cursor-pointer"
             title="Safe Force Exit (Press ESC)"
           >
             <X className="w-4 h-4 group-hover:rotate-90 transition-transform duration-200" />

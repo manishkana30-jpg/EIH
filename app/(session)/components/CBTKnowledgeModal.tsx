@@ -91,7 +91,7 @@ export const CBTKnowledgeModal: React.FC<CBTKnowledgeModalProps> = ({ isOpen, on
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+    <div data-testid="cbt-modal-dialog" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
       <div className="relative w-full max-w-4xl max-h-[88vh] flex flex-col bg-[#0d1612] rounded-3xl shadow-2xl border border-[#283c32] text-slate-100 overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-[#283c32] bg-[#14201a]">
@@ -115,8 +115,11 @@ export const CBTKnowledgeModal: React.FC<CBTKnowledgeModalProps> = ({ isOpen, on
           </div>
 
           <button
+            type="button"
+            data-testid="cbt-modal-close-btn"
             onClick={onClose}
-            className="p-2 rounded-full hover:bg-slate-800/60 text-slate-400 hover:text-white transition-colors"
+            aria-label="Close CBT Knowledge Modal"
+            className="p-2 rounded-full hover:bg-slate-800/60 text-slate-400 hover:text-white transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>

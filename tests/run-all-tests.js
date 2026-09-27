@@ -33,6 +33,7 @@ require('./test-karaoke-engine-modular.js');
 require('./test-text-only-gita-library.js');
 require('./test-sequential-card-flow.js');
 require('./test-sequential-cards-and-karaoke.js');
+require('./test-regression-hindi-distress-transcript.js');
 
 
 console.log('================================================================');

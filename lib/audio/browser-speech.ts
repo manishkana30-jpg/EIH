@@ -120,11 +120,15 @@ export class BrowserSpeechController {
   private animFrameId: number | null = null;
   private isUserSpeaking = false;
   private speechStartTime = 0;
+  private lastUserVoiceTime = 0;
+  private hasSpokenInCurrentTurn = false;
+  private useWhisperFallback = false;
   private speechSilenceTimer: ReturnType<typeof setTimeout> | null = null;
   private processingSafetyTimer: ReturnType<typeof setTimeout> | null = null;
   private liveInterimTranscript = '';
   private accumulatedFinalText = '';
   private cachedVoice: SpeechSynthesisVoice | null = null;
+  private voiceCache = new Map<string, SpeechSynthesisVoice>();
   private ttsWatchdogTimer: ReturnType<typeof setTimeout> | null = null;
   private ttsResumeInterval: ReturnType<typeof setInterval> | null = null;
   private keepAliveInterval: ReturnType<typeof setInterval> | null = null;
@@ -197,16 +201,14 @@ export class BrowserSpeechController {
       return false;
     }
 
-    // Defensive Guard 2: Web Speech API Availability Check (Firefox / unsupported browser fallback)
+    // Defensive Guard 2: Web Speech API Availability Check
     const SpeechRec =
       (window as unknown as { SpeechRecognition?: new () => ISpeechRecognition; webkitSpeechRecognition?: new () => ISpeechRecognition }).SpeechRecognition ||
       (window as unknown as { webkitSpeechRecognition?: new () => ISpeechRecognition }).webkitSpeechRecognition;
 
     if (!SpeechRec) {
-      const errMsg = 'Speech recognition is not supported in this browser. Please use the text input below.';
-      console.warn('[BrowserSpeechController] SpeechRecognition API unavailable:', errMsg);
-      this.callbacks.onError?.(errMsg);
-      return false;
+      console.info('[BrowserSpeechController] Native SpeechRecognition not available. Activating Faster-Whisper local STT.');
+      this.useWhisperFallback = true;
     }
 
     // Defensive Guard 3: Explicit Insecure Context Check
@@ -218,8 +220,6 @@ export class BrowserSpeechController {
     }
 
     // Defensive Guard 4: Sequential Audio Control - Stop TTS immediately without async delay
-    // Critical: Do NOT await a setTimeout here, as any async tick before getUserMedia
-    // violates browser user-gesture requirements on iOS Safari and mobile browsers!
     if (this.isSpeaking) {
       this.cancelSpeech();
     }
@@ -240,8 +240,12 @@ export class BrowserSpeechController {
       return false;
     }
 
-    // 2. Initialize fresh Web Speech Recognition instance
-    this.initWebSpeechRecognition();
+    // 2. Initialize recognition engine (Native Web Speech or local Faster-Whisper MediaRecorder)
+    if (!this.useWhisperFallback && SpeechRec) {
+      this.initWebSpeechRecognition();
+    } else {
+      this.initMediaRecorder();
+    }
 
     this.isListening = true;
     this.callbacks.onRecognitionState?.(true);
@@ -252,13 +256,63 @@ export class BrowserSpeechController {
     return true;
   }
 
+  private initMediaRecorder(): void {
+    if (typeof window === 'undefined' || !this.mediaStream) return;
+    if (this.mediaRecorder && this.mediaRecorder.state === 'recording') return;
+
+    try {
+      const mimeTypes = [
+        'audio/webm;codecs=opus',
+        'audio/webm',
+        'audio/mp4',
+        'audio/ogg;codecs=opus',
+        'audio/wav',
+      ];
+      let selectedMime = '';
+      for (const mime of mimeTypes) {
+        if (typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported(mime)) {
+          selectedMime = mime;
+          break;
+        }
+      }
+
+      this.mediaRecorderMimeType = selectedMime || 'audio/webm';
+      const options: MediaRecorderOptions = selectedMime ? { mimeType: selectedMime } : {};
+      this.mediaRecorder = new MediaRecorder(this.mediaStream, options);
+      this.recordedChunks = [];
+
+      this.mediaRecorder.ondataavailable = (e: BlobEvent) => {
+        if (e.data && e.data.size > 0) {
+          this.recordedChunks.push(e.data);
+        }
+      };
+
+      this.mediaRecorder.onerror = (e) => {
+        console.warn('[BrowserSpeechController] MediaRecorder notice:', e);
+      };
+
+      this.mediaRecorder.start(200);
+      this.isListening = true;
+      this.callbacks.onRecognitionState?.(true);
+      console.log('[BrowserSpeechController] Faster-Whisper MediaRecorder neural capture active.');
+    } catch (recErr) {
+      console.warn('[BrowserSpeechController] MediaRecorder initialization notice:', recErr);
+    }
+  }
+
   private startKeepAliveWatchdog(): void {
     if (this.keepAliveInterval) clearInterval(this.keepAliveInterval);
     this.keepAliveInterval = setInterval(() => {
-      if (this.shouldBeListening && !this.isSpeaking && !this.isProcessingUtterance && !this.isListening) {
-        this.initWebSpeechRecognition();
-        this.isListening = true;
-        this.callbacks.onRecognitionState?.(true);
+      if (this.shouldBeListening && !this.isSpeaking && !this.isProcessingUtterance) {
+        if (this.useWhisperFallback) {
+          if (!this.mediaRecorder || this.mediaRecorder.state !== 'recording') {
+            this.initMediaRecorder();
+          }
+        } else if (!this.isListening) {
+          this.initWebSpeechRecognition();
+          this.isListening = true;
+          this.callbacks.onRecognitionState?.(true);
+        }
       }
     }, 2500);
   }
@@ -389,7 +443,27 @@ export class BrowserSpeechController {
       this.callbacks.onAudioLevel?.(normalizedLevel);
 
       // User actively vocalizing: voiced biomarker with positive RMS energy
-      this.isUserSpeaking = frameResult.isVoiced && frameResult.rms > 0.015;
+      const isCurrentlyVoiced = frameResult.isVoiced && frameResult.rms > 0.015;
+      this.isUserSpeaking = isCurrentlyVoiced;
+
+      if (isCurrentlyVoiced) {
+        this.lastUserVoiceTime = Date.now();
+        this.hasSpokenInCurrentTurn = true;
+        if (this.useWhisperFallback) {
+          if (!this.mediaRecorder || this.mediaRecorder.state !== 'recording') {
+            this.initMediaRecorder();
+          }
+        }
+      } else if (this.hasSpokenInCurrentTurn && this.lastUserVoiceTime > 0) {
+        // In Whisper Fallback mode, when user spoke and has now paused for >1200ms, finalize turn
+        if (this.useWhisperFallback && !this.isProcessingUtterance && !this.isSpeaking) {
+          const silenceDuration = Date.now() - this.lastUserVoiceTime;
+          if (silenceDuration > 1200) {
+            this.hasSpokenInCurrentTurn = false;
+            this.handleEndOfUserSpeech();
+          }
+        }
+      }
 
       // 3. Periodically evaluate and broadcast live vocal prosody
       const now = Date.now();
@@ -505,15 +579,32 @@ export class BrowserSpeechController {
           return;
         }
 
-        if (errType === 'network') {
-          this.shouldBeListening = false;
-          this.isListening = false;
-          this.callbacks.onRecognitionState?.(false);
-          this.callbacks.onError?.('Speech service network error. Please check your internet connection or use text input.');
+        if (errType === 'network' || errType === 'service-not-allowed') {
+          console.warn('[BrowserSpeechController] Web Speech network notice on localhost. Seamlessly activating Faster-Whisper local STT.');
+          this.useWhisperFallback = true;
+          try {
+            this.speechRecognition?.abort();
+            this.speechRecognition = null;
+          } catch (_) {}
+          this.initMediaRecorder();
+          this.isListening = true;
+          this.callbacks.onRecognitionState?.(true);
           return;
         }
 
         if (errType === 'audio-capture') {
+          if (!this.useWhisperFallback) {
+            console.warn('[BrowserSpeechController] Web Speech audio-capture notice. Activating Faster-Whisper local STT.');
+            this.useWhisperFallback = true;
+            try {
+              this.speechRecognition?.abort();
+              this.speechRecognition = null;
+            } catch (_) {}
+            this.initMediaRecorder();
+            this.isListening = true;
+            this.callbacks.onRecognitionState?.(true);
+            return;
+          }
           this.shouldBeListening = false;
           this.isListening = false;
           this.callbacks.onRecognitionState?.(false);
@@ -522,9 +613,9 @@ export class BrowserSpeechController {
         }
 
         // Non-fatal pauses ('no-speech' or 'aborted') - restart gracefully if user is still in listening mode
-        if (this.shouldBeListening && !this.isSpeaking && !this.isProcessingUtterance) {
+        if (this.shouldBeListening && !this.isSpeaking && !this.isProcessingUtterance && !this.useWhisperFallback) {
           setTimeout(() => {
-            if (this.shouldBeListening && !this.isSpeaking && !this.isProcessingUtterance) {
+            if (this.shouldBeListening && !this.isSpeaking && !this.isProcessingUtterance && !this.useWhisperFallback) {
               this.initWebSpeechRecognition();
             }
           }, 250);
@@ -540,13 +631,13 @@ export class BrowserSpeechController {
         }
 
         // If continuous listening is desired and no utterance was captured, restart cleanly
-        if (this.shouldBeListening && !this.isSpeaking && !this.isProcessingUtterance) {
+        if (this.shouldBeListening && !this.isSpeaking && !this.isProcessingUtterance && !this.useWhisperFallback) {
           setTimeout(() => {
-            if (this.shouldBeListening && !this.isSpeaking && !this.isProcessingUtterance) {
+            if (this.shouldBeListening && !this.isSpeaking && !this.isProcessingUtterance && !this.useWhisperFallback) {
               this.initWebSpeechRecognition();
             }
           }, 150);
-        } else {
+        } else if (!this.useWhisperFallback) {
           this.callbacks.onRecognitionState?.(false);
         }
       };
@@ -563,7 +654,9 @@ export class BrowserSpeechController {
           }
         }, 200);
       } else {
-        this.callbacks.onError?.('Failed to start speech recognition: ' + (err?.message || 'Unknown error'));
+        console.warn('[BrowserSpeechController] Web Speech startup failed. Activating Faster-Whisper local STT.');
+        this.useWhisperFallback = true;
+        this.initMediaRecorder();
       }
     }
   }
@@ -628,8 +721,11 @@ export class BrowserSpeechController {
     // Stop MediaRecorder and allow final audio chunk to flush
     if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
       try {
+        if (typeof this.mediaRecorder.requestData === 'function') {
+          this.mediaRecorder.requestData();
+        }
         this.mediaRecorder.stop();
-        await new Promise((resolve) => setTimeout(resolve, 120));
+        await new Promise((resolve) => setTimeout(resolve, 150));
       } catch (_) {}
     }
 
@@ -649,7 +745,11 @@ export class BrowserSpeechController {
         console.warn('Acoustic speaker feedback echo detected and suppressed:', finalText);
         this.isProcessingUtterance = false;
         if (this.shouldBeListening && !this.isSpeaking) {
-          this.startRecognition(this.mediaStream || undefined);
+          if (this.useWhisperFallback) {
+            this.initMediaRecorder();
+          } else {
+            this.startRecognition(this.mediaStream || undefined);
+          }
         }
         return;
       }
@@ -662,7 +762,11 @@ export class BrowserSpeechController {
         if (this.isProcessingUtterance && !this.isSpeaking) {
           this.isProcessingUtterance = false;
           if (this.shouldBeListening) {
-            this.startRecognition(this.mediaStream || undefined);
+            if (this.useWhisperFallback) {
+              this.initMediaRecorder();
+            } else {
+              this.startRecognition(this.mediaStream || undefined);
+            }
           }
         }
       }, 1500);
@@ -677,7 +781,7 @@ export class BrowserSpeechController {
         const audioBlob = new Blob(this.recordedChunks, { type: mimeType });
         this.recordedChunks = [];
 
-        if (audioBlob.size > 1200) {
+        if (audioBlob.size > 800) {
           const formData = new FormData();
           formData.append('file', audioBlob, `speech.${ext}`);
           if (this.currentLanguageLocale) {
@@ -697,7 +801,11 @@ export class BrowserSpeechController {
                 if (this.isProcessingUtterance && !this.isSpeaking) {
                   this.isProcessingUtterance = false;
                   if (this.shouldBeListening) {
-                    this.startRecognition(this.mediaStream || undefined);
+                    if (this.useWhisperFallback) {
+                      this.initMediaRecorder();
+                    } else {
+                      this.startRecognition(this.mediaStream || undefined);
+                    }
                   }
                 }
               }, 1500);
@@ -713,7 +821,11 @@ export class BrowserSpeechController {
     // If nothing was detected, resume listening
     this.isProcessingUtterance = false;
     if (this.shouldBeListening && !this.isSpeaking) {
-      this.startRecognition(this.mediaStream || undefined);
+      if (this.useWhisperFallback) {
+        this.initMediaRecorder();
+      } else {
+        this.startRecognition(this.mediaStream || undefined);
+      }
     }
   }
 
@@ -738,7 +850,7 @@ export class BrowserSpeechController {
 
   public async finishCurrentUtterance(): Promise<void> {
     if (this.isProcessingUtterance) return;
-    if (this.liveInterimTranscript.trim().length > 0 || this.recordedChunks.length > 0) {
+    if (this.liveInterimTranscript.trim().length > 0 || this.recordedChunks.length > 0 || this.hasSpokenInCurrentTurn) {
       await this.handleEndOfUserSpeech();
     }
   }
@@ -748,11 +860,18 @@ export class BrowserSpeechController {
     this.isProcessingUtterance = false;
     this.isUserSpeaking = false;
     this.speechStartTime = 0;
+    this.hasSpokenInCurrentTurn = false;
     this.liveInterimTranscript = '';
     this.accumulatedFinalText = '';
     if (this.keepAliveInterval) {
       clearInterval(this.keepAliveInterval);
       this.keepAliveInterval = null;
+    }
+    if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
+      try {
+        this.mediaRecorder.stop();
+      } catch (_) {}
+      this.mediaRecorder = null;
     }
     this.stopListeningInternals();
 
@@ -1144,8 +1263,9 @@ export class BrowserSpeechController {
     this.cancelSpeech();
 
     // 1. Clear any stuck utterance in Chrome's speech engine
+    const wasSpeaking = Boolean(this.speechSynth.speaking || this.speechSynth.pending);
     try {
-      if (this.speechSynth.speaking || this.speechSynth.pending) {
+      if (wasSpeaking) {
         this.speechSynth.cancel();
       }
       if (this.speechSynth.paused) {
@@ -1153,28 +1273,35 @@ export class BrowserSpeechController {
       }
     } catch (_) {}
 
-    // 2. Micro-delay: Chrome requires a brief pause after cancel() before queueing a new utterance
-    await new Promise((resolve) => setTimeout(resolve, 80));
+    // 2. Micro-delay: Chrome only requires a brief pause after cancel() if an utterance was active
+    if (wasSpeaking) {
+      await new Promise((resolve) => setTimeout(resolve, 25));
+    }
 
     try {
       this.speechSynth.resume();
     } catch (_) {}
 
     const targetLocale = localeOverride || this.currentLanguageLocale || 'en-US';
-    let matchedVoice: SpeechSynthesisVoice | null = null;
-    try {
-      matchedVoice = await getBestTherapeuticVoice(targetLocale);
-    } catch (_) {}
+    let matchedVoice: SpeechSynthesisVoice | null = this.voiceCache.get(targetLocale) || null;
+    if (!matchedVoice) {
+      try {
+        matchedVoice = await getBestTherapeuticVoice(targetLocale);
+        if (matchedVoice) {
+          this.voiceCache.set(targetLocale, matchedVoice);
+        }
+      } catch (_) {}
+    }
 
-    // Split cleanText into manageable sentence chunks (max 160 characters each)
-    // to completely prevent Chromium's silent speech freeze/stall bug on long utterances
+    // Split cleanText into natural sentence chunks (max 380 characters each)
+    // to prevent Chromium's 15s freeze bug while completely avoiding unnatural pauses & audio buffering gaps
     const rawSentences = cleanText.match(/[^.!?।\n]+[.!?।\n]+|[^.!?।\n]+$/g) || [cleanText];
     const sentenceChunks: string[] = [];
     let currentChunk = '';
     for (const s of rawSentences) {
       const trimmed = s.trim();
       if (!trimmed) continue;
-      if (currentChunk.length + trimmed.length < 160) {
+      if (currentChunk.length + trimmed.length < 380) {
         currentChunk += (currentChunk ? ' ' : '') + trimmed;
       } else {
         if (currentChunk) sentenceChunks.push(currentChunk);
@@ -1302,6 +1429,7 @@ export class BrowserSpeechController {
       let chunkStartTime = performance.now();
       let lastEmittedCharIndex = 0;
       let boundaryTicker: ReturnType<typeof setInterval> | null = null;
+      let nativeBoundaryReceived = false;
 
       const stopBoundaryTicker = () => {
         if (boundaryTicker) {
@@ -1315,9 +1443,16 @@ export class BrowserSpeechController {
         if (isFinished || this.activeSpeechGeneration !== speechGeneration || !this.isSpeaking) return;
         resetWatchdog();
         if (event.name && event.name !== 'word') return;
+        nativeBoundaryReceived = true;
+        stopBoundaryTicker();
         lastBoundaryFiredTime = performance.now();
         const relativeCharIndex = event.charIndex || 0;
         const charLength = event.charLength || 0;
+        
+        // Monotonic forward progress within chunk: prevent jumping backwards mid-sentence
+        if (relativeCharIndex < lastEmittedCharIndex && relativeCharIndex !== 0) {
+          return;
+        }
         lastEmittedCharIndex = relativeCharIndex;
         const absoluteCharIndex = currentChunkOffset + relativeCharIndex;
         let word = '';
@@ -1348,26 +1483,26 @@ export class BrowserSpeechController {
           onStart?.();
         }
 
-        // Emit first word of chunk immediately
+        // Emit first word of chunk immediately with exact chunk offset
         const firstMatch = chunkText.match(/^\S+/);
         const firstWord = firstMatch ? firstMatch[0] : '';
         this.callbacks.onWordBoundary?.(currentChunkOffset, firstWord.length, firstWord);
 
-        // Adaptive boundary ticker: smoothly advance word tracking based on elapsed speech duration
+        // Adaptive boundary ticker: smoothly advance word tracking only if browser onboundary is absent (e.g. legacy Safari)
         stopBoundaryTicker();
         boundaryTicker = setInterval(() => {
-          if (isFinished || this.activeSpeechGeneration !== speechGeneration || !this.isSpeaking) {
+          if (isFinished || this.activeSpeechGeneration !== speechGeneration || !this.isSpeaking || nativeBoundaryReceived) {
             stopBoundaryTicker();
             return;
           }
           const now = performance.now();
-          if (now - lastBoundaryFiredTime > 280) {
+          if (now - lastBoundaryFiredTime > 450) {
             const elapsedSec = (now - chunkStartTime) / 1000;
             const estimatedRelativeChar = Math.min(
               chunkText.length - 1,
-              Math.max(lastEmittedCharIndex, Math.floor(elapsedSec * 15.5))
+              Math.max(lastEmittedCharIndex, Math.floor(elapsedSec * 15.0))
             );
-            if (estimatedRelativeChar >= lastEmittedCharIndex) {
+            if (estimatedRelativeChar > lastEmittedCharIndex) {
               lastEmittedCharIndex = estimatedRelativeChar;
               const absoluteCharIndex = currentChunkOffset + estimatedRelativeChar;
               const match = chunkText.slice(estimatedRelativeChar).match(/^\S+/);
@@ -1375,7 +1510,15 @@ export class BrowserSpeechController {
               this.callbacks.onWordBoundary?.(absoluteCharIndex, word.length || 1, word);
             }
           }
-        }, 70);
+        }, 80);
+      };
+
+      utterance.onpause = () => {
+        stopBoundaryTicker();
+      };
+
+      utterance.onresume = () => {
+        lastBoundaryFiredTime = performance.now();
       };
 
       utterance.onend = () => {
@@ -1458,8 +1601,6 @@ export class BrowserSpeechController {
     }
     if (typeof window !== 'undefined' && 'speechSynthesis' in window && window.speechSynthesis) {
       try {
-        window.speechSynthesis.cancel();
-        window.speechSynthesis.pause();
         window.speechSynthesis.cancel();
       } catch (_) {}
     }

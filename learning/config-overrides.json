@@ -1,0 +1,32 @@
+{
+  "version": "1.0.0",
+  "last_updated": "2026-09-27T03:00:00.000Z",
+  "tier_1_overrides": {
+    "clarify_confidence_threshold": 0.72,
+    "max_clarify_turns": 3,
+    "additive_affirmation_keywords": [
+      "definitely",
+      "exactly that",
+      "bilkul sahi",
+      "wahi hai",
+      "hanji",
+      "correct",
+      "c'est exactement ça",
+      "exacto"
+    ],
+    "additive_negation_keywords": [
+      "not really",
+      "something else",
+      "thoda alag",
+      "nahi",
+      "pas tout a fait",
+      "no es eso"
+    ],
+    "preferred_trataka_modes": {
+      "grief": "jyoti",
+      "anxiety": "bindu",
+      "insomnia": "chandra",
+      "anger": "panoramic"
+    }
+  }
+}

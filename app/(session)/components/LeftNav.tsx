@@ -22,6 +22,7 @@ export interface LeftNavProps {
   onOpenPranayama: () => void;
   onOpenHistory: () => void;
   onOpenCrisis?: () => void;
+  onOpenTelemetryPrivacy?: () => void;
   onShareApp: () => void;
   isCopied: boolean;
   onInstallClick: () => void;
@@ -37,6 +38,7 @@ export const LeftNav: React.FC<LeftNavProps> = React.memo(({
   onOpenPranayama,
   onOpenHistory,
   onOpenCrisis: _onOpenCrisis,
+  onOpenTelemetryPrivacy,
   onShareApp,
   isCopied,
   onInstallClick,
@@ -186,6 +188,20 @@ export const LeftNav: React.FC<LeftNavProps> = React.memo(({
               PWA
             </span>
           </button>
+
+          {/* Privacy & Telemetry Consent Toggle Link */}
+          {onOpenTelemetryPrivacy && (
+            <button
+              onClick={onOpenTelemetryPrivacy}
+              className="flex items-center gap-3 w-full p-2.5 rounded-xl text-slate-400 hover:text-emerald-300 hover:bg-slate-800/80 border border-transparent hover:border-emerald-500/30 transition-all duration-300 group"
+              title="Telemetry Privacy & Consent Settings"
+            >
+              <ShieldCheck className="w-5 h-5 shrink-0 group-hover:scale-110 transition-transform text-emerald-400" />
+              <span className="hidden md:inline text-xs font-medium tracking-wide">
+                Privacy Settings
+              </span>
+            </button>
+          )}
         </nav>
       </div>
 

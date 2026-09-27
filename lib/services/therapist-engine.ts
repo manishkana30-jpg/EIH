@@ -233,7 +233,7 @@ export async function generateTherapeuticResponse(
     normLang
   );
 
-  const hasDistressKeywords = /(?:distress|anxious|anxiety|depress|depressed|depression|sad|sadness|fear|scared|panic|stress|stressed|overwhelm|overwhelmed|worry|worried|grief|pain|burnout|lonely|loneliness|angry|anger|trauma|shame|guilt|fail|failed|failure|terrif|crying|tears|breakup|heartbreak|heartbroken|debt|debts|financial|burden|burdened|broke|struggling|struggle|loans|bills|hopeless|hopelessness|empty|numb|insomnia|can't sleep|cant sleep|insecure|rejection|rejected|abandoned|confused|restless|exhausted|fatigue|unmotivated|frustrated|frustration|hurting|suffering|mental problem|mental health|overthinking|racing thoughts|fight|argument|conflict|alone|nobody cares|chinta|tanaav|udas|gussa|troubled|need help|please help me|help me please|someone help me|help me i'm|help me i am|दर्द|रोना|रो |रोने|रोऊ|दुःख|दुख|तनाव|चिंता|उदासी|डर|घबराहट|घबरा|ब्रेकअप|परेशान|पीड़ा|कष्ट|क्रोध|अकेला|हार|असफल|टूटा|कर्ज|कर्जा|ऋण|बोझ|निराश|निराशा|उलझन|बेचैन|बेचैनी|थकान|थका)/i.test(userMessage);
+  const hasDistressKeywords = /(?:distress|anxious|anxiety|depress|depressed|depression|sad|sadness|fear|scared|panic|stress|stressed|overwhelm|overwhelmed|worry|worried|grief|pain|burnout|lonely|loneliness|angry|anger|trauma|shame|guilt|fail|failed|failure|terrif|crying|tears|breakup|heartbreak|heartbroken|debt|debts|financial|burden|burdened|broke|struggling|struggle|loans|bills|hopeless|hopelessness|empty|numb|insomnia|can't sleep|cant sleep|insecure|rejection|rejected|abandoned|confused|restless|exhausted|fatigue|unmotivated|frustrated|frustration|hurting|suffering|mental problem|mental health|overthinking|racing thoughts|fight|argument|conflict|alone|nobody cares|chinta|tanaav|udas|gussa|troubled|need help|please help me|help me please|someone help me|help me i'm|help me i am|दर्द|रोना|रो |रोने|रोऊ|दुःख|दुख|तनाव|चिंता|उदासी|डर|घबराहट|घबरा|ब्रेकअप|परेशान|पीड़ा|कष्ट|क्रोध|अकेला|हार|असफल|टूटा|कर्ज|कर्जा|ऋण|बोझ|निराश|निराशा|उलझन|बेचैन|बेचैनी|थकान|थका|अच्छा नहीं|कुछ अच्छा नहीं|कुछ ठीक नहीं|ठीक नहीं लग|मन नहीं लग|टेंशन|तनावग्रस्त|रोना आ रहा|बुरा लग|उदासी)/i.test(userMessage);
 
   const hasPositiveOrCalmExplicit =
     /(happy|great|excited|peaceful|calm|relaxed|wonderful|grateful|joy|glad|blessed|good|doing well|girlfriend|boyfriend|in love|new partner|dating|promoted|celebrat|प्रसन्न|खुश|आनंद|शांत|शांति|बढ़िया|ठीक हूँ)/i.test(userMessage);
@@ -258,6 +258,7 @@ export async function generateTherapeuticResponse(
   const isNeutralOrInquiry =
     !isSolutionRequest &&
     !hasDistressKeywords &&
+    libraryRag === null &&
     emotionDiagnostic.coreAffect.valence >= -0.05 &&
     (/^(what|how|why|who|when|where|can you|could you|explain|tell me|is this|how does|what is|नमस्ते|प्रणाम)/i.test(userMessage.trim()) ||
      ['interest', 'aesthetic_appreciation', 'calmness', 'joy', 'amusement', 'adoration', 'satisfaction', 'relief', 'awe', 'entrancement'].includes(emotionDiagnostic.dimensionId));
@@ -266,7 +267,7 @@ export async function generateTherapeuticResponse(
     isSolutionRequest ||
     (!isNeutralOrInquiry &&
     (hasDistressKeywords ||
-     (libraryRag !== null && hasDistressKeywords) ||
+     libraryRag !== null ||
      emotionDiagnostic.coreAffect.valence < -0.1 ||
      (emotionDiagnostic.coreAffect.arousal > 0.55 && emotionDiagnostic.coreAffect.valence < 0.1)));
 

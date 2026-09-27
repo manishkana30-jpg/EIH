@@ -53,6 +53,8 @@ import {
   parseStageNavigationIntent,
   getLocalizedClarificationPrompt,
 } from "@/lib/wellness-flow/confirm-intent-parser";
+import { sessionTelemetry } from "@/lib/telemetry/session-telemetry";
+import { TelemetryConsentModal } from "./components/TelemetryConsentModal";
 import { saveLivePsychologyTelemetry, clearPsychologyTelemetry } from "@/lib/telemetry/psychology-store";
 import { getConditionById } from "@/lib/knowledge/psychology-library-rag";
 import { saveSessionMessage, resetActiveSessionId, purgeAllAppStorage } from "@/lib/db/indexed-db";
@@ -104,6 +106,7 @@ export default function SanctuarySessionPage() {
   const [isCopied, setIsCopied] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [isMobileTelemetryOpen, setIsMobileTelemetryOpen] = useState(false);
+  const [isTelemetryConsentOpen, setIsTelemetryConsentOpen] = useState(false);
 
   // ─── Live Clinical Telemetry ───
   const [telemetry, setTelemetry] = useState<PsychologicalTelemetry>({
@@ -261,6 +264,8 @@ export default function SanctuarySessionPage() {
   const messagesRef = useRef<ChatMessage[]>(messages);
   const currentLanguageRef = useRef<LanguageItem>(currentLanguage);
   const userLocaleRef = useRef<string>("en-US");
+  const lastActiveWordIdxRef = useRef<number>(-1);
+  const highlighterDesyncCountRef = useRef<number>(0);
 
   useEffect(() => {
     messagesRef.current = messages;
@@ -360,24 +365,36 @@ export default function SanctuarySessionPage() {
   // ─── Auto-Scroll Tracking: Center Active Spoken Word (id="active-karaoke-word") ───
   useEffect(() => {
     if (!activeKaraoke || !chatContainerRef.current) return;
-    const activeEl = activeWordRef.current || document.getElementById("active-karaoke-word");
-    if (!activeEl) return;
+    let rId: number | null = requestAnimationFrame(() => {
+      const activeEl = activeWordRef.current || document.getElementById("active-karaoke-word");
+      if (!activeEl || !chatContainerRef.current) return;
 
-    // Smoothly keep current active word centered in viewport without page jumping
-    const container = chatContainerRef.current;
-    const containerRect = container.getBoundingClientRect();
-    const wordRect = activeEl.getBoundingClientRect();
+      // Smoothly keep current active word in viewport without continuous micro-scroll thrashing
+      const container = chatContainerRef.current;
+      const containerRect = container.getBoundingClientRect();
+      const wordRect = activeEl.getBoundingClientRect();
 
-    const wordCenter = wordRect.top + wordRect.height / 2;
-    const containerCenter = containerRect.top + containerRect.height / 2;
-    const diff = wordCenter - containerCenter;
+      const topBoundary = containerRect.top + 70;
+      const bottomBoundary = containerRect.bottom - 90;
 
-    if (Math.abs(diff) > 25) {
-      container.scrollBy({
-        top: diff,
-        behavior: "smooth",
-      });
-    }
+      if (wordRect.bottom > bottomBoundary) {
+        const diff = wordRect.bottom - bottomBoundary;
+        container.scrollBy({
+          top: diff,
+          behavior: "smooth",
+        });
+      } else if (wordRect.top < topBoundary) {
+        const diff = wordRect.top - topBoundary;
+        container.scrollBy({
+          top: diff,
+          behavior: "smooth",
+        });
+      }
+    });
+
+    return () => {
+      if (rId !== null) cancelAnimationFrame(rId);
+    };
   }, [activeKaraoke]);
 
   // ─── Voice Playback with Real-Time Karaoke & Echo Avoidance ───
@@ -400,28 +417,80 @@ export default function SanctuarySessionPage() {
 
     activeSpeakingMessageIdRef.current = messageId || null;
     setSpeakingMessageId(messageId || null);
+    lastActiveWordIdxRef.current = -1;
 
     const handleWordBoundary = (charIndex: number, charLength: number, wordText?: string) => {
       if (charIndex < 0 || !activeSpeakingMessageIdRef.current) {
         setActiveKaraoke(null);
+        lastActiveWordIdxRef.current = -1;
         return;
       }
       if (cleanWordList.length === 0) return;
 
-      let activeWordIdx = cleanWordList.findIndex(
-        (w) => charIndex >= w.startChar && charIndex <= w.endChar
-      );
+      const prevIdx = lastActiveWordIdxRef.current;
+      const startScan = Math.max(0, prevIdx);
+      let activeWordIdx = -1;
+
+      // 1. Fast bounded forward scan starting from last spoken word index
+      for (let i = startScan; i < cleanWordList.length; i++) {
+        const w = cleanWordList[i];
+        if (charIndex >= w.startChar && charIndex <= w.endChar) {
+          activeWordIdx = i;
+          break;
+        }
+      }
+
+      // 2. Local backwards recovery (up to 3 words)
+      if (activeWordIdx < 0) {
+        for (let i = startScan - 1; i >= Math.max(0, startScan - 3); i--) {
+          const w = cleanWordList[i];
+          if (charIndex >= w.startChar && charIndex <= w.endChar) {
+            activeWordIdx = i;
+            break;
+          }
+        }
+      }
+
+      // 3. Local proximity fallback
       if (activeWordIdx < 0) {
         let minD = Infinity;
-        cleanWordList.forEach((w, idx) => {
-          const d = Math.abs(w.startChar - charIndex);
+        const scanRangeStart = Math.max(0, startScan - 4);
+        const scanRangeEnd = Math.min(cleanWordList.length, startScan + 16);
+        for (let i = scanRangeStart; i < scanRangeEnd; i++) {
+          const d = Math.abs(cleanWordList[i].startChar - charIndex);
           if (d < minD) {
             minD = d;
-            activeWordIdx = idx;
+            activeWordIdx = i;
           }
-        });
+        }
       }
+
+      if (activeWordIdx < 0) activeWordIdx = startScan;
       activeWordIdx = Math.max(0, Math.min(cleanWordList.length - 1, activeWordIdx));
+
+      // Monotonic forward progression safeguard:
+      if (prevIdx >= 0) {
+        if (activeWordIdx < prevIdx) {
+          // Prevent backwards jump across sentence boundaries
+          activeWordIdx = prevIdx;
+        } else if (activeWordIdx - prevIdx > 12) {
+          // Log significant forward jump telemetry
+          highlighterDesyncCountRef.current++;
+          sessionTelemetry.logHighlighterDesync({
+            phase: 'phase2_gita',
+            wordIndex: prevIdx,
+          });
+        }
+      }
+
+      // Skip duplicate state updates if activeWordIdx has not changed to avoid React render lag
+      if (activeWordIdx === prevIdx && activeSpeakingMessageIdRef.current) {
+        resetSafetyTimer();
+        return;
+      }
+
+      lastActiveWordIdxRef.current = activeWordIdx;
+
       const activeWord = cleanWordList[activeWordIdx];
       const activeSentenceIdx = activeWord ? activeWord.sentenceIndex : 0;
 
@@ -470,6 +539,7 @@ export default function SanctuarySessionPage() {
       setActiveKaraoke(null);
       setSpeakingMessageId(null);
       activeSpeakingMessageIdRef.current = null;
+      lastActiveWordIdxRef.current = -1;
 
       setTimeout(() => {
         isEchoLockedRef.current = false;
@@ -495,28 +565,30 @@ export default function SanctuarySessionPage() {
         if (stage === 2) {
           // Card 2 (Gita) finished reading -> auto-advance to Card 3 (CBT) and read aloud
           setTimeout(() => {
+            if (!parsed) return;
+            const stage3 = parsed.stages.find((s: any) => s.stage === 3);
+            if (!stage3 || !stage3.speechText || stage3.speechText.trim().length <= 5) {
+              activeSpeakingStageRef.current = null;
+              return;
+            }
             setMessageStages((prev) => ({ ...prev, [messageId]: 3 }));
             messageStagesRef.current = { ...messageStagesRef.current, [messageId]: 3 };
-            if (parsed) {
-              const stage3 = parsed.stages.find((s: any) => s.stage === 3);
-              if (stage3) {
-                activeSpeakingStageRef.current = { messageId, stage: 3 };
-                playVoiceRef.current(stage3.speechText, undefined, messageId);
-              }
-            }
+            activeSpeakingStageRef.current = { messageId, stage: 3 };
+            playVoiceRef.current(stage3.speechText, undefined, messageId);
           }, 450);
         } else if (stage === 3) {
           // Card 3 (CBT) finished reading -> auto-advance to Card 4 (Tratak) and read aloud
           setTimeout(() => {
+            if (!parsed) return;
+            const stage4 = parsed.stages.find((s: any) => s.stage === 4);
+            if (!stage4 || !stage4.speechText || stage4.speechText.trim().length <= 5) {
+              activeSpeakingStageRef.current = null;
+              return;
+            }
             setMessageStages((prev) => ({ ...prev, [messageId]: 4 }));
             messageStagesRef.current = { ...messageStagesRef.current, [messageId]: 4 };
-            if (parsed) {
-              const stage4 = parsed.stages.find((s: any) => s.stage === 4);
-              if (stage4) {
-                activeSpeakingStageRef.current = { messageId, stage: 4 };
-                playVoiceRef.current(stage4.speechText, undefined, messageId);
-              }
-            }
+            activeSpeakingStageRef.current = { messageId, stage: 4 };
+            playVoiceRef.current(stage4.speechText, undefined, messageId);
           }, 450);
         } else {
           // Stage 1 or Stage 4 concluded
@@ -525,9 +597,9 @@ export default function SanctuarySessionPage() {
       }
     };
 
-    // Watchdog timer: generous failsafe margin so speech is never cut off halfway
+    // Watchdog timer: failsafe margin so speech state never gets permanently locked
     const wordCount = effectiveClean.split(/\s+/).length;
-    const maxSafetyMs = Math.max(45000, (wordCount / 0.65) * 1000 + 40000);
+    const maxSafetyMs = Math.max(12000, (wordCount / 1.5) * 1000 + 5000);
     const resetSafetyTimer = () => {
       if (safetyTimer) {
         clearTimeout(safetyTimer);
@@ -614,7 +686,7 @@ export default function SanctuarySessionPage() {
           activeSpeakingStageRef.current = { messageId, stage: 2 };
           setTimeout(() => {
             playVoiceRef.current(stage2.speechText, undefined, messageId);
-          }, 120);
+          }, 20);
         }
       }
     },
@@ -653,7 +725,7 @@ export default function SanctuarySessionPage() {
           activeSpeakingStageRef.current = { messageId, stage: nextStage };
           setTimeout(() => {
             playVoiceRef.current(targetStage.speechText, undefined, messageId);
-          }, 120);
+          }, 20);
         }
       }
     },
@@ -939,7 +1011,24 @@ export default function SanctuarySessionPage() {
   // ─── Continuous Voice Capture ───
   const startContinuousVoiceListening = async () => {
     startContinuousVoiceListeningRef.current = startContinuousVoiceListening;
-    if (isPlayingAudioRef.current || isEchoLockedRef.current) return;
+    if (isPlayingAudioRef.current || isEchoLockedRef.current) {
+      if (activeAudioRef.current) {
+        try {
+          activeAudioRef.current.pause();
+          activeAudioRef.current.src = "";
+        } catch (_) {}
+        activeAudioRef.current = null;
+      }
+      browserSpeechController.cancelSpeech();
+      isPlayingAudioRef.current = false;
+      isEchoLockedRef.current = false;
+      setIsPlayingAudio(false);
+      setIsEchoLocked(false);
+      activeSpeakingStageRef.current = null;
+      setActiveKaraoke(null);
+      setSpeakingMessageId(null);
+      activeSpeakingMessageIdRef.current = null;
+    }
 
     try {
       const isMobile =
@@ -993,17 +1082,23 @@ export default function SanctuarySessionPage() {
   };
 
   const toggleRecording = async () => {
-    if (isPlayingAudioRef.current || isEchoLockedRef.current) {
-      return;
-    }
-
+    // 1. If currently playing audio or echo locked, interrupt speech immediately and start listening!
     if (activeAudioRef.current) {
-      activeAudioRef.current.pause();
+      try {
+        activeAudioRef.current.pause();
+        activeAudioRef.current.src = "";
+      } catch (_) {}
       activeAudioRef.current = null;
-      isPlayingAudioRef.current = false;
-      setIsPlayingAudio(false);
     }
     browserSpeechController.cancelSpeech();
+    isPlayingAudioRef.current = false;
+    isEchoLockedRef.current = false;
+    setIsPlayingAudio(false);
+    setIsEchoLocked(false);
+    activeSpeakingStageRef.current = null;
+    setActiveKaraoke(null);
+    setSpeakingMessageId(null);
+    activeSpeakingMessageIdRef.current = null;
 
     if (isRecording) {
       isVoiceModeActiveRef.current = false;
@@ -1145,6 +1240,7 @@ export default function SanctuarySessionPage() {
           onOpenPranayama={() => setIsPranayamaOpen(true)}
           onOpenHistory={() => setIsHistoryOpen(true)}
           onOpenCrisis={() => setIsCrisisModalOpen(true)}
+          onOpenTelemetryPrivacy={() => setIsTelemetryConsentOpen(true)}
           onShareApp={handleShareApp}
           isCopied={isCopied}
           onInstallClick={handleInstallClick}
@@ -1287,30 +1383,44 @@ export default function SanctuarySessionPage() {
         />
 
         {/* 5-Stage Clinical Trataka Neuro-Cognitive Gazing Module */}
-        <TratakaModule
-          isOpen={isTratakaOpen}
-          onClose={() => setIsTratakaOpen(false)}
-          activeCbtReframe={activeCbtReframe}
-          conditionName={telemetry.dominant_emotion}
-          userLocale={userLocale}
-          recommendedMode={recommendedTrataka as any}
-        />
+        {isTratakaOpen && (
+          <TratakaModule
+            isOpen={isTratakaOpen}
+            onClose={() => setIsTratakaOpen(false)}
+            activeCbtReframe={activeCbtReframe}
+            conditionName={telemetry.dominant_emotion}
+            userLocale={userLocale}
+            recommendedMode={recommendedTrataka as any}
+          />
+        )}
 
         {/* PWA Installation Guidance & Action Modal */}
-        <PwaInstallModal
-          isOpen={isPwaModalOpen}
-          onClose={() => setIsPwaModalOpen(false)}
-          deferredPrompt={deferredPrompt}
-          isInstalled={isAppInstalled}
-          onInstallSuccess={() => setIsAppInstalled(true)}
-        />
+        {isPwaModalOpen && (
+          <PwaInstallModal
+            isOpen={isPwaModalOpen}
+            onClose={() => setIsPwaModalOpen(false)}
+            deferredPrompt={deferredPrompt}
+            isInstalled={isAppInstalled}
+            onInstallSuccess={() => setIsAppInstalled(true)}
+          />
+        )}
 
         {/* 4-Phase Guided Wellness Conversation Modal */}
-        <GuidedWellnessConversation
-          isOpen={isWellnessFlowOpen}
-          onClose={() => setIsWellnessFlowOpen(false)}
-          initialLanguage={currentLanguage.code === "hi" ? "hi" : "en"}
-        />
+        {isWellnessFlowOpen && (
+          <GuidedWellnessConversation
+            isOpen={isWellnessFlowOpen}
+            onClose={() => setIsWellnessFlowOpen(false)}
+            initialLanguage={currentLanguage.code === "hi" ? "hi" : "en"}
+          />
+        )}
+
+        {/* Privacy & Quality Telemetry Consent Modal */}
+        {isTelemetryConsentOpen && (
+          <TelemetryConsentModal
+            isOpen={isTelemetryConsentOpen}
+            onClose={() => setIsTelemetryConsentOpen(false)}
+          />
+        )}
       </section>
 
       {/* ─────────────────────────────────────────────────────────────

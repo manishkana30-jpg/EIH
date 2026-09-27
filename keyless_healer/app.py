@@ -1030,6 +1030,7 @@ async def transcribe_endpoint(
     request: Request,
     file: UploadFile | None = File(None),
     audio_file: UploadFile | None = File(None),
+    language: str | None = Form(None),
 ):
     """Transcribes uploaded audio files using Faster-Whisper."""
     enforce_rate_limit(request)
@@ -1050,7 +1051,7 @@ async def transcribe_endpoint(
                 ext = "ogg"
             elif parsed_ext in ["webm"]:
                 ext = "webm"
-        text = await audio_engine.transcribe_audio_bytes(content, file_format=ext)
+        text = await audio_engine.transcribe_audio_bytes(content, file_format=ext, language=language)
         return {"transcription": text, "transcript": text}
     except HTTPException:
         raise

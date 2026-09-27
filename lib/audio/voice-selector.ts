@@ -35,15 +35,22 @@ export const getAvailableVoices = (): Promise<SpeechSynthesisVoice[]> => {
   });
 };
 
+const voiceCacheByLang = new Map<string, SpeechSynthesisVoice>();
+
 /**
  * Scores and selects the most natural, therapeutic voice available on the device.
  */
 export const getBestTherapeuticVoice = async (targetLang = 'en'): Promise<SpeechSynthesisVoice | null> => {
+  const cleanLang = (targetLang || 'en').toLowerCase().replace('_', '-');
+  if (voiceCacheByLang.has(cleanLang)) {
+    const cached = voiceCacheByLang.get(cleanLang);
+    if (cached) return cached;
+  }
+
   const voices = await getAvailableVoices();
   if (!voices.length) return null;
 
   // 1. Filter for the target language (e.g., "hi-IN", "es-ES", "fr-FR", "de-DE", "en-US")
-  const cleanLang = targetLang.toLowerCase().replace('_', '-');
   const baseLang = cleanLang.split('-')[0];
   const matchedVoices = voices.filter(v => {
     const vLang = v.lang.toLowerCase().replace('_', '-');
@@ -93,7 +100,11 @@ export const getBestTherapeuticVoice = async (targetLang = 'en'): Promise<Speech
   candidates.sort((a, b) => scoreVoice(b) - scoreVoice(a));
 
   // Return the highest scoring voice
-  return candidates[0] || null;
+  const best = candidates[0] || null;
+  if (best) {
+    voiceCacheByLang.set(cleanLang, best);
+  }
+  return best;
 };
 
 export default getBestTherapeuticVoice;

@@ -39,6 +39,7 @@ export const GitaContemplationModal: React.FC<GitaContemplationModalProps> = ({
       role="dialog"
       aria-modal="true"
       aria-label="Bhagavad Gita Cognitive Contemplation"
+      data-testid="gita-modal-dialog"
       className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/80 backdrop-blur-md"
     >
       <div className="relative w-full max-w-4xl max-h-[92vh] flex flex-col rounded-2xl bg-slate-900 border border-amber-500/30 shadow-2xl overflow-hidden text-slate-100">
@@ -63,6 +64,7 @@ export const GitaContemplationModal: React.FC<GitaContemplationModalProps> = ({
 
           <button
             type="button"
+            data-testid="gita-modal-close-btn"
             onClick={onClose}
             aria-label="Close modal"
             className="p-1.5 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800/80 transition-colors cursor-pointer"

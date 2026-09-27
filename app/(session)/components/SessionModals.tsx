@@ -55,32 +55,42 @@ export const SessionModals: React.FC<SessionModalsProps> = ({
 }) => {
   return (
     <>
-      <GitaContemplationModal
-        isOpen={isGitaModalOpen}
-        onClose={onCloseGitaModal}
-        userLocale={userLocale}
-      />
+      {isGitaModalOpen && (
+        <GitaContemplationModal
+          isOpen={isGitaModalOpen}
+          onClose={onCloseGitaModal}
+          userLocale={userLocale}
+        />
+      )}
 
-      <CBTKnowledgeModal
-        isOpen={isCBTModalOpen}
-        onClose={onCloseCBTModal}
-      />
+      {isCBTModalOpen && (
+        <CBTKnowledgeModal
+          isOpen={isCBTModalOpen}
+          onClose={onCloseCBTModal}
+        />
+      )}
 
-      <PranayamaGuide
-        isOpen={isPranayamaOpen}
-        onClose={onClosePranayama}
-      />
+      {isPranayamaOpen && (
+        <PranayamaGuide
+          isOpen={isPranayamaOpen}
+          onClose={onClosePranayama}
+        />
+      )}
 
-      <EncryptedHistoryModal
-        isOpen={isHistoryOpen}
-        onClose={onCloseHistory}
-      />
+      {isHistoryOpen && (
+        <EncryptedHistoryModal
+          isOpen={isHistoryOpen}
+          onClose={onCloseHistory}
+        />
+      )}
 
-      <CrisisModal
-        isOpen={isCrisisModalOpen}
-        crisisData={activeCrisisData}
-        onClose={onCloseCrisisModal}
-      />
+      {isCrisisModalOpen && (
+        <CrisisModal
+          isOpen={isCrisisModalOpen}
+          crisisData={activeCrisisData}
+          onClose={onCloseCrisisModal}
+        />
+      )}
     </>
   );
 };

@@ -286,27 +286,34 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
             {/* Interactive Pulsing Presence Orb */}
             <button
               onClick={onToggleRecording}
-              disabled={isPlayingAudio || isEchoLocked}
               className="relative group mb-4 p-3 rounded-full focus:outline-none transition-transform active:scale-95"
-              title={isRecording ? "Stop voice listening" : "Click to speak with EIH"}
+              title={isRecording ? "Stop voice listening" : isPlayingAudio ? "Speaking • Click to interrupt and talk" : "Click to speak with EIH"}
               aria-label="Interactive voice activator"
             >
               <div
                 className={`w-16 h-16 rounded-3xl flex items-center justify-center text-2xl transition-all duration-500 border ${
                   isRecording
                     ? "bg-rose-500/20 border-rose-500/60 shadow-[0_0_35px_rgba(244,63,94,0.4)] animate-pulse"
+                    : isPlayingAudio
+                    ? "bg-amber-500/20 border-amber-500/50 shadow-[0_0_35px_rgba(245,158,11,0.3)] animate-pulse group-hover:border-amber-400/70"
                     : "bg-gradient-to-tr from-emerald-600/30 via-teal-500/20 to-emerald-400/20 border-emerald-500/40 shadow-[0_0_30px_rgba(16,185,129,0.25)] group-hover:border-emerald-400/70 group-hover:shadow-[0_0_40px_rgba(16,185,129,0.4)]"
                 }`}
               >
                 {isRecording ? (
                   <Mic className="w-7 h-7 text-rose-400 animate-pulse" />
+                ) : isPlayingAudio ? (
+                  <Mic className="w-7 h-7 text-amber-300 animate-pulse" />
                 ) : (
                   <Sparkles className="w-7 h-7 text-emerald-300 group-hover:scale-110 transition-transform" />
                 )}
               </div>
               <span
                 className={`absolute bottom-2 right-2 w-3.5 h-3.5 rounded-full border-2 border-slate-950 transition-colors duration-300 ${
-                  isRecording ? "bg-rose-500 animate-ping" : "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)]"
+                  isRecording
+                    ? "bg-rose-500 animate-ping"
+                    : isPlayingAudio
+                    ? "bg-amber-400 animate-pulse shadow-[0_0_8px_rgba(245,158,11,0.9)]"
+                    : "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)]"
                 }`}
               />
             </button>
@@ -527,24 +534,21 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
             {/* Pulsing Mic Button */}
             <button
               onClick={onToggleRecording}
-              disabled={isPlayingAudio || isEchoLocked}
               title={
-                isPlayingAudio
-                  ? "Healer speaking (listening resumes automatically)"
-                  : isEchoLocked
-                  ? "Grace period (200ms echo lock)"
-                  : isRecording
+                isRecording
                   ? "Stop listening"
-                  : "Continuous Voice (48kHz Noise Suppressed)"
+                  : isPlayingAudio
+                  ? "Healer speaking • Click to interrupt and talk"
+                  : "Continuous Voice (Click to speak)"
               }
               className={`p-2.5 sm:p-3 rounded-full transition-all shrink-0 ${
                 isRecording
                   ? "bg-rose-500/25 text-rose-400 border border-rose-500/70 animate-pulse shadow-[0_0_15px_rgba(244,63,94,0.45)]"
-                  : isPlayingAudio || isEchoLocked
-                  ? "bg-slate-800/40 text-slate-600 opacity-60 cursor-not-allowed"
+                  : isPlayingAudio
+                  ? "bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/50 animate-pulse shadow-[0_0_15px_rgba(245,158,11,0.3)] active:scale-95"
                   : "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 active:scale-95"
               }`}
-              aria-label={isRecording ? "Stop voice listening" : "Start continuous voice"}
+              aria-label={isRecording ? "Stop voice listening" : isPlayingAudio ? "Interrupt and speak" : "Start continuous voice"}
             >
               <Mic className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
@@ -563,6 +567,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
             {/* Text Input */}
             <input
               type="text"
+              data-testid="main-chat-input"
               value={inputVal}
               onChange={(e) => setInputVal(e.target.value)}
               onKeyDown={(e) => {
@@ -584,6 +589,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
             {/* Send Button */}
             <button
               onClick={() => onSendMessage()}
+              data-testid="main-chat-send-btn"
               disabled={isLoading || !inputVal.trim()}
               className="p-2.5 sm:px-3.5 sm:py-2 rounded-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-30 disabled:hover:bg-emerald-500 text-slate-950 font-bold transition-all shadow-md shrink-0 active:scale-95 flex items-center gap-1.5"
               aria-label="Send message"

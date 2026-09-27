@@ -181,7 +181,7 @@ class FreeAudioEngine:
     # ---------------------------------------------------------
     # SPEECH-TO-TEXT (STT)
     # ---------------------------------------------------------
-    async def transcribe_audio_bytes(self, audio_bytes: bytes, file_format: str = "wav") -> str:
+    async def transcribe_audio_bytes(self, audio_bytes: bytes, file_format: str = "wav", language: str | None = None) -> str:
         """Transcribes raw audio bytes using local faster-whisper on CPU."""
         if not audio_bytes or len(audio_bytes) < 50:
             return ""
@@ -193,24 +193,26 @@ class FreeAudioEngine:
 
             try:
                 model = self._get_stt_model()
+                is_en_only = getattr(self, "whisper_model_size", "").endswith(".en")
+                stt_lang = "en" if is_en_only else (language if language and language != "auto" else None)
+                kwargs = {
+                    "beam_size": 1,
+                    "temperature": 0.0,
+                    "condition_on_previous_text": False,
+                    "vad_filter": True,
+                }
+                if stt_lang:
+                    kwargs["language"] = stt_lang
                 try:
                     segments, _ = model.transcribe(
                         tmp_path,
-                        beam_size=1,
-                        language="en",
-                        temperature=0.0,
-                        condition_on_previous_text=False,
-                        vad_filter=True,
                         vad_parameters={"threshold": 0.5, "min_silence_duration_ms": 300},
+                        **kwargs,
                     )
                 except TypeError:
                     segments, _ = model.transcribe(
                         tmp_path,
-                        beam_size=1,
-                        language="en",
-                        temperature=0.0,
-                        condition_on_previous_text=False,
-                        vad_filter=True,
+                        **kwargs,
                     )
                 transcript = " ".join([segment.text for segment in segments]).strip()
                 return transcript
@@ -226,9 +228,9 @@ class FreeAudioEngine:
 
         return await asyncio.to_thread(_transcribe)
 
-    async def transcribe(self, audio_bytes: bytes, language: str | None = "en") -> str:
+    async def transcribe(self, audio_bytes: bytes, language: str | None = None) -> str:
         """Convenience alias for transcribe_audio_bytes."""
-        return await self.transcribe_audio_bytes(audio_bytes, file_format="webm")
+        return await self.transcribe_audio_bytes(audio_bytes, file_format="webm", language=language)
 
     # ---------------------------------------------------------
     # TEXT-TO-SPEECH (TTS)

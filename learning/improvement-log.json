@@ -1,0 +1,28 @@
+[
+  {
+    "id": "IMP-001",
+    "date": "2026-09-20",
+    "issue_detected": "High clarify-loop frequency for 'Overwhelmed with Academic Stress' (avg 2.8 clarify turns)",
+    "hypothesis": "Expanding academic distress trigger phrases ('exam anxiety', 'semester burden') reduces clarification steps by matching primary cluster directly",
+    "change_proposed": "Additive keyword expansion in emotion classifier vocabulary for academic stress",
+    "status": "applied",
+    "applied_date": "2026-09-20",
+    "outcome_after_N_days": "Clarify turns decreased from 2.8 to 1.1 with 94% confirmation rate",
+    "evaluation_window_days": 7,
+    "tier": 1,
+    "do_not_retry_reason": null
+  },
+  {
+    "id": "IMP-002",
+    "date": "2026-09-22",
+    "issue_detected": "Higher than baseline STT retries during Phase 1 prompt in noisy mobile environments",
+    "hypothesis": "Decreasing turn-taking silence threshold below 900ms prevents incomplete utterances",
+    "change_proposed": "Decrease silence threshold to 750ms",
+    "status": "reverted",
+    "applied_date": "2026-09-22",
+    "outcome_after_N_days": "Caused users to be cut off mid-thought; user frustration increased",
+    "evaluation_window_days": 3,
+    "tier": 1,
+    "do_not_retry_reason": "Aggressive silence reduction (<1000ms) cuts off contemplative speech; silence threshold must remain patient"
+  }
+]

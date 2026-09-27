@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   HelpCircle,
   ArrowRight,
+  AlertTriangle,
 } from "lucide-react";
 import { GitaShlokaCard, parseGitaShloka } from "@/components/gita/GitaShlokaCard";
 import { isWordActive, parseTherapeuticStages } from "@/lib/audio/karaoke-tokenizer";
@@ -404,7 +405,7 @@ function renderTokenizedText(
  * 4. Bhagavad Gita Shloka contemplation card isolation at the top.
  * 5. Explicit Play / Pause / Stop TTS control with state indicators.
  */
-export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
+const KaraokeMessageComponent: React.FC<KaraokeMessageProps> = ({
   message,
   isSpeaking = false,
   isPaused = false,
@@ -495,6 +496,19 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
         ? stage2.meta.shlokaRoman.join('. ')
         : (stage2?.meta?.shlokaDevanagari ? stage2.meta.shlokaDevanagari.join('. ') : ''));
 
+  const hasRealGitaContent = Boolean(
+    (stage2?.meta?.shlokaDevanagari && stage2.meta.shlokaDevanagari.length > 0) ||
+    (stage2?.meta?.shlokaRoman && stage2.meta.shlokaRoman.length > 0) ||
+    stage2?.meta?.meaning ||
+    stage2?.meta?.shlokaBlock ||
+    stage2SpokenShloka
+  );
+
+  const hasRealCbtContent = Boolean(
+    stage3?.meta?.cbtReframe ||
+    (stage3?.displayContent && stage3.displayContent.trim().length > 10)
+  );
+
   const handleConfirmS1 = () => {
     setLocalStage(2);
     if (onConfirmStage1) {
@@ -518,9 +532,9 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
         <div className="w-4 h-4 rounded-full bg-teal-950/80 border border-teal-500/40 flex items-center justify-center text-[10px]">
           🌿
         </div>
-        <span className="text-teal-300 font-semibold">Sanctuary Healer</span>
+        <span className="text-teal-300 font-semibold" data-testid="sanctuary-healer-title">Sanctuary Healer</span>
         {isStructured && (
-          <span className="text-[10px] text-slate-400 font-mono ml-2">
+          <span className="text-[10px] text-slate-400 font-mono ml-2" data-testid="sanctuary-step-badge">
             Step {Math.min(activeStage, 4)} of 4
           </span>
         )}
@@ -532,7 +546,7 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
         {isStructured ? (
           <>
             {/* Step Progression Bar */}
-            <div className="flex items-center justify-between gap-1 pb-2 border-b border-white/5 text-[10px] sm:text-[11px] font-mono select-none">
+            <div className="flex items-center justify-between gap-1 pb-2 border-b border-white/5 text-[10px] sm:text-[11px] font-mono select-none" data-testid="sanctuary-progression-bar">
               {[
                 { num: 1, label: isHindi ? "1. स्थिति" : "1. Emotion" },
                 { num: 2, label: isHindi ? "2. गीता" : "2. Gita" },
@@ -544,6 +558,7 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
                 return (
                   <React.Fragment key={step.num}>
                     <div
+                      data-testid={`step-indicator-${step.num}`}
                       className={`flex items-center gap-1 px-2 py-0.5 rounded-full border transition-all ${
                         isPassed
                           ? "bg-emerald-500/15 border-emerald-500/40 text-emerald-300"
@@ -557,7 +572,7 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
                       ) : (
                         <span>{step.num}</span>
                       )}
-                      <span className="hidden xs:inline font-medium">{step.label}</span>
+                      <span className="inline font-medium">{step.label}</span>
                     </div>
                     {idx < 3 && (
                       <span className={`text-[10px] ${activeStage > step.num ? "text-emerald-500" : "text-slate-700"}`}>
@@ -571,7 +586,7 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
 
             {/* ─── CARD 1: SANCTUARY EMOTION UNDERSTANDING (ALWAYS DISPLAYED) ─── */}
             {stage1 && (
-              <div className="p-3.5 sm:p-4 rounded-xl border border-purple-500/35 bg-gradient-to-br from-purple-950/40 via-purple-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(168,85,247,0.08)] backdrop-blur-md space-y-2.5">
+              <div data-testid="sanctuary-stage-1-card" className="p-3.5 sm:p-4 rounded-xl border border-purple-500/35 bg-gradient-to-br from-purple-950/40 via-purple-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(168,85,247,0.08)] backdrop-blur-md space-y-2.5">
                 <div className="flex flex-wrap items-center justify-between gap-1.5 pb-1.5 border-b border-purple-500/15">
                   <span className="text-[10px] sm:text-[11px] font-mono font-bold tracking-wide uppercase px-2 py-0.5 rounded-full border text-purple-300 bg-purple-500/15 border-purple-500/30">
                     {stage1.badge}
@@ -749,7 +764,7 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
 
             {/* ─── CARD 2: BHAGAVAD GITA CARD & GYAN (REVEALED IN STEP 2) ─── */}
             {activeStage >= 2 && stage2 && (
-              <div className="p-3.5 sm:p-4 rounded-xl border border-amber-500/35 bg-gradient-to-br from-amber-950/40 via-amber-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(245,158,11,0.08)] backdrop-blur-md space-y-2.5 animate-fadeIn">
+              <div data-testid="sanctuary-stage-2-card" className="p-3.5 sm:p-4 rounded-xl border border-amber-500/35 bg-gradient-to-br from-amber-950/40 via-amber-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(245,158,11,0.08)] backdrop-blur-md space-y-2.5 animate-fadeIn">
                 <div className="flex flex-wrap items-center justify-between gap-1.5 pb-1.5 border-b border-amber-500/15">
                   <span className="text-[10px] sm:text-[11px] font-mono font-bold tracking-wide uppercase px-2 py-0.5 rounded-full border text-amber-400 bg-amber-500/15 border-amber-500/30">
                     {stage2.badge}
@@ -758,6 +773,7 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
                     {onOpenGita && (
                       <button
                         type="button"
+                        data-testid="gita-explore-btn"
                         onClick={onOpenGita}
                         className="text-[10px] font-medium text-amber-400 hover:text-amber-300 underline underline-offset-2 transition-colors cursor-pointer"
                       >
@@ -767,93 +783,118 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
                   </div>
                 </div>
 
-                {/* Shloka with Real-Time Word-by-Word Red Karaoke */}
-                {stage2SpokenShloka ? (
-                  <div className="my-2 p-3 sm:p-3.5 rounded-xl bg-gradient-to-br from-amber-950/60 via-amber-950/30 to-slate-900/80 border border-amber-500/35 text-amber-200 shadow-md">
-                    {stage2.meta.chapterVerse && (
-                      <div className="text-[10px] font-mono text-amber-400 font-bold mb-1.5 tracking-wider uppercase flex items-center gap-1">
-                        <span>🕉️</span>
-                        <span>{stage2.meta.chapterVerse}</span>
+                {!hasRealGitaContent ? (
+                  <div className="my-2 p-3.5 sm:p-4 rounded-xl bg-red-950/30 border border-red-500/40 text-red-200 space-y-2">
+                    <div className="flex items-center gap-2 text-red-400 font-semibold text-xs sm:text-sm">
+                      <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
+                      <span>{isHindi ? "इस सत्र के लिए गीता उपदेश लोड नहीं हो सका — पुनः प्रयास करें?" : "Couldn't load the Gita content for this session — retry?"}</span>
+                    </div>
+                    <p className="text-xs text-red-300/80">
+                      {isHindi ? "सामग्री प्राप्त करने में तकनीकी बाधा आई। कृपया पुनः प्रयास करें या नया संदेश भेजें।" : "A technical interruption occurred while retrieving verse guidance. Please retry or send a new message."}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        console.error("Gita content failed to load for session message:", message.id, stage2);
+                        if (onOpenGita) onOpenGita();
+                      }}
+                      className="px-3 py-1.5 rounded-lg bg-red-600/80 hover:bg-red-500 text-white text-xs font-medium transition-colors cursor-pointer"
+                    >
+                      {isHindi ? "पुनः प्रयास करें (Retry)" : "Retry Gita Content"}
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    {/* Shloka with Real-Time Word-by-Word Red Karaoke */}
+                    {stage2SpokenShloka ? (
+                      <div className="my-2 p-3 sm:p-3.5 rounded-xl bg-gradient-to-br from-amber-950/60 via-amber-950/30 to-slate-900/80 border border-amber-500/35 text-amber-200 shadow-md">
+                        {stage2.meta.chapterVerse && (
+                          <div className="text-[10px] font-mono text-amber-400 font-bold mb-1.5 tracking-wider uppercase flex items-center gap-1">
+                            <span>🕉️</span>
+                            <span>{stage2.meta.chapterVerse}</span>
+                          </div>
+                        )}
+                        <div className="font-serif text-sm sm:text-base leading-relaxed tracking-wide text-amber-100 italic">
+                          {renderTokenizedText(
+                            stage2SpokenShloka,
+                            2,
+                            isSpeaking,
+                            activeKaraoke,
+                            activeWordRef,
+                            card2Counter,
+                            "text-amber-100 font-serif"
+                          )}
+                        </div>
                       </div>
-                    )}
-                    <div className="font-serif text-sm sm:text-base leading-relaxed tracking-wide text-amber-100 italic">
-                      {renderTokenizedText(
-                        stage2SpokenShloka,
-                        2,
-                        isSpeaking,
-                        activeKaraoke,
-                        activeWordRef,
-                        card2Counter,
-                        "text-amber-100 font-serif"
-                      )}
-                    </div>
-                  </div>
-                ) : stage2.meta.shlokaBlock ? (
-                  <div className="my-2">
-                    <GitaShlokaCard shlokaContent={stage2.meta.shlokaBlock} variant="inline" />
-                  </div>
-                ) : null}
+                    ) : stage2.meta.shlokaBlock ? (
+                      <div className="my-2">
+                        <GitaShlokaCard shlokaContent={stage2.meta.shlokaBlock} variant="inline" />
+                      </div>
+                    ) : null}
 
-                {/* Gita Spiritual Wisdom & Actionable Duty */}
-                <div className="space-y-1.5 text-slate-100 text-xs sm:text-sm">
-                  {stage2.meta.meaning && (
-                    <div className="text-slate-200 leading-relaxed">
-                      {renderTokenizedText(
-                        `${isHindi ? "भगवान श्रीकृष्ण का पावन संदेश:" : "Divine Teaching:"} ${stage2.meta.meaning}`,
-                        2,
-                        isSpeaking,
-                        activeKaraoke,
-                        activeWordRef,
-                        card2Counter,
-                        "text-slate-200"
+                    {/* Gita Spiritual Wisdom & Actionable Duty */}
+                    <div className="space-y-1.5 text-slate-100 text-xs sm:text-sm">
+                      {stage2.meta.meaning && (
+                        <div className="text-slate-200 leading-relaxed">
+                          {renderTokenizedText(
+                            `${isHindi ? "भगवान श्रीकृष्ण का पावन संदेश:" : "Divine Teaching:"} ${stage2.meta.meaning}`,
+                            2,
+                            isSpeaking,
+                            activeKaraoke,
+                            activeWordRef,
+                            card2Counter,
+                            "text-slate-200"
+                          )}
+                        </div>
+                      )}
+                      {stage2.meta.reflection && (
+                        <div className="text-slate-300 leading-relaxed">
+                          {renderTokenizedText(
+                            `${isHindi ? "जीवन में उतारें:" : "Spiritual Reflection:"} ${stage2.meta.reflection}`,
+                            2,
+                            isSpeaking,
+                            activeKaraoke,
+                            activeWordRef,
+                            card2Counter,
+                            "text-slate-300"
+                          )}
+                        </div>
+                      )}
+                      {stage2.meta.duty && (
+                        <div className="p-2.5 rounded-lg bg-amber-950/20 border border-amber-500/25 text-amber-200 leading-relaxed">
+                          {renderTokenizedText(
+                            `${isHindi ? "वर्तमान कर्तव्य:" : "Your Duty Right Now:"} ${stage2.meta.duty}`,
+                            2,
+                            isSpeaking,
+                            activeKaraoke,
+                            activeWordRef,
+                            card2Counter,
+                            "text-amber-200 font-medium"
+                          )}
+                        </div>
+                      )}
+                      {stage2.meta.avoid && (
+                        <div className="text-xs text-amber-300/80 leading-relaxed">
+                          {renderTokenizedText(
+                            `${isHindi ? "विशेष रूप से इस भूल से बचें:" : "Pitfall to Avoid:"} ${stage2.meta.avoid}`,
+                            2,
+                            isSpeaking,
+                            activeKaraoke,
+                            activeWordRef,
+                            card2Counter,
+                            "text-amber-300/80"
+                          )}
+                        </div>
                       )}
                     </div>
-                  )}
-                  {stage2.meta.reflection && (
-                    <div className="text-slate-300 leading-relaxed">
-                      {renderTokenizedText(
-                        `${isHindi ? "जीवन में उतारें:" : "Spiritual Reflection:"} ${stage2.meta.reflection}`,
-                        2,
-                        isSpeaking,
-                        activeKaraoke,
-                        activeWordRef,
-                        card2Counter,
-                        "text-slate-300"
-                      )}
-                    </div>
-                  )}
-                  {stage2.meta.duty && (
-                    <div className="p-2.5 rounded-lg bg-amber-950/20 border border-amber-500/25 text-amber-200 leading-relaxed">
-                      {renderTokenizedText(
-                        `${isHindi ? "वर्तमान कर्तव्य:" : "Your Duty Right Now:"} ${stage2.meta.duty}`,
-                        2,
-                        isSpeaking,
-                        activeKaraoke,
-                        activeWordRef,
-                        card2Counter,
-                        "text-amber-200 font-medium"
-                      )}
-                    </div>
-                  )}
-                  {stage2.meta.avoid && (
-                    <div className="text-xs text-amber-300/80 leading-relaxed">
-                      {renderTokenizedText(
-                        `${isHindi ? "विशेष रूप से इस भूल से बचें:" : "Pitfall to Avoid:"} ${stage2.meta.avoid}`,
-                        2,
-                        isSpeaking,
-                        activeKaraoke,
-                        activeWordRef,
-                        card2Counter,
-                        "text-amber-300/80"
-                      )}
-                    </div>
-                  )}
-                </div>
+                  </>
+                )}
 
                 {/* Stage 2 Advance Controls */}
                 <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-amber-500/15">
                   <button
                     type="button"
+                    data-testid="gita-play-btn"
                     onClick={() => {
                       if (onPlayStageVoice) {
                         onPlayStageVoice(message.id, 2, stage2.speechText);
@@ -870,6 +911,7 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
                   {activeStage === 2 && (
                     <button
                       type="button"
+                      data-testid="stage-2-advance-btn"
                       onClick={() => handleAdvanceTo(3)}
                       className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition-all shadow-md active:scale-95 cursor-pointer ml-auto"
                     >
@@ -883,7 +925,7 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
 
             {/* ─── CARD 3: CLINICAL CBT & SOMATIC BREATHWORK (REVEALED IN STEP 3) ─── */}
             {activeStage >= 3 && stage3 && (
-              <div className="p-3.5 sm:p-4 rounded-xl border border-emerald-500/35 bg-gradient-to-br from-emerald-950/40 via-emerald-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(16,185,129,0.08)] backdrop-blur-md space-y-2.5 animate-fadeIn">
+              <div data-testid="sanctuary-stage-3-card" className="p-3.5 sm:p-4 rounded-xl border border-emerald-500/35 bg-gradient-to-br from-emerald-950/40 via-emerald-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(16,185,129,0.08)] backdrop-blur-md space-y-2.5 animate-fadeIn">
                 <div className="flex flex-wrap items-center justify-between gap-1.5 pb-1.5 border-b border-emerald-500/15">
                   <span className="text-[10px] sm:text-[11px] font-mono font-bold tracking-wide uppercase px-2 py-0.5 rounded-full border text-emerald-400 bg-emerald-500/15 border-emerald-500/30">
                     {stage3.badge}
@@ -891,6 +933,7 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
                   {onOpenCBT && (
                     <button
                       type="button"
+                      data-testid="cbt-explore-btn"
                       onClick={onOpenCBT}
                       className="text-[10px] font-medium text-emerald-400 hover:text-emerald-300 underline underline-offset-2 transition-colors cursor-pointer"
                     >
@@ -899,14 +942,37 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
                   )}
                 </div>
 
-                <div className="space-y-2 text-slate-100 text-xs sm:text-sm">
-                  {renderFormattedMarkdown(stage3.displayContent, isSpeaking, activeKaraoke, activeWordRef, card3Counter, 3)}
-                </div>
+                {!hasRealCbtContent ? (
+                  <div className="my-2 p-3.5 sm:p-4 rounded-xl bg-red-950/30 border border-red-500/40 text-red-200 space-y-2">
+                    <div className="flex items-center gap-2 text-red-400 font-semibold text-xs sm:text-sm">
+                      <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
+                      <span>{isHindi ? "इस सत्र के लिए CBT सामग्री लोड नहीं हो सकी — पुनः प्रयास करें?" : "Couldn't load the CBT content for this session — retry?"}</span>
+                    </div>
+                    <p className="text-xs text-red-300/80">
+                      {isHindi ? "सामग्री प्राप्त करने में तकनीकी बाधा आई। कृपया पुनः प्रयास करें।" : "Unable to retrieve CBT cognitive reframe for this session. Please retry."}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        console.error("CBT content failed to load for session message:", message.id, stage3);
+                        if (onOpenCBT) onOpenCBT();
+                      }}
+                      className="px-3 py-1.5 rounded-lg bg-red-600/80 hover:bg-red-500 text-white text-xs font-medium transition-colors cursor-pointer"
+                    >
+                      {isHindi ? "पुनः प्रयास करें (Retry)" : "Retry CBT Content"}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-2 text-slate-100 text-xs sm:text-sm">
+                    {renderFormattedMarkdown(stage3.displayContent, isSpeaking, activeKaraoke, activeWordRef, card3Counter, 3)}
+                  </div>
+                )}
 
                 {/* Stage 3 Advance Controls */}
                 <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-emerald-500/15">
                   <button
                     type="button"
+                    data-testid="cbt-play-btn"
                     onClick={() => {
                       if (onPlayStageVoice) {
                         onPlayStageVoice(message.id, 3, stage3.speechText);
@@ -923,6 +989,7 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
                   {activeStage === 3 && (
                     <button
                       type="button"
+                      data-testid="stage-3-advance-btn"
                       onClick={() => handleAdvanceTo(4)}
                       className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition-all shadow-md active:scale-95 cursor-pointer ml-auto"
                     >
@@ -936,7 +1003,7 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
 
             {/* ─── CARD 4: TRATAK NEURO-OCULAR GAZING PROTOCOL (REVEALED IN STEP 4) ─── */}
             {activeStage >= 4 && stage4 && (
-              <div className="p-3.5 sm:p-4 rounded-xl border border-cyan-500/35 bg-gradient-to-br from-cyan-950/40 via-cyan-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(6,182,212,0.08)] backdrop-blur-md space-y-2.5 animate-fadeIn">
+              <div data-testid="sanctuary-stage-4-card" className="p-3.5 sm:p-4 rounded-xl border border-cyan-500/35 bg-gradient-to-br from-cyan-950/40 via-cyan-950/20 to-slate-900/60 shadow-[0_0_15px_rgba(6,182,212,0.08)] backdrop-blur-md space-y-2.5 animate-fadeIn">
                 <div className="flex flex-wrap items-center justify-between gap-1.5 pb-1.5 border-b border-cyan-500/15">
                   <span className="text-[10px] sm:text-[11px] font-mono font-bold tracking-wide uppercase px-2 py-0.5 rounded-full border text-cyan-400 bg-cyan-500/15 border-cyan-500/30">
                     {stage4.badge}
@@ -944,6 +1011,7 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
                   {onLaunchTrataka && (
                     <button
                       type="button"
+                      data-testid="trataka-explore-btn"
                       onClick={() => onLaunchTrataka(message.recommended_trataka || "bindu")}
                       className="text-[10px] font-medium text-cyan-400 hover:text-cyan-300 underline underline-offset-2 transition-colors cursor-pointer"
                     >
@@ -960,6 +1028,7 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
                 <div className="pt-2 border-t border-cyan-500/15 flex flex-wrap items-center justify-between gap-2">
                   <button
                     type="button"
+                    data-testid="trataka-play-btn"
                     onClick={() => {
                       if (onPlayStageVoice) {
                         onPlayStageVoice(message.id, 4, stage4.speechText);
@@ -975,6 +1044,7 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
 
                   <button
                     type="button"
+                    data-testid="trataka-launch-btn"
                     onClick={() => onLaunchTrataka?.(message.recommended_trataka || "bindu")}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition-all shadow-[0_0_15px_rgba(6,182,212,0.3)] active:scale-95 cursor-pointer ml-auto"
                   >
@@ -1141,4 +1211,7 @@ export const KaraokeMessage: React.FC<KaraokeMessageProps> = ({
   );
 };
 
+KaraokeMessageComponent.displayName = "KaraokeMessage";
+
+export const KaraokeMessage = React.memo(KaraokeMessageComponent);
 export default KaraokeMessage;

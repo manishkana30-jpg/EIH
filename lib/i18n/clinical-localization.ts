@@ -507,18 +507,18 @@ export function buildDiagnosticSufferingAssessment(
 
   const hasDistressKeywords =
     !directPositiveAssertion &&
-    /(?:distress|anxious|anxiety|depress|sad|fear|scared|panic|stress|overwhelm|worry|worried|grief|pain|burnout|lonely|loneliness|angry|anger|trauma|shame|guilt|fail|terrif|crying|tears|breakup|heartbreak|chinta|tanaav|udas|gussa|troubled|need help|please help me|help me please|someone help me|help me i'm|help me i am|debt|debts|financial|loan|loans|money|broke|bills|burden|hopeless|empty|meaningless|numb|giving up|exhaust|insomnia|insecure|rejection|unmotivated|hurting|conflict|fight|argument|divorce|struggl|suicid|दर्द|रोना|रो |रोने|रोऊ|दुःख|दुख|तनाव|चिंता|उदासी|डर|घबराहट|घबरा|ब्रेकअप|परेशान|पीड़ा|कष्ट|क्रोध|अकेला|हार|असफल|टूटा|कर्ज|पैसे|आर्थिक|झगड़ा)/i.test(text);
+    /(?:distress|anxious|anxiety|depress|sad|fear|scared|panic|stress|overwhelm|worry|worried|grief|pain|burnout|lonely|loneliness|angry|anger|trauma|shame|guilt|fail|terrif|crying|tears|breakup|heartbreak|chinta|tanaav|udas|gussa|troubled|need help|please help me|help me please|someone help me|help me i'm|help me i am|debt|debts|financial|loan|loans|money|broke|bills|burden|hopeless|empty|meaningless|numb|giving up|exhaust|insomnia|insecure|rejection|unmotivated|hurting|conflict|fight|argument|divorce|struggl|suicid|दर्द|रोना|रो |रोने|रोऊ|दुःख|दुख|तनाव|चिंता|उदासी|डर|घबराहट|घबरा|ब्रेकअप|परेशान|पीड़ा|कष्ट|क्रोध|अकेला|हार|असफल|टूटा|कर्ज|पैसे|आर्थिक|झगड़ा|अच्छा नहीं|कुछ अच्छा नहीं|कुछ ठीक नहीं|ठीक नहीं लग|मन नहीं लग|टेंशन|तनावग्रस्त|रोना आ रहा|बुरा लग|उदासी)/i.test(text);
 
   const isPositive =
     directPositiveAssertion ||
     (!hasDistressKeywords &&
+     diag.coreAffect.valence >= 0.2 &&
      (activeEmotionId === 'joy' ||
       activeEmotionId === 'calmness' ||
       activeEmotionId === 'satisfaction' ||
       activeEmotionId === 'relief' ||
       activeEmotionId === 'adoration' ||
-      activeEmotionId === 'amusement' ||
-      diag.coreAffect.valence >= 0.3));
+      activeEmotionId === 'amusement'));
 
   // Calculate distress score (1-10) based on valence, arousal and intensity
   let distressScore = 7;

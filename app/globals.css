@@ -390,8 +390,11 @@
 .karaoke-word {
   display: inline-block;
   white-space: pre;
-  transition: background-color 0.12s ease, color 0.12s ease;
-  /* Never add margin, padding, font-size, or scale transforms here */
+  padding: 0 2px;
+  border-radius: 4px;
+  box-sizing: border-box;
+  transition: background-color 0.08s ease, color 0.08s ease;
+  /* Never add variable margin, padding, font-size, or scale transforms here */
 }
 
 /* Active highlighted word - Vivid Luminous Red */
@@ -400,10 +403,10 @@
   color: #ffffff !important;
   font-weight: 700 !important;
   border-radius: 4px;
-  padding: 0 3px !important;
+  padding: 0 2px !important;
   text-shadow: 0 0 2px #ffffff, 0 0 10px rgba(239, 68, 68, 0.95) !important;
   box-shadow: 0 0 16px rgba(220, 38, 38, 0.95), 0 0 5px rgba(255, 255, 255, 0.7) !important;
-  border: 1px solid rgba(254, 202, 202, 0.8) !important;
+  outline: 1px solid rgba(254, 202, 202, 0.8) !important;
 }
 
 /* Soft yellow marker glow variant */

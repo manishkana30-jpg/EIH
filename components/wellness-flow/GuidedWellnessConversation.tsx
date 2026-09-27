@@ -25,6 +25,7 @@ import { getMicConsent, setMicConsent } from '@/lib/wellness-flow/storage-encryp
 import { browserSpeechController } from '@/lib/audio/browser-speech';
 import { ConfirmVoiceManager, type ConfirmVoiceStatus } from '@/lib/wellness-flow/confirm-voice-manager';
 import { parseYesNoIntent, logConfirmDebug } from '@/lib/wellness-flow/confirm-intent-parser';
+import { sessionTelemetry } from '@/lib/telemetry/session-telemetry';
 import type { VoiceAcousticState } from '@/lib/types/emotions';
 import type {
   WellnessFlowState,
@@ -97,6 +98,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
       setSession(snap);
       setLanguage(snap.language);
       setIsMuted(snap.isMuted);
+      sessionTelemetry.logPhaseEnter(newState.toLowerCase() as any, snap.sessionId);
     });
 
     // Check initial mic consent
@@ -252,6 +254,11 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
           setLiveConfirmTranscript(text);
         },
         onIntentResolved: (intent) => {
+          sessionTelemetry.logYesNoConfirmation({
+            emotion: session.moodProfile?.primary_emotion || 'identified_distress',
+            outcome: intent === 'yes' ? 'yes' : 'no',
+            sessionId: session.sessionId,
+          });
           handleConfirmSelection(intent === 'yes');
         },
         onError: (errMsg) => {
@@ -274,7 +281,14 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
       manager.destroy();
       confirmVoiceManagerRef.current = null;
     };
-  }, [isOpen, currentState, session.confirmationStatement, handleConfirmSelection]);
+  }, [
+    isOpen,
+    currentState,
+    session.confirmationStatement,
+    handleConfirmSelection,
+    session.moodProfile?.primary_emotion,
+    session.sessionId,
+  ]);
 
   // ─── Voice Recording Logic with Zero-Async User-Gesture & Real-Time Audio Level ───
   const startVoiceListeningSession = async (forcedConsent = false) => {

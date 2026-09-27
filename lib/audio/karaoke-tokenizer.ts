@@ -60,12 +60,13 @@ export function isWordActive(
     return true;
   }
 
-  // Lexical recovery fallback for minor browser offset discrepancies
+  // Lexical recovery fallback strictly for adjacent word boundary offsets (+/- 1 word)
+  // Prevents common words (and, the, का, में) in distant sentences from false-highlighting
   if (activeKaraoke.wordText) {
-    const cleanWord = cleanWordForMatch(wordStr);
-    const cleanTarget = cleanWordForMatch(activeKaraoke.wordText);
-    if (cleanWord && cleanTarget && cleanWord === cleanTarget) {
-      if (Math.abs(currentWordIndex - activeKaraoke.wordIndex) <= 8) {
+    if (Math.abs(currentWordIndex - activeKaraoke.wordIndex) <= 1) {
+      const cleanWord = cleanWordForMatch(wordStr);
+      const cleanTarget = cleanWordForMatch(activeKaraoke.wordText);
+      if (cleanWord && cleanTarget && cleanWord === cleanTarget) {
         return true;
       }
     }
@@ -334,10 +335,10 @@ export function parseTherapeuticStages(rawText: string, locale?: string): Struct
       part.includes('स्थिति का सारांश') ||
       part.toLowerCase().includes('diagnostic')
     );
-    const isTratak = !isDiag && (part.startsWith('**3.') || part.toLowerCase().includes('tratak') || part.includes('त्राटक'));
-    const isClinical = !isDiag && !isTratak && (part.startsWith('**2.') || part.toLowerCase().includes('clinical') || part.includes('कॉग्निटिव') || part.toLowerCase().includes('cbt'));
-    const isGita = !isDiag && !isTratak && !isClinical && !isLastCard && (part.startsWith('**1.') || part.toLowerCase().includes('bhagavad gita') || part.includes('गीता'));
-    const isSyn = !isDiag && !isGita && !isClinical && !isTratak && (isLastCard || part.startsWith('**4.') || part.toLowerCase().includes('synerg') || part.includes('त्रिवेणी') || part.includes('समाधान'));
+    const isTratak = !isDiag && (part.startsWith('**3.') || part.startsWith('**4.') || part.startsWith('**त्राटक') || (part.includes('**') && (part.toLowerCase().includes('tratak') || part.includes('त्राटक'))));
+    const isClinical = !isDiag && !isTratak && (part.startsWith('**2.') || part.startsWith('**3.') || (part.includes('**') && (part.toLowerCase().includes('clinical') || part.includes('कॉग्निटिव') || part.toLowerCase().includes('cbt'))));
+    const isGita = !isDiag && !isTratak && !isClinical && !isLastCard && (part.startsWith('**1.') || part.startsWith('**2.') || (part.includes('**') && (part.toLowerCase().includes('bhagavad gita') || part.includes('गीता'))));
+    const isSyn = !isDiag && !isGita && !isClinical && !isTratak && (isLastCard || part.startsWith('**4.') || (part.includes('**') && (part.toLowerCase().includes('synerg') || part.includes('त्रिवेणी') || part.includes('समाधान'))));
 
     if (isDiag) diagPart = part;
     else if (isGita) gitaPart = part;
@@ -346,8 +347,14 @@ export function parseTherapeuticStages(rawText: string, locale?: string): Struct
     else if (isSyn) synergyPart = part;
   });
 
-  // If we don't have structured parts, treat as normal conversational reply
-  if (!diagPart && !gitaPart && !cbtPart && !tratakPart && !shlokaBlock) {
+  // Strict structured validation:
+  // A message is structured ONLY if:
+  // 1. It contains an authentic [GITA_SHLOKA] block, OR
+  // 2. It contains multiple genuine therapeutic sections (e.g. diagPart/gitaPart + cbtPart/tratakPart) AND rawParts.length >= 2
+  const hasMultipleTherapeuticSections = rawParts.length >= 2 && Boolean((diagPart || gitaPart) && (cbtPart || tratakPart || synergyPart));
+  const hasValidShlokaBlock = Boolean(shlokaBlock && shlokaBlock.trim().length > 10);
+
+  if (!hasValidShlokaBlock && !hasMultipleTherapeuticSections) {
     return { isStructured: false, stages: [], defaultSpeechText: rawText };
   }
 
@@ -472,10 +479,17 @@ export function parseTherapeuticStages(rawText: string, locale?: string): Struct
     : (romanLines.length > 0 ? romanLines.join('. ') : devanagariLines.join('. '));
 
   let s2SpeechText = '';
+  const shlokaPrefixHi = spokenShloka ? `${spokenShloka}। ` : '';
+  const shlokaPrefixEn = spokenShloka ? `${spokenShloka}. ` : '';
   if (isHindi) {
-    s2SpeechText = `${spokenShloka}। ${meaning ? `भगवान श्रीकृष्ण का पावन संदेश: ${meaning}। ` : ''}${reflection ? `जीवन में उतारें: ${reflection}। ` : ''}${duty ? `वर्तमान कर्तव्य: ${duty}। ` : ''}${avoid ? `विशेष रूप से इस भूल से बचें: ${avoid}।` : ''}`;
+    s2SpeechText = `${shlokaPrefixHi}${meaning ? `भगवान श्रीकृष्ण का पावन संदेश: ${meaning}। ` : ''}${reflection ? `जीवन में उतारें: ${reflection}। ` : ''}${duty ? `वर्तमान कर्तव्य: ${duty}। ` : ''}${avoid ? `विशेष रूप से इस भूल से बचें: ${avoid}।` : ''}`;
   } else {
-    s2SpeechText = `${spokenShloka}. ${meaning ? `Divine Teaching: ${meaning}. ` : ''}${reflection ? `Spiritual Reflection: ${reflection}. ` : ''}${duty ? `Your Duty Right Now: ${duty}. ` : ''}${avoid ? `Pitfall to Avoid: ${avoid}.` : ''}`;
+    s2SpeechText = `${shlokaPrefixEn}${meaning ? `Divine Teaching: ${meaning}. ` : ''}${reflection ? `Spiritual Reflection: ${reflection}. ` : ''}${duty ? `Your Duty Right Now: ${duty}. ` : ''}${avoid ? `Pitfall to Avoid: ${avoid}.` : ''}`;
+  }
+  if (!s2SpeechText.trim()) {
+    s2SpeechText = isHindi
+      ? 'भगवद्गीता का दिव्य संदेश आपके आंतरिक संतुलन, धैर्य और कर्म-चेतना को जाग्रत करता है।'
+      : 'Bhagavad Gita wisdom anchors your mind in purposeful action, equanimity, and inner strength.';
   }
 
   stages.push({
