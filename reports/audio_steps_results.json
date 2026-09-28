@@ -4,7 +4,7 @@
       "C:\\Users\\manis\\AppData\\Local\\Microsoft\\WinGet\\Packages\\OpenJS.NodeJS.LTS_Microsoft.Winget.Source_8wekyb3d8bbwe\\node-v24.19.0-win-x64\\node.exe",
       "C:\\Users\\manis\\EIH\\node_modules\\@playwright\\test\\cli.js",
       "test",
-      "tests/e2e/audio-steps/step12-hindi-distress-transcript.spec.ts"
+      "tests/e2e/audio-steps/step08-yes-no-voice.spec.ts"
     ],
     "configFile": "C:\\Users\\manis\\EIH\\playwright.config.ts",
     "rootDir": "C:/Users/manis/EIH/tests/e2e/audio-steps",
@@ -66,20 +66,20 @@
   },
   "suites": [
     {
-      "title": "step12-hindi-distress-transcript.spec.ts",
-      "file": "step12-hindi-distress-transcript.spec.ts",
+      "title": "step08-yes-no-voice.spec.ts",
+      "file": "step08-yes-no-voice.spec.ts",
       "column": 0,
       "line": 0,
       "specs": [],
       "suites": [
         {
-          "title": "Hindi Distress Transcript & Sequential Progression E2E",
-          "file": "step12-hindi-distress-transcript.spec.ts",
-          "line": 5,
+          "title": "STEP 8: Yes/No Voice Response Test",
+          "file": "step08-yes-no-voice.spec.ts",
+          "line": 4,
           "column": 6,
           "specs": [
             {
-              "title": "reproduces exact transcript, asserts real Gita/CBT/Trataka content, and asserts accurate step counter",
+              "title": "Branch 8A: Voice \"yes\" response transitions session from Phase 1 to Phase 2 (Gita)",
               "ok": true,
               "tags": [],
               "tests": [
@@ -94,22 +94,25 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 22160,
+                      "duration": 13073,
                       "errors": [],
                       "stdout": [
                         {
-                          "text": "✓ Hindi Distress Transcript E2E passed. Screenshot saved to C:\\Users\\manis\\EIH\\reports\\screenshots\\hindi_distress_regression_passed.png\n"
+                          "text": "[STEP 8A] Injecting voice \"yes\" confirmation...\n"
+                        },
+                        {
+                          "text": "[STEP 8A] Successfully transitioned to Phase 2: CHAPTER 2, VERSE 47\n"
                         }
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-09-28T14:50:00.482Z",
+                      "startTime": "2026-09-28T19:38:36.413Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "C:\\Users\\manis\\EIH\\test-results\\step12-hindi-distress-tran-a2db1-serts-accurate-step-counter\\test-finished-1.png"
+                          "path": "C:\\Users\\manis\\EIH\\test-results\\step08-yes-no-voice-STEP-8-1f4e5-om-Phase-1-to-Phase-2-Gita-\\test-finished-1.png"
                         }
                       ]
                     }
@@ -117,9 +120,56 @@
                   "status": "expected"
                 }
               ],
-              "id": "feb2ea7486092726e7be-911e8c147707d720d447",
-              "file": "step12-hindi-distress-transcript.spec.ts",
-              "line": 6,
+              "id": "1c74f54106dd58d91c16-1eb71086012b389d621a",
+              "file": "step08-yes-no-voice.spec.ts",
+              "line": 5,
+              "column": 7
+            },
+            {
+              "title": "Branch 8B: Voice \"no\" response diverts session into Clarification Loop",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 12896,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[STEP 8B] Injecting voice \"no\" clarification diversion...\n"
+                        },
+                        {
+                          "text": "[STEP 8B] Successfully entered Clarify Loop: \"What triggered this feeling for you today?...\"\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-28T19:38:49.683Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\manis\\EIH\\test-results\\step08-yes-no-voice-STEP-8-feb09-ion-into-Clarification-Loop\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1c74f54106dd58d91c16-0afba3d4faa1810afd46",
+              "file": "step08-yes-no-voice.spec.ts",
+              "line": 37,
               "column": 7
             }
           ]
@@ -129,9 +179,9 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-09-28T14:50:00.170Z",
-    "duration": 28096.139000000003,
-    "expected": 1,
+    "startTime": "2026-09-28T19:38:36.089Z",
+    "duration": 26997.614999999998,
+    "expected": 2,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0

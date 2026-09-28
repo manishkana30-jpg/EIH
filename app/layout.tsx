@@ -182,9 +182,15 @@ export default function RootLayout({
                 var refreshing = false;
                 navigator.serviceWorker.addEventListener('controllerchange', function() {
                   if (!refreshing) {
-                    refreshing = true;
-                    // If tab is in background, reload immediately and silently
-                    window.location.reload();
+                    // Do not reload in localhost/development to avoid disrupting test runs and active sessions
+                    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                      return;
+                    }
+                    // Only reload silently if tab is hidden in background
+                    if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
+                      refreshing = true;
+                      window.location.reload();
+                    }
                   }
                 });
                 window.addEventListener('load', function() {

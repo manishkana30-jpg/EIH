@@ -644,7 +644,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/80 backdrop-blur-xl animate-fadeIn">
+    <div className="fixed inset-0 z-[150] flex items-center justify-center p-2 sm:p-4 bg-slate-950/80 backdrop-blur-xl animate-fadeIn">
       {/* ─────────────────────────────────────────────────────────────
           SAFETY / CRISIS IMMEDIATE INTERVENTION MODAL
       ───────────────────────────────────────────────────────────── */}

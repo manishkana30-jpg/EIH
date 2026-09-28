@@ -1,7 +1,7 @@
 # Emotional Intelligence & Multimodal Test Suite Report
-**Generated:** 2026-09-27T14:22:18.900Z  
+**Generated:** 2026-09-28T19:37:45.486Z  
 **Dataset:** `tests/data/emotional_inputs.json` (343 curated human inputs)  
-**Execution Duration:** 1.03 seconds  
+**Execution Duration:** 1.01 seconds  
 **Scope:** Phase 1 Emotion Classification, Clinical Safety, Sequential Voice & Turn-Taking, Gita/CBT/Trataka Transitions.
 
 ---

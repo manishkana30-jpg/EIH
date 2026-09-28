@@ -2067,3 +2067,7 @@
 {"eventId":"evt-aj23eb1","sessionId":"wellness-1790607139832","timestamp":1790607143608,"type":"phase_enter","phase":"cbt"}
 {"eventId":"evt-srynxye","sessionId":"wellness-1790607139832","timestamp":1790607143687,"type":"phase_enter","phase":"cbt"}
 {"eventId":"evt-j3tjnyt","sessionId":"wellness-1790607139832","timestamp":1790607144354,"type":"phase_enter","phase":"cbt"}
+{"eventId":"evt-dn6oh05","timestamp":1790624368220,"type":"highlighter_desync_snap","phase":"phase2_gita","desyncWordIndex":0}
+{"eventId":"evt-1m4toz9","timestamp":1790624370947,"type":"highlighter_desync_snap","phase":"phase2_gita","desyncWordIndex":0}
+{"eventId":"evt-bk8shof","timestamp":1790624370980,"type":"highlighter_desync_snap","phase":"phase2_gita","desyncWordIndex":60}
+{"eventId":"evt-cuswj74","timestamp":1790624371509,"type":"highlighter_desync_snap","phase":"phase2_gita","desyncWordIndex":0}

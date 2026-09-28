@@ -104,7 +104,8 @@ const EMOTION_LEXICONS: Record<string, EmotionLexicon> = {
       '32 and alone', 'secretly so jealous because i am 32 and alone', 'dissociating at work',
       'staring at the ceiling', 'career bilkul barbad', 'barbad lag raha', 'dard bardasht ke bahar',
       'bardasht ke bahar', 'उम्मीदें टूट', 'रास्ता बंद', 'सारी उम्मीदें', 'उदासी', 'दुख', 'रोना',
-      'उदास', 'नीरस', 'शून्य', 'अवसाद', 'शोक', 'निराशा', 'शून्यता', 'विश्वासघात', 'व्यथित', 'कटुता'
+      'उदास', 'नीरस', 'शून्य', 'अवसाद', 'शोक', 'निराशा', 'शून्यता', 'विश्वासघात', 'व्यथित', 'कटुता',
+      'कुछ अच्छा नहीं लग रहा है', 'कुछ अच्छा नहीं लग रहा', 'कुछ अच्छा नहीं', 'अच्छा नहीं लग रहा', 'कुछ ठीक नहीं लग रहा', 'मन भारी', 'मन उदास', 'दिल भारी', 'रोने का मन'
     ],
     themes: ['emotional_loss', 'emptiness', 'low_energy'],
     baseIntensity: 6,
@@ -131,7 +132,7 @@ const EMOTION_LEXICONS: Record<string, EmotionLexicon> = {
       'burden', 'boss breathing down', 'juggling', 'fatigue', 'zoom calls', 'lack of sleep',
       'klesh', 'roz roz klesh', 'klesh aur ladai', 'landlord and lease dispute', 'lease dispute',
       'migraine', 'body feels entirely broken', 'career bilkul barbad', 'tanaav', 'bojh',
-      'thakan', 'thak gaya', 'तनाव', 'बोझ', 'थकान', 'तनावग्रस्त'
+      'thakan', 'thak gaya', 'तनाव', 'बोझ', 'थकान', 'तनावग्रस्त', 'टेंशन', 'तनाव बहुत', 'सिर दर्द'
     ],
     themes: ['workload_overload', 'time_pressure', 'depleted_capacity'],
     baseIntensity: 7,
