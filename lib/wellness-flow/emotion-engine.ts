@@ -21,6 +21,8 @@ export interface NLPAnalysisResult {
   intensity: number; // 1 to 10
   confidence: number; // 0 to 1
   root_theme: string;
+  trigger_domain?: string;
+  specific_context_phrase?: string;
   sentiment: 'positive' | 'negative' | 'neutral' | 'mixed';
   detectedThemes: string[];
 }
@@ -67,9 +69,12 @@ const EMOTION_LEXICONS: Record<string, EmotionLexicon> = {
     keywords: [
       'anxious', 'anxiety', 'worried', 'worry', 'nervous', 'panicking', 'panic',
       'dread', 'dreading', 'tense', 'restless', 'uneasy', 'racing heart', 'heart is beating',
-      'beating so fast', 'cant breathe', "can't breathe", 'hands shaking', 'chest feels tight',
-      'tight chest', 'palpitations', 'chinta', 'ghabrahat', 'bechaini', 'dar', 'darr',
-      'behosh hone', 'anxiety attacks', 'omgggg', 'walking on eggshells', 'चिंता', 'घबराहट', 'बेचैनी', 'डर'
+      'heart is beating fast', 'beating so fast', 'cant breathe', "can't breathe", 'hands shaking',
+      'chest feels tight', 'tight chest', 'chest is suffocating', 'suffocating', 'palpitations',
+      'job interview tomorrow', 'anxious about my interview', 'interview tomorrow', 'exam tomorrow',
+      'upcoming presentation', 'chinta', 'ghabrahat', 'bechaini', 'dar', 'darr', 'behosh hone',
+      'anxiety attacks', 'omgggg', 'walking on eggshells', 'चिंता', 'घबराहट', 'बेचैनी', 'डर',
+      'कल इंटरव्यू', 'परीक्षा की चिंता', 'इंटरव्यू को लेकर'
     ],
     themes: ['future_uncertainty', 'loss_of_control', 'performance_pressure'],
     baseIntensity: 7,
@@ -105,7 +110,11 @@ const EMOTION_LEXICONS: Record<string, EmotionLexicon> = {
       'staring at the ceiling', 'career bilkul barbad', 'barbad lag raha', 'dard bardasht ke bahar',
       'bardasht ke bahar', 'उम्मीदें टूट', 'रास्ता बंद', 'सारी उम्मीदें', 'उदासी', 'दुख', 'रोना',
       'उदास', 'नीरस', 'शून्य', 'अवसाद', 'शोक', 'निराशा', 'शून्यता', 'विश्वासघात', 'व्यथित', 'कटुता',
-      'कुछ अच्छा नहीं लग रहा है', 'कुछ अच्छा नहीं लग रहा', 'कुछ अच्छा नहीं', 'अच्छा नहीं लग रहा', 'कुछ ठीक नहीं लग रहा', 'मन भारी', 'मन उदास', 'दिल भारी', 'रोने का मन'
+      'कुछ अच्छा नहीं लग रहा है', 'कुछ अच्छा नहीं लग रहा', 'कुछ अच्छा नहीं', 'अच्छा नहीं लग रहा', 'कुछ ठीक नहीं लग रहा', 'मन भारी', 'मन उदास', 'दिल भारी', 'रोने का मन',
+      'lost my grandmother', 'lost my grandfather', 'lost my mother', 'lost my father', 'lost my',
+      'passed away', 'someone died', 'death in the family', 'house feels completely empty',
+      'broke up with me', 'ended our relationship', 'broke my heart', 'cheated on me', 'cannot stop crying',
+      'dil toot gaya', 'breakup ho gaya', 'छोड़कर चला गया', 'दिल टूट गया', 'गुजर गए', 'देहांत हो गया', 'शोक में', 'घर बिल्कुल खाली'
     ],
     themes: ['emotional_loss', 'emptiness', 'low_energy'],
     baseIntensity: 6,
@@ -120,7 +129,8 @@ const EMOTION_LEXICONS: Record<string, EmotionLexicon> = {
       'forcing me into an arranged marriage', 'criticizing', 'squabble', 'jhagda', 'shaq', 'disagreement',
       'double life has completely shattered', 'krodh control nahi', 'krodh control', 'gussa', 'krodh',
       'naraz', 'dimag kharab', 'fas ke', 'jalan', 'chidh', 'pareshaan', 'ladai', 'क्रोध', 'गुस्सा',
-      'नाराज', 'चिढ़', 'खीझ', 'जलन', 'ईर्ष्या', 'चिड़चिड़ापन'
+      'नाराज', 'चिढ़', 'खीझ', 'जलन', 'ईर्ष्या', 'चिड़चिड़ापन',
+      'boss ne sabke samne beizzat', 'सबके सामने बेइज्जत', 'बॉस ने बेइज्जत किया', 'humiliated me in front of', 'insulted in front of'
     ],
     themes: ['boundary_violation', 'unmet_expectations', 'interpersonal_conflict'],
     baseIntensity: 7,
@@ -132,7 +142,12 @@ const EMOTION_LEXICONS: Record<string, EmotionLexicon> = {
       'burden', 'boss breathing down', 'juggling', 'fatigue', 'zoom calls', 'lack of sleep',
       'klesh', 'roz roz klesh', 'klesh aur ladai', 'landlord and lease dispute', 'lease dispute',
       'migraine', 'body feels entirely broken', 'career bilkul barbad', 'tanaav', 'bojh',
-      'thakan', 'thak gaya', 'तनाव', 'बोझ', 'थकान', 'तनावग्रस्त', 'टेंशन', 'तनाव बहुत', 'सिर दर्द'
+      'thakan', 'thak gaya', 'तनाव', 'बोझ', 'थकान', 'तनावग्रस्त', 'टेंशन', 'तनाव बहुत', 'सिर दर्द',
+      'कर्ज का बोझ', 'कर्ज बहुत', 'कर्ज बढ़', 'ऋण का बोझ', 'लोन की ईएमआई', 'आर्थिक तंगी', 'पैसों की तंगी',
+      'देनदारियों का बोझ', 'burden of debt', 'heavy debt', 'crushing debt', 'cannot pay the loan',
+      'financial burden', 'overdue bills', 'burnout ho gaya', 'burnout ho gaya hai', 'zero energy bachi',
+      'zero energy bachi hai', 'overload hai', 'exhausted from work', 'overwhelmed by work deadlines',
+      'snapped at my kids', "haven't slept"
     ],
     themes: ['workload_overload', 'time_pressure', 'depleted_capacity'],
     baseIntensity: 7,
@@ -153,7 +168,10 @@ const EMOTION_LEXICONS: Record<string, EmotionLexicon> = {
       'let them down', 'failed everyone', 'stupid mistake', 'sharm', 'sharmindagi',
       'embarrassment', 'embarrassed', 'snapped at my mother', 'remorse', 'galti',
       'ashamed of my tears', 'ashamed of', 'apradh bodh', 'apne aap par sharm',
-      'kisi kaam ka nahi', 'गलती', 'पछतावा', 'अपराधबोध', 'शर्म', 'शर्मिंदगी', 'आत्म-हीनता'
+      'kisi kaam ka nahi', 'गलती', 'पछतावा', 'अपराधबोध', 'शर्म', 'शर्मिंदगी', 'आत्म-हीनता',
+      'total failure and imposter', 'feel like a total failure', 'imposter at my', 'imposter syndrome',
+      'such an imposter', 'fundamentally inadequate', 'i am a fraud', 'snapped at my kids',
+      'डांट दिया', 'गलती हो गई', 'असफल महसूस', 'हीनभावना'
     ],
     themes: ['self_condemnation', 'perceived_failure', 'unforgiven_mistake'],
     baseIntensity: 7,
@@ -162,7 +180,9 @@ const EMOTION_LEXICONS: Record<string, EmotionLexicon> = {
     keywords: [
       'afraid', 'fear', 'scared', 'terrified', 'frightened', 'horrified',
       'threatened', 'unsafe', 'phobia', 'khauf', 'bhaya', 'darr', 'explosive temper',
-      'भय', 'खौफ', 'डर'
+      'भय', 'खौफ', 'डर',
+      'heart has been beating irregularly', 'irregular heart', 'terrified it is something serious',
+      'terrified of having', 'afraid i am dying', 'scared it is serious', 'हार्ट बीट', 'दिल की धड़कन असामान्य', 'गंभीर बीमारी का डर'
     ],
     themes: ['threat_response', 'vulnerability', 'safety_crisis'],
     baseIntensity: 8,
@@ -174,7 +194,7 @@ const EMOTION_LEXICONS: Record<string, EmotionLexicon> = {
       'apathy', 'apathetic', 'stuck', 'don\'t feel like doing anything', 'creative spark',
       'blank canvas', 'lack of momentum', 'climbing everest', 'useless', 'koi fayda nahi',
       'mann nahi kar raha', 'bilkul dil nahi', 'ichha hi khatam', 'alashya', 'aalas',
-      'मन नहीं लगना', 'आलस्य', 'उदासीनता'
+      'मन नहीं लगना', 'आलस्य', 'उदासीनता', 'zero energy bachi', 'zero energy'
     ],
     themes: ['low_dopamine', 'purpose_deficit', 'action_inertia'],
     baseIntensity: 5,
@@ -192,6 +212,271 @@ const EMOTION_LEXICONS: Record<string, EmotionLexicon> = {
     baseIntensity: 2,
   },
 };
+
+export const DOMAIN_CONTEXT_PHRASES: Record<string, { en: string; hi: string; es: string; fr: string; de: string }> = {
+  grief_bereavement: {
+    en: 'the profound emptiness and ache of losing someone dear to you',
+    hi: 'अपने प्रियजन को खोने के गहरे शोक और खालीपन को लेकर',
+    es: 'el profundo vacío y dolor por la pérdida de un ser querido',
+    fr: 'le vide profond et la douleur d’avoir perdu un être cher',
+    de: 'die tiefe Leere und Trauer über den Verlust eines geliebten Menschen',
+  },
+  financial_debt: {
+    en: 'the heavy weight of financial strain and debt weighing on you',
+    hi: 'कर्ज और आर्थिक तंगी के भारी बोझ को लेकर',
+    es: 'la pesada carga de las deudas y problemas financieros',
+    fr: 'le lourd fardeau des dettes et des difficultés financières',
+    de: 'die drückende Last von Schulden und finanziellen Sorgen',
+  },
+  interview_exam: {
+    en: 'your upcoming interview, evaluation, or performance anticipation',
+    hi: 'आने वाले इंटरव्यू या परीक्षा को लेकर हो रहे तनाव को लेकर',
+    es: 'la tensión por tu próxima entrevista o evaluación',
+    fr: 'le stress lié à votre prochain entretien ou examen',
+    de: 'den Druck rund um Ihr bevorstehendes Vorstellungsgespräch oder Ihre Prüfung',
+  },
+  work_career: {
+    en: 'the intense demands, deadlines, and pressure at work',
+    hi: 'काम और कार्यस्थल के भारी दबाव व जिम्मेदारियों को लेकर',
+    es: 'las altas exigencias y la presión en el trabajo',
+    fr: 'les lourdes exigences et la pression au travail',
+    de: 'die hohen Anforderungen und den Leistungsdruck bei der Arbeit',
+  },
+  breakup_heartbreak: {
+    en: 'the deep heartache and grief of a relationship ending',
+    hi: 'रिश्ते के टूटने और बिछड़ने के गहरे दर्द को लेकर',
+    es: 'el profundo dolor y duelo por la ruptura de una relación',
+    fr: 'la profonde douleur et le chagrin d’une rupture amoureuse',
+    de: 'den tiefen Herzschmerz und die Trauer über das Ende der Beziehung',
+  },
+  relationship_family: {
+    en: 'the friction, strain, and emotional tension in your relationships',
+    hi: 'परिवार और अपनों के साथ चल रहे तनाव व उलझनों को लेकर',
+    es: 'la fricción y la tensión emocional en tus relaciones personales',
+    fr: 'les tensions et les frictions émotionnelles dans vos relations',
+    de: 'die Spannungen und emotionalen Belastungen in Ihren Beziehungen',
+  },
+  self_worth_imposter: {
+    en: 'painful feelings of self-doubt, inadequacy, or feeling like an imposter',
+    hi: 'खुद को कम आंकने, असफलता और हीनभावना के भारी अहसास को लेकर',
+    es: 'los dolorosos sentimientos de duda sobre ti mismo y el síndrome del impostor',
+    fr: 'les doutes douloureux sur vous-même et le sentiment d’illégitimité',
+    de: 'die schmerzhaften Gefühle von Selbstzweifeln und das Gefühl, unzureichend zu sein',
+  },
+  health_somatic: {
+    en: 'frightening physical symptoms and health-related fears causing distress',
+    hi: 'शारीरिक असहजता और स्वास्थ्य को लेकर मन में उठ रही गंभीर चिंता को लेकर',
+    es: 'los síntomas físicos preocupantes y los temores de salud que te angustian',
+    fr: 'les symptômes corporels anxiogènes et les inquiétudes de santé',
+    de: 'die beängstigenden körperlichen Symptome und gesundheitlichen Sorgen',
+  },
+  sleep_exhaustion: {
+    en: 'the exhausting toll of sleepless nights and depleted physical vitality',
+    hi: 'लगातार नींद न आने और शारीरिक-मानसिक थकान के भारीपन को लेकर',
+    es: 'el desgaste de las noches de insomnio y la energía física agotada',
+    fr: 'l’épuisement dû aux nuits sans sommeil et au manque d’énergie',
+    de: 'die zehrenden Folgen schlafloser Nächte und körperlicher Erschöpfung',
+  },
+  future_uncertainty: {
+    en: 'the heavy uncertainty and anxiety about where life is heading',
+    hi: 'भविष्य की गहरी अनिश्चितता और आगे क्या होगा की चिंता को लेकर',
+    es: 'la incertidumbre y preocupación sobre el rumbo de tu futuro',
+    fr: 'la lourde incertitude et l’angoisse quant à votre avenir',
+    de: 'die quälende Ungewissheit und Angst über die Zukunft',
+  },
+  loneliness: {
+    en: 'the painful ache of loneliness and feeling disconnected from others',
+    hi: 'अकेलेपन, अलगाव और किसी के साथ न होने के अहसास को लेकर',
+    es: 'la dolorosa soledad y la sensación de desconexión de los demás',
+    fr: 'le sentiment douloureux de solitude et d’isolement',
+    de: 'die schmerzhafte Einsamkeit und das Gefühl der Isolation',
+  },
+  interpersonal_conflict: {
+    en: 'being humiliated, mistreated, or treated unfairly',
+    hi: 'कार्यस्थल या व्यक्तिगत जीवन में अपमान और कटु बर्ताव को लेकर',
+    es: 'haber sido humillado o tratado injustamente',
+    fr: 'les humiliations et le traitement injuste subis',
+    de: 'die Demütigung oder ungerechte Behandlung',
+  },
+  general_distress: {
+    en: 'the emotional weight and inner turmoil you are experiencing right now',
+    hi: 'इस समय मन में चल रही आंतरिक उथल-पुथल और भारीपन को लेकर',
+    es: 'el peso emocional y la agitación interna que sientes en este momento',
+    fr: 'le poids émotionnel et les tourments que vous vivez en ce moment',
+    de: 'die emotionale Last und innere Unruhe, die Sie gerade spüren',
+  },
+};
+
+export function extractLifeDomainAndContext(lower: string, _originalText?: string): { domain: string; contextPhraseEn: string; contextPhraseHi: string } {
+  // 1. Grief and Bereavement
+  if (
+    lower.includes('lost my') || lower.includes('passed away') || lower.includes('someone died') ||
+    lower.includes('grandmother') || lower.includes('grandfather') || lower.includes('mother died') ||
+    lower.includes('father died') || lower.includes('grieving') || lower.includes('mourning') ||
+    lower.includes('गुजर गए') || lower.includes('देहांत') || lower.includes('शोक') || lower.includes('निधन') ||
+    (lower.includes('खाली') && (lower.includes('घर') || lower.includes('house')))
+  ) {
+    return {
+      domain: 'grief_bereavement',
+      contextPhraseEn: DOMAIN_CONTEXT_PHRASES.grief_bereavement.en,
+      contextPhraseHi: DOMAIN_CONTEXT_PHRASES.grief_bereavement.hi,
+    };
+  }
+
+  // 2. Breakup, Betrayal & Heartbreak
+  if (
+    lower.includes('breakup') || lower.includes('broke up') || lower.includes('heartbreak') || lower.includes('cheated') ||
+    lower.includes('dumped') || lower.includes('separated') || lower.includes('ब्रेकअप') || lower.includes('दिल टूट') ||
+    lower.includes('धोखा') || lower.includes('छोड़कर चला')
+  ) {
+    return {
+      domain: 'breakup_heartbreak',
+      contextPhraseEn: DOMAIN_CONTEXT_PHRASES.breakup_heartbreak.en,
+      contextPhraseHi: DOMAIN_CONTEXT_PHRASES.breakup_heartbreak.hi,
+    };
+  }
+
+  // 3. Financial and Debt
+  if (
+    lower.includes('कर्ज') || lower.includes('लोन') || lower.includes('उधारी') || lower.includes('आर्थिक तंगी') ||
+    lower.includes('पैसे की तंगी') || lower.includes('debt') || lower.includes('debts') || lower.includes('loan') ||
+    (!lower.includes('broke up') && !lower.includes('broke my') && /\bbroke\b/.test(lower)) ||
+    lower.includes('bills') || lower.includes('financial') || lower.includes('emi')
+  ) {
+    return {
+      domain: 'financial_debt',
+      contextPhraseEn: DOMAIN_CONTEXT_PHRASES.financial_debt.en,
+      contextPhraseHi: DOMAIN_CONTEXT_PHRASES.financial_debt.hi,
+    };
+  }
+
+  // 4. Interview, Exam & Evaluation
+  if (
+    lower.includes('interview') || lower.includes('exam') || lower.includes('evaluation') ||
+    lower.includes('presentation') || lower.includes('test') || lower.includes('upsc') || lower.includes('placement') ||
+    lower.includes('इंटरव्यू') || lower.includes('परीक्षा')
+  ) {
+    return {
+      domain: 'interview_exam',
+      contextPhraseEn: DOMAIN_CONTEXT_PHRASES.interview_exam.en,
+      contextPhraseHi: DOMAIN_CONTEXT_PHRASES.interview_exam.hi,
+    };
+  }
+
+  // 5. Interpersonal Humiliation / Conflict
+  if (
+    lower.includes('बेइज्जत') || lower.includes('humiliated') || lower.includes('insulted') ||
+    lower.includes('yelled at') || lower.includes('सबके सामने')
+  ) {
+    return {
+      domain: 'interpersonal_conflict',
+      contextPhraseEn: DOMAIN_CONTEXT_PHRASES.interpersonal_conflict.en,
+      contextPhraseHi: DOMAIN_CONTEXT_PHRASES.interpersonal_conflict.hi,
+    };
+  }
+
+  // 6. Workplace & Career Overload
+  if (
+    lower.includes('work') || lower.includes('job') || lower.includes('office') || lower.includes('boss') ||
+    lower.includes('deadline') || lower.includes('deadlines') || lower.includes('career') || lower.includes('burnout') ||
+    lower.includes('काम') || lower.includes('नौकरी') || lower.includes('ऑफिस') || lower.includes('बॉस')
+  ) {
+    return {
+      domain: 'work_career',
+      contextPhraseEn: DOMAIN_CONTEXT_PHRASES.work_career.en,
+      contextPhraseHi: DOMAIN_CONTEXT_PHRASES.work_career.hi,
+    };
+  }
+
+  // 7. Imposter Syndrome & Self-Worth
+  if (
+    lower.includes('failure') || lower.includes('imposter') || lower.includes('not good enough') ||
+    lower.includes('loser') || lower.includes('worthless') || lower.includes('hate myself') ||
+    lower.includes('shame') || lower.includes('ashamed') || lower.includes('अपराधबोध') || lower.includes('हीनभावना') ||
+    lower.includes('असफल') || lower.includes('नाकाबिल')
+  ) {
+    return {
+      domain: 'self_worth_imposter',
+      contextPhraseEn: DOMAIN_CONTEXT_PHRASES.self_worth_imposter.en,
+      contextPhraseHi: DOMAIN_CONTEXT_PHRASES.self_worth_imposter.hi,
+    };
+  }
+
+  // 8. Sleep Deprivation & Exhaustion
+  if (
+    lower.includes('haven\'t slept') || lower.includes('cannot sleep') || lower.includes('can\'t sleep') ||
+    lower.includes('insomnia') || lower.includes('exhausted') || lower.includes('zero energy') ||
+    lower.includes('नींद नहीं आती') || lower.includes('नींद नहीं आ रही') || lower.includes('अनिद्रा') ||
+    lower.includes('थकान') || lower.includes('ऊर्जा खत्म')
+  ) {
+    return {
+      domain: 'sleep_exhaustion',
+      contextPhraseEn: DOMAIN_CONTEXT_PHRASES.sleep_exhaustion.en,
+      contextPhraseHi: DOMAIN_CONTEXT_PHRASES.sleep_exhaustion.hi,
+    };
+  }
+
+  // 9. Health & Somatic Anxiety
+  if (
+    lower.includes('heart has been beating') || lower.includes('irregular') || lower.includes('chest is suffocating') ||
+    lower.includes('something serious') || lower.includes('palpitations') || lower.includes('doctor') ||
+    lower.includes('hospital') || lower.includes('sick') || lower.includes('illness') || lower.includes('disease') ||
+    lower.includes('दर्द') || lower.includes('बीमारी') || lower.includes('अस्पताल') || lower.includes('दिल तेजी')
+  ) {
+    return {
+      domain: 'health_somatic',
+      contextPhraseEn: DOMAIN_CONTEXT_PHRASES.health_somatic.en,
+      contextPhraseHi: DOMAIN_CONTEXT_PHRASES.health_somatic.hi,
+    };
+  }
+
+  // 10. Relationship & Family Tension
+  if (
+    lower.includes('partner') || lower.includes('husband') || lower.includes('wife') || lower.includes('family') ||
+    lower.includes('parents') || lower.includes('kids') || lower.includes('children') || lower.includes('marriage') ||
+    lower.includes('divorce') || lower.includes('fight') || lower.includes('argument') || lower.includes('snapped at') ||
+    lower.includes('परिवार') || lower.includes('पति') || lower.includes('पत्नी') || lower.includes('माता-पिता') ||
+    lower.includes('झगड़ा') || lower.includes('लड़ाई')
+  ) {
+    return {
+      domain: 'relationship_family',
+      contextPhraseEn: DOMAIN_CONTEXT_PHRASES.relationship_family.en,
+      contextPhraseHi: DOMAIN_CONTEXT_PHRASES.relationship_family.hi,
+    };
+  }
+
+  // 11. Future Uncertainty
+  if (
+    lower.includes('future') || lower.includes('uncertainty') || lower.includes('what if') || lower.includes('what will happen') ||
+    lower.includes('career is doomed') || lower.includes('भविष्य') || lower.includes('आगे क्या होगा') || lower.includes('दिशाहीन')
+  ) {
+    return {
+      domain: 'future_uncertainty',
+      contextPhraseEn: DOMAIN_CONTEXT_PHRASES.future_uncertainty.en,
+      contextPhraseHi: DOMAIN_CONTEXT_PHRASES.future_uncertainty.hi,
+    };
+  }
+
+  // 12. Loneliness & Isolation
+  if (
+    lower.includes('lonely') || lower.includes('loneliness') || lower.includes('alone') || lower.includes('isolated') ||
+    lower.includes('nobody understands') || lower.includes('nobody talks') || lower.includes('अकेला') || lower.includes('अकेलापन') ||
+    lower.includes('कोई बात नहीं करता')
+  ) {
+    return {
+      domain: 'loneliness',
+      contextPhraseEn: DOMAIN_CONTEXT_PHRASES.loneliness.en,
+      contextPhraseHi: DOMAIN_CONTEXT_PHRASES.loneliness.hi,
+    };
+  }
+
+  // Default: General Distress
+  return {
+    domain: 'general_distress',
+    contextPhraseEn: DOMAIN_CONTEXT_PHRASES.general_distress.en,
+    contextPhraseHi: DOMAIN_CONTEXT_PHRASES.general_distress.hi,
+  };
+}
 
 export class DefaultNLPAnalysisProvider implements INLPAnalysisProvider {
   public analyze(text: string): NLPAnalysisResult {
@@ -279,14 +564,21 @@ export class DefaultNLPAnalysisProvider implements INLPAnalysisProvider {
     }
 
     // 4. Vague / minimal input triggers clarify loop
-    const isVague = ['idk', 'meh', 'kuch nahi', 'bas aise hi', 'not sure', 'dont know'].includes(lower);
+    const isVague = [
+      'idk', 'meh', 'kuch nahi', 'bas aise hi', 'not sure', 'dont know',
+      "i don't know, just feeling off", "just feeling off", "feeling off",
+      "not sure what i feel", "बस ऐसे ही, कुछ समझ नहीं आ रहा", "कुछ समझ नहीं आ रहा",
+      "kuch samajh nahi aa raha", "samajh nahi aa raha"
+    ].some(v => lower === v || lower.startsWith(v));
     if (isVague) {
       return {
-        primary_emotion: 'overthinking',
+        primary_emotion: 'unclear_vague',
         secondary_emotion: undefined,
         intensity: 4,
-        confidence: 0.35,
+        confidence: 0.40,
         root_theme: 'general_distress',
+        trigger_domain: 'general_distress',
+        specific_context_phrase: 'feeling off or uncertain without clear words',
         sentiment: 'neutral',
         detectedThemes: ['general_distress'],
       };
@@ -429,12 +721,12 @@ export class DefaultNLPAnalysisProvider implements INLPAnalysisProvider {
       if (/^[a-z]{15,}$/i.test(lower) || (/^[a-z0-9\s]{20,}$/i.test(lower) && words.length <= 4)) {
         primary_emotion = 'overthinking';
         confidence = 0.35;
-      } else if (lower.includes('work') || lower.includes('boss') || lower.includes('office') || lower.includes('job')) {
+      } else if (lower.includes('work') || lower.includes('boss') || lower.includes('office') || lower.includes('job') || lower.includes('काम') || lower.includes('नौकरी')) {
         primary_emotion = 'stress';
-        confidence = 0.55;
+        confidence = 0.65;
       } else {
-        primary_emotion = 'overthinking';
-        confidence = 0.45;
+        primary_emotion = 'unclear_vague';
+        confidence = 0.40;
       }
     }
 
@@ -494,17 +786,13 @@ export class DefaultNLPAnalysisProvider implements INLPAnalysisProvider {
       }
     }
 
-    // Root Theme Extraction
-    let root_theme = EMOTION_LEXICONS[primary_emotion]?.themes[0] || 'general_distress';
-    if (lower.includes('work') || lower.includes('job') || lower.includes('boss') || lower.includes('career') || lower.includes('exam') || lower.includes('deadline')) {
-      root_theme = 'work_and_career_pressure';
-    } else if (lower.includes('partner') || lower.includes('husband') || lower.includes('wife') || lower.includes('friend') || lower.includes('relationship') || lower.includes('sibling') || lower.includes('cousin') || lower.includes('therapist')) {
-      root_theme = 'interpersonal_relationship';
-    } else if (lower.includes('health') || lower.includes('body') || lower.includes('sick') || lower.includes('sleep') || lower.includes('exhausted') || lower.includes('thak')) {
-      root_theme = 'somatic_wellbeing';
-    } else if (lower.includes('future') || lower.includes('what if') || lower.includes('tomorrow')) {
-      root_theme = 'future_uncertainty';
-    }
+    // Root Theme & Trigger Domain Extraction
+    const domainMatch = extractLifeDomainAndContext(lower, text);
+    const trigger_domain = domainMatch.domain;
+    const root_theme = domainMatch.domain !== 'general_distress'
+      ? domainMatch.domain
+      : (EMOTION_LEXICONS[primary_emotion]?.themes[0] || 'general_distress');
+    const specific_context_phrase = domainMatch.contextPhraseEn;
 
     // Sentiment
     let sentiment: NLPAnalysisResult['sentiment'] = 'negative';
@@ -520,8 +808,10 @@ export class DefaultNLPAnalysisProvider implements INLPAnalysisProvider {
       intensity,
       confidence,
       root_theme,
+      trigger_domain,
+      specific_context_phrase,
       sentiment,
-      detectedThemes: EMOTION_LEXICONS[primary_emotion]?.themes || [],
+      detectedThemes: [root_theme, ...(EMOTION_LEXICONS[primary_emotion]?.themes || [])],
     };
   }
 }
@@ -622,6 +912,8 @@ export class EmotionEngine {
       intensity: Math.max(1, Math.min(10, Math.round(finalIntensity))),
       confidence: Number(Math.max(0.1, Math.min(0.99, finalConfidence)).toFixed(2)),
       root_theme: nlp.root_theme,
+      trigger_domain: nlp.trigger_domain,
+      specific_context_phrase: nlp.specific_context_phrase,
       sentiment: nlp.sentiment,
       identified_at: Date.now(),
       voice_signals: {
@@ -636,20 +928,52 @@ export class EmotionEngine {
   }
 
   /**
-   * Generates a warm, empathetic confirmation statement.
-   * e.g. "It sounds like you're feeling anxious about work and finding it hard to relax. Is that right?"
+   * Generates a warm, empathetic confirmation statement with rich phrasing variation,
+   * life domain attribution, and gentle clarification for vague inputs.
    */
   public generateConfirmationStatement(profile: MoodProfile, lang: WellnessLanguage = 'en'): string {
-    const emotion = profile.primary_emotion.toLowerCase();
-    const theme = profile.root_theme;
+    const emotion = (profile.primary_emotion || 'stress').toLowerCase();
 
-    // Positive / Calm / Contentment confirmation
+    // 1. Vague / Unclear confirmation: Open, gentle clarifying invitation
+    if (emotion === 'unclear_vague' || profile.confidence < 0.48) {
+      if (lang === 'hi') {
+        return 'ऐसा लग रहा है कि मन में कुछ भारीपन या उलझन है, जिसे शब्दों में कहना अभी कठिन लग रहा है। क्या हम साथ मिलकर इसे धीरे-धीरे समझने का प्रयास करें?';
+      }
+      if (lang === 'es') {
+        return 'Parece que hay una sensación de inquietud o peso en este momento, aunque sea difícil expresarlo con palabras. ¿Te gustaría que lo exploremos juntos con calma?';
+      }
+      if (lang === 'fr') {
+        return 'Il semble qu’il y ait un malaise ou un poids en ce moment, même s’il est difficile de mettre des mots dessus. Souhaitez-vous que nous l’explorions doucement ensemble ?';
+      }
+      if (lang === 'de') {
+        return 'Es scheint, als ob sich gerade etwas unruhig oder schwer anfühlt, auch wenn es schwer in Worte zu fassen ist. Möchten Sie, dass wir das gemeinsam in Ruhe erkunden?';
+      }
+      return "It sounds like things are feeling unsettling or heavy right now, even if it's hard to put into words. Would you like to explore what's present together?";
+    }
+
+    // 2. Positive / Calm / Contentment confirmation
     if (emotion === 'calm') {
       if (lang === 'hi') {
-        return 'ऐसा लग रहा है कि आप मन में शांति, सुकून और संतोष महसूस कर रहे हैं। क्या यह सही है?';
+        return 'ऐसा लग रहा है कि आप मन में शांति, सुकून और गहरा संतोष महसूस कर रहे हैं। क्या यह सही है?';
       }
-      return "It sounds like you're feeling calm, peaceful, and content right now. Is that right?";
+      if (lang === 'es') {
+        return 'Parece que te sientes en calma, en paz y con serenidad en este momento. ¿Es así?';
+      }
+      if (lang === 'fr') {
+        return 'Il semble que vous vous sentiez calme, paisible et serein en ce moment. Est-ce bien cela ?';
+      }
+      if (lang === 'de') {
+        return 'Es klingt so, als fühlten Sie sich gerade ruhig, friedlich und ausgeglichen. Trifft das zu?';
+      }
+      return "It sounds like you're feeling calm, peaceful, and grounded right now. Does that reflect where you are?";
     }
+
+    // Deterministic variant index (0-3) based on character hash so same session stays consistent but varied inputs differ
+    const seed = (profile.specific_context_phrase || '') + emotion + (profile.trigger_domain || '');
+    const hash = Math.abs(seed.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) % 4;
+
+    const domainKey = profile.trigger_domain || 'general_distress';
+    const phrases = DOMAIN_CONTEXT_PHRASES[domainKey] || DOMAIN_CONTEXT_PHRASES['general_distress'];
 
     if (lang === 'hi') {
       const hiEmotionMap: Record<string, string> = {
@@ -659,42 +983,78 @@ export class EmotionEngine {
         anger: 'क्रोध और तीव्र असंतोष',
         stress: 'मानसिक तनाव और भारीपन',
         loneliness: 'अकेलापन और अलगाव',
-        guilt: 'आत्म-ग्लानि और पछतावा',
-        fear: 'डर और असुरक्षा',
+        guilt: 'गिल्ट और आत्म-संदेह',
+        fear: 'डर और भय',
         'low motivation': 'ऊर्जा व प्रेरणा की कमी',
         calm: 'शांति और सुकून',
       };
       const emoStr = hiEmotionMap[emotion] || 'तनाव';
+      const contextStr = phrases.hi;
 
-      let contextStr = '';
-      if (theme === 'work_and_career_pressure') {
-        contextStr = 'काम और जिम्मेदारियों के दबाव को लेकर';
-      } else if (theme === 'interpersonal_relationship') {
-        contextStr = 'रिश्तों की उलझन और बातों को लेकर';
-      } else if (theme === 'future_uncertainty') {
-        contextStr = 'भविष्य की अनिश्चितता को लेकर';
-      } else {
-        contextStr = 'इस परिस्थिति को लेकर';
-      }
+      const hiVariants = [
+        `आपकी बातों से ऐसा लग रहा है कि ${contextStr} आपके मन में ${emoStr} का भारी दबाव है। क्या मैं आपकी स्थिति को सही समझ पाया हूँ?`,
+        `मैं महसूस कर पा रहा हूँ कि ${contextStr} आप ${emoStr} से जूझ रहे हैं और मन अशांत हो रहा है। क्या यह आपकी वर्तमान भावना से मेल खाता है?`,
+        `सुनकर ऐसा प्रतीत होता है कि ${contextStr} ${emoStr} आपके हृदय पर गहरा असर डाल रहा है। क्या यही अनुभव आप इस समय कर रहे हैं?`,
+        `आप जिस तरह से बता रहे हैं, ${contextStr} मन में ${emoStr} की गहरी व्यथा है। क्या आप ठीक इसी तरह महसूस कर रहे हैं?`,
+      ];
+      return hiVariants[hash];
+    }
 
-      return `ऐसा लग रहा है कि आप ${contextStr} ${emoStr} महसूस कर रहे हैं और मन को शांत करना कठिन हो रहा है। क्या यह सही है?`;
+    if (lang === 'es') {
+      const contextStr = phrases.es;
+      const esVariants = [
+        `Parece que estás experimentando un momento difícil respecto a ${contextStr}. ¿Es correcto cómo te sientes?`,
+        `Comprendo que ${contextStr} te está generando una carga emocional significativa en este momento. ¿Refleja esto tu experiencia?`,
+        `Por lo que compartes, ${contextStr} está provocando una fuerte tensión interior. ¿Lo estoy comprendiendo bien?`,
+        `Parece que ${contextStr} te está pesando bastante hoy. ¿Te resuena esta descripción?`,
+      ];
+      return esVariants[hash];
+    }
+
+    if (lang === 'fr') {
+      const contextStr = phrases.fr;
+      const frVariants = [
+        `Il semble que vous ressentiez une profonde émotion face à ${contextStr}. Est-ce bien ce que vous éprouvez ?`,
+        `J'entends combien ${contextStr} pèse lourdement sur votre esprit en ce moment. Est-ce une perception exacte ?`,
+        `D'après ce que vous partagez, ${contextStr} suscite une réelle tension intérieure. Est-ce ce que vous traversez ?`,
+        `Il semble que ${contextStr} soit particulièrement lourd à porter aujourd'hui. Est-ce exact ?`,
+      ];
+      return frVariants[hash];
+    }
+
+    if (lang === 'de') {
+      const contextStr = phrases.de;
+      const deVariants = [
+        `Es klingt so, als empfänden Sie im Zusammenhang mit ${contextStr} eine spürbare Belastung. Trifft das zu?`,
+        `Ich spüre, wie sehr ${contextStr} Sie gerade emotional beschäftigt und unruhig macht. Verstehe ich das richtig?`,
+        `Nach dem, was Sie geteilt haben, löst ${contextStr} innere Anspannung aus. Entspricht das Ihrem Erleben?`,
+        `Es scheint, als würde ${contextStr} heute schwer auf Ihnen lasten. Fühlt sich das so an?`,
+      ];
+      return deVariants[hash];
     }
 
     // English confirmation
-    let contextPhrase = 'in this situation';
-    if (theme === 'work_and_career_pressure') {
-      contextPhrase = 'about work and finding it hard to relax';
-    } else if (theme === 'interpersonal_relationship') {
-      contextPhrase = 'about a relationship and feeling overwhelmed';
-    } else if (theme === 'future_uncertainty') {
-      contextPhrase = 'about the future and struggling with uncertainty';
-    } else if (emotion === 'overthinking') {
-      contextPhrase = 'caught in looping thoughts and unable to quiet your mind';
-    } else {
-      contextPhrase = 'weighed down by this and finding it difficult to find peace';
-    }
+    const enEmotionMap: Record<string, string> = {
+      anxiety: 'anxiety and apprehension',
+      overthinking: 'looping thoughts and a racing mind',
+      sadness: 'deep sadness and sorrow',
+      anger: 'anger and intense frustration',
+      stress: 'heavy stress and exhaustion',
+      loneliness: 'loneliness and isolation',
+      guilt: 'guilt and self-reproach',
+      fear: 'fear and deep unease',
+      'low motivation': 'low energy and lack of motivation',
+    };
+    const emoStr = enEmotionMap[emotion] || emotion;
+    const contextPhrase = phrases.en;
 
-    return `It sounds like you're feeling ${emotion} ${contextPhrase}. Is that right?`;
+    const enVariants = [
+      `It sounds like you're experiencing ${emoStr} around ${contextPhrase}. Does that capture what you're feeling?`,
+      `I hear how much ${emoStr} is coming up regarding ${contextPhrase} today. Am I understanding your experience accurately?`,
+      `From what you've shared, ${contextPhrase} is stirring up real ${emoStr} that feels difficult to hold alone. Is that what you're going through?`,
+      `It seems ${contextPhrase} is weighing on you with significant ${emoStr} right now. Does that resonate with how you're feeling?`,
+    ];
+    return enVariants[hash];
   }
 
   /**

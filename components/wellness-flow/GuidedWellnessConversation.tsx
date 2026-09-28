@@ -122,9 +122,12 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
       sessionTelemetry.logPhaseEnter(newState.toLowerCase() as any, snap.sessionId);
     });
 
-    // Check initial mic consent
+    // Check initial mic consent and pre-warm speech synthesis voices
     setHasMicConsent(getMicConsent());
     if (typeof window !== 'undefined') {
+      if (window.speechSynthesis) {
+        window.speechSynthesis.getVoices();
+      }
       (window as any).browserSpeechController = browserSpeechController;
       browserSpeechController.setCallbacks({
         onAssistantEnd: () => {
@@ -235,7 +238,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
           // Seamlessly start listening once the assistant finishes speaking greeting
           autoStartMicWhenSpeechEnds('MOOD_INPUT');
         });
-      }, 300);
+      }, 80);
       return () => clearTimeout(timer);
     }
   }, [isOpen, currentState, language, session.initialUtterance, speakAloud, autoStartMicWhenSpeechEnds]);

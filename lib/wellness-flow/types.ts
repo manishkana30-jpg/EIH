@@ -27,6 +27,8 @@ export interface MoodProfile {
   intensity: number;           // 1 to 10 scale
   confidence: number;          // 0.0 to 1.0 scale
   root_theme: string;          // e.g. "future_uncertainty", "perfectionism", "interpersonal_conflict", "loss_of_control"
+  trigger_domain?: string;     // e.g. "work_career", "financial_debt", "grief_bereavement", "relationship_family"
+  specific_context_phrase?: string; // Short paraphrase of user's specific context for tailored responses
   sentiment?: 'positive' | 'negative' | 'neutral' | 'mixed';
   identified_at: number;
   voice_signals?: {

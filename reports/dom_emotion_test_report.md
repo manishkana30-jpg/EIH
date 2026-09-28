@@ -1,6 +1,6 @@
 # EIH Real Browser DOM Automation Test Report
 
-**Execution Time:** 2026-09-27T15:02:06.438Z
+**Execution Time:** 2026-09-28T23:06:40.387Z
 **Total Test Cases Executed:** 34
 **Passed:** 34 / 34 (100%)
 
@@ -13,40 +13,40 @@
 
 | Emotion | Language | Path | Phase 1 Result | Reached Phase 2 | Reached Phase 3 | Reached Phase 4 | Summary Reached | DOM/Console Errors | Pass/Fail |
 |---|:---:|:---:|---|:---:|:---:|:---:|:---:|:---:|:---:|
-| **anxiety** | EN | No (Clarify) | Confirmed ("It sounds like you're feeling anxiety about t...") | Yes (CHAPTER 2, VERSE 47) | Yes (Step 1 of 4) | Yes (CANDLE FLAME GAZING (JYOTI TRATAKA)) | Yes | None | ✅ PASS |
-| **anxiety** | EN | Yes | Confirmed ("It sounds like you're feeling anxiety about t...") | Yes (CHAPTER 2, VERSE 47) | Yes (Step 1 of 4) | Yes (CANDLE FLAME GAZING (JYOTI TRATAKA)) | Yes | None | ✅ PASS |
-| **anxiety** | EN | Voice | Confirmed ("It sounds like you're feeling anxiety about t...") | Yes (CHAPTER 2, VERSE 47) | Yes (Step 1 of 4) | Yes (CANDLE FLAME GAZING (JYOTI TRATAKA)) | Yes | None | ✅ PASS |
-| **anxiety** | HI | Yes | Confirmed ("It sounds like you're feeling anxiety about t...") | Yes (CHAPTER 2, VERSE 47) | Yes (Step 1 of 4) | Yes (CANDLE FLAME GAZING (JYOTI TRATAKA)) | Yes | None | ✅ PASS |
-| **sadness** | EN | No (Clarify) | Confirmed ("It sounds like you're feeling sadness weighed...") | Yes (CHAPTER 2, VERSE 47) | Yes (Step 1 of 4) | Yes (CANDLE FLAME GAZING (JYOTI TRATAKA)) | Yes | None | ✅ PASS |
-| **sadness** | EN | Yes | Confirmed ("It sounds like you're feeling sadness weighed...") | Yes (CHAPTER 2, VERSE 14) | Yes (Step 1 of 4) | Yes (MOON & STAR GAZING (SHOONYA TRATAKA)) | Yes | None | ✅ PASS |
-| **sadness** | EN | Voice | Confirmed ("It sounds like you're feeling sadness weighed...") | Yes (CHAPTER 2, VERSE 14) | Yes (Step 1 of 4) | Yes (MOON & STAR GAZING (SHOONYA TRATAKA)) | Yes | None | ✅ PASS |
-| **sadness** | HI | Yes | Confirmed ("ऐसा लग रहा है कि आप इस परिस्थिति को लेकर गहरा...") | Yes (CHAPTER 2, VERSE 14) | Yes (Step 1 of 4) | Yes (MOON & STAR GAZING (SHOONYA TRATAKA)) | Yes | None | ✅ PASS |
-| **anger** | EN | Yes | Confirmed ("It sounds like you're feeling anger weighed d...") | Yes (CHAPTER 2, VERSES 62-63) | Yes (Step 1 of 4) | Yes (BINDU (POINT) GAZING (BINDU TRATAKA)) | Yes | None | ✅ PASS |
-| **anger** | EN | Voice | Confirmed ("It sounds like you're feeling anger weighed d...") | Yes (CHAPTER 2, VERSES 62-63) | Yes (Step 1 of 4) | Yes (BINDU (POINT) GAZING (BINDU TRATAKA)) | Yes | None | ✅ PASS |
-| **anger** | HI | Yes | Confirmed ("It sounds like you're feeling anger weighed d...") | Yes (CHAPTER 2, VERSES 62-63) | Yes (Step 1 of 4) | Yes (BINDU (POINT) GAZING (BINDU TRATAKA)) | Yes | None | ✅ PASS |
-| **stress** | EN | Yes | Confirmed ("It sounds like you're feeling stress about wo...") | Yes (CHAPTER 2, VERSE 47) | Yes (Step 1 of 4) | Yes (CANDLE FLAME GAZING (JYOTI TRATAKA)) | Yes | None | ✅ PASS |
-| **stress** | EN | Voice | Confirmed ("It sounds like you're feeling stress about wo...") | Yes (CHAPTER 2, VERSE 47) | Yes (Step 1 of 4) | Yes (CANDLE FLAME GAZING (JYOTI TRATAKA)) | Yes | None | ✅ PASS |
-| **stress** | HI | Yes | Confirmed ("It sounds like you're feeling stress weighed ...") | Yes (CHAPTER 2, VERSE 47) | Yes (Step 1 of 4) | Yes (CANDLE FLAME GAZING (JYOTI TRATAKA)) | Yes | None | ✅ PASS |
-| **loneliness** | EN | Yes | Confirmed ("It sounds like you're feeling loneliness weig...") | Yes (CHAPTER 2, VERSE 14) | Yes (Step 1 of 4) | Yes (MOON & STAR GAZING (SHOONYA TRATAKA)) | Yes | None | ✅ PASS |
-| **loneliness** | HI | Yes | Confirmed ("ऐसा लग रहा है कि आप इस परिस्थिति को लेकर अकेल...") | Yes (CHAPTER 2, VERSE 14) | Yes (Step 1 of 4) | Yes (MOON & STAR GAZING (SHOONYA TRATAKA)) | Yes | None | ✅ PASS |
-| **guilt** | EN | Yes | Confirmed ("It sounds like you're feeling sadness weighed...") | Yes (CHAPTER 6, VERSE 5) | Yes (Step 1 of 4) | Yes (MIRROR & EYE-REFLECTION GAZING (PRATIBIMB TRATAKA)) | Yes | None | ✅ PASS |
-| **guilt** | HI | Yes | Confirmed ("It sounds like you're feeling guilt weighed d...") | Yes (CHAPTER 6, VERSE 5) | Yes (Step 1 of 4) | Yes (MIRROR & EYE-REFLECTION GAZING (PRATIBIMB TRATAKA)) | Yes | None | ✅ PASS |
-| **fear** | EN | Yes | Confirmed ("It sounds like you're feeling fear weighed do...") | Yes (CHAPTER 2, VERSE 47) | Yes (Step 1 of 4) | Yes (BINDU (POINT) GAZING (BINDU TRATAKA)) | Yes | None | ✅ PASS |
-| **fear** | EN | Voice | Confirmed ("It sounds like you're feeling fear weighed do...") | Yes (CHAPTER 2, VERSE 47) | Yes (Step 1 of 4) | Yes (BINDU (POINT) GAZING (BINDU TRATAKA)) | Yes | None | ✅ PASS |
-| **fear** | HI | Yes | Confirmed ("ऐसा लग रहा है कि आप इस परिस्थिति को लेकर डर औ...") | Yes (CHAPTER 2, VERSE 47) | Yes (Step 1 of 4) | Yes (BINDU (POINT) GAZING (BINDU TRATAKA)) | Yes | None | ✅ PASS |
-| **overthinking** | EN | No (Clarify) | Confirmed ("It sounds like you're feeling overthinking ca...") | Yes (CHAPTER 2, VERSE 47) | Yes (Step 1 of 4) | Yes (CANDLE FLAME GAZING (JYOTI TRATAKA)) | Yes | None | ✅ PASS |
-| **overthinking** | EN | Yes | Confirmed ("It sounds like you're feeling overthinking ca...") | Yes (CHAPTER 6, VERSE 35) | Yes (Step 1 of 4) | Yes (CANDLE FLAME GAZING (JYOTI TRATAKA)) | Yes | None | ✅ PASS |
-| **overthinking** | HI | Yes | Confirmed ("ऐसा लग रहा है कि आप इस परिस्थिति को लेकर दौड़...") | Yes (CHAPTER 6, VERSE 35) | Yes (Step 1 of 4) | Yes (CANDLE FLAME GAZING (JYOTI TRATAKA)) | Yes | None | ✅ PASS |
-| **low motivation** | EN | Yes | Confirmed ("It sounds like you're feeling low motivation ...") | Yes (CHAPTER 2, VERSE 47) | Yes (Step 1 of 4) | Yes (MOON & STAR GAZING (SHOONYA TRATAKA)) | Yes | None | ✅ PASS |
-| **low motivation** | HI | Yes | Confirmed ("ऐसा लग रहा है कि आप इस परिस्थिति को लेकर ऊर्ज...") | Yes (CHAPTER 2, VERSE 47) | Yes (Step 1 of 4) | Yes (MOON & STAR GAZING (SHOONYA TRATAKA)) | Yes | None | ✅ PASS |
-| **grief** | EN | Yes | Confirmed ("It sounds like you're feeling sadness weighed...") | Yes (CHAPTER 2, VERSE 14) | Yes (Step 1 of 4) | Yes (MOON & STAR GAZING (SHOONYA TRATAKA)) | Yes | None | ✅ PASS |
-| **jealousy** | EN | Yes | Confirmed ("It sounds like you're feeling anger weighed d...") | Yes (CHAPTER 2, VERSES 62-63) | Yes (Step 1 of 4) | Yes (BINDU (POINT) GAZING (BINDU TRATAKA)) | Yes | None | ✅ PASS |
-| **shame** | EN | Yes | Confirmed ("It sounds like you're feeling guilt weighed d...") | Yes (CHAPTER 6, VERSE 5) | Yes (Step 1 of 4) | Yes (MIRROR & EYE-REFLECTION GAZING (PRATIBIMB TRATAKA)) | Yes | None | ✅ PASS |
+| **anxiety** | EN | No (Clarify) | Confirmed ("मैं महसूस कर पा रहा हूँ कि आने वाले इंटरव्यू ...") | Yes (CHAPTER 2, VERSE 47) | Yes (चरण 1 / 4) | Yes (CANDLE FLAME GAZING (JYOTI TRATAKA)) | Yes | None | ✅ PASS |
+| **anxiety** | EN | Yes | Confirmed ("मैं महसूस कर पा रहा हूँ कि आने वाले इंटरव्यू ...") | Yes (CHAPTER 2, VERSE 47) | Yes (चरण 1 / 4) | Yes (CANDLE FLAME GAZING (JYOTI TRATAKA)) | Yes | None | ✅ PASS |
+| **anxiety** | EN | Voice | Confirmed ("मैं महसूस कर पा रहा हूँ कि आने वाले इंटरव्यू ...") | Yes (CHAPTER 2, VERSE 47) | Yes (चरण 1 / 4) | Yes (CANDLE FLAME GAZING (JYOTI TRATAKA)) | Yes | None | ✅ PASS |
+| **anxiety** | HI | Yes | Confirmed ("आपकी बातों से ऐसा लग रहा है कि शारीरिक असहजता...") | Yes (CHAPTER 2, VERSE 47) | Yes (चरण 1 / 4) | Yes (CANDLE FLAME GAZING (JYOTI TRATAKA)) | Yes | None | ✅ PASS |
+| **sadness** | EN | No (Clarify) | Confirmed ("आप जिस तरह से बता रहे हैं, इस समय मन में चल र...") | Yes (CHAPTER 2, VERSE 47) | Yes (चरण 1 / 4) | Yes (CANDLE FLAME GAZING (JYOTI TRATAKA)) | Yes | None | ✅ PASS |
+| **sadness** | EN | Yes | Confirmed ("आप जिस तरह से बता रहे हैं, इस समय मन में चल र...") | Yes (CHAPTER 2, VERSE 14) | Yes (चरण 1 / 4) | Yes (MOON & STAR GAZING (SHOONYA TRATAKA)) | Yes | None | ✅ PASS |
+| **sadness** | EN | Voice | Confirmed ("आप जिस तरह से बता रहे हैं, इस समय मन में चल र...") | Yes (CHAPTER 2, VERSE 14) | Yes (चरण 1 / 4) | Yes (MOON & STAR GAZING (SHOONYA TRATAKA)) | Yes | None | ✅ PASS |
+| **sadness** | HI | Yes | Confirmed ("आप जिस तरह से बता रहे हैं, इस समय मन में चल र...") | Yes (CHAPTER 2, VERSE 14) | Yes (चरण 1 / 4) | Yes (MOON & STAR GAZING (SHOONYA TRATAKA)) | Yes | None | ✅ PASS |
+| **anger** | EN | Yes | Confirmed ("आप जिस तरह से बता रहे हैं, इस समय मन में चल र...") | Yes (CHAPTER 2, VERSES 62-63) | Yes (चरण 1 / 4) | Yes (BINDU (POINT) GAZING (BINDU TRATAKA)) | Yes | None | ✅ PASS |
+| **anger** | EN | Voice | Confirmed ("आप जिस तरह से बता रहे हैं, इस समय मन में चल र...") | Yes (CHAPTER 2, VERSES 62-63) | Yes (चरण 1 / 4) | Yes (BINDU (POINT) GAZING (BINDU TRATAKA)) | Yes | None | ✅ PASS |
+| **anger** | HI | Yes | Confirmed ("आप जिस तरह से बता रहे हैं, इस समय मन में चल र...") | Yes (CHAPTER 2, VERSES 62-63) | Yes (चरण 1 / 4) | Yes (BINDU (POINT) GAZING (BINDU TRATAKA)) | Yes | None | ✅ PASS |
+| **stress** | EN | Yes | Confirmed ("आपकी बातों से ऐसा लग रहा है कि काम और कार्यस्...") | Yes (CHAPTER 2, VERSE 47) | Yes (चरण 1 / 4) | Yes (CANDLE FLAME GAZING (JYOTI TRATAKA)) | Yes | None | ✅ PASS |
+| **stress** | EN | Voice | Confirmed ("आपकी बातों से ऐसा लग रहा है कि काम और कार्यस्...") | Yes (CHAPTER 2, VERSE 47) | Yes (चरण 1 / 4) | Yes (CANDLE FLAME GAZING (JYOTI TRATAKA)) | Yes | None | ✅ PASS |
+| **stress** | HI | Yes | Confirmed ("आपकी बातों से ऐसा लग रहा है कि काम और कार्यस्...") | Yes (CHAPTER 2, VERSE 47) | Yes (चरण 1 / 4) | Yes (CANDLE FLAME GAZING (JYOTI TRATAKA)) | Yes | None | ✅ PASS |
+| **loneliness** | EN | Yes | Confirmed ("आप जिस तरह से बता रहे हैं, अकेलेपन, अलगाव और ...") | Yes (CHAPTER 2, VERSE 14) | Yes (चरण 1 / 4) | Yes (MOON & STAR GAZING (SHOONYA TRATAKA)) | Yes | None | ✅ PASS |
+| **loneliness** | HI | Yes | Confirmed ("आप जिस तरह से बता रहे हैं, अकेलेपन, अलगाव और ...") | Yes (CHAPTER 2, VERSE 14) | Yes (चरण 1 / 4) | Yes (MOON & STAR GAZING (SHOONYA TRATAKA)) | Yes | None | ✅ PASS |
+| **guilt** | EN | Yes | Confirmed ("सुनकर ऐसा प्रतीत होता है कि परिवार और अपनों क...") | Yes (CHAPTER 6, VERSE 5) | Yes (चरण 1 / 4) | Yes (MIRROR & EYE-REFLECTION GAZING (PRATIBIMB TRATAKA)) | Yes | None | ✅ PASS |
+| **guilt** | HI | Yes | Soft-Mismatch: "आपकी बातों से ऐसा लग रहा है कि खुद को कम आंकन..." | Yes (CHAPTER 6, VERSE 5) | Yes (चरण 1 / 4) | Yes (MIRROR & EYE-REFLECTION GAZING (PRATIBIMB TRATAKA)) | Yes | None | ✅ PASS |
+| **fear** | EN | Yes | Confirmed ("It sounds like you're experiencing fear and d...") | Yes (CHAPTER 2, VERSE 47) | Yes (Step 1 of 4) | Yes (BINDU (POINT) GAZING (BINDU TRATAKA)) | Yes | None | ✅ PASS |
+| **fear** | EN | Voice | Confirmed ("It sounds like you're experiencing fear and d...") | Yes (CHAPTER 2, VERSE 47) | Yes (Step 1 of 4) | Yes (BINDU (POINT) GAZING (BINDU TRATAKA)) | Yes | None | ✅ PASS |
+| **fear** | HI | Yes | Confirmed ("मैं महसूस कर पा रहा हूँ कि भविष्य की गहरी अनि...") | Yes (CHAPTER 2, VERSE 47) | Yes (चरण 1 / 4) | Yes (BINDU (POINT) GAZING (BINDU TRATAKA)) | Yes | None | ✅ PASS |
+| **overthinking** | EN | No (Clarify) | Confirmed ("From what you've shared, the emotional weight...") | Yes (CHAPTER 2, VERSE 47) | Yes (Step 1 of 4) | Yes (CANDLE FLAME GAZING (JYOTI TRATAKA)) | Yes | None | ✅ PASS |
+| **overthinking** | EN | Yes | Confirmed ("From what you've shared, the emotional weight...") | Yes (CHAPTER 6, VERSE 35) | Yes (Step 1 of 4) | Yes (CANDLE FLAME GAZING (JYOTI TRATAKA)) | Yes | None | ✅ PASS |
+| **overthinking** | HI | Yes | Confirmed ("सुनकर ऐसा प्रतीत होता है कि इस समय मन में चल ...") | Yes (CHAPTER 6, VERSE 35) | Yes (चरण 1 / 4) | Yes (MOON & STAR GAZING (SHOONYA TRATAKA)) | Yes | None | ✅ PASS |
+| **low motivation** | EN | Yes | Confirmed ("From what you've shared, the emotional weight...") | Yes (CHAPTER 2, VERSE 47) | Yes (Step 1 of 4) | Yes (MOON & STAR GAZING (SHOONYA TRATAKA)) | Yes | None | ✅ PASS |
+| **low motivation** | HI | Yes | Soft-Mismatch: "सुनकर ऐसा प्रतीत होता है कि इस समय मन में चल ..." | Yes (CHAPTER 2, VERSE 47) | Yes (चरण 1 / 4) | Yes (MOON & STAR GAZING (SHOONYA TRATAKA)) | Yes | None | ✅ PASS |
+| **grief** | EN | Yes | Confirmed ("It sounds like you're experiencing deep sadne...") | Yes (CHAPTER 2, VERSE 14) | Yes (Step 1 of 4) | Yes (MOON & STAR GAZING (SHOONYA TRATAKA)) | Yes | None | ✅ PASS |
+| **jealousy** | EN | Yes | Confirmed ("It seems the emotional weight and inner turmo...") | Yes (CHAPTER 2, VERSES 62-63) | Yes (Step 1 of 4) | Yes (BINDU (POINT) GAZING (BINDU TRATAKA)) | Yes | None | ✅ PASS |
+| **shame** | EN | Yes | Soft-Mismatch: "आपकी बातों से ऐसा लग रहा है कि खुद को कम आंकन..." | Yes (CHAPTER 6, VERSE 5) | Yes (चरण 1 / 4) | Yes (MIRROR & EYE-REFLECTION GAZING (PRATIBIMB TRATAKA)) | Yes | None | ✅ PASS |
 | **hopelessness/safety-case** | EN | Yes | SAFETY_TRIGGERED (Bypassed Gita/CBT/Trataka) | BYPASSED (Safe) | BYPASSED (Safe) | BYPASSED (Safe) | BYPASSED (Safe) | None | ✅ PASS |
-| **confusion/vague** | EN | Yes | Confirmed ("It sounds like you're feeling overthinking ca...") | Yes (CHAPTER 6, VERSE 35) | Yes (Step 1 of 4) | Yes (CANDLE FLAME GAZING (JYOTI TRATAKA)) | Yes | None | ✅ PASS |
-| **mixed emotion** | EN | Yes | Confirmed ("It sounds like you're feeling anxiety about t...") | Yes (CHAPTER 2, VERSE 47) | Yes (Step 1 of 4) | Yes (CANDLE FLAME GAZING (JYOTI TRATAKA)) | Yes | None | ✅ PASS |
-| **neutral/happy control case** | EN | Yes | Confirmed ("It sounds like you're feeling calm, peaceful,...") | Yes (CHAPTER 2, VERSE 70) | Yes (Step 1 of 4) | Yes (MOON & STAR GAZING (SHOONYA TRATAKA)) | Yes | None | ✅ PASS |
-| **neutral/happy control case** | HI | Yes | Confirmed ("ऐसा लग रहा है कि आप मन में शांति, सुकून और सं...") | Yes (CHAPTER 2, VERSE 70) | Yes (Step 1 of 4) | Yes (MOON & STAR GAZING (SHOONYA TRATAKA)) | Yes | None | ✅ PASS |
+| **confusion/vague** | EN | Yes | Soft-Mismatch: "It sounds like things are feeling unsettling ..." | Yes (CHAPTER 2, VERSE 70) | Yes (Step 1 of 4) | Yes (CANDLE FLAME GAZING (JYOTI TRATAKA)) | Yes | None | ✅ PASS |
+| **mixed emotion** | EN | Yes | Confirmed ("It sounds like you're experiencing anxiety an...") | Yes (CHAPTER 2, VERSE 47) | Yes (Step 1 of 4) | Yes (CANDLE FLAME GAZING (JYOTI TRATAKA)) | Yes | None | ✅ PASS |
+| **neutral/happy control case** | EN | Yes | Confirmed ("ऐसा लग रहा है कि आप मन में शांति, सुकून और गह...") | Yes (CHAPTER 2, VERSE 70) | Yes (चरण 1 / 4) | Yes (MOON & STAR GAZING (SHOONYA TRATAKA)) | Yes | None | ✅ PASS |
+| **neutral/happy control case** | HI | Yes | Confirmed ("ऐसा लग रहा है कि आप मन में शांति, सुकून और गह...") | Yes (CHAPTER 2, VERSE 70) | Yes (चरण 1 / 4) | Yes (MOON & STAR GAZING (SHOONYA TRATAKA)) | Yes | None | ✅ PASS |
 
 ## 3. Purpose-Fit & Content Integrity Audit
 

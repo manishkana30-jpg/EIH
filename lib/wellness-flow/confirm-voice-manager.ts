@@ -81,10 +81,26 @@ export class ConfirmVoiceManager {
   }
 
   /**
+   * Pre-warms the SpeechRecognition engine and audio subsystem in the background
+   * while TTS prompt is speaking, eliminating hardware cold-start latency when listening begins.
+   */
+  public warmUp(): void {
+    if (typeof window === 'undefined') return;
+    try {
+      const SpeechRec = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SpeechRec && !this.recognizer) {
+        const probe = new SpeechRec();
+        probe.abort();
+      }
+    } catch (_) {}
+  }
+
+  /**
    * Begins the Phase 1 Confirmation Voice Flow:
-   * 1. Plays confirmation prompt via TTS.
-   * 2. Waits 400ms after TTS ends.
-   * 3. Spawns dedicated Yes/No short-session listener.
+   * 1. Pre-warms speech recognition in the background.
+   * 2. Plays confirmation prompt via TTS.
+   * 3. Waits 550ms buffer gap after TTS ends for clean audio device release.
+   * 4. Spawns dedicated Yes/No short-session listener.
    */
   public startConfirmationFlow(confirmationPromptText: string): void {
     if (typeof window !== 'undefined') {
@@ -95,6 +111,9 @@ export class ConfirmVoiceManager {
     this.currentAttempt = 0;
     this.isListeningActive = false;
     this.stopAllAudioAndTimers();
+
+    // Pre-warm SpeechRecognition during TTS playback so Attempt 1 has zero cold-start delay
+    this.warmUp();
 
     logConfirmDebug('TRANSITION', 'Initiating Phase 1 Confirmation Voice Flow');
 
@@ -112,7 +131,7 @@ export class ConfirmVoiceManager {
       'speaking_prompt',
       this.language === 'hi' ? 'बोल रहे हैं...' : 'Speaking confirmation...',
       () => {
-        // TTS Finished -> Wait 400ms gap before opening microphone
+        // TTS Finished -> Wait 550ms device buffer gap before opening microphone
         this.callbacks.onStatusChange(
           'delay_gap',
           this.language === 'hi' ? 'तैयार हो रहे हैं...' : 'Preparing microphone...'
@@ -121,7 +140,7 @@ export class ConfirmVoiceManager {
           if (!this.transitionFired && !this.isDestroyed) {
             this.startDedicatedListeningSession(1);
           }
-        }, 400);
+        }, 550);
       }
     );
   }
@@ -263,15 +282,21 @@ export class ConfirmVoiceManager {
         recognizer.lang = navLang && navLang.startsWith('en') ? navLang : 'en-US';
       }
 
+      // Maintain delay_gap status until recognizer.onstart confirms hardware is capturing
       this.callbacks.onStatusChange(
-        'listening',
-        this.language === 'hi' ? 'सुन रहे हैं... (हाँ या नहीं कहें)' : 'Listening... (Say Yes or No)'
+        'delay_gap',
+        this.language === 'hi' ? 'माइक शुरू हो रहा है...' : 'Starting microphone...'
       );
 
       recognizer.onstart = () => {
         this.isListening = true;
         setMicConsent(true);
         logConfirmDebug('STT', `Recognizer onstart active (lang=${recognizer.lang}, attempt=${this.currentAttempt})`);
+        // Real microphone capture is confirmed ready
+        this.callbacks.onStatusChange(
+          'listening',
+          this.language === 'hi' ? 'सुन रहे हैं... (हाँ या नहीं कहें)' : 'Listening... (Say Yes or No)'
+        );
       };
 
       recognizer.onresult = (event: any) => {
@@ -415,12 +440,12 @@ export class ConfirmVoiceManager {
         'retry_prompt',
         this.language === 'hi' ? 'कृपया हाँ या नहीं कहें...' : 'Please say Yes or No...',
         () => {
-          // Wait 400ms then start Attempt 2
+          // Wait 550ms buffer gap then start Attempt 2
           this.gapTimer = setTimeout(() => {
             if (!this.transitionFired && !this.isDestroyed) {
               this.startDedicatedListeningSession(2);
             }
-          }, 400);
+          }, 550);
         }
       );
     } else {
