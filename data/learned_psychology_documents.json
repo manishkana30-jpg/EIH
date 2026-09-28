@@ -1271,5 +1271,55 @@
     "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13352642/",
     "source_platform": "NCBI PubMed & Wikipedia Clinical Knowledge",
     "query_trigger": "Need peace today"
+  },
+  {
+    "id": "learned_protocol",
+    "name": "Learned: ??? ????? ???? ?? ??? ?? Protocol",
+    "category": "Self-Learned Clinical Knowledge",
+    "triguna_balance": "Vata-Rajas Autonomic Regulation",
+    "core_symptoms": [
+      "??? ????? ???? ?? ??? ??"
+    ],
+    "cognitive_distortions": [
+      "Cognitive Overwhelm",
+      "Emotional Reasoning"
+    ],
+    "solutions": {
+      "cbt_reframing": "Acknowledge this experience as a transient physiological signal. Notice thoughts without judgment.\n\n[Wikipedia Context]: Evidence-based psychological constructs and emotional regulation taxonomies.\n[PubMed Literature]: Efficacy of blended digital and face-to-face psychotherapy compared to enhanced psychotherapy for patients with Somatic Symptom Disorder (iSOMA+): study protocol for a multicenter randomized controlled pragmatic trial.: NCBI Clinical Evidence on ??? ????? ???? ?? ??? ??: Efficacy of blended digital and face-to-face psychotherapy compared to enhanced psychotherapy for patients with Somatic Symptom Disorder (iSOMA+): study protocol for a multicenter randomized controlled pragmatic trial. Restraint in somatic healthcare: how should it be regulated?: NCBI Clinical Evidence on ??? ????? ???? ?? ??? ??: Restraint in somatic healthcare: how should it be regulated?",
+      "somatic_anchor": "Drop shoulders away from ears, place one hand on the lower abdomen, and feel the solid floor underneath your feet for 30 seconds.",
+      "pranayama": "Practice 4-4-4-4 Box Breathing or Nadi Shodhana for 3 minutes to restore autonomic balance.",
+      "micro_habit": "Write down one single micro-task within your direct control right now and release long-term rumination."
+    },
+    "severity_level": "Mild to Moderate",
+    "recommended_trataka_mode": "bindu",
+    "requires_immediate_crisis": false,
+    "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13352642/",
+    "source_platform": "NCBI PubMed & Wikipedia Clinical Knowledge",
+    "query_trigger": "??? ????? ???? ?? ??? ??"
+  },
+  {
+    "id": "learned_\u091c__\u0939_____\u091f__\u0936\u0928_\u0939__\u0930\u0939__\u0939",
+    "name": "Learned: \u091c\u0940 \u0939\u093e\u0902 / \u091f\u0947\u0902\u0936\u0928 \u0939\u094b \u0930\u0939\u0940 \u0939\u0948 Protocol",
+    "category": "Self-Learned Clinical Knowledge",
+    "triguna_balance": "Vata-Rajas Autonomic Regulation",
+    "core_symptoms": [
+      "\u091c\u0940 \u0939\u093e\u0902 / \u091f\u0947\u0902\u0936\u0928 \u0939\u094b \u0930\u0939\u0940 \u0939\u0948"
+    ],
+    "cognitive_distortions": [
+      "Cognitive Overwhelm",
+      "Emotional Reasoning"
+    ],
+    "solutions": {
+      "cbt_reframing": "Acknowledge this experience as a transient physiological signal. Notice thoughts without judgment.\n\n[Wikipedia Context]: Evidence-based psychological constructs and emotional regulation taxonomies.\n[PubMed Literature]: Efficacy of blended digital and face-to-face psychotherapy compared to enhanced psychotherapy for patients with Somatic Symptom Disorder (iSOMA+): study protocol for a multicenter randomized controlled pragmatic trial.: NCBI Clinical Evidence on \u091c\u0940 \u0939\u093e\u0902 / \u091f\u0947\u0902\u0936\u0928 \u0939\u094b \u0930\u0939\u0940 \u0939\u0948: Efficacy of blended digital and face-to-face psychotherapy compared to enhanced psychotherapy for patients with Somatic Symptom Disorder (iSOMA+): study protocol for a multicenter randomized controlled pragmatic trial. Restraint in somatic healthcare: how should it be regulated?: NCBI Clinical Evidence on \u091c\u0940 \u0939\u093e\u0902 / \u091f\u0947\u0902\u0936\u0928 \u0939\u094b \u0930\u0939\u0940 \u0939\u0948: Restraint in somatic healthcare: how should it be regulated?",
+      "somatic_anchor": "Drop shoulders away from ears, place one hand on the lower abdomen, and feel the solid floor underneath your feet for 30 seconds.",
+      "pranayama": "Practice 4-4-4-4 Box Breathing or Nadi Shodhana for 3 minutes to restore autonomic balance.",
+      "micro_habit": "Write down one single micro-task within your direct control right now and release long-term rumination."
+    },
+    "severity_level": "Mild to Moderate",
+    "recommended_trataka_mode": "bindu",
+    "requires_immediate_crisis": false,
+    "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13352642/",
+    "source_platform": "NCBI PubMed & Wikipedia Clinical Knowledge",
+    "query_trigger": "\u091c\u0940 \u0939\u093e\u0902 / \u091f\u0947\u0902\u0936\u0928 \u0939\u094b \u0930\u0939\u0940 \u0939\u0948"
   }
 ]

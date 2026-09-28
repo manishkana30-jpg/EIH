@@ -4,8 +4,7 @@
       "C:\\Users\\manis\\AppData\\Local\\Microsoft\\WinGet\\Packages\\OpenJS.NodeJS.LTS_Microsoft.Winget.Source_8wekyb3d8bbwe\\node-v24.19.0-win-x64\\node.exe",
       "C:\\Users\\manis\\EIH\\node_modules\\@playwright\\test\\cli.js",
       "test",
-      "tests/e2e/audio-steps/step01-mic-permission.spec.ts",
-      "--headed"
+      "tests/e2e/audio-steps/step12-hindi-distress-transcript.spec.ts"
     ],
     "configFile": "C:\\Users\\manis\\EIH\\playwright.config.ts",
     "rootDir": "C:/Users/manis/EIH/tests/e2e/audio-steps",
@@ -67,20 +66,20 @@
   },
   "suites": [
     {
-      "title": "step01-mic-permission.spec.ts",
-      "file": "step01-mic-permission.spec.ts",
+      "title": "step12-hindi-distress-transcript.spec.ts",
+      "file": "step12-hindi-distress-transcript.spec.ts",
       "column": 0,
       "line": 0,
       "specs": [],
       "suites": [
         {
-          "title": "STEP 1: Mic Permission Grant Test",
-          "file": "step01-mic-permission.spec.ts",
-          "line": 4,
+          "title": "Hindi Distress Transcript & Sequential Progression E2E",
+          "file": "step12-hindi-distress-transcript.spec.ts",
+          "line": 5,
           "column": 6,
           "specs": [
             {
-              "title": "asserts microphone permission shows granted in DOM and browser context after grant",
+              "title": "reproduces exact transcript, asserts real Gita/CBT/Trataka content, and asserts accurate step counter",
               "ok": true,
               "tags": [],
               "tests": [
@@ -95,22 +94,22 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 13399,
+                      "duration": 22160,
                       "errors": [],
                       "stdout": [
                         {
-                          "text": "[STEP 1] Browser microphone permission query: \"granted\"\n"
+                          "text": "✓ Hindi Distress Transcript E2E passed. Screenshot saved to C:\\Users\\manis\\EIH\\reports\\screenshots\\hindi_distress_regression_passed.png\n"
                         }
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-09-27T15:14:57.428Z",
+                      "startTime": "2026-09-28T14:50:00.482Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "C:\\Users\\manis\\EIH\\test-results\\step01-mic-permission-STEP-e9fcf-browser-context-after-grant\\test-finished-1.png"
+                          "path": "C:\\Users\\manis\\EIH\\test-results\\step12-hindi-distress-tran-a2db1-serts-accurate-step-counter\\test-finished-1.png"
                         }
                       ]
                     }
@@ -118,9 +117,9 @@
                   "status": "expected"
                 }
               ],
-              "id": "29c5b0e1b2355b5996a3-b2519881bcfbefe5cde0",
-              "file": "step01-mic-permission.spec.ts",
-              "line": 5,
+              "id": "feb2ea7486092726e7be-911e8c147707d720d447",
+              "file": "step12-hindi-distress-transcript.spec.ts",
+              "line": 6,
               "column": 7
             }
           ]
@@ -130,8 +129,8 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-09-27T15:14:57.083Z",
-    "duration": 14396.018,
+    "startTime": "2026-09-28T14:50:00.170Z",
+    "duration": 28096.139000000003,
     "expected": 1,
     "skipped": 0,
     "unexpected": 0,
