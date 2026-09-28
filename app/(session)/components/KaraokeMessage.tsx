@@ -482,8 +482,11 @@ const KaraokeMessageComponent: React.FC<KaraokeMessageProps> = ({
   const card3Counter: RenderCounter = { wordIndex: 0, sentenceIndex: 0 };
   const card4Counter: RenderCounter = { wordIndex: 0, sentenceIndex: 0 };
 
-  const isHindi = /[\u0900-\u097F]/.test(message.text) || (message.locale ? message.locale.startsWith("hi") : false);
-  const isSpanish = (message.locale ? message.locale.startsWith("es") : false) || /\b(sabiduría|verso)\b/i.test(message.text);
+  const isExplicitLocale = Boolean(message.locale && message.locale.length >= 2);
+  const isSpanish = (message.locale ? message.locale.startsWith("es") : false) || (!isExplicitLocale && /\b(sabiduría|verso|emocional|resumen)\b/i.test(therapeuticBody));
+  const isFrench = (message.locale ? message.locale.startsWith("fr") : false) || (!isExplicitLocale && /\b(sagesse|verset|émotionnel|résumé)\b/i.test(therapeuticBody));
+  const isGerman = (message.locale ? message.locale.startsWith("de") : false) || (!isExplicitLocale && /\b(weisheit|kapitel|emotional|zusammenfassung)\b/i.test(therapeuticBody));
+  const isHindi = (message.locale ? message.locale.startsWith("hi") : false) || (!isSpanish && !isFrench && !isGerman && /[\u0900-\u097F]/.test(therapeuticBody));
 
   const stage1 = parsedStages.stages.find(s => s.stage === 1);
   const stage2 = parsedStages.stages.find(s => s.stage === 2);
@@ -548,9 +551,9 @@ const KaraokeMessageComponent: React.FC<KaraokeMessageProps> = ({
             {/* Step Progression Bar */}
             <div className="flex items-center justify-between gap-1 pb-2 border-b border-white/5 text-[10px] sm:text-[11px] font-mono select-none" data-testid="sanctuary-progression-bar">
               {[
-                { num: 1, label: isHindi ? "1. स्थिति" : "1. Emotion" },
+                { num: 1, label: isHindi ? "1. स्थिति" : isSpanish ? "1. Emoción" : isFrench ? "1. Émotion" : isGerman ? "1. Emotion" : "1. Emotion" },
                 { num: 2, label: isHindi ? "2. गीता" : "2. Gita" },
-                { num: 3, label: isHindi ? "3. CBT" : "3. CBT" },
+                { num: 3, label: isHindi ? "3. CBT" : isSpanish || isFrench ? "3. TCC" : "3. CBT" },
                 { num: 4, label: isHindi ? "4. त्राटक" : "4. Tratak" },
               ].map((step, idx) => {
                 const isPassed = activeStage > step.num;
@@ -937,7 +940,15 @@ const KaraokeMessageComponent: React.FC<KaraokeMessageProps> = ({
                       onClick={onOpenCBT}
                       className="text-[10px] font-medium text-emerald-400 hover:text-emerald-300 underline underline-offset-2 transition-colors cursor-pointer"
                     >
-                      Interactive CBT →
+                      {isHindi
+                        ? "इंटरएक्टिव CBT →"
+                        : isSpanish
+                        ? "TCC interactiva →"
+                        : isFrench
+                        ? "TCC interactive →"
+                        : isGerman
+                        ? "Interaktive CBT →"
+                        : "Interactive CBT →"}
                     </button>
                   )}
                 </div>
@@ -959,7 +970,15 @@ const KaraokeMessageComponent: React.FC<KaraokeMessageProps> = ({
                       }}
                       className="px-3 py-1.5 rounded-lg bg-red-600/80 hover:bg-red-500 text-white text-xs font-medium transition-colors cursor-pointer"
                     >
-                      {isHindi ? "पुनः प्रयास करें (Retry)" : "Retry CBT Content"}
+                      {isHindi
+                        ? "पुनः प्रयास करें (Retry)"
+                        : isSpanish
+                        ? "Reintentar TCC"
+                        : isFrench
+                        ? "Réessayer la TCC"
+                        : isGerman
+                        ? "CBT wiederholen"
+                        : "Retry CBT Content"}
                     </button>
                   </div>
                 ) : (
@@ -983,7 +1002,17 @@ const KaraokeMessageComponent: React.FC<KaraokeMessageProps> = ({
                     className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 text-[11px] font-medium transition-all cursor-pointer"
                   >
                     <Volume2 className="w-3.5 h-3.5" />
-                    <span>{isHindi ? "CBT तकनीक सुनें 🔊" : "Listen CBT Guidance 🔊"}</span>
+                    <span>
+                      {isHindi
+                        ? "CBT तकनीक सुनें 🔊"
+                        : isSpanish
+                        ? "Escuchar guía TCC 🔊"
+                        : isFrench
+                        ? "Écouter le guide TCC 🔊"
+                        : isGerman
+                        ? "CBT-Anleitung hören 🔊"
+                        : "Listen CBT Guidance 🔊"}
+                    </span>
                   </button>
 
                   {activeStage === 3 && (
@@ -993,7 +1022,17 @@ const KaraokeMessageComponent: React.FC<KaraokeMessageProps> = ({
                       onClick={() => handleAdvanceTo(4)}
                       className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition-all shadow-md active:scale-95 cursor-pointer ml-auto"
                     >
-                      <span>{isHindi ? "अगला: त्राटक ध्यान विधि →" : "Next: Tratak Gazing →"}</span>
+                      <span>
+                        {isHindi
+                          ? "अगला: त्राटक ध्यान विधि →"
+                          : isSpanish
+                          ? "Siguiente: Meditación Tratak →"
+                          : isFrench
+                          ? "Suivant : Méditation Tratak →"
+                          : isGerman
+                          ? "Weiter: Tratak-Meditation →"
+                          : "Next: Tratak Gazing →"}
+                      </span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </button>
                   )}

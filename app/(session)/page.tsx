@@ -53,6 +53,8 @@ import {
   parseStageNavigationIntent,
   getLocalizedClarificationPrompt,
 } from "@/lib/wellness-flow/confirm-intent-parser";
+import { wellnessStateMachine } from "@/lib/wellness-flow/wellness-state-machine";
+import type { WellnessLanguage } from "@/lib/wellness-flow/types";
 import { sessionTelemetry } from "@/lib/telemetry/session-telemetry";
 import { TelemetryConsentModal } from "./components/TelemetryConsentModal";
 import { saveLivePsychologyTelemetry, clearPsychologyTelemetry } from "@/lib/telemetry/psychology-store";
@@ -126,8 +128,8 @@ export default function SanctuarySessionPage() {
 
   // Dynamically resolve active CBT Reframe for Trataka Neuroplastic Phase
   const activeCbtReframe = React.useMemo(() => {
-    return resolveActiveCbtReframe(messages, telemetry);
-  }, [messages, telemetry]);
+    return resolveActiveCbtReframe(messages, telemetry, currentLanguage?.code);
+  }, [messages, telemetry, currentLanguage?.code]);
 
   // ─── PWA Lifecycle & Installation Detection ───
   useEffect(() => {
@@ -316,6 +318,11 @@ export default function SanctuarySessionPage() {
       currentLanguageRef.current = matchedLang;
       userLocaleRef.current = matchedLang.speechLocale;
       browserSpeechController.setLanguageLocale(matchedLang.speechLocale);
+      wellnessStateMachine.setLanguage(
+        (['en', 'hi', 'es', 'fr', 'de'].includes(matchedLang.code)
+          ? matchedLang.code
+          : 'en') as WellnessLanguage
+      );
 
       if (typeof window !== "undefined") {
         const params = new URLSearchParams(window.location.search);
@@ -849,6 +856,7 @@ export default function SanctuarySessionPage() {
               sender: "ai",
               text: clarificationPrompt,
               timestamp: getFormattedTime(),
+              locale: spokenResolution.speechLocale || userLocaleRef.current || currentLanguageRef.current.speechLocale,
             };
             setMessages((prev) => [...prev, clarifyAiMsg]);
             playVoice(clarificationPrompt, undefined, clarifyAiMsg.id);
@@ -962,6 +970,7 @@ export default function SanctuarySessionPage() {
           response.telemetry?.cbt_distortion && response.telemetry.cbt_distortion !== "None"
             ? response.telemetry.cbt_distortion
             : undefined,
+        locale: spokenResolution.speechLocale || userLocaleRef.current || currentLanguageRef.current.speechLocale,
       };
 
       if (canonicalTrataka) {
@@ -1106,6 +1115,11 @@ export default function SanctuarySessionPage() {
     setUserLocale(lang.speechLocale);
     saveLanguagePreference(lang.code, isAuto);
     browserSpeechController.setLanguageLocale(lang.speechLocale);
+    wellnessStateMachine.setLanguage(
+      (['en', 'hi', 'es', 'fr', 'de'].includes(lang.code)
+        ? lang.code
+        : 'en') as WellnessLanguage
+    );
   };
 
   // ─── End Session Handler ───
@@ -1390,7 +1404,11 @@ export default function SanctuarySessionPage() {
           <GuidedWellnessConversation
             isOpen={isWellnessFlowOpen}
             onClose={() => setIsWellnessFlowOpen(false)}
-            initialLanguage={currentLanguage.code === "hi" ? "hi" : "en"}
+            initialLanguage={
+              (['en', 'hi', 'es', 'fr', 'de'].includes(currentLanguage.code)
+                ? currentLanguage.code
+                : 'en') as WellnessLanguage
+            }
           />
         )}
 

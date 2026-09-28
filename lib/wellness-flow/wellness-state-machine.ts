@@ -23,6 +23,7 @@ import {
   loadEncryptedWellnessSession,
   clearEncryptedWellnessSession,
 } from './storage-encryption.ts';
+import { detectLocationAndLanguage } from '../i18n/language-catalog.ts';
 import type { VoiceAcousticState } from '../types/emotions';
 import type {
   WellnessFlowState,
@@ -69,6 +70,23 @@ export class WellnessStateMachine {
   constructor() {
     this.sessionId = `wellness-${Date.now()}`;
     this.startedAt = Date.now();
+    if (typeof window !== 'undefined') {
+      this.initFromGpsLocation().catch(() => {});
+    }
+  }
+
+  public async initFromGpsLocation(): Promise<WellnessLanguage> {
+    if (typeof window === 'undefined') return this.language;
+    try {
+      const loc = await detectLocationAndLanguage();
+      const code = loc.defaultLanguageCode?.toLowerCase().split('-')[0];
+      if (code && ['hi', 'es', 'fr', 'de', 'en'].includes(code)) {
+        this.language = code as WellnessLanguage;
+        this.notify();
+        return code as WellnessLanguage;
+      }
+    } catch (_) {}
+    return this.language;
   }
 
   public subscribe(listener: StateMachineListener): () => void {
@@ -169,10 +187,13 @@ export class WellnessStateMachine {
   /**
    * Get initial warm greeting.
    */
-  public getInitialGreeting(): { text_en: string; text_hi: string } {
+  public getInitialGreeting(): { text_en: string; text_hi: string; text_es?: string; text_fr?: string; text_de?: string } {
     return {
       text_en: "Welcome to your sanctuary. Take a gentle breath. How are you feeling right now?",
       text_hi: "आपके अपने शांत शरणस्थल में स्वागत है। एक गहरी, सुखद सांस लें। आप अभी कैसा महसूस कर रहे हैं?",
+      text_es: "Bienvenido a su santuario. Tome una respiración suave. ¿Cómo se siente en este momento?",
+      text_fr: "Bienvenue dans votre sanctuaire. Prenez une douce inspiration. Comment vous sentez-vous en ce moment ?",
+      text_de: "Willkommen in Ihrem Zufluchtsort. Atmen Sie sanft ein. Wie fühlen Sie sich gerade?",
     };
   }
 
@@ -378,9 +399,19 @@ export class WellnessStateMachine {
     this.notify();
 
     const script = this.getCbtScript();
-    const transitionSpeech = this.language === 'hi'
-      ? `गीता के इस पावन संदेश को आत्मसात करते हुए, आइए अब हम आधुनिक मनश्चिकित्सा और CBT की सहायता से अपने विचारों को संतुलित करें। ${script.step1_prompt_hi}`
-      : `Holding this timeless Gita wisdom in your heart, let's now integrate practical Cognitive Behavioral Therapy to gently reframe your thinking. ${script.step1_prompt_en}`;
+    const prompt = this.getCbtStep1Prompt(script);
+    let transitionSpeech = '';
+    if (this.language === 'hi') {
+      transitionSpeech = `गीता के इस पावन संदेश को आत्मसात करते हुए, आइए अब हम आधुनिक मनश्चिकित्सा और CBT की सहायता से अपने विचारों को संतुलित करें। ${prompt}`;
+    } else if (this.language === 'es') {
+      transitionSpeech = `Llevando esta sabiduría del Gita en el corazón, integremos ahora la Terapia Cognitivo-Conductual para reestructurar sus pensamientos. ${prompt}`;
+    } else if (this.language === 'fr') {
+      transitionSpeech = `En gardant cette sagesse de la Gita au cœur, intégrons maintenant la thérapie cognitive pour restructurer vos pensées. ${prompt}`;
+    } else if (this.language === 'de') {
+      transitionSpeech = `Mit dieser Weisheit der Gita im Herzen nutzen wir nun die Kognitive Verhaltenstherapie, um Ihre Gedanken auszugleichen. ${prompt}`;
+    } else {
+      transitionSpeech = `Holding this timeless Gita wisdom in your heart, let's now integrate practical Cognitive Behavioral Therapy to gently reframe your thinking. ${prompt}`;
+    }
 
     return {
       nextState: 'CBT',
@@ -407,6 +438,54 @@ export class WellnessStateMachine {
     );
   }
 
+  public getCbtDistortionName(script: CBTMiniFlowScript): string {
+    if (this.language === 'hi') return script.distortion_name_hi || script.distortion_name_en;
+    if (this.language === 'es') return script.distortion_name_es || script.distortion_name_en;
+    if (this.language === 'fr') return script.distortion_name_fr || script.distortion_name_en;
+    if (this.language === 'de') return script.distortion_name_de || script.distortion_name_en;
+    return script.distortion_name_en;
+  }
+
+  public getCbtStep1Prompt(script: CBTMiniFlowScript): string {
+    if (this.language === 'hi') return script.step1_prompt_hi || script.step1_prompt_en;
+    if (this.language === 'es') return script.step1_prompt_es || script.step1_prompt_en;
+    if (this.language === 'fr') return script.step1_prompt_fr || script.step1_prompt_en;
+    if (this.language === 'de') return script.step1_prompt_de || script.step1_prompt_en;
+    return script.step1_prompt_en;
+  }
+
+  public getCbtStep2Name(script: CBTMiniFlowScript): string {
+    if (this.language === 'hi') return script.step2_name_hi || script.step2_name_en;
+    if (this.language === 'es') return script.step2_name_es || script.step2_name_en;
+    if (this.language === 'fr') return script.step2_name_fr || script.step2_name_en;
+    if (this.language === 'de') return script.step2_name_de || script.step2_name_en;
+    return script.step2_name_en;
+  }
+
+  public getCbtStep3ChallengeQuestions(script: CBTMiniFlowScript): string[] {
+    if (this.language === 'hi') return script.step3_challenge_questions_hi || script.step3_challenge_questions_en;
+    if (this.language === 'es') return script.step3_challenge_questions_es || script.step3_challenge_questions_en;
+    if (this.language === 'fr') return script.step3_challenge_questions_fr || script.step3_challenge_questions_en;
+    if (this.language === 'de') return script.step3_challenge_questions_de || script.step3_challenge_questions_en;
+    return script.step3_challenge_questions_en;
+  }
+
+  public getCbtStep4ReplacementThought(script: CBTMiniFlowScript): string {
+    if (this.language === 'hi') return script.step4_replacement_thought_hi || script.step4_replacement_thought_en;
+    if (this.language === 'es') return script.step4_replacement_thought_es || script.step4_replacement_thought_en;
+    if (this.language === 'fr') return script.step4_replacement_thought_fr || script.step4_replacement_thought_en;
+    if (this.language === 'de') return script.step4_replacement_thought_de || script.step4_replacement_thought_en;
+    return script.step4_replacement_thought_en;
+  }
+
+  public getCbtStep4ActionStep(script: CBTMiniFlowScript): string {
+    if (this.language === 'hi') return script.step4_action_step_hi || script.step4_action_step_en;
+    if (this.language === 'es') return script.step4_action_step_es || script.step4_action_step_en;
+    if (this.language === 'fr') return script.step4_action_step_fr || script.step4_action_step_en;
+    if (this.language === 'de') return script.step4_action_step_de || script.step4_action_step_en;
+    return script.step4_action_step_en;
+  }
+
   /**
    * Handles user reply for Step 1: Automatic negative thought.
    */
@@ -416,9 +495,7 @@ export class WellnessStateMachine {
     this.notify();
 
     const script = this.getCbtScript();
-    const distortionPrompt = this.language === 'hi'
-      ? `${script.step2_name_hi}`
-      : `${script.step2_name_en}`;
+    const distortionPrompt = this.getCbtStep2Name(script);
 
     return { nextStep: 2, distortionPrompt };
   }
@@ -432,9 +509,7 @@ export class WellnessStateMachine {
     this.notify();
 
     const script = this.getCbtScript();
-    const challengeQuestions = this.language === 'hi'
-      ? script.step3_challenge_questions_hi
-      : script.step3_challenge_questions_en;
+    const challengeQuestions = this.getCbtStep3ChallengeQuestions(script);
 
     return { nextStep: 3, challengeQuestions };
   }
@@ -452,12 +527,8 @@ export class WellnessStateMachine {
     this.notify();
 
     const script = this.getCbtScript();
-    const replacementThought = this.language === 'hi'
-      ? script.step4_replacement_thought_hi
-      : script.step4_replacement_thought_en;
-    const actionStep = this.language === 'hi'
-      ? script.step4_action_step_hi
-      : script.step4_action_step_en;
+    const replacementThought = this.getCbtStep4ReplacementThought(script);
+    const actionStep = this.getCbtStep4ActionStep(script);
 
     this.cbtResponses.replacement_thought = replacementThought;
     this.cbtResponses.committed_action_step = actionStep;
@@ -486,9 +557,16 @@ export class WellnessStateMachine {
     this.currentState = 'TRATAKA';
     this.notify();
 
-    const announcementSpeech = this.language === 'hi'
-      ? `बहुत सुंदर। अब हम अपने मस्तिष्क और तंत्रिका तंत्र को स्थिर करने के लिए चतुर्थ चरण, त्राटक ध्यान में प्रवेश करेंगे। ${tratakaResult.rationale_hi}`
-      : `Wonderful progress. Now, to anchor your prefrontal cortex and settle your autonomic nervous system, we transition into our final phase: Neuro-Ocular Trataka. ${tratakaResult.rationale_en}`;
+    const announcementSpeech =
+      this.language === 'hi'
+        ? `बहुत सुंदर। अब हम अपने मस्तिष्क और तंत्रिका तंत्र को स्थिर करने के लिए चतुर्थ चरण, त्राटक ध्यान में प्रवेश करेंगे। ${tratakaResult.rationale_hi}`
+        : this.language === 'es'
+        ? `Excelente progreso. Ahora, para anclar su corteza prefrontal y calmar su sistema nervioso, pasamos a la fase final: Trataka Neuro-Ocular. ${tratakaResult.rationale_en}`
+        : this.language === 'fr'
+        ? `Très beaux progrès. Maintenant, pour ancrer votre cortex préfrontal et apaiser votre système nerveux, nous passons à la phase finale : Trataka Neuro-Oculaire. ${tratakaResult.rationale_en}`
+        : this.language === 'de'
+        ? `Wunderbarer Fortschritt. Um nun Ihren präfrontalen Kortex zu verankern und Ihr Nervensystem zu beruhigen, gehen wir in die letzte Phase über: Neuro-Okulares Trataka. ${tratakaResult.rationale_en}`
+        : `Wonderful progress. Now, to anchor your prefrontal cortex and settle your autonomic nervous system, we transition into our final phase: Neuro-Ocular Trataka. ${tratakaResult.rationale_en}`;
 
     return {
       nextState: 'TRATAKA',

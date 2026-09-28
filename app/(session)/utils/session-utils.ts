@@ -1,6 +1,7 @@
-import { ClinicalSource, PsychologicalTelemetry } from "@/lib/api/healer-client";
-import { queryPsychologyLibrary } from "@/lib/knowledge/psychology-library-rag";
-import { browserSpeechController } from "@/lib/audio/browser-speech";
+import type { ClinicalSource, PsychologicalTelemetry } from "../../../lib/api/healer-client";
+import { queryPsychologyLibrary } from "../../../lib/knowledge/psychology-library-rag.ts";
+import { browserSpeechController } from "../../../lib/audio/browser-speech.ts";
+import { getLocalizedClinicalIntervention } from "../../../lib/i18n/clinical-localization.ts";
 
 /**
  * 12-hour AM/PM formatted timestamp string
@@ -19,8 +20,26 @@ export const getFormattedTime = (): string => {
  */
 export const resolveActiveCbtReframe = (
   messages: { sender: string; sources?: ClinicalSource[] }[],
-  telemetry: PsychologicalTelemetry
+  telemetry: PsychologicalTelemetry,
+  languageCode?: string
 ): string | undefined => {
+  const normLang = languageCode?.toLowerCase().trim();
+
+  // If language is not English, check localized intervention first
+  if (normLang && normLang !== "en") {
+    const condKey =
+      telemetry.cbt_distortion !== "None" ? telemetry.cbt_distortion : telemetry.dominant_emotion;
+    if (condKey && condKey !== "Calmness") {
+      const match = queryPsychologyLibrary(condKey);
+      if (match) {
+        const localized = getLocalizedClinicalIntervention(match.condition.id, normLang, match.condition);
+        if (localized && localized.cbt_reframing) {
+          return localized.cbt_reframing;
+        }
+      }
+    }
+  }
+
   const lastMsg = messages[messages.length - 1];
   if (lastMsg && lastMsg.sender === "ai") {
     const msgSources = (lastMsg as any).sources as ClinicalSource[] | undefined;
@@ -39,8 +58,16 @@ export const resolveActiveCbtReframe = (
     const match = queryPsychologyLibrary(
       telemetry.cbt_distortion !== "None" ? telemetry.cbt_distortion : telemetry.dominant_emotion
     );
-    if (match && match.condition.solutions.cbt_reframing) {
-      return match.condition.solutions.cbt_reframing.split("[Wikipedia Context]")[0].trim();
+    if (match) {
+      if (normLang && normLang !== "en") {
+        const localized = getLocalizedClinicalIntervention(match.condition.id, normLang, match.condition);
+        if (localized && localized.cbt_reframing) {
+          return localized.cbt_reframing;
+        }
+      }
+      if (match.condition.solutions.cbt_reframing) {
+        return match.condition.solutions.cbt_reframing.split("[Wikipedia Context]")[0].trim();
+      }
     }
   }
   return undefined;

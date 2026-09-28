@@ -26,7 +26,37 @@
       "step4_replacement_thought_en": "This anxious thought is just an alarm bell, not a prophecy. I have handled uncertainty before, and I can take this one step at a time.",
       "step4_replacement_thought_hi": "यह चिंता केवल मन का एक सायरन है, भविष्य की भविष्यवाणी नहीं। मैंने पहले भी चुनौतियों का सामना किया है, और मैं इसे भी धीरे-धीरे सम्भाल लूँगा।",
       "step4_action_step_en": "Drop your shoulders down, exhale for 6 seconds, and write down or say aloud one small step you can take today.",
-      "step4_action_step_hi": "कंधों को ढीला छोड़ें, 6 सेकंड तक धीमी सांस बाहर छोड़ें, और एक छोटा सा कदम बताएं जो आप अभी उठा सकते हैं।"
+      "step4_action_step_hi": "कंधों को ढीला छोड़ें, 6 सेकंड तक धीमी सांस बाहर छोड़ें, और एक छोटा सा कदम बताएं जो आप अभी उठा सकते हैं।",
+      "distortion_name_es": "Catastrofización y Adivinación del Futuro",
+      "distortion_name_fr": "Catastrophisme et Prédiction de l'Avenir",
+      "distortion_name_de": "Katastrophisieren & Wahrsagen",
+      "step1_prompt_es": "Descubramos el pensamiento automático detrás de esta ansiedad. Cuando sientes esta opresión, ¿cuál es el peor escenario que tu mente te está contando?",
+      "step1_prompt_fr": "Découvrons la pensée automatique derrière cette anxiété. Lorsque vous ressentez cette tension, quelle est la pire hypothèse que votre esprit envisage ?",
+      "step1_prompt_de": "Lassen Sie uns den automatischen Gedanken hinter dieser Angst aufdecken. Was ist das schlimmste Szenario, das Ihr Geist Ihnen einredet?",
+      "step2_name_es": "Nota que tu mente está Catastrofizando: tratar un peor escenario imaginario como si fuera una certeza absoluta garantizada.",
+      "step2_name_fr": "Remarquez que votre esprit est en train de Catastrophiser : traiter un pire scénario imaginaire comme s'il s'agissait d'une certitude absolue.",
+      "step2_name_de": "Bemerken Sie, dass Ihr Geist katastrophisiert: Ein imaginäres Worst-Case-Szenario wird so behandelt, als wäre es eine garantierte Gewissheit.",
+      "step3_challenge_questions_es": [
+        "¿Qué hechos objetivos demuestran que esta predicción catastrófica va a ocurrir sin lugar a dudas?",
+        "Si el evento temido ocurriera, ¿qué fortalezas internas y recursos tienes para afrontarlo?",
+        "¿Cuál sería un resultado mucho más realista y equilibrado?"
+      ],
+      "step3_challenge_questions_fr": [
+        "Quels faits objectifs prouvent que cette prédiction catastrophique va réellement se produire ?",
+        "Si cet événement redouté survenait, quelles forces et ressources intérieures possédez-vous pour y faire face ?",
+        "Quel serait un dénouement beaucoup plus réaliste et équilibré ?"
+      ],
+      "step3_challenge_questions_de": [
+        "Welche objektiven Fakten beweisen, dass diese katastrophale Vorhersage definitiv eintreten wird?",
+        "Falls das gefürchtete Ereignis eintritt: Welche inneren Kräfte und Ressourcen haben Sie, um damit umzugehen?",
+        "Was ist ein viel realistischerer, ausgeglichener Mittelweg?"
+      ],
+      "step4_replacement_thought_es": "Este pensamiento ansioso es solo una señal de alarma, no una profecía. Ya he superado la incertidumbre antes y puedo dar un paso a la vez.",
+      "step4_replacement_thought_fr": "Cette pensée anxieuse n'est qu'un signal d'alarme, pas une prophétie. J'ai déjà surmonté l'incertitude et je peux avancer un pas après l'autre.",
+      "step4_replacement_thought_de": "Dieser ängstliche Gedanke ist nur ein Warnsignal, keine Prophezeiung. Ich habe Ungewissheit schon früher bewältigt und kann Schritt für Schritt vorgehen.",
+      "step4_action_step_es": "Baja los hombros, exhala lentamente durante 6 segundos y anota o pronuncia en voz alta un pequeño paso constructivo que puedas dar hoy.",
+      "step4_action_step_fr": "Relâchez vos épaules, expirez lentement pendant 6 secondes, et formulez à voix haute un petit pas concret réalisable aujourd'hui.",
+      "step4_action_step_de": "Lassen Sie Ihre Schultern sinken, atmen Sie 6 Sekunden lang aus und nennen Sie einen kleinen Schritt, den Sie heute tun können."
     },
     "sadness": {
       "mood_key": "sadness",
@@ -50,7 +80,37 @@
       "step4_replacement_thought_en": "Feeling low today does not mean my life is empty. Sadness is an emotion passing through me, not my permanent identity.",
       "step4_replacement_thought_hi": "आज उदासी महसूस होने का मतलब यह नहीं कि जीवन व्यर्थ है। उदासी एक गुजरता हुआ भाव है, मेरा सम्पूर्ण अस्तित्व नहीं।",
       "step4_action_step_en": "Drink a glass of cool water, place a comforting hand over your chest, and step outside for 2 minutes of fresh air.",
-      "step4_action_step_hi": "एक घूंट ठंडा पानी पिएं, अपना हाथ अपने हृदय पर रखें, और दो मिनट के लिए खुली हवा में गहरी सांस लें।"
+      "step4_action_step_hi": "एक घूंट ठंडा पानी पिएं, अपना हाथ अपने हृदय पर रखें, और दो मिनट के लिए खुली हवा में गहरी सांस लें।",
+      "distortion_name_es": "Filtro Mental y Sobregeneralización",
+      "distortion_name_fr": "Filtre Mental et Surgénéralisation",
+      "distortion_name_de": "Mentaler Filter & Übergeneralisierung",
+      "step1_prompt_es": "En momentos de tristeza, nuestra mente a menudo adopta una lente sombría. ¿Qué pensamiento pesado se repite en tu cabeza sobre ti o tu vida?",
+      "step1_prompt_fr": "Dans les moments de tristesse, notre esprit adopte souvent un prisme sombre. Quelle pensée pesante tourne en boucle dans votre tête ?",
+      "step1_prompt_de": "In Momenten der Traurigkeit nimmt unser Geist oft eine dunkle Brille an. Welcher schwere Gedanke wiederholt sich in Ihrem Kopf?",
+      "step2_name_es": "Esto es un Filtro Mental: tu cerebro magnifica el dolor filtrando y descartando tu resiliencia, victorias pasadas y posibilidades de apoyo.",
+      "step2_name_fr": "C'est un Filtre Mental : votre cerveau amplifie la douleur tout en occultant votre résilience, vos réussites passées et vos ressources.",
+      "step2_name_de": "Dies ist ein Mentaler Filter: Ihr Gehirn vergrößert Schmerz und filtert Ihre Widerstandskraft und bisherigen Erfolge heraus.",
+      "step3_challenge_questions_es": [
+        "¿Estoy asumiendo que porque hoy me siento agotado, todo siempre se sentirá de esta manera?",
+        "¿Qué pequeña cosa, por diminuta que sea, ha salido bien o te ha brindado un segundo de alivio recientemente?",
+        "¿Qué le dirías con profunda ternura a un ser querido que sintiera exactamente esta misma tristeza?"
+      ],
+      "step3_challenge_questions_fr": [
+        "Suis-je en train de supposer que parce que je me sens épuisé aujourd'hui, tout sera toujours ainsi ?",
+        "Quelle est la plus petite chose positive qui vous a apporté ne serait-ce qu'une seconde de soulagement récemment ?",
+        "Que diriez-vous avec bienveillance à un proche qui ressentirait exactement cette même tristesse ?"
+      ],
+      "step3_challenge_questions_de": [
+        "Nehme ich an, dass, weil ich mich heute erschöpft fühle, alles für immer so bleiben wird?",
+        "Was ist eine winzige Kleinigkeit, die kürzlich gut lief oder Ihnen auch nur eine Sekunde Erleichterung verschaffte?",
+        "Was würden Sie einem geliebten Menschen sagen, der genau diese Traurigkeit durchlebt?"
+      ],
+      "step4_replacement_thought_es": "Sentirme desanimado hoy no significa que mi vida esté vacía. La tristeza es una emoción pasajera, no mi identidad permanente.",
+      "step4_replacement_thought_fr": "Se sentir abattu aujourd'hui ne signifie pas que ma vie est vide. La tristesse est une émotion qui me traverse, pas mon identité.",
+      "step4_replacement_thought_de": "Dass ich mich heute niedergeschlagen fühle, bedeutet nicht, dass mein Leben leer ist. Traurigkeit zieht vorüber, sie ist nicht meine Identität.",
+      "step4_action_step_es": "Bebe un vaso de agua fresca, coloca una mano reconfortante sobre tu pecho y asómate al aire fresco durante 2 minutos.",
+      "step4_action_step_fr": "Buvez un verre d'eau fraîche, posez une main réconfortante sur votre poitrine et prenez l'air frais pendant 2 minutes.",
+      "step4_action_step_de": "Trinken Sie ein Glas kühles Wasser, legen Sie eine Hand auf Ihre Brust und atmen Sie 2 Minuten lang frische Luft ein."
     },
     "anger": {
       "mood_key": "anger",
@@ -74,7 +134,37 @@
       "step4_replacement_thought_en": "I cannot control how other people act, but I have 100% authority over my own calm and dignified response.",
       "step4_replacement_thought_hi": "मैं दूसरों के व्यवहार को नियंत्रित नहीं कर सकता, परन्तु अपनी शांति और मर्यादा पर मेरा पूरा अधिकार है।",
       "step4_action_step_en": "Unclench your jaw, soften your fists, and take three long, cooling exhalations through pursed lips.",
-      "step4_action_step_hi": "अपने जबड़े को ढीला छोड़ें, मुट्ठियों को खोलें, और 3 बार मुंह से धीरे-धीरे ठंडी हवा बाहर छोड़ें।"
+      "step4_action_step_hi": "अपने जबड़े को ढीला छोड़ें, मुट्ठियों को खोलें, और 3 बार मुंह से धीरे-धीरे ठंडी हवा बाहर छोड़ें।",
+      "distortion_name_es": "Exigencias Rígidas ('Deberías') y Personalización",
+      "distortion_name_fr": "Exigences Rigides ('Devoirs') et Personnalisation",
+      "distortion_name_de": "Starre 'Sollte'-Forderungen & Personalisierung",
+      "step1_prompt_es": "La ira suele ocultar una regla interna que sentimos violada. ¿Qué hizo la persona o la situación que te parece tan injusto?",
+      "step1_prompt_fr": "La colère cache souvent une règle personnelle qui a été enfreinte. Qu'a fait cette personne ou cette situation qui vous paraît si injuste ?",
+      "step1_prompt_de": "Wut verbirgt meist eine verletzte Regel. Was hat die Person oder Situation getan, das sich so ungerecht anfühlt?",
+      "step2_name_es": "Reconoce el patrón de 'Afirmaciones Debería' y Personalización: exigir que el mundo u otros obedezcan estrictamente nuestras reglas.",
+      "step2_name_fr": "Remarquez le schéma des 'Déclarations Rigides' et de la Personnalisation : exiger que les autres se conforment rigoureusement à nos attentes.",
+      "step2_name_de": "Erkennen Sie das Muster von 'Sollte'-Forderungen: die Erwartung, dass die Welt oder andere genau nach unseren Regeln handeln müssen.",
+      "step3_challenge_questions_es": [
+        "¿Aferrarme a esta ira ardiente en este momento está dañando a la otra persona, o está quemando mi propia paz?",
+        "¿Podría su comportamiento deberse a sus propias limitaciones, estrés o ignorancia en lugar de malicia hacia mí?",
+        "¿Qué límite saludable puedo establecer firmemente sin envenenar mi mente con resentimiento?"
+      ],
+      "step3_challenge_questions_fr": [
+        "Garder cette colère brûlante nuit-il à l'autre personne, ou consume-t-il ma propre paix intérieure ?",
+        "Leur comportement pourrait-il résulter de leur propre stress ou ignorance plutôt que d'une intention malveillante ?",
+        "Quelle limite saine puis-je poser fermement sans empoisonner mon esprit de rancœur ?"
+      ],
+      "step3_challenge_questions_de": [
+        "Schadet das Festhalten an dieser Wut der anderen Person, oder verbrennt es meinen eigenen inneren Frieden?",
+        "Könnte deren Verhalten eher auf eigenen Stress oder Unwissenheit zurückzuführen sein als auf Böswilligkeit?",
+        "Welche gesunde Grenze kann ich klar setzen, ohne meinen Geist mit Groll zu vergiften?"
+      ],
+      "step4_replacement_thought_es": "No puedo controlar cómo actúan los demás, pero tengo 100% de autoridad sobre mi propia respuesta calmada y digna.",
+      "step4_replacement_thought_fr": "Je ne peux pas contrôler les actes des autres, mais j'ai une autorité totale sur ma propre réponse calme et digne.",
+      "step4_replacement_thought_de": "Ich kann nicht kontrollieren, wie andere handeln, aber ich habe die volle Kontrolle über meine eigene ruhige und würdevolle Reaktion.",
+      "step4_action_step_es": "Afloja la mandíbula, relaja los puños y haz tres exhalaciones largas y refrescantes con los labios entreabiertos.",
+      "step4_action_step_fr": "Desserrez votre mâchoire, ouvrez les poings et effectuez trois longues expirations rafraîchissantes.",
+      "step4_action_step_de": "Lockern Sie Ihren Kiefer, öffnen Sie Ihre Fäuste und atmen Sie dreimal langsam durch die Lippen aus."
     },
     "stress": {
       "mood_key": "stress",
@@ -98,7 +188,37 @@
       "step4_replacement_thought_en": "Progress is always better than perfection. I don't have to carry the whole mountain today; moving one stone is enough.",
       "step4_replacement_thought_hi": "परिपूर्णता की तुलना में निरंतर प्रयास अधिक मूल्यवान है। मुझे आज पूरा पहाड़ नहीं उठाना, एक पत्थर हटाना ही पर्याप्त है।",
       "step4_action_step_en": "Pick one non-urgent item from your mental list and consciously grant yourself permission to defer it until tomorrow.",
-      "step4_action_step_hi": "अपने मन की सूची में से किसी एक गैर-जरूरी काम को आज के लिए छोड़ देने की अनुमति खुद को दें।"
+      "step4_action_step_hi": "अपने मन की सूची में से किसी एक गैर-जरूरी काम को आज के लिए छोड़ देने की अनुमति खुद को दें।",
+      "distortion_name_es": "Pensamiento de Todo o Nada y Sobrecarga",
+      "distortion_name_fr": "Pensée Tout-ou-Rien et Surcharge",
+      "distortion_name_de": "Alles-oder-Nichts-Denken & Überlastung",
+      "step1_prompt_es": "Cuando el estrés aumenta, el cerebro crea una narrativa urgente. ¿Qué pensamiento te hace sentir que todo depende exclusivamente de ti?",
+      "step1_prompt_fr": "Lorsque le stress culmine, notre esprit crée une urgence permanente. Quelle pensée vous donne l'impression de porter tout le poids du monde ?",
+      "step1_prompt_de": "Wenn Stress seinen Höhepunkt erreicht, erzeugt das Gehirn Dringlichkeit. Welcher Gedanke gibt Ihnen das Gefühl, alles lastet auf Ihnen?",
+      "step2_name_es": "Esto es Pensamiento de Todo o Nada: creer que si no puedes completar todo a la perfección ahora mismo, has fallado por completo.",
+      "step2_name_fr": "C'est la Pensée Tout-ou-Rien : croire que si tout n'est pas parfait immédiatement, c'est un échec total.",
+      "step2_name_de": "Dies ist Alles-oder-Nichts-Denken: Der Glaube, dass alles gescheitert ist, wenn es nicht sofort perfekt erledigt wird.",
+      "step3_challenge_questions_es": [
+        "¿Realmente todo necesita resolverse en esta misma hora, o hay partes que pueden esperar a mañana?",
+        "¿Qué pasa si esto se hace lo suficientemente bien en lugar de absolutamente perfecto?",
+        "¿Cuál es la única tarea de mayor prioridad si solo pudieras hacer una cosa hoy?"
+      ],
+      "step3_challenge_questions_fr": [
+        "Tout doit-il absolument être réglé dans l'heure qui vient, ou certaines choses peuvent-elles attendre demain ?",
+        "Que se passe-t-il si c'est fait suffisamment bien plutôt que de façon absolument parfaite ?",
+        "Quelle est l'unique priorité essentielle si vous ne deviez faire qu'une seule chose aujourd'hui ?"
+      ],
+      "step3_challenge_questions_de": [
+        "Muss wirklich alles in dieser Stunde gelöst werden, oder kann ein Teil bis morgen warten?",
+        "Was passiert, wenn diese Aufgabe gut genug statt absolut perfekt erledigt wird?",
+        "Was ist die eine wichtigste Priorität, wenn Sie heute nur eine einzige Sache tun könnten?"
+      ],
+      "step4_replacement_thought_es": "El progreso siempre es mejor que la perfección. No tengo que cargar toda la montaña hoy; mover una sola piedra es suficiente.",
+      "step4_replacement_thought_fr": "Le progrès vaut toujours mieux que la perfection. Je n'ai pas à soulever la montagne aujourd'hui ; déplacer une pierre suffit.",
+      "step4_replacement_thought_de": "Fortschritt ist immer besser als Perfektion. Ich muss heute nicht den ganzen Berg tragen; einen Stein zu bewegen genügt.",
+      "step4_action_step_es": "Elige un asunto no urgente de tu lista mental y concédete permiso consciente para posponerlo hasta mañana.",
+      "step4_action_step_fr": "Choisissez une tâche non urgente et accordez-vous consciemment la permission de la reporter à demain.",
+      "step4_action_step_de": "Wählen Sie eine nicht dringende Aufgabe und erlauben Sie sich bewusst, sie auf morgen zu verschieben."
     },
     "overthinking": {
       "mood_key": "overthinking",
@@ -122,7 +242,37 @@
       "step4_replacement_thought_en": "Thoughts are just neurochemical electricity in my brain. Just because I think a thought does not make it true or important.",
       "step4_replacement_thought_hi": "विचार केवल मस्तिष्क में उठने वाली मानसिक तरंगें हैं। कोई विचार मन में आया, इसका मतलब यह नहीं कि वह सच है।",
       "step4_action_step_en": "Notice 5 visible objects around you in the room, touch the surface beneath you, and firmly anchor into the physical room.",
-      "step4_action_step_hi": "कमरे में रखी किन्हीं 5 वस्तुओं को ध्यान से देखें, अपनी हथेली को मेज या जांघ पर रखकर स्पर्श महसूस करें।"
+      "step4_action_step_hi": "कमरे में रखी किन्हीं 5 वस्तुओं को ध्यान से देखें, अपनी हथेली को मेज या जांघ पर रखकर स्पर्श महसूस करें।",
+      "distortion_name_es": "Lectura de Pensamiento y Rumiación Intrusiva",
+      "distortion_name_fr": "Lecture de Pensée et Rumination Intrusive",
+      "distortion_name_de": "Gedankenlesen & Intrusives Grübeln",
+      "step1_prompt_es": "¿Qué bucle de pensamientos repetitivo ha estado dando vueltas en tu mente sin resolver nada?",
+      "step1_prompt_fr": "Quelle boucle de pensées répétitive tourne sans cesse dans votre tête sans apporter de solution ?",
+      "step1_prompt_de": "Welche Gedankenschleife dreht sich immer wieder im Kreis, ohne eine Lösung zu bringen?",
+      "step2_name_es": "Esto es Rumiación Intrusiva y Lectura de Pensamiento: tratar suposiciones y conjeturas como si fueran realidades confirmadas.",
+      "step2_name_fr": "C'est de la Rumination Intrusive et de la Lecture de Pensée : traiter de simples suppositions comme des réalités avérées.",
+      "step2_name_de": "Dies ist Intrusives Grübeln und Gedankenlesen: Reine Vermutungen werden als bewiesene Realität behandelt.",
+      "step3_challenge_questions_es": [
+        "¿Repetir este pensamiento por vigésima vez te ha aportado alguna perspectiva fresca y útil?",
+        "¿Estás asumiendo que sabes lo que otros piensan en secreto sin que te lo hayan dicho?",
+        "¿Puedes elegir dejar este tema en una 'sala de espera' mental hasta mañana por la mañana?"
+      ],
+      "step3_challenge_questions_fr": [
+        "Ressasser cette pensée pour la vingtième fois vous a-t-il apporté un nouvel éclairage utile ?",
+        "Supposez-vous savoir ce que pensent les autres sans qu'ils vous l'aient expressément dit ?",
+        "Pouvez-vous mettre ce sujet dans une 'salle d'attente' mentale jusqu'à demain matin ?"
+      ],
+      "step3_challenge_questions_de": [
+        "Hat das zwanzigste Durchdenken dieses Gedankens Ihnen irgendeine neue, nützliche Erkenntnis gebracht?",
+        "Nehmen Sie an zu wissen, was andere denken, ohne dass sie es Ihnen gesagt haben?",
+        "Können Sie dieses Thema mental bis morgen früh im 'Wartezimmer' parken?"
+      ],
+      "step4_replacement_thought_es": "Los pensamientos son solo impulsos neuroquímicos en mi cerebro. Pensar algo no lo convierte automáticamente en verdad o en algo vital.",
+      "step4_replacement_thought_fr": "Les pensées ne sont que des signaux neurochimiques dans mon cerveau. Penser à quelque chose ne le rend ni vrai ni obligatoire.",
+      "step4_replacement_thought_de": "Gedanken sind nur neurochemische Impulse in meinem Gehirn. Nur weil ich etwas denke, ist es weder wahr noch wichtig.",
+      "step4_action_step_es": "Observa 5 objetos visibles a tu alrededor, toca la superficie debajo de ti y ánclate firmemente en el espacio presente.",
+      "step4_action_step_fr": "Observez 5 objets visibles autour de vous, touchez le support sous vos mains et ancrez-vous fermement dans le présent.",
+      "step4_action_step_de": "Nehmen Sie 5 sichtbare Gegenstände um sich herum wahr, berühren Sie die Fläche unter Ihnen und verankern Sie sich im Raum."
     },
     "guilt": {
       "mood_key": "guilt",
@@ -146,7 +296,37 @@
       "step4_replacement_thought_en": "I am a human being who learns and grows through imperfections. I release self-condemnation and embrace accountability with self-compassion.",
       "step4_replacement_thought_hi": "मैं एक इंसान हूँ जो भूलों से सीखकर आगे बढ़ता है। मैं खुद को प्रताड़ित करना छोड़कर आत्म-करुणा के साथ आगे बढ़ता हूँ।",
       "step4_action_step_en": "Place both hands over your heart, breathe in deeply, and whisper: 'I forgive myself. I did the best I knew how.'",
-      "step4_action_step_hi": "दोनों हाथ अपने सीने पर रखें, गहरी सांस लें और मन में कहें: 'मैं स्वयं को क्षमा करता हूँ। मैंने अपनी पूरी समझ से प्रयास किया था।'"
+      "step4_action_step_hi": "दोनों हाथ अपने सीने पर रखें, गहरी सांस लें और मन में कहें: 'मैं स्वयं को क्षमा करता हूँ। मैंने अपनी पूरी समझ से प्रयास किया था।'",
+      "distortion_name_es": "Autoculpa Excesiva y Culpa Tóxica",
+      "distortion_name_fr": "Auto-Blâme Excessif et Culpabilité Toxique",
+      "distortion_name_de": "Übermäßige Selbstbeschuldigung & Toxische Schuld",
+      "step1_prompt_es": "La culpa a menudo nos susurra que somos culpables en esencia. ¿Por qué te estás castigando en este instante?",
+      "step1_prompt_fr": "La culpabilité nous convainc souvent d'être fondamentalement en tort. De quoi vous punissez-vous en ce moment ?",
+      "step1_prompt_de": "Schuldgefühle gaukeln uns oft vor, grundlegend fehlerhaft zu sein. Wofür bestrafen Sie sich gerade?",
+      "step2_name_es": "Esto es Personalización y Autoculpa: asumir el 100% de la responsabilidad de eventos multifactoriales que nadie podía controlar por completo.",
+      "step2_name_fr": "C'est de la Personnalisation et de l'Auto-blâme : assumer 100% de la responsabilité pour des événements complexes hors de votre contrôle.",
+      "step2_name_de": "Dies ist Personalisierung und Selbstbeschuldigung: Die volle Verantwortung für komplexe Umstände zu übernehmen, die niemand allein steuern konnte.",
+      "step3_challenge_questions_es": [
+        "¿Actuaste con la mejor conciencia e información de la que disponías en ese momento exacto?",
+        "¿Qué otros factores externos y circunstancias influyeron en lo sucedido?",
+        "¿Puede el autocastigo cambiar el pasado, o es el perdón compasivo el único camino constructivo?"
+      ],
+      "step3_challenge_questions_fr": [
+        "Avez-vous agi avec les meilleures intentions et informations disponibles à cet instant précis ?",
+        "Quels autres facteurs externes et circonstances ont joué un rôle dans ce qui s'est passé ?",
+        "L'auto-punition peut-elle réparer le passé, ou l'apprentissage bienveillant est-il la seule issue ?"
+      ],
+      "step3_challenge_questions_de": [
+        "Haben Sie nach bestem Wissen und Gewissen gehandelt, das Sie in genau diesem Moment hatten?",
+        "Welche anderen äußeren Faktoren und Umstände spielten eine Rolle?",
+        "Kann Selbstbestrafung die Vergangenheit ungeschehen machen, oder ist Mitgefühl der einzige Weg nach vorn?"
+      ],
+      "step4_replacement_thought_es": "Soy un ser humano que aprende y crece a través de imperfecciones. Libero la autocondena y elijo la responsabilidad con autocompasión.",
+      "step4_replacement_thought_fr": "Je suis un être humain qui apprend à travers ses imperfections. Je renonce à me condamner et j'adopte la bienveillance envers moi-même.",
+      "step4_replacement_thought_de": "Ich bin ein Mensch, der durch Unvollkommenheit lernt und wächst. Ich lasse Selbstverurteilung los und begegne mir mit Mitgefühl.",
+      "step4_action_step_es": "Coloca ambas manos sobre tu corazón, respira profundamente y susurra: 'Me perdono. Hice lo mejor que supe en ese momento'.",
+      "step4_action_step_fr": "Posez les deux mains sur votre cœur, respirez profondément et murmurez : 'Je me pardonne. J'ai fait de mon mieux'.",
+      "step4_action_step_de": "Legen Sie beide Hände auf Ihr Herz, atmen Sie tief ein und flüstern Sie: 'Ich vergebe mir. Ich habe mein Bestes gegeben'."
     },
     "calm": {
       "mood_key": "calm",
@@ -170,7 +350,37 @@
       "step4_replacement_thought_en": "Peace is not the absence of life's waves, but the ability to remain grounded within myself. I cherish and nourish this tranquility.",
       "step4_replacement_thought_hi": "शांति का अर्थ जीवन में लहरों का न होना नहीं, बल्कि स्वयं में स्थिर रहना है। मैं इस आंतरिक शांति को संजोता हूँ।",
       "step4_action_step_en": "Take a slow, deep breath in, feel the gentle expansion in your chest, and hold a quiet smile of gratitude for 5 seconds.",
-      "step4_action_step_hi": "एक धीमी, गहरी सांस अंदर लें, अपने सीने में सहज विश्राम महसूस करें, और 5 सेकंड के लिए एक शांत कृतज्ञ मुस्कान बनाए रखें।"
+      "step4_action_step_hi": "एक धीमी, गहरी सांस अंदर लें, अपने सीने में सहज विश्राम महसूस करें, और 5 सेकंड के लिए एक शांत कृतज्ञ मुस्कान बनाए रखें।",
+      "distortion_name_es": "Presencia Consciente y Amplificación de Gratitud",
+      "distortion_name_fr": "Présence Conscience et Amplification de la Gratitude",
+      "distortion_name_de": "Achtsame Präsenz & Vertiefung von Dankbarkeit",
+      "step1_prompt_es": "En momentos de calma y serenidad, ¿qué aspecto positivo de tu vida o fortaleza interna se siente más claro para ti ahora mismo?",
+      "step1_prompt_fr": "Dans les moments de calme et de sérénité, quel aspect positif de votre vie ou force intérieure vous apparaît avec le plus de clarté ?",
+      "step1_prompt_de": "In Momenten der Ruhe und Zufriedenheit: Welcher positive Aspekt Ihres Lebens fühlt sich jetzt am stärksten an?",
+      "step2_name_es": "Esto es Presencia Consciente y Saboreo Cognitivo: anclar la neuroplasticidad absorbiendo y apreciando deliberadamente la estabilidad emocional.",
+      "step2_name_fr": "C'est de la Présence Consciente et de la Savouration Cognitive : ancrer la neuroplasticité en savourant cette stabilité émotionnelle.",
+      "step2_name_de": "Dies ist Achtsame Präsenz: Verankerung von Neuroplastizität, indem Sie emotionale Stabilität bewusst wahrnehmen und genießen.",
+      "step3_challenge_questions_es": [
+        "¿Qué hábitos o decisiones internas te ayudaron a alcanzar este estado equilibrado hoy?",
+        "¿Cómo puedes atesorar esta sensación para regresar a ella ante desafíos futuros?",
+        "¿Por qué o por quién sientes la gratitud más sincera en este instante de quietud?"
+      ],
+      "step3_challenge_questions_fr": [
+        "Quelles habitudes ou choix intérieurs vous ont aidé à atteindre cet état d'équilibre aujourd'hui ?",
+        "Comment pouvez-vous ancrer ce sentiment afin de vous en souvenir face aux futurs défis ?",
+        "Envers quoi ou qui ressentez-vous la plus profonde gratitude en cet instant paisible ?"
+      ],
+      "step3_challenge_questions_de": [
+        "Welche inneren Entscheidungen halfen Ihnen, diesen ausgeglichenen Zustand zu erreichen?",
+        "Wie können Sie dieses Gefühl verankern, um bei künftigen Herausforderungen darauf zurückzugreifen?",
+        "Wofür oder wem gegenüber empfinden Sie in diesem Moment die aufrichtigste Dankbarkeit?"
+      ],
+      "step4_replacement_thought_es": "La paz no es la ausencia de olas en la vida, sino la capacidad de permanecer centrado en mi interior. Cuido y nutro esta tranquilidad.",
+      "step4_replacement_thought_fr": "La paix n'est pas l'absence de vagues dans la vie, mais la capacité à rester ancré en soi. Je nourris cette tranquillité.",
+      "step4_replacement_thought_de": "Frieden bedeutet nicht, dass es keine Wellen gibt, sondern in sich selbst geerdet zu bleiben. Ich hege diese Ruhe.",
+      "step4_action_step_es": "Toma una respiración lenta y profunda, siente la suave expansión en tu pecho y mantén una sonrisa serena de gratitud durante 5 segundos.",
+      "step4_action_step_fr": "Prenez une inspiration lente et profonde, ressentez l'expansion dans votre poitrine et gardez un doux sourire de gratitude pendant 5 secondes.",
+      "step4_action_step_de": "Atmen Sie langsam und tief ein, spüren Sie die Weite in Ihrer Brust und halten Sie 5 Sekunden lang ein ruhiges Lächeln der Dankbarkeit."
     }
   }
 }

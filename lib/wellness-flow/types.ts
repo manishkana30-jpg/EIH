@@ -19,7 +19,7 @@ export type WellnessFlowState =
   | 'TRATAKA'        // Best 1 of 5 Trataka with timer, focus visual, voice cues (begin, blink, close eyes, relax)
   | 'SUMMARY';       // Closing reflection and post-session mood rating (1-10) to store progress
 
-export type WellnessLanguage = 'en' | 'hi';
+export type WellnessLanguage = 'en' | 'hi' | 'es' | 'fr' | 'de';
 
 export interface MoodProfile {
   primary_emotion: string;     // e.g. "anxiety", "sadness", "anger", "stress", "loneliness", "guilt", "fear", "overthinking", "low motivation"
@@ -70,16 +70,34 @@ export interface CBTMiniFlowScript {
   distortion_id: string;
   distortion_name_en: string;
   distortion_name_hi: string;
+  distortion_name_es?: string;
+  distortion_name_fr?: string;
+  distortion_name_de?: string;
   step1_prompt_en: string;
   step1_prompt_hi: string;
+  step1_prompt_es?: string;
+  step1_prompt_fr?: string;
+  step1_prompt_de?: string;
   step2_name_en: string;
   step2_name_hi: string;
+  step2_name_es?: string;
+  step2_name_fr?: string;
+  step2_name_de?: string;
   step3_challenge_questions_en: string[];
   step3_challenge_questions_hi: string[];
+  step3_challenge_questions_es?: string[];
+  step3_challenge_questions_fr?: string[];
+  step3_challenge_questions_de?: string[];
   step4_replacement_thought_en: string;
   step4_replacement_thought_hi: string;
+  step4_replacement_thought_es?: string;
+  step4_replacement_thought_fr?: string;
+  step4_replacement_thought_de?: string;
   step4_action_step_en: string;
   step4_action_step_hi: string;
+  step4_action_step_es?: string;
+  step4_action_step_fr?: string;
+  step4_action_step_de?: string;
 }
 
 export interface CBTUserResponses {

@@ -300,11 +300,6 @@ export function parseTherapeuticStages(rawText: string, locale?: string): Struct
     return { isStructured: false, stages: [], defaultSpeechText: '' };
   }
 
-  const isHindi = /[\u0900-\u097F]/.test(rawText) || (locale ? locale.startsWith('hi') : false);
-  const isSpanish = (locale ? locale.startsWith('es') : false) || /\b(sabiduría|verso|capítulo|mente)\b/i.test(rawText);
-  const isFrench = (locale ? locale.startsWith('fr') : false) || /\b(sagesse|verset|chapitre|respiration)\b/i.test(rawText);
-  const isGerman = (locale ? locale.startsWith('de') : false) || /\b(weisheit|kapitel|nervensystem)\b/i.test(rawText);
-
   // 1. Extract Gita Shloka if encapsulated in tags
   let shlokaBlock: string | null = null;
   let remainingText = rawText;
@@ -313,6 +308,12 @@ export function parseTherapeuticStages(rawText: string, locale?: string): Struct
     shlokaBlock = shlokaMatch[1].trim();
     remainingText = rawText.replace(/\[GITA_SHLOKA\][\s\S]*?\[\/GITA_SHLOKA\]/i, '').trim();
   }
+
+  const isExplicitLocale = Boolean(locale && locale.length >= 2);
+  const isSpanish = (locale ? locale.startsWith('es') : false) || (!isExplicitLocale && /\b(sabiduría|verso|capítulo|mente|emocional|resumen)\b/i.test(remainingText));
+  const isFrench = (locale ? locale.startsWith('fr') : false) || (!isExplicitLocale && /\b(sagesse|verset|chapitre|respiration|émotionnel|résumé)\b/i.test(remainingText));
+  const isGerman = (locale ? locale.startsWith('de') : false) || (!isExplicitLocale && /\b(weisheit|kapitel|nervensystem|emotional|zusammenfassung)\b/i.test(remainingText));
+  const isHindi = (locale ? locale.startsWith('hi') : false) || (!isSpanish && !isFrench && !isGerman && /[\u0900-\u097F]/.test(remainingText));
 
   // 2. Split into section parts
   const rawParts = remainingText.split(
@@ -333,12 +334,45 @@ export function parseTherapeuticStages(rawText: string, locale?: string): Struct
       part.includes('स्थिति व कष्ट') ||
       part.includes('मानसिक पीड़ा') ||
       part.includes('स्थिति का सारांश') ||
-      part.toLowerCase().includes('diagnostic')
+      part.toLowerCase().includes('diagnostic') ||
+      part.toLowerCase().includes('evaluación del estado') ||
+      part.toLowerCase().includes('analyse de l\'état') ||
+      part.toLowerCase().includes('belastungsanalyse')
     );
-    const isTratak = !isDiag && (part.startsWith('**3.') || part.startsWith('**4.') || part.startsWith('**त्राटक') || (part.includes('**') && (part.toLowerCase().includes('tratak') || part.includes('त्राटक'))));
-    const isClinical = !isDiag && !isTratak && (part.startsWith('**2.') || part.startsWith('**3.') || (part.includes('**') && (part.toLowerCase().includes('clinical') || part.includes('कॉग्निटिव') || part.toLowerCase().includes('cbt'))));
-    const isGita = !isDiag && !isTratak && !isClinical && !isLastCard && (part.startsWith('**1.') || part.startsWith('**2.') || (part.includes('**') && (part.toLowerCase().includes('bhagavad gita') || part.includes('गीता'))));
-    const isSyn = !isDiag && !isGita && !isClinical && !isTratak && (isLastCard || part.startsWith('**4.') || (part.includes('**') && (part.toLowerCase().includes('synerg') || part.includes('त्रिवेणी') || part.includes('समाधान'))));
+    const isGita = !isDiag && !isLastCard && (
+      part.toLowerCase().includes('bhagavad gita') ||
+      part.includes('गीता') ||
+      part.toLowerCase().includes('sabiduría del') ||
+      part.toLowerCase().includes('sagesse de la') ||
+      part.toLowerCase().includes('weisheit der') ||
+      (part.startsWith('**2.') && !part.toLowerCase().includes('cbt') && !part.toLowerCase().includes('tcc') && !part.toLowerCase().includes('clinical') && !part.toLowerCase().includes('cogniti')) ||
+      (part.startsWith('**1.') && !part.includes('1. स्थिति') && !part.includes('1. Emotion'))
+    );
+    const isClinical = !isDiag && !isGita && (
+      part.toLowerCase().includes('clinical') ||
+      part.toLowerCase().includes('cbt') ||
+      part.toLowerCase().includes('tcc') ||
+      part.toLowerCase().includes('cogniti') ||
+      part.toLowerCase().includes('kogniti') ||
+      part.includes('कॉग्निटिव') ||
+      part.includes('संज्ञानात्मक') ||
+      part.toLowerCase().includes('reestructuración') ||
+      part.toLowerCase().includes('restructuration') ||
+      (part.startsWith('**3.') && !part.toLowerCase().includes('tratak') && !part.includes('त्राटक'))
+    );
+    const isTratak = !isDiag && !isGita && !isClinical && (
+      part.startsWith('**4.') ||
+      part.toLowerCase().includes('tratak') ||
+      part.includes('त्राटक') ||
+      part.toLowerCase().includes('neuro-ocular') ||
+      part.toLowerCase().includes('neuro-oculaire') ||
+      part.toLowerCase().includes('neuro-okular')
+    );
+    const isSyn = !isDiag && !isGita && !isClinical && !isTratak && (
+      isLastCard ||
+      part.startsWith('**5.') ||
+      (part.includes('**') && (part.toLowerCase().includes('synerg') || part.includes('त्रिवेणी') || part.includes('समाधान')))
+    );
 
     if (isDiag) diagPart = part;
     else if (isGita) gitaPart = part;
@@ -525,17 +559,33 @@ export function parseTherapeuticStages(rawText: string, locale?: string): Struct
     : "🧠 3. Clinical Cognitive Neuroscience (CBT)";
 
   const cbtCleaned = cbtPart
-    .replace(/^\*\*(?:[2]\.\s+|CLINICAL[^*]*|क्लिनिकल[^*]*)[^*]*\*\*\s*:?\s*/im, '')
+    .replace(/^\*\*(?:[23]\.\s+|CLINICAL[^*]*|क्लिनिकल[^*]*|NEUROCIENCIA[^*]*|NEUROSCIENCES[^*]*|KLINISCHE[^*]*|CBT[^*]*|TCC[^*]*)[^*]*\*\*\s*:?\s*/im, '')
     .trim();
 
   const s3SpeechText = cbtCleaned || (isHindi
     ? 'अपने मन के नकारात्मक विचारों को पहचानें और गहरी सांस लेकर तंत्रिका तंत्र को शांत करें।'
+    : isSpanish
+    ? 'Identifique los pensamientos negativos y calme el sistema nervioso con respiraciones profundas.'
+    : isFrench
+    ? 'Prenez conscience des pensées négatives et apaisez le système nerveux par une respiration posée.'
+    : isGerman
+    ? 'Erkennen Sie negative Gedankenmuster und beruhigen Sie das Nervensystem mit bewusster Atmung.'
     : 'Notice catastrophic thoughts and anchor your nervous system with measured breathing.');
+
+  const s3Title = isHindi
+    ? 'संज्ञानात्मक पुनर्गठन एवं शारीरिक स्थिरता'
+    : isSpanish
+    ? 'Reestructuración Cognitiva y Somática'
+    : isFrench
+    ? 'Restructuration Cognitive et Somatique'
+    : isGerman
+    ? 'Kognitive Umstrukturierung und Somatik'
+    : 'Cognitive Restructuring & Somatics';
 
   stages.push({
     stage: 3,
     stageKey: 'cbt',
-    title: 'Cognitive Restructuring & Somatics',
+    title: s3Title,
     badge: s3Badge,
     badgeColor: 'text-emerald-400 bg-emerald-500/15 border-emerald-500/30',
     rawText: cbtPart || '',

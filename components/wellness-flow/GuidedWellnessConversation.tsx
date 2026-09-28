@@ -92,6 +92,26 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
   const languageRef = useRef<WellnessLanguage>(language);
   languageRef.current = language;
 
+  // ─── Sync Language from Initial Prop or GPS ───
+  useEffect(() => {
+    if (initialLanguage) {
+      setLanguage(initialLanguage);
+      wellnessStateMachine.setLanguage(initialLanguage);
+      const targetLocale =
+        initialLanguage === 'hi'
+          ? 'hi-IN'
+          : initialLanguage === 'es'
+          ? 'es-ES'
+          : initialLanguage === 'fr'
+          ? 'fr-FR'
+          : initialLanguage === 'de'
+          ? 'de-DE'
+          : 'en-US';
+      browserSpeechController.setLanguageLocale(targetLocale).catch(() => {});
+      confirmVoiceManagerRef.current?.setLanguage(initialLanguage);
+    }
+  }, [initialLanguage, isOpen]);
+
   // ─── Subscribe to State Machine Updates ───
   useEffect(() => {
     const unsub = wellnessStateMachine.subscribe((newState, snap) => {
@@ -144,7 +164,16 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
       setIsListening(false);
       setAudioLevel(0);
 
-      const targetLocale = languageRef.current === 'hi' ? 'hi-IN' : 'en-US';
+      const targetLocale =
+        languageRef.current === 'hi'
+          ? 'hi-IN'
+          : languageRef.current === 'es'
+          ? 'es-ES'
+          : languageRef.current === 'fr'
+          ? 'fr-FR'
+          : languageRef.current === 'de'
+          ? 'de-DE'
+          : 'en-US';
 
       // Cancel any prior speech before marking the new speech as active
       browserSpeechController.cancelSpeech();
@@ -191,7 +220,16 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
 
     if (currentState === 'MOOD_INPUT' && !session.initialUtterance) {
       const greeting = wellnessStateMachine.getInitialGreeting();
-      const textToSpeak = language === 'hi' ? greeting.text_hi : greeting.text_en;
+      const textToSpeak =
+        language === 'hi'
+          ? greeting.text_hi
+          : language === 'es'
+          ? (greeting.text_es || greeting.text_en)
+          : language === 'fr'
+          ? (greeting.text_fr || greeting.text_en)
+          : language === 'de'
+          ? (greeting.text_de || greeting.text_en)
+          : greeting.text_en;
       const timer = setTimeout(() => {
         speakAloud(textToSpeak, () => {
           // Seamlessly start listening once the assistant finishes speaking greeting
@@ -319,7 +357,16 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
 
     try {
       // 1. Synchronize language locale synchronously (do not await, to preserve browser user gesture stack)
-      const targetLocale = language === 'hi' ? 'hi-IN' : 'en-US';
+      const targetLocale =
+        language === 'hi'
+          ? 'hi-IN'
+          : language === 'es'
+          ? 'es-ES'
+          : language === 'fr'
+          ? 'fr-FR'
+          : language === 'de'
+          ? 'de-DE'
+          : 'en-US';
       browserSpeechController.setLanguageLocale(targetLocale).catch(() => {});
 
       // 2. Guarantee assistant speech stops immediately
@@ -502,9 +549,16 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
         });
       } else if (step === 3) {
         const res = wellnessStateMachine.handleCbtStep3(raw);
-        const speech = language === 'hi'
-          ? `आपका नया संतुलित विचार: ${res.replacementThought}। आपका आज का छोटा कदम: ${res.actionStep}`
-          : `Your balanced replacement thought: ${res.replacementThought}. Your small action step today: ${res.actionStep}`;
+        const speech =
+          language === 'hi'
+            ? `आपका नया संतुलित विचार: ${res.replacementThought}। आपका आज का छोटा कदम: ${res.actionStep}`
+            : language === 'es'
+            ? `Su nuevo pensamiento equilibrado: ${res.replacementThought}. Su pequeño paso práctico hoy: ${res.actionStep}`
+            : language === 'fr'
+            ? `Votre nouvelle pensée équilibrée : ${res.replacementThought}. Votre petite action concrète aujourd'hui : ${res.actionStep}`
+            : language === 'de'
+            ? `Ihr neuer ausgewogener Gedanke: ${res.replacementThought}. Ihr heutiger kleiner Handlungsschritt: ${res.actionStep}`
+            : `Your balanced replacement thought: ${res.replacementThought}. Your small action step today: ${res.actionStep}`;
         speakAloud(speech, () => {
           autoStartMicWhenSpeechEnds('CBT');
         });
@@ -1201,20 +1255,44 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
                   <div className="p-5 rounded-3xl bg-gradient-to-br from-emerald-950/50 via-slate-900 to-emerald-950/30 border border-emerald-500/40 space-y-3.5 shadow-2xl">
                     <div className="flex items-center justify-between pb-2 border-b border-emerald-500/20 text-xs">
                       <span className="font-mono font-bold text-emerald-300 uppercase">
-                        {language === 'hi' ? 'चरण 3: CBT संज्ञानात्मक पुनर्गठन' : 'Phase 3: Cognitive Behavioral Therapy'}
+                        {language === 'hi'
+                          ? 'चरण 3: CBT संज्ञानात्मक पुनर्गठन'
+                          : language === 'es'
+                          ? 'Fase 3: Terapia Cognitivo-Conductual (TCC)'
+                          : language === 'fr'
+                          ? 'Phase 3 : Thérapie Cognitivo-Comportementale (TCC)'
+                          : language === 'de'
+                          ? 'Phase 3: Kognitive Verhaltenstherapie (CBT)'
+                          : 'Phase 3: Cognitive Behavioral Therapy'}
                       </span>
                       <span data-testid="cbt-step-badge" className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono text-[10px]">
-                        Step {step} of 4
+                        {language === 'hi'
+                          ? `चरण ${step} / 4`
+                          : language === 'es'
+                          ? `Paso ${step} de 4`
+                          : language === 'fr'
+                          ? `Étape ${step} sur 4`
+                          : language === 'de'
+                          ? `Schritt ${step} von 4`
+                          : `Step ${step} of 4`}
                       </span>
                     </div>
 
                     {/* Step 1: Identify Automatic Negative Thought */}
                     <div data-testid="cbt-automatic-thought" className="p-3.5 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-1.5">
                       <div className="text-xs font-semibold text-emerald-400">
-                        {language === 'hi' ? '1. नकारात्मक स्वचालित विचार:' : '1. Automatic Negative Thought:'}
+                        {language === 'hi'
+                          ? '1. नकारात्मक स्वचालित विचार:'
+                          : language === 'es'
+                          ? '1. Pensamiento Negativo Automático:'
+                          : language === 'fr'
+                          ? '1. Pensée Négative Automatique :'
+                          : language === 'de'
+                          ? '1. Automatischer negativer Gedanke:'
+                          : '1. Automatic Negative Thought:'}
                       </div>
                       <p className="text-sm text-slate-100">
-                        {language === 'hi' ? script.step1_prompt_hi : script.step1_prompt_en}
+                        {wellnessStateMachine.getCbtStep1Prompt(script)}
                       </p>
                       {session.cbtResponses?.automatic_thought && (
                         <div className="text-xs text-emerald-200 italic pt-1 border-t border-slate-800">
@@ -1227,10 +1305,18 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
                     {step >= 2 && (
                       <div data-testid="cbt-distortion-name" className="p-3.5 rounded-2xl bg-purple-950/40 border border-purple-500/30 space-y-2">
                         <div className="text-xs font-semibold text-purple-400">
-                          {language === 'hi' ? '2. संज्ञानात्मक भ्रम (Cognitive Distortion):' : '2. Cognitive Distortion:'}
+                          {language === 'hi'
+                            ? '2. संज्ञानात्मक भ्रम (Cognitive Distortion):'
+                            : language === 'es'
+                            ? '2. Distorsión Cognitiva:'
+                            : language === 'fr'
+                            ? '2. Distortion Cognitive :'
+                            : language === 'de'
+                            ? '2. Kognitive Verzerrung:'
+                            : '2. Cognitive Distortion:'}
                         </div>
                         <p className="text-sm text-purple-100 font-medium">
-                          {language === 'hi' ? script.step2_name_hi : script.step2_name_en}
+                          {wellnessStateMachine.getCbtStep2Name(script)}
                         </p>
                         {step === 2 && (
                           <button
@@ -1238,7 +1324,15 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
                             onClick={handleAcknowledgeDistortion}
                             className="px-3.5 py-1.5 rounded-xl bg-purple-500 hover:bg-purple-400 text-slate-950 text-xs font-bold transition-all shadow-md"
                           >
-                            {language === 'hi' ? 'विचार को चुनौती दें →' : 'Challenge Thought →'}
+                            {language === 'hi'
+                              ? 'विचार को चुनौती दें →'
+                              : language === 'es'
+                              ? 'Cuestionar pensamiento →'
+                              : language === 'fr'
+                              ? 'Contester la pensée →'
+                              : language === 'de'
+                              ? 'Gedanken hinterfragen →'
+                              : 'Challenge Thought →'}
                           </button>
                         )}
                       </div>
@@ -1248,10 +1342,18 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
                     {step >= 3 && (
                       <div data-testid="cbt-evidence-challenge" className="p-3.5 rounded-2xl bg-cyan-950/40 border border-cyan-500/30 space-y-2">
                         <div className="text-xs font-semibold text-cyan-400">
-                          {language === 'hi' ? '3. साक्ष्य-आधारित प्रश्न:' : '3. Evidence-Based Challenge:'}
+                          {language === 'hi'
+                            ? '3. साक्ष्य-आधारित प्रश्न:'
+                            : language === 'es'
+                            ? '3. Desafío Basado en Evidencia:'
+                            : language === 'fr'
+                            ? '3. Remise en Question Basée sur les Faits :'
+                            : language === 'de'
+                            ? '3. Evidenzbasierte Überprüfung:'
+                            : '3. Evidence-Based Challenge:'}
                         </div>
                         <ul className="text-xs sm:text-sm text-slate-200 space-y-1 list-disc list-inside">
-                          {(language === 'hi' ? script.step3_challenge_questions_hi : script.step3_challenge_questions_en).map((q, qIdx) => (
+                          {wellnessStateMachine.getCbtStep3ChallengeQuestions(script).map((q, qIdx) => (
                             <li key={qIdx}>{q}</li>
                           ))}
                         </ul>
@@ -1267,14 +1369,32 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
                     {step >= 4 && (
                       <div className="p-3.5 rounded-2xl bg-emerald-950/40 border border-emerald-500/30 space-y-2">
                         <div className="text-xs font-semibold text-emerald-400">
-                          {language === 'hi' ? '4. संतुलित विचार व कार्य-कदम:' : '4. Balanced Thought & Action Step:'}
+                          {language === 'hi'
+                            ? '4. संतुलित विचार व कार्य-कदम:'
+                            : language === 'es'
+                            ? '4. Pensamiento Equilibrado y Acción:'
+                            : language === 'fr'
+                            ? '4. Pensée Équilibrée et Action :'
+                            : language === 'de'
+                            ? '4. Ausgewogener Gedanke & Handlungsschritt:'
+                            : '4. Balanced Thought & Action Step:'}
                         </div>
                         <div data-testid="cbt-balanced-thought" className="text-sm text-emerald-100 font-medium">
-                          {language === 'hi' ? script.step4_replacement_thought_hi : script.step4_replacement_thought_en}
+                          {wellnessStateMachine.getCbtStep4ReplacementThought(script)}
                         </div>
                         <div data-testid="cbt-action-step" className="p-2 rounded-xl bg-slate-950/60 border border-emerald-500/20 text-xs text-emerald-300">
-                          <strong>{language === 'hi' ? 'एक छोटा कदम: ' : 'Small Action Step: '}</strong>
-                          {language === 'hi' ? script.step4_action_step_hi : script.step4_action_step_en}
+                          <strong>
+                            {language === 'hi'
+                              ? 'एक छोटा कदम: '
+                              : language === 'es'
+                              ? 'Paso práctico: '
+                              : language === 'fr'
+                              ? 'Action concrète : '
+                              : language === 'de'
+                              ? 'Konkreter Schritt: '
+                              : 'Small Action Step: '}
+                          </strong>
+                          {wellnessStateMachine.getCbtStep4ActionStep(script)}
                         </div>
                       </div>
                     )}
@@ -1288,7 +1408,17 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
                         }}
                         className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-bold transition-all shadow-md active:scale-95"
                       >
-                        <span>{language === 'hi' ? 'अगला: त्राटक ध्यान →' : 'Next: Trataka Gazing →'}</span>
+                        <span>
+                          {language === 'hi'
+                            ? 'अगला: त्राटक ध्यान →'
+                            : language === 'es'
+                            ? 'Siguiente: Meditación Trataka →'
+                            : language === 'fr'
+                            ? 'Suivant : Méditation Trataka →'
+                            : language === 'de'
+                            ? 'Weiter: Trataka-Meditation →'
+                            : 'Next: Trataka Gazing →'}
+                        </span>
                         <SkipForward className="w-3.5 h-3.5" />
                       </button>
                     </div>

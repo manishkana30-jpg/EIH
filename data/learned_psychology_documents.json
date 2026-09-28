@@ -1471,5 +1471,105 @@
     "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13352642/",
     "source_platform": "NCBI PubMed & Wikipedia Clinical Knowledge",
     "query_trigger": "\u092a\u094d\u092f\u093e\u0930"
+  },
+  {
+    "id": "learned_i_feel_anxious_today",
+    "name": "Learned: I Feel Anxious Today Protocol",
+    "category": "Self-Learned Clinical Knowledge",
+    "triguna_balance": "Vata-Rajas Autonomic Regulation",
+    "core_symptoms": [
+      "I feel anxious today"
+    ],
+    "cognitive_distortions": [
+      "Cognitive Overwhelm",
+      "Emotional Reasoning"
+    ],
+    "solutions": {
+      "cbt_reframing": "Acknowledge this experience as a transient physiological signal. Notice thoughts without judgment.\n\n[Wikipedia Context]: Evidence-based psychological constructs and emotional regulation taxonomies.\n[PubMed Literature]: Clinical trials on cognitive behavioral therapy and neurosomatic intervention.",
+      "somatic_anchor": "Drop shoulders away from ears, place one hand on the lower abdomen, and feel the solid floor underneath your feet for 30 seconds.",
+      "pranayama": "Practice 4-4-4-4 Box Breathing or Nadi Shodhana for 3 minutes to restore autonomic balance.",
+      "micro_habit": "Write down one single micro-task within your direct control right now and release long-term rumination."
+    },
+    "severity_level": "Mild to Moderate",
+    "recommended_trataka_mode": "bindu",
+    "requires_immediate_crisis": false,
+    "source_url": "https://www.ncbi.nlm.nih.gov/pmc/",
+    "source_platform": "NCBI PubMed & Wikipedia Clinical Knowledge",
+    "query_trigger": "I feel anxious today"
+  },
+  {
+    "id": "learned_\u0938_\u091f_\u0930_\u091f_\u092c__\u0926",
+    "name": "Learned: \u0938\u094d\u091f\u093e\u0930\u094d\u091f \u092c\u093f\u0902\u0926\u0941 Protocol",
+    "category": "Self-Learned Clinical Knowledge",
+    "triguna_balance": "Vata-Rajas Autonomic Regulation",
+    "core_symptoms": [
+      "\u0938\u094d\u091f\u093e\u0930\u094d\u091f \u092c\u093f\u0902\u0926\u0941"
+    ],
+    "cognitive_distortions": [
+      "Cognitive Overwhelm",
+      "Emotional Reasoning"
+    ],
+    "solutions": {
+      "cbt_reframing": "Acknowledge this experience as a transient physiological signal. Notice thoughts without judgment.\n\n[Wikipedia Context]: Evidence-based psychological constructs and emotional regulation taxonomies.\n[PubMed Literature]: Clinical trials on cognitive behavioral therapy and neurosomatic intervention.",
+      "somatic_anchor": "Drop shoulders away from ears, place one hand on the lower abdomen, and feel the solid floor underneath your feet for 30 seconds.",
+      "pranayama": "Practice 4-4-4-4 Box Breathing or Nadi Shodhana for 3 minutes to restore autonomic balance.",
+      "micro_habit": "Write down one single micro-task within your direct control right now and release long-term rumination."
+    },
+    "severity_level": "Mild to Moderate",
+    "recommended_trataka_mode": "bindu",
+    "requires_immediate_crisis": false,
+    "source_url": "https://www.ncbi.nlm.nih.gov/pmc/",
+    "source_platform": "NCBI PubMed & Wikipedia Clinical Knowledge",
+    "query_trigger": "\u0938\u094d\u091f\u093e\u0930\u094d\u091f \u092c\u093f\u0902\u0926\u0941"
+  },
+  {
+    "id": "learned_i_am_suffering_from_intense_pa",
+    "name": "Learned: I Am Suffering From Intense Panic Attack Protocol",
+    "category": "Self-Learned Clinical Knowledge",
+    "triguna_balance": "Vata-Rajas Autonomic Regulation",
+    "core_symptoms": [
+      "I am suffering from intense panic attacks and constant anxiety about my job"
+    ],
+    "cognitive_distortions": [
+      "Cognitive Overwhelm",
+      "Emotional Reasoning"
+    ],
+    "solutions": {
+      "cbt_reframing": "Acknowledge this experience as a transient physiological signal. Notice thoughts without judgment.\n\n[Wikipedia Context]: Evidence-based psychological constructs and emotional regulation taxonomies.\n[PubMed Literature]: Clinical trials on cognitive behavioral therapy and neurosomatic intervention.",
+      "somatic_anchor": "Drop shoulders away from ears, place one hand on the lower abdomen, and feel the solid floor underneath your feet for 30 seconds.",
+      "pranayama": "Practice 4-4-4-4 Box Breathing or Nadi Shodhana for 3 minutes to restore autonomic balance.",
+      "micro_habit": "Write down one single micro-task within your direct control right now and release long-term rumination."
+    },
+    "severity_level": "Mild to Moderate",
+    "recommended_trataka_mode": "bindu",
+    "requires_immediate_crisis": false,
+    "source_url": "https://www.ncbi.nlm.nih.gov/pmc/",
+    "source_platform": "NCBI PubMed & Wikipedia Clinical Knowledge",
+    "query_trigger": "I am suffering from intense panic attacks and constant anxiety about my job"
+  },
+  {
+    "id": "learned_\u092e_\u091d__\u092c\u0939_\u0924_\u0917\u0939\u0930__\u091a__\u0924__\u0914\u0930_\u0918\u092c\u0930_\u0939\u091f",
+    "name": "Learned: \u092e\u0941\u091d\u0947 \u092c\u0939\u0941\u0924 \u0917\u0939\u0930\u0940 \u091a\u093f\u0902\u0924\u093e \u0914\u0930 \u0918\u092c\u0930\u093e\u0939\u091f \u0939\u094b \u0930\u0939\u0940 \u0939\u0948 Protocol",
+    "category": "Self-Learned Clinical Knowledge",
+    "triguna_balance": "Vata-Rajas Autonomic Regulation",
+    "core_symptoms": [
+      "\u092e\u0941\u091d\u0947 \u092c\u0939\u0941\u0924 \u0917\u0939\u0930\u0940 \u091a\u093f\u0902\u0924\u093e \u0914\u0930 \u0918\u092c\u0930\u093e\u0939\u091f \u0939\u094b \u0930\u0939\u0940 \u0939\u0948, \u0926\u093f\u0932 \u0924\u0947\u091c\u0940 \u0938\u0947 \u0927\u0921\u093c\u0915 \u0930\u0939\u093e \u0939\u0948"
+    ],
+    "cognitive_distortions": [
+      "Cognitive Overwhelm",
+      "Emotional Reasoning"
+    ],
+    "solutions": {
+      "cbt_reframing": "Acknowledge this experience as a transient physiological signal. Notice thoughts without judgment.\n\n[Wikipedia Context]: Evidence-based psychological constructs and emotional regulation taxonomies.\n[PubMed Literature]: Clinical trials on cognitive behavioral therapy and neurosomatic intervention.",
+      "somatic_anchor": "Drop shoulders away from ears, place one hand on the lower abdomen, and feel the solid floor underneath your feet for 30 seconds.",
+      "pranayama": "Practice 4-4-4-4 Box Breathing or Nadi Shodhana for 3 minutes to restore autonomic balance.",
+      "micro_habit": "Write down one single micro-task within your direct control right now and release long-term rumination."
+    },
+    "severity_level": "Mild to Moderate",
+    "recommended_trataka_mode": "bindu",
+    "requires_immediate_crisis": false,
+    "source_url": "https://www.ncbi.nlm.nih.gov/pmc/",
+    "source_platform": "NCBI PubMed & Wikipedia Clinical Knowledge",
+    "query_trigger": "\u092e\u0941\u091d\u0947 \u092c\u0939\u0941\u0924 \u0917\u0939\u0930\u0940 \u091a\u093f\u0902\u0924\u093e \u0914\u0930 \u0918\u092c\u0930\u093e\u0939\u091f \u0939\u094b \u0930\u0939\u0940 \u0939\u0948, \u0926\u093f\u0932 \u0924\u0947\u091c\u0940 \u0938\u0947 \u0927\u0921\u093c\u0915 \u0930\u0939\u093e \u0939\u0948"
   }
 ]
