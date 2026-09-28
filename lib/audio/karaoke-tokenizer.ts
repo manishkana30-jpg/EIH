@@ -328,50 +328,77 @@ export function parseTherapeuticStages(rawText: string, locale?: string): Struct
 
   rawParts.forEach((part, idx) => {
     const isLastCard = idx === rawParts.length - 1;
+    const lower = part.toLowerCase();
+
+    // 1. Diagnostic / Emotional Suffering Assessment
     const isDiag = !isLastCard && (
       part.startsWith('**SUMMARY') ||
-      part.toLowerCase().includes('suffering assessment') ||
+      lower.includes('suffering assessment') ||
+      lower.includes('wellbeing assessment') ||
+      lower.includes('diagnostic') ||
+      lower.includes('evaluación del estado') ||
+      lower.includes('analyse de l\'état') ||
+      lower.includes('belastungsanalyse') ||
+      lower.includes('klinische zusammenfassung') ||
       part.includes('स्थिति व कष्ट') ||
       part.includes('मानसिक पीड़ा') ||
       part.includes('स्थिति का सारांश') ||
-      part.toLowerCase().includes('diagnostic') ||
-      part.toLowerCase().includes('evaluación del estado') ||
-      part.toLowerCase().includes('analyse de l\'état') ||
-      part.toLowerCase().includes('belastungsanalyse')
+      part.includes('स्थिति एवं') ||
+      part.includes('मूल्यांकन')
     );
-    const isGita = !isDiag && !isLastCard && (
-      part.toLowerCase().includes('bhagavad gita') ||
-      part.includes('गीता') ||
-      part.toLowerCase().includes('sabiduría del') ||
-      part.toLowerCase().includes('sagesse de la') ||
-      part.toLowerCase().includes('weisheit der') ||
-      (part.startsWith('**2.') && !part.toLowerCase().includes('cbt') && !part.toLowerCase().includes('tcc') && !part.toLowerCase().includes('clinical') && !part.toLowerCase().includes('cogniti')) ||
-      (part.startsWith('**1.') && !part.includes('1. स्थिति') && !part.includes('1. Emotion'))
+
+    // 2. Tratak Neuro-Ocular Gazing
+    const isTratak = !isDiag && (
+      part.startsWith('**4.') ||
+      lower.includes('tratak') ||
+      part.includes('त्राटक') ||
+      lower.includes('neuro-ocular') ||
+      lower.includes('neuro-oculaire') ||
+      lower.includes('neuro-okular')
     );
-    const isClinical = !isDiag && !isGita && (
-      part.toLowerCase().includes('clinical') ||
-      part.toLowerCase().includes('cbt') ||
-      part.toLowerCase().includes('tcc') ||
-      part.toLowerCase().includes('cogniti') ||
-      part.toLowerCase().includes('kogniti') ||
+
+    // 3. Clinical CBT & Somatic Neuro-regulation
+    const isClinical = !isDiag && !isTratak && (
+      lower.includes('clinical') ||
+      lower.includes('clinique') ||
+      lower.includes('klinisch') ||
+      lower.includes('cbt') ||
+      lower.includes('tcc') ||
+      lower.includes('cogniti') ||
+      lower.includes('kogniti') ||
+      lower.includes('reframe') ||
+      lower.includes('reestructur') ||
+      lower.includes('restructur') ||
+      lower.includes('somatic') ||
+      lower.includes('somatique') ||
+      lower.includes('somatisch') ||
+      lower.includes('pranayama') ||
+      part.includes('क्लिनिकल') ||
       part.includes('कॉग्निटिव') ||
       part.includes('संज्ञानात्मक') ||
-      part.toLowerCase().includes('reestructuración') ||
-      part.toLowerCase().includes('restructuration') ||
-      (part.startsWith('**3.') && !part.toLowerCase().includes('tratak') && !part.includes('त्राटक'))
+      part.includes('शारीरिक स्थिरता') ||
+      part.includes('प्राणायाम') ||
+      (part.startsWith('**3.') && !lower.includes('bhagavad') && !part.includes('गीता'))
     );
-    const isTratak = !isDiag && !isGita && !isClinical && (
-      part.startsWith('**4.') ||
-      part.toLowerCase().includes('tratak') ||
-      part.includes('त्राटक') ||
-      part.toLowerCase().includes('neuro-ocular') ||
-      part.toLowerCase().includes('neuro-oculaire') ||
-      part.toLowerCase().includes('neuro-okular')
+
+    // 4. Bhagavad Gita Shloka & Spiritual Wisdom (guaranteed NOT clinical and NOT tratak)
+    const isGita = !isDiag && !isTratak && !isClinical && !isLastCard && (
+      lower.includes('bhagavad gita') ||
+      part.includes('गीता') ||
+      part.includes('श्लोक') ||
+      lower.includes('shloka') ||
+      lower.includes('sabiduría del') ||
+      lower.includes('sagesse de la') ||
+      lower.includes('weisheit der') ||
+      part.startsWith('**2.') ||
+      (part.startsWith('**1.') && !part.includes('1. स्थिति') && !part.includes('1. Emotion'))
     );
+
+    // 5. Synergy / Tri-Pillar resolution
     const isSyn = !isDiag && !isGita && !isClinical && !isTratak && (
       isLastCard ||
       part.startsWith('**5.') ||
-      (part.includes('**') && (part.toLowerCase().includes('synerg') || part.includes('त्रिवेणी') || part.includes('समाधान')))
+      (part.includes('**') && (lower.includes('synerg') || part.includes('त्रिवेणी') || part.includes('समाधान')))
     );
 
     if (isDiag) diagPart = part;
@@ -512,14 +539,8 @@ export function parseTherapeuticStages(rawText: string, locale?: string): Struct
     ? devanagariLines.join('। ')
     : (romanLines.length > 0 ? romanLines.join('. ') : devanagariLines.join('. '));
 
-  let s2SpeechText = '';
-  const shlokaPrefixHi = spokenShloka ? `${spokenShloka}। ` : '';
-  const shlokaPrefixEn = spokenShloka ? `${spokenShloka}. ` : '';
-  if (isHindi) {
-    s2SpeechText = `${shlokaPrefixHi}${meaning ? `भगवान श्रीकृष्ण का पावन संदेश: ${meaning}। ` : ''}${reflection ? `जीवन में उतारें: ${reflection}। ` : ''}${duty ? `वर्तमान कर्तव्य: ${duty}। ` : ''}${avoid ? `विशेष रूप से इस भूल से बचें: ${avoid}।` : ''}`;
-  } else {
-    s2SpeechText = `${shlokaPrefixEn}${meaning ? `Divine Teaching: ${meaning}. ` : ''}${reflection ? `Spiritual Reflection: ${reflection}. ` : ''}${duty ? `Your Duty Right Now: ${duty}. ` : ''}${avoid ? `Pitfall to Avoid: ${avoid}.` : ''}`;
-  }
+  const shlokaSep = spokenShloka ? (isHindi ? '। ' : '. ') : '';
+  let s2SpeechText = `${spokenShloka}${shlokaSep}${isHindi ? `${meaning ? `भगवान श्रीकृष्ण का पावन संदेश: ${meaning}। ` : ''}${reflection ? `जीवन में उतारें: ${reflection}। ` : ''}${duty ? `वर्तमान कर्तव्य: ${duty}। ` : ''}${avoid ? `विशेष रूप से इस भूल से बचें: ${avoid}।` : ''}` : `${meaning ? `Divine Teaching: ${meaning}. ` : ''}${reflection ? `Spiritual Reflection: ${reflection}. ` : ''}${duty ? `Your Duty Right Now: ${duty}. ` : ''}${avoid ? `Pitfall to Avoid: ${avoid}.` : ''}`}`.trim();
   if (!s2SpeechText.trim()) {
     s2SpeechText = isHindi
       ? 'भगवद्गीता का दिव्य संदेश आपके आंतरिक संतुलन, धैर्य और कर्म-चेतना को जाग्रत करता है।'
@@ -548,6 +569,40 @@ export function parseTherapeuticStages(rawText: string, locale?: string): Struct
   });
 
   // ─── STAGE 3: CLINICAL COGNITIVE NEUROSCIENCE (CBT) & BREATHWORK ───
+  if (!cbtPart || cbtPart.trim().length < 15) {
+    if (isHindi) {
+      cbtPart = `**3. क्लिनिकल कॉग्निटिव न्यूरोसाइंस (CBT एवं शारीरिक स्थिरता):**
+अपने वर्तमान चिंताजनक विचारों की वास्तविकता को परखें। जो विचार इस समय आपके मन में आ रहे हैं, वे केवल अस्थायी मानसिक तरंगे हैं, अंतिम सत्य नहीं।
+
+• **शारीरिक स्थिरता (Somatic Anchor):** अपनी हथेलियों को हृदय और नाभि पर रखें और गहरी सांस लें।
+• **अनुलोम-विलोम व संतुलित श्वास:** 4 सेकंड गहरी श्वास लें, 4 सेकंड रोकें और 6 सेकंड में धीरे-धीरे छोड़ें।`;
+    } else if (isSpanish) {
+      cbtPart = `**3. Neurociencia Clínica Cognitiva (TCC y Anclaje Somático):**
+Examine la validez de los pensamientos automáticos. Lo que siente es una señal neurovegetativa temporal, no una fatalidad permanente.
+
+• **Anclaje Somático:** Coloque una mano sobre el pecho y apoye firmemente ambos pies en el suelo.
+• **Respiración Reguladora:** Inhale durante 4 segundos, sostenga 4 segundos y exhale suavemente durante 6 segundos.`;
+    } else if (isFrench) {
+      cbtPart = `**3. Neurosciences Cliniques Cognitives (TCC et Ancrage Somatique) :**
+Prenez du recul face aux pensées automatiques anxiogènes. Cette sensation est une réaction neurovégétative passagère, pas une fatalité.
+
+• **Ancrage Somatique :** Posez une main sur le thorax et ancrez vos pieds au sol.
+• **Respiration Apaisante :** Inspirez pendant 4 secondes, retenez 4 secondes, puis expirez lentement pendant 6 secondes.`;
+    } else if (isGerman) {
+      cbtPart = `**3. Klinische Kognitive Neurowissenschaft (CBT & Somatische Erdung):**
+Hinterfragen Sie katastrophisierende Gedankenmuster. Was Sie gerade spüren, ist eine vorübergehende autonome Reaktion, keine unveränderliche Realität.
+
+• **Somatische Erdung:** Legen Sie eine Hand auf die Brust und spüren Sie festen Boden unter den Füßen.
+• **Beruhigende Atmung:** 4 Sekunden einatmen, 4 Sekunden halten, 6 Sekunden langsam ausatmen.`;
+    } else {
+      cbtPart = `**3. Clinical Cognitive Neuroscience (CBT & Somatic Grounding):**
+Notice and challenge catastrophic thought patterns. What you are experiencing is an autonomic nervous system signal, not a permanent reality.
+
+• **Somatic Anchor:** Place a hand on your heart and feel your feet firmly planted on the ground.
+• **Calming Breathwork:** Inhale for 4 seconds, hold for 4 seconds, and exhale slowly for 6 seconds.`;
+    }
+  }
+
   const s3Badge = isHindi
     ? "🧠 3. क्लिनिकल कॉग्निटिव न्यूरोसाइंस (CBT)"
     : isSpanish

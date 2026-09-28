@@ -434,12 +434,12 @@ const KaraokeMessageComponent: React.FC<KaraokeMessageProps> = ({
   const [selectedAdjustEmotion, setSelectedAdjustEmotion] = useState<string>("");
 
   useEffect(() => {
-    if (currentStage && currentStage !== localStage) {
+    if (currentStage && currentStage > localStage) {
       setLocalStage(currentStage);
     }
   }, [currentStage, localStage]);
 
-  const activeStage = currentStage || localStage;
+  const activeStage = Math.max(currentStage || 1, localStage || 1);
 
   // Parse into structured 4-stage therapeutic protocol
   const parsedStages = useMemo(
@@ -509,7 +509,8 @@ const KaraokeMessageComponent: React.FC<KaraokeMessageProps> = ({
 
   const hasRealCbtContent = Boolean(
     stage3?.meta?.cbtReframe ||
-    (stage3?.displayContent && stage3.displayContent.trim().length > 10)
+    (stage3?.displayContent && stage3.displayContent.trim().length > 10) ||
+    (stage3?.speechText && stage3.speechText.trim().length > 10)
   );
 
   const handleConfirmS1 = () => {
@@ -983,7 +984,7 @@ const KaraokeMessageComponent: React.FC<KaraokeMessageProps> = ({
                   </div>
                 ) : (
                   <div className="space-y-2 text-slate-100 text-xs sm:text-sm">
-                    {renderFormattedMarkdown(stage3.displayContent, isSpeaking, activeKaraoke, activeWordRef, card3Counter, 3)}
+                    {renderFormattedMarkdown(stage3.displayContent || stage3.speechText, isSpeaking, activeKaraoke, activeWordRef, card3Counter, 3)}
                   </div>
                 )}
 

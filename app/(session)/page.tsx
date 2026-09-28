@@ -439,7 +439,8 @@ export default function SanctuarySessionPage() {
       let activeWordIdx = -1;
 
       // 1. Fast bounded forward scan starting from last spoken word index
-      for (let i = startScan; i < cleanWordList.length; i++) {
+      const maxForward = Math.min(cleanWordList.length, startScan + 4);
+      for (let i = startScan; i < maxForward; i++) {
         const w = cleanWordList[i];
         if (charIndex >= w.startChar && charIndex <= w.endChar) {
           activeWordIdx = i;
@@ -447,9 +448,9 @@ export default function SanctuarySessionPage() {
         }
       }
 
-      // 2. Local backwards recovery (up to 3 words)
+      // 2. Local backwards recovery (up to 2 words)
       if (activeWordIdx < 0) {
-        for (let i = startScan - 1; i >= Math.max(0, startScan - 3); i--) {
+        for (let i = startScan - 1; i >= Math.max(0, startScan - 2); i--) {
           const w = cleanWordList[i];
           if (charIndex >= w.startChar && charIndex <= w.endChar) {
             activeWordIdx = i;
@@ -458,11 +459,11 @@ export default function SanctuarySessionPage() {
         }
       }
 
-      // 3. Local proximity fallback
+      // 3. Local proximity fallback (strictly bounded to immediate neighborhood)
       if (activeWordIdx < 0) {
         let minD = Infinity;
-        const scanRangeStart = Math.max(0, startScan - 4);
-        const scanRangeEnd = Math.min(cleanWordList.length, startScan + 16);
+        const scanRangeStart = Math.max(0, startScan - 1);
+        const scanRangeEnd = Math.min(cleanWordList.length, startScan + 3);
         for (let i = scanRangeStart; i < scanRangeEnd; i++) {
           const d = Math.abs(cleanWordList[i].startChar - charIndex);
           if (d < minD) {
@@ -475,18 +476,13 @@ export default function SanctuarySessionPage() {
       if (activeWordIdx < 0) activeWordIdx = startScan;
       activeWordIdx = Math.max(0, Math.min(cleanWordList.length - 1, activeWordIdx));
 
-      // Monotonic forward progression safeguard:
+      // Monotonic and smooth progression safeguard:
+      // A human speaker speaks sequentially word-by-word; never allow skipping ahead faster than speech
       if (prevIdx >= 0) {
         if (activeWordIdx < prevIdx) {
-          // Prevent backwards jump across sentence boundaries
           activeWordIdx = prevIdx;
-        } else if (activeWordIdx - prevIdx > 12) {
-          // Log significant forward jump telemetry
-          highlighterDesyncCountRef.current++;
-          sessionTelemetry.logHighlighterDesync({
-            phase: 'phase2_gita',
-            wordIndex: prevIdx,
-          });
+        } else if (activeWordIdx > prevIdx + 1) {
+          activeWordIdx = prevIdx + 1;
         }
       }
 
@@ -837,8 +833,10 @@ export default function SanctuarySessionPage() {
     // 3. Stage Progression & Navigation Handlers (Prevents redundant LLM re-prompts)
     if (lastAiMsg && parsedForAiMsg?.isStructured) {
       // ─── Stage 1 Confirmation Handling ───
-      if (curStage === 1) {
-        if (confirmIntent.intent === "yes" || navIntent === "next" || navIntent === "gita") {
+      const isAwaitingStage1 = curStage === 1;
+      const isAffirmativeConfirmation = confirmIntent.intent === "yes" || navIntent === "next" || navIntent === "gita";
+      if (isAwaitingStage1) {
+        if (isAffirmativeConfirmation) {
           isSendingRef.current = false;
           setIsLoading(false);
           handleConfirmStage1(lastAiMsg.id);

@@ -139,6 +139,7 @@ export class BrowserSpeechController {
   private activeSpeechGeneration = 0;
   private lastSpokenText = '';
   private lastSpeechEndTime = 0;
+  private chunkPauseTimer: ReturnType<typeof setTimeout> | null = null;
 
   private constructor() {
     if (typeof window !== 'undefined') {
@@ -1239,6 +1240,51 @@ export class BrowserSpeechController {
   }
 
   /**
+   * Splits speech text into natural grammatical sentences and clauses
+   * preserving 100% of characters and whitespace (concatenation === cleanText).
+   */
+  private splitIntoTherapeuticSpeechUnits(text: string): string[] {
+    if (!text) return [];
+    // Match sentence terminators (. ! ? । ॥ \n) or clause terminators (, ; : —)
+    const regex = /(?:[^.!?।॥\n,;:—]|(?<=\d)[,.](?=\d))+[.!?;:—।॥\n]+|(?:[^.!?।॥\n,;:—]|(?<=\d)[,.](?=\d))+,\s+|(?:[^.!?।॥\n,;:—]|(?<=\d)[,.](?=\d))+$/g;
+    const rawUnits = text.match(regex) || [text];
+    const units: string[] = [];
+    let current = '';
+    for (const u of rawUnits) {
+      if (!current) {
+        current = u;
+      } else {
+        const isCurrentSentenceEnd = /[.!?।॥\n]/.test(current);
+        if (!isCurrentSentenceEnd && current.trim().length < 16) {
+          current += u;
+        } else {
+          units.push(current);
+          current = u;
+        }
+      }
+    }
+    if (current) units.push(current);
+    return units;
+  }
+
+  /**
+   * Computes human-like therapeutic breathing and cadence pause duration
+   * based on the punctuation terminating the speech unit.
+   */
+  private getPauseDelayForUnit(unit: string): number {
+    const trimmed = unit.trim();
+    if (/[.!?।॥\n]$/.test(trimmed)) {
+      // Full sentence / Sanskrit purna viram / question: 380ms breathing & reflection pause
+      return 380;
+    }
+    if (/[,;:—]$/.test(trimmed)) {
+      // Clause inflection / colon / dash: 200ms natural cadence pause
+      return 200;
+    }
+    return 100;
+  }
+
+  /**
    * Primary Web Speech Synthesis for Real-Time Karaoke Mode
    * Hardened against Chrome's silent cancel/pause stall on subsequent utterances.
    */
@@ -1293,22 +1339,8 @@ export class BrowserSpeechController {
       } catch (_) {}
     }
 
-    // Split cleanText into natural sentence chunks (max 380 characters each)
-    // to prevent Chromium's 15s freeze bug while completely avoiding unnatural pauses & audio buffering gaps
-    const rawSentences = cleanText.match(/[^.!?।\n]+[.!?।\n]+|[^.!?।\n]+$/g) || [cleanText];
-    const sentenceChunks: string[] = [];
-    let currentChunk = '';
-    for (const s of rawSentences) {
-      const trimmed = s.trim();
-      if (!trimmed) continue;
-      if (currentChunk.length + trimmed.length < 380) {
-        currentChunk += (currentChunk ? ' ' : '') + trimmed;
-      } else {
-        if (currentChunk) sentenceChunks.push(currentChunk);
-        currentChunk = trimmed;
-      }
-    }
-    if (currentChunk) sentenceChunks.push(currentChunk);
+    // Split cleanText into natural grammatical sentence/clause units with exact character preservation
+    const sentenceChunks = this.splitIntoTherapeuticSpeechUnits(cleanText);
     if (sentenceChunks.length === 0) sentenceChunks.push(cleanText);
 
     this.lastSpokenText = (cleanText || '').toLowerCase().trim();
@@ -1319,6 +1351,11 @@ export class BrowserSpeechController {
       if (isFinished) return;
       isFinished = true;
       this.lastSpeechEndTime = Date.now();
+
+      if (this.chunkPauseTimer) {
+        clearTimeout(this.chunkPauseTimer);
+        this.chunkPauseTimer = null;
+      }
 
       if (this.ttsWatchdogTimer) {
         clearTimeout(this.ttsWatchdogTimer);
@@ -1350,8 +1387,8 @@ export class BrowserSpeechController {
     };
 
     const wordCount = cleanText.split(/\s+/).length;
-    // Responsive failsafe safety duration: avoids 45s lockup while giving adequate reading time
-    const computeSafetyDuration = () => Math.min(25000, Math.max(4500, Math.ceil((wordCount / 1.8) * 1000) + 3500));
+    // Responsive failsafe safety duration: gives adequate reading time including grammatical pauses
+    const computeSafetyDuration = () => Math.min(30000, Math.max(5000, Math.ceil((wordCount / 1.5) * 1000) + 4000));
 
     const resetWatchdog = () => {
       if (this.ttsWatchdogTimer) {
@@ -1386,16 +1423,10 @@ export class BrowserSpeechController {
 
     let chunkIdx = 0;
     const chunkOffsets: number[] = [];
-    let searchPos = 0;
+    let runningOffset = 0;
     for (const chunk of sentenceChunks) {
-      const idx = cleanText.indexOf(chunk, searchPos);
-      if (idx >= 0) {
-        chunkOffsets.push(idx);
-        searchPos = idx + chunk.length;
-      } else {
-        chunkOffsets.push(searchPos);
-        searchPos += chunk.length + 1;
-      }
+      chunkOffsets.push(runningOffset);
+      runningOffset += chunk.length;
     }
 
     const speakNextChunk = () => {
@@ -1483,24 +1514,34 @@ export class BrowserSpeechController {
           onStart?.();
         }
 
-        // Emit first word of chunk immediately with exact chunk offset
-        const firstMatch = chunkText.match(/^\S+/);
-        const firstWord = firstMatch ? firstMatch[0] : '';
-        this.callbacks.onWordBoundary?.(currentChunkOffset, firstWord.length, firstWord);
+        // Emit first word after a brief 40ms audio DAC startup compensation
+        // so visual highlight does not lead actual vocal sound
+        setTimeout(() => {
+          if (isFinished || this.activeSpeechGeneration !== speechGeneration || !this.isSpeaking) return;
+          if (!nativeBoundaryReceived && lastEmittedCharIndex === 0) {
+            const firstMatch = chunkText.match(/^\S+/);
+            const firstWord = firstMatch ? firstMatch[0] : '';
+            this.callbacks.onWordBoundary?.(currentChunkOffset, firstWord.length, firstWord);
+          }
+        }, 40);
 
-        // Adaptive boundary ticker: smoothly advance word tracking only if browser onboundary is absent (e.g. legacy Safari)
+        // Calibrated boundary ticker for voices without native onboundary
         stopBoundaryTicker();
+        const isIndic = /[\u0900-\u097F]/.test(chunkText);
+        const baseRate = isIndic ? 7.2 : 10.2;
+        const effectiveCharsPerSec = baseRate * (utterance.rate || 0.85);
+
         boundaryTicker = setInterval(() => {
           if (isFinished || this.activeSpeechGeneration !== speechGeneration || !this.isSpeaking || nativeBoundaryReceived) {
             stopBoundaryTicker();
             return;
           }
           const now = performance.now();
-          if (now - lastBoundaryFiredTime > 450) {
-            const elapsedSec = (now - chunkStartTime) / 1000;
+          if (now - lastBoundaryFiredTime > 400) {
+            const elapsedSec = Math.max(0, (now - chunkStartTime - 100)) / 1000;
             const estimatedRelativeChar = Math.min(
               chunkText.length - 1,
-              Math.max(lastEmittedCharIndex, Math.floor(elapsedSec * 15.0))
+              Math.max(lastEmittedCharIndex, Math.floor(elapsedSec * effectiveCharsPerSec))
             );
             if (estimatedRelativeChar > lastEmittedCharIndex) {
               lastEmittedCharIndex = estimatedRelativeChar;
@@ -1527,7 +1568,11 @@ export class BrowserSpeechController {
           return;
         }
         if (chunkIdx < sentenceChunks.length) {
-          speakNextChunk();
+          const pauseMs = this.getPauseDelayForUnit(chunkText);
+          this.chunkPauseTimer = setTimeout(() => {
+            this.chunkPauseTimer = null;
+            speakNextChunk();
+          }, pauseMs);
         } else {
           finishSpeech();
         }
@@ -1538,9 +1583,12 @@ export class BrowserSpeechController {
         if (isFinished || this.activeSpeechGeneration !== speechGeneration || !this.isSpeaking) {
           return;
         }
-        console.warn("SpeechSynthesis chunk notice:", e);
+        console.warn('SpeechSynthesis chunk notice:', e);
         if (chunkIdx < sentenceChunks.length) {
-          speakNextChunk();
+          this.chunkPauseTimer = setTimeout(() => {
+            this.chunkPauseTimer = null;
+            speakNextChunk();
+          }, 120);
         } else {
           finishSpeech();
         }
@@ -1560,7 +1608,7 @@ export class BrowserSpeechController {
           }
         }, 60);
       } catch (err) {
-        console.warn("Speech synthesis speak error:", err);
+        console.warn('Speech synthesis speak error:', err);
         finishSpeech();
       }
     };
@@ -1590,6 +1638,10 @@ export class BrowserSpeechController {
         this.currentSourceNode.disconnect();
       } catch (_) {}
       this.currentSourceNode = null;
+    }
+    if (this.chunkPauseTimer) {
+      clearTimeout(this.chunkPauseTimer);
+      this.chunkPauseTimer = null;
     }
     if (this.ttsWatchdogTimer) {
       clearTimeout(this.ttsWatchdogTimer);
