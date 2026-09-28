@@ -11,6 +11,7 @@ import {
   ShieldCheck,
   Sparkles,
   Mic,
+  MicOff,
   AlertTriangle,
   ArrowDown,
   PhoneOff,
@@ -286,23 +287,38 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
             {/* Interactive Pulsing Presence Orb */}
             <button
               onClick={onToggleRecording}
-              className="relative group mb-4 p-3 rounded-full focus:outline-none transition-transform active:scale-95"
-              title={isRecording ? "Stop voice listening" : isPlayingAudio ? "Speaking • Click to interrupt and talk" : "Click to speak with EIH"}
-              aria-label="Interactive voice activator"
+              disabled={isPlayingAudio}
+              className={`relative group mb-4 p-3 rounded-full focus:outline-none transition-transform ${
+                isPlayingAudio ? "opacity-60 cursor-not-allowed" : "active:scale-95"
+              }`}
+              title={
+                isPlayingAudio
+                  ? "Healer speaking • Mic disabled until speech ends"
+                  : isRecording
+                  ? "Stop voice listening"
+                  : "Click to speak with EIH"
+              }
+              aria-label={
+                isPlayingAudio
+                  ? "Healer speaking • Mic disabled"
+                  : isRecording
+                  ? "Stop voice listening"
+                  : "Interactive voice activator"
+              }
             >
               <div
                 className={`w-16 h-16 rounded-3xl flex items-center justify-center text-2xl transition-all duration-500 border ${
                   isRecording
                     ? "bg-rose-500/20 border-rose-500/60 shadow-[0_0_35px_rgba(244,63,94,0.4)] animate-pulse"
                     : isPlayingAudio
-                    ? "bg-amber-500/20 border-amber-500/50 shadow-[0_0_35px_rgba(245,158,11,0.3)] animate-pulse group-hover:border-amber-400/70"
+                    ? "bg-slate-900 border-slate-800 text-slate-500 shadow-none"
                     : "bg-gradient-to-tr from-emerald-600/30 via-teal-500/20 to-emerald-400/20 border-emerald-500/40 shadow-[0_0_30px_rgba(16,185,129,0.25)] group-hover:border-emerald-400/70 group-hover:shadow-[0_0_40px_rgba(16,185,129,0.4)]"
                 }`}
               >
                 {isRecording ? (
                   <Mic className="w-7 h-7 text-rose-400 animate-pulse" />
                 ) : isPlayingAudio ? (
-                  <Mic className="w-7 h-7 text-amber-300 animate-pulse" />
+                  <MicOff className="w-7 h-7 text-slate-500" />
                 ) : (
                   <Sparkles className="w-7 h-7 text-emerald-300 group-hover:scale-110 transition-transform" />
                 )}
@@ -533,24 +549,37 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
           <div className="rounded-full bg-slate-900/90 border border-slate-700/80 backdrop-blur-xl p-1.5 sm:p-2 flex items-center gap-1.5 sm:gap-2 shadow-[0_10px_35px_rgba(0,0,0,0.6)] focus-within:border-emerald-500/60 focus-within:shadow-[0_0_25px_rgba(16,185,129,0.25)] transition-all">
             {/* Pulsing Mic Button */}
             <button
+              data-testid="chat-mic-btn"
               onClick={onToggleRecording}
+              disabled={isPlayingAudio}
+              data-state={isPlayingAudio ? "speaking" : isRecording ? "recording" : "idle"}
               title={
-                isRecording
+                isPlayingAudio
+                  ? "Healer speaking • Mic disabled until speech ends"
+                  : isRecording
                   ? "Stop listening"
-                  : isPlayingAudio
-                  ? "Healer speaking • Click to interrupt and talk"
                   : "Continuous Voice (Click to speak)"
               }
               className={`p-2.5 sm:p-3 rounded-full transition-all shrink-0 ${
-                isRecording
+                isPlayingAudio
+                  ? "opacity-40 cursor-not-allowed bg-slate-800 text-slate-500 border border-slate-700/60 shadow-none"
+                  : isRecording
                   ? "bg-rose-500/25 text-rose-400 border border-rose-500/70 animate-pulse shadow-[0_0_15px_rgba(244,63,94,0.45)]"
-                  : isPlayingAudio
-                  ? "bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/50 animate-pulse shadow-[0_0_15px_rgba(245,158,11,0.3)] active:scale-95"
                   : "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 active:scale-95"
               }`}
-              aria-label={isRecording ? "Stop voice listening" : isPlayingAudio ? "Interrupt and speak" : "Start continuous voice"}
+              aria-label={
+                isPlayingAudio
+                  ? "Healer speaking • Mic disabled until speech ends"
+                  : isRecording
+                  ? "Stop voice listening"
+                  : "Start continuous voice"
+              }
             >
-              <Mic className="w-4 h-4 sm:w-5 sm:h-5" />
+              {isPlayingAudio ? (
+                <MicOff className="w-4 h-4 sm:w-5 sm:h-5 text-slate-500" />
+              ) : (
+                <Mic className="w-4 h-4 sm:w-5 sm:h-5" />
+              )}
             </button>
 
             {/* End Session Button Near Mic */}

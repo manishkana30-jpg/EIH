@@ -533,23 +533,9 @@ export default function SanctuarySessionPage() {
         clearTimeout(safetyTimer);
         safetyTimer = null;
       }
-      isPlayingAudioRef.current = false;
-      setIsPlayingAudio(false);
-      activeAudioRef.current = null;
-      setActiveKaraoke(null);
-      setSpeakingMessageId(null);
-      activeSpeakingMessageIdRef.current = null;
-      lastActiveWordIdxRef.current = -1;
 
-      setTimeout(() => {
-        isEchoLockedRef.current = false;
-        setIsEchoLocked(false);
-        if (isVoiceModeActiveRef.current) {
-          startContinuousVoiceListeningRef.current?.();
-        }
-      }, 200);
-
-      // Auto-advance sequentially between therapeutic cards once reading completes
+      // Check whether we have more therapeutic stages / phases to read aloud sequentially
+      let willAdvanceToNextStage = false;
       const currentSpeaking = activeSpeakingStageRef.current;
       if (currentSpeaking) {
         const { messageId, stage } = currentSpeaking;
@@ -563,37 +549,57 @@ export default function SanctuarySessionPage() {
         }
 
         if (stage === 2) {
-          // Card 2 (Gita) finished reading -> auto-advance to Card 3 (CBT) and read aloud
-          setTimeout(() => {
-            if (!parsed) return;
-            const stage3 = parsed.stages.find((s: any) => s.stage === 3);
-            if (!stage3 || !stage3.speechText || stage3.speechText.trim().length <= 5) {
-              activeSpeakingStageRef.current = null;
-              return;
-            }
-            setMessageStages((prev) => ({ ...prev, [messageId]: 3 }));
-            messageStagesRef.current = { ...messageStagesRef.current, [messageId]: 3 };
-            activeSpeakingStageRef.current = { messageId, stage: 3 };
-            playVoiceRef.current(stage3.speechText, undefined, messageId);
-          }, 450);
+          // Card 2 (Gita) finished reading -> check if Card 3 (CBT) exists to speak
+          const stage3 = parsed?.stages?.find((s: any) => s.stage === 3);
+          if (stage3 && stage3.speechText && stage3.speechText.trim().length > 5) {
+            willAdvanceToNextStage = true;
+            setTimeout(() => {
+              setMessageStages((prev) => ({ ...prev, [messageId]: 3 }));
+              messageStagesRef.current = { ...messageStagesRef.current, [messageId]: 3 };
+              activeSpeakingStageRef.current = { messageId, stage: 3 };
+              playVoiceRef.current(stage3.speechText, undefined, messageId);
+            }, 450);
+          } else {
+            activeSpeakingStageRef.current = null;
+          }
         } else if (stage === 3) {
-          // Card 3 (CBT) finished reading -> auto-advance to Card 4 (Tratak) and read aloud
-          setTimeout(() => {
-            if (!parsed) return;
-            const stage4 = parsed.stages.find((s: any) => s.stage === 4);
-            if (!stage4 || !stage4.speechText || stage4.speechText.trim().length <= 5) {
-              activeSpeakingStageRef.current = null;
-              return;
-            }
-            setMessageStages((prev) => ({ ...prev, [messageId]: 4 }));
-            messageStagesRef.current = { ...messageStagesRef.current, [messageId]: 4 };
-            activeSpeakingStageRef.current = { messageId, stage: 4 };
-            playVoiceRef.current(stage4.speechText, undefined, messageId);
-          }, 450);
+          // Card 3 (CBT) finished reading -> check if Card 4 (Tratak) exists to speak
+          const stage4 = parsed?.stages?.find((s: any) => s.stage === 4);
+          if (stage4 && stage4.speechText && stage4.speechText.trim().length > 5) {
+            willAdvanceToNextStage = true;
+            setTimeout(() => {
+              setMessageStages((prev) => ({ ...prev, [messageId]: 4 }));
+              messageStagesRef.current = { ...messageStagesRef.current, [messageId]: 4 };
+              activeSpeakingStageRef.current = { messageId, stage: 4 };
+              playVoiceRef.current(stage4.speechText, undefined, messageId);
+            }, 450);
+          } else {
+            activeSpeakingStageRef.current = null;
+          }
         } else {
           // Stage 1 or Stage 4 concluded
           activeSpeakingStageRef.current = null;
         }
+      }
+
+      // If advancing to the next stage, keep mic disabled across the transition!
+      if (!willAdvanceToNextStage) {
+        // All speech phases have finished! Re-enable microphone and start continuous voice
+        isPlayingAudioRef.current = false;
+        setIsPlayingAudio(false);
+        activeAudioRef.current = null;
+        setActiveKaraoke(null);
+        setSpeakingMessageId(null);
+        activeSpeakingMessageIdRef.current = null;
+        lastActiveWordIdxRef.current = -1;
+
+        setTimeout(() => {
+          isEchoLockedRef.current = false;
+          setIsEchoLocked(false);
+          if (isVoiceModeActiveRef.current) {
+            startContinuousVoiceListeningRef.current?.();
+          }
+        }, 200);
       }
     };
 
@@ -1012,22 +1018,8 @@ export default function SanctuarySessionPage() {
   const startContinuousVoiceListening = async () => {
     startContinuousVoiceListeningRef.current = startContinuousVoiceListening;
     if (isPlayingAudioRef.current || isEchoLockedRef.current) {
-      if (activeAudioRef.current) {
-        try {
-          activeAudioRef.current.pause();
-          activeAudioRef.current.src = "";
-        } catch (_) {}
-        activeAudioRef.current = null;
-      }
-      browserSpeechController.cancelSpeech();
-      isPlayingAudioRef.current = false;
-      isEchoLockedRef.current = false;
-      setIsPlayingAudio(false);
-      setIsEchoLocked(false);
-      activeSpeakingStageRef.current = null;
-      setActiveKaraoke(null);
-      setSpeakingMessageId(null);
-      activeSpeakingMessageIdRef.current = null;
+      console.log("[Voice] Blocked startContinuousVoiceListening while audio playback is active");
+      return;
     }
 
     try {
@@ -1082,23 +1074,11 @@ export default function SanctuarySessionPage() {
   };
 
   const toggleRecording = async () => {
-    // 1. If currently playing audio or echo locked, interrupt speech immediately and start listening!
-    if (activeAudioRef.current) {
-      try {
-        activeAudioRef.current.pause();
-        activeAudioRef.current.src = "";
-      } catch (_) {}
-      activeAudioRef.current = null;
+    // If currently playing audio, microphone is strictly disabled until speech finishes
+    if (isPlayingAudioRef.current) {
+      console.log("[Voice] Microphone disabled while assistant is speaking");
+      return;
     }
-    browserSpeechController.cancelSpeech();
-    isPlayingAudioRef.current = false;
-    isEchoLockedRef.current = false;
-    setIsPlayingAudio(false);
-    setIsEchoLocked(false);
-    activeSpeakingStageRef.current = null;
-    setActiveKaraoke(null);
-    setSpeakingMessageId(null);
-    activeSpeakingMessageIdRef.current = null;
 
     if (isRecording) {
       isVoiceModeActiveRef.current = false;
