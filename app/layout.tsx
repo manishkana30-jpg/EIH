@@ -105,6 +105,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   userScalable: true,
+  interactiveWidget: 'resizes-content',
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({
@@ -123,8 +125,8 @@ export default function RootLayout({
       </head>
       <body className="bg-[#09090b] text-[#ecf3ee] h-full h-[100dvh] flex flex-col antialiased selection:bg-amber-500/30 selection:text-amber-100 overflow-hidden">
         {/* Global Sticky Header */}
-        <header className="sticky top-0 z-40 bg-[#09090b]/85 backdrop-blur-xl border-b border-zinc-800/80 px-4 sm:px-6 py-2.5 transition-all shrink-0">
-          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+        <header className="sticky top-0 z-40 h-14 bg-[#09090b]/85 backdrop-blur-xl border-b border-zinc-800/80 px-4 sm:px-6 transition-all shrink-0 flex items-center">
+          <div className="max-w-7xl w-full mx-auto flex items-center justify-between gap-4">
             <Link href="/" className="flex items-center gap-2.5 group">
               <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-500/20 to-emerald-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 font-serif font-bold text-sm shadow-[0_0_15px_rgba(245,158,11,0.15)] group-hover:border-amber-400 transition-colors">
                 <Brain className="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" />

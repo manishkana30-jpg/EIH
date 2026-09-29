@@ -1203,7 +1203,7 @@ export default function SanctuarySessionPage() {
       ───────────────────────────────────────────────────────────── */}
       <section
         aria-label="Interactive Mind Sanctuary Workspace"
-        className="relative flex w-full h-[calc(100dvh-53px)] min-h-[620px] bg-slate-950 overflow-hidden shrink-0"
+        className="relative flex w-full h-[calc(100dvh-3.5rem)] sm:min-h-[620px] min-h-0 bg-slate-950 overflow-hidden shrink-0"
       >
         {/* SERENE CLINICAL SANCTUARY BACKGROUND */}
         {/* Mobile Navigation Drawer */}

@@ -1696,5 +1696,30 @@
     "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13352642/",
     "source_platform": "NCBI PubMed & Wikipedia Clinical Knowledge",
     "query_trigger": "\u0907\u0902\u091f\u0930\u0935\u094d\u092f\u0942 \u091f\u0947\u0902\u0936\u0928 \u0939\u094b \u0930\u0939\u0940 \u0939\u0948"
+  },
+  {
+    "id": "learned_i_feel_so_anxious_and_exhauste",
+    "name": "Learned: I Feel So Anxious And Exhausted Today Protocol",
+    "category": "Self-Learned Clinical Knowledge",
+    "triguna_balance": "Vata-Rajas Autonomic Regulation",
+    "core_symptoms": [
+      "I feel so anxious and exhausted today"
+    ],
+    "cognitive_distortions": [
+      "Cognitive Overwhelm",
+      "Emotional Reasoning"
+    ],
+    "solutions": {
+      "cbt_reframing": "Acknowledge this experience as a transient physiological signal. Notice thoughts without judgment.\n\n[Wikipedia Context]: Evidence-based psychological constructs and emotional regulation taxonomies.\n[PubMed Literature]: Clinical trials on cognitive behavioral therapy and neurosomatic intervention.",
+      "somatic_anchor": "Drop shoulders away from ears, place one hand on the lower abdomen, and feel the solid floor underneath your feet for 30 seconds.",
+      "pranayama": "Practice 4-4-4-4 Box Breathing or Nadi Shodhana for 3 minutes to restore autonomic balance.",
+      "micro_habit": "Write down one single micro-task within your direct control right now and release long-term rumination."
+    },
+    "severity_level": "Mild to Moderate",
+    "recommended_trataka_mode": "bindu",
+    "requires_immediate_crisis": false,
+    "source_url": "https://www.ncbi.nlm.nih.gov/pmc/",
+    "source_platform": "NCBI PubMed & Wikipedia Clinical Knowledge",
+    "query_trigger": "I feel so anxious and exhausted today"
   }
 ]

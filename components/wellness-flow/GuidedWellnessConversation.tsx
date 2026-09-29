@@ -832,7 +832,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
   };
 
   return (
-    <div className="fixed inset-0 z-[150] flex items-center justify-center p-2 sm:p-4 bg-slate-950/80 backdrop-blur-xl animate-fadeIn">
+    <div className="fixed inset-0 z-[150] flex items-center justify-center p-0 sm:p-4 bg-slate-950/80 backdrop-blur-xl animate-fadeIn">
       {/* ─────────────────────────────────────────────────────────────
           SAFETY / CRISIS IMMEDIATE INTERVENTION MODAL
       ───────────────────────────────────────────────────────────── */}
@@ -956,7 +956,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
       {/* ─────────────────────────────────────────────────────────────
           MAIN CONVERSATIONAL SANCTUARY STAGE
       ───────────────────────────────────────────────────────────── */}
-      <div data-testid="wellness-modal" className="relative flex flex-col w-full max-w-3xl h-[92vh] max-h-[780px] rounded-3xl bg-slate-900/90 border border-slate-800/80 shadow-[0_20px_60px_rgba(0,0,0,0.8)] overflow-hidden backdrop-blur-2xl">
+      <div data-testid="wellness-modal" className="relative flex flex-col w-full h-[100dvh] sm:h-[92vh] sm:max-h-[780px] sm:max-w-3xl rounded-none sm:rounded-3xl bg-slate-900/90 border-0 sm:border border-slate-800/80 shadow-[0_20px_60px_rgba(0,0,0,0.8)] overflow-hidden backdrop-blur-2xl pb-[env(safe-area-inset-bottom)]">
         {/* TOP STATUS BAR & 4-PHASE PROGRESS INDICATOR */}
         <header className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-slate-800/60 bg-slate-950/60 shrink-0">
           <div className="flex items-center gap-2">
@@ -1979,7 +1979,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
                     ? 'अपनी भावनाएं बताएं या बोलकर कहें...'
                     : 'Share how you are feeling or reply by voice...'
                 }
-                className="flex-1 bg-slate-900/90 border border-slate-800 rounded-full px-4 py-2 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-teal-500/60"
+                className="flex-1 bg-slate-900/90 border border-slate-800 rounded-full px-4 py-2 text-base sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-teal-500/60"
               />
 
               {/* Send Button */}

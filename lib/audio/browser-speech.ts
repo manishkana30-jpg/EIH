@@ -147,7 +147,30 @@ export class BrowserSpeechController {
       if (this.speechSynth) {
         this.warmupVoices();
       }
+      this.setupMobileAudioUnlock();
     }
+  }
+
+  public setupMobileAudioUnlock(): void {
+    if (typeof window === 'undefined') return;
+    const unlock = () => {
+      if (this.audioCtx && this.audioCtx.state === 'suspended') {
+        this.audioCtx.resume().catch(() => {});
+      }
+      if (this.speechSynth) {
+        try {
+          const silent = new SpeechSynthesisUtterance(' ');
+          silent.volume = 0.001;
+          this.speechSynth.speak(silent);
+        } catch (_) {}
+      }
+      window.removeEventListener('touchstart', unlock);
+      window.removeEventListener('pointerdown', unlock);
+      window.removeEventListener('click', unlock);
+    };
+    window.addEventListener('touchstart', unlock, { once: true, passive: true });
+    window.addEventListener('pointerdown', unlock, { once: true, passive: true });
+    window.addEventListener('click', unlock, { once: true, passive: true });
   }
 
   public static getInstance(): BrowserSpeechController {
@@ -1581,6 +1604,11 @@ export class BrowserSpeechController {
       utterance.onerror = (e) => {
         stopBoundaryTicker();
         if (isFinished || this.activeSpeechGeneration !== speechGeneration || !this.isSpeaking) {
+          return;
+        }
+        if ((e as any)?.error === 'not-allowed') {
+          console.warn('[BrowserSpeechController] SpeechSynthesis blocked by browser autoplay policy (user gesture required).');
+          finishSpeech();
           return;
         }
         console.warn('SpeechSynthesis chunk notice:', e);
