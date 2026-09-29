@@ -254,7 +254,7 @@ export class ConfirmVoiceManager {
       logConfirmDebug('STT', 'Insecure context: SpeechRecognition blocked -> button fallback');
       this.isListeningActive = false;
       this.triggerButtonFallback(
-        this.language === 'hi' ? 'सुरक्षित कनेक्शन (HTTPS) आवश्यक है। कृपया बटन दबाकर चुनें।' : 'Microphone requires secure HTTPS. Please tap Yes or No below.'
+        this.language === 'hi' ? 'सुरक्षित कनेक्शन (HTTPS) आवश्यक है। कृपया बटन दबाकर चुनें।' : 'Voice requires a secure HTTPS connection. Please tap Yes or No below.'
       );
       return;
     }
@@ -263,14 +263,15 @@ export class ConfirmVoiceManager {
       logConfirmDebug('STT', 'SpeechRecognition not supported in browser environment -> button fallback');
       this.isListeningActive = false;
       this.triggerButtonFallback(
-        this.language === 'hi' ? 'कृपया बटन दबाकर पुष्टि करें' : 'Please tap Yes or No below'
+        this.language === 'hi' ? 'आवाज़ समर्थित नहीं है। कृपया बटन दबाकर पुष्टि करें।' : 'Voice input not supported on this browser. Please tap Yes or No below.'
       );
       return;
     }
 
     try {
+      const isIOS = typeof navigator !== 'undefined' && /iPhone|iPad|iPod/i.test(navigator.userAgent);
       const recognizer = new SpeechRec();
-      recognizer.continuous = true;
+      recognizer.continuous = !isIOS;
       recognizer.interimResults = true;
       recognizer.maxAlternatives = 1;
 
@@ -364,8 +365,8 @@ export class ConfirmVoiceManager {
           this.isListeningActive = false;
           this.triggerButtonFallback(
             this.language === 'hi'
-              ? 'माइक की अनुमति नहीं मिली। कृपया नीचे बटन का उपयोग करें।'
-              : 'Microphone access blocked. Please use the buttons below.'
+              ? 'माइक की अनुमति नहीं मिली। कृपया अपने ब्राउज़र की सेटिंग्स में माइक्रोफ़ोन की अनुमति दें।'
+              : 'Please enable microphone permissions in your browser settings.'
           );
         } else if (e.error === 'network') {
           this.isListeningActive = false;

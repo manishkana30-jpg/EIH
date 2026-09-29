@@ -1029,6 +1029,23 @@ export default function SanctuarySessionPage() {
       return;
     }
 
+    // Defensive Guard 1: Secure Context Check (HTTPS)
+    if (typeof window !== "undefined" && window.isSecureContext === false) {
+      setErrorMessage("Voice requires a secure HTTPS connection.");
+      return;
+    }
+
+    // Defensive Guard 2: Web Speech API Prefixing & Compatibility Check
+    const SpeechRec =
+      typeof window !== "undefined"
+        ? (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+        : null;
+
+    if (!SpeechRec) {
+      setErrorMessage("Voice input not supported on this browser. Please type.");
+      return;
+    }
+
     try {
       const isMobile =
         typeof navigator !== "undefined" &&
@@ -1047,6 +1064,11 @@ export default function SanctuarySessionPage() {
 
       setIsRecording(true);
       isVoiceModeActiveRef.current = true;
+
+      // On mobile, blur any active input element so the virtual keyboard dismisses
+      if (typeof document !== "undefined" && document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
 
       await browserSpeechController.startListening(
         (transcript, isFinal, voiceState) => {
@@ -1067,16 +1089,18 @@ export default function SanctuarySessionPage() {
           console.warn("Speech recognition notice:", err);
           setIsRecording(false);
           if (err && (err.includes("not-allowed") || err.includes("permission") || err.includes("blocked"))) {
-            setErrorMessage("Microphone access blocked. Click the lock/camera icon in your address bar to enable microphone access.");
+            setErrorMessage("Please enable microphone permissions in your browser settings.");
           } else if (err) {
             setErrorMessage(err);
           }
         },
         stream || undefined
       );
-    } catch (err) {
+    } catch (err: any) {
       console.error("Voice capture start error:", err);
       setIsRecording(false);
+      const isNotAllowed = err?.name === "NotAllowedError" || err?.message?.includes("not-allowed");
+      setErrorMessage(isNotAllowed ? "Please enable microphone permissions in your browser settings." : (err?.message || "Please enable microphone permissions in your browser settings."));
     }
   };
 
@@ -1085,6 +1109,11 @@ export default function SanctuarySessionPage() {
     if (isPlayingAudioRef.current) {
       console.log("[Voice] Microphone disabled while assistant is speaking");
       return;
+    }
+
+    // Dismiss mobile virtual keyboard so the user can see voice feedback
+    if (typeof document !== "undefined" && document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
     }
 
     if (isRecording) {

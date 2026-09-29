@@ -96,6 +96,14 @@ export interface ISpeechRecognition {
   onend: (() => void) | null;
 }
 
+declare global {
+  interface Window {
+    SpeechRecognition?: new () => ISpeechRecognition;
+    webkitSpeechRecognition?: new () => ISpeechRecognition;
+    browserSpeechController?: BrowserSpeechController;
+  }
+}
+
 export class BrowserSpeechController {
   private static instance: BrowserSpeechController;
   private speechSynth: SpeechSynthesis | null = null;
@@ -217,33 +225,28 @@ export class BrowserSpeechController {
   public async startRecognition(existingStream?: MediaStream): Promise<boolean> {
     if (typeof window === 'undefined') return false;
 
-    // Defensive Guard 1: Secure Context Check (Browsers silently block getUserMedia on non-HTTPS/non-localhost)
+    // Defensive Guard 1: Secure Context Check (Browsers silently block Web Speech & getUserMedia on non-HTTPS)
     if (window.isSecureContext === false) {
-      const errMsg = 'Microphone access requires a secure connection (HTTPS or localhost).';
+      const errMsg = 'Voice requires a secure HTTPS connection.';
       console.warn('[BrowserSpeechController] Insecure context:', errMsg);
       this.callbacks.onError?.(errMsg);
       return false;
     }
 
-    // Defensive Guard 2: Web Speech API Availability Check
+    // Defensive Guard 2: Web Speech API Prefixing & Compatibility Check
     const SpeechRec =
-      (window as unknown as { SpeechRecognition?: new () => ISpeechRecognition; webkitSpeechRecognition?: new () => ISpeechRecognition }).SpeechRecognition ||
-      (window as unknown as { webkitSpeechRecognition?: new () => ISpeechRecognition }).webkitSpeechRecognition;
+      typeof window !== 'undefined'
+        ? window.SpeechRecognition || window.webkitSpeechRecognition
+        : null;
 
     if (!SpeechRec) {
-      console.info('[BrowserSpeechController] Native SpeechRecognition not available. Activating Faster-Whisper local STT.');
+      const fallbackMsg = 'Voice input not supported on this browser. Please type.';
+      console.info('[BrowserSpeechController]', fallbackMsg);
+      this.callbacks.onError?.(fallbackMsg);
       this.useWhisperFallback = true;
     }
 
-    // Defensive Guard 3: Explicit Insecure Context Check
-    if ((window as any).isSecureContext === false) {
-      const errMsg = 'Microphone access requires a secure connection (HTTPS or localhost).';
-      console.warn('[BrowserSpeechController] Insecure context:', errMsg);
-      this.callbacks.onError?.(errMsg);
-      return false;
-    }
-
-    // Defensive Guard 4: Sequential Audio Control - Stop TTS immediately without async delay
+    // Defensive Guard 3: Sequential Audio Control - Stop TTS immediately without async delay
     if (this.isSpeaking) {
       this.cancelSpeech();
     }
@@ -253,21 +256,29 @@ export class BrowserSpeechController {
     this.liveInterimTranscript = '';
     this.accumulatedFinalText = '';
 
-    // 1. Initialize Microphone Audio Stream fresh for real-time visualizer & acoustic prosody
-    await this.startMediaStreamAndVAD(existingStream);
+    const isMobile =
+      typeof navigator !== 'undefined' &&
+      /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-    // If microphone acquisition failed, do not proceed with speech recognition
-    if (!this.mediaStream && !existingStream) {
-      this.shouldBeListening = false;
-      this.isListening = false;
-      this.callbacks.onRecognitionState?.(false);
-      return false;
-    }
-
-    // 2. Initialize recognition engine (Native Web Speech or local Faster-Whisper MediaRecorder)
+    // Critical Mobile Fix 1: Strict Synchronous User-Gesture Execution
+    // On iOS Safari and Android Chrome, SpeechRecognition.start() MUST be fired directly
+    // in the synchronous user gesture tick. Any prior 'await' drops the trusted gesture context.
     if (!this.useWhisperFallback && SpeechRec) {
       this.initWebSpeechRecognition();
+      // On desktop, initialize parallel VAD/prosody analyzer non-blockingly
+      if (!isMobile) {
+        this.startMediaStreamAndVAD(existingStream).catch((err) => {
+          console.warn('[BrowserSpeechController] Background VAD notice:', err);
+        });
+      }
     } else {
+      await this.startMediaStreamAndVAD(existingStream);
+      if (!this.mediaStream && !existingStream) {
+        this.shouldBeListening = false;
+        this.isListening = false;
+        this.callbacks.onRecognitionState?.(false);
+        return false;
+      }
       this.initMediaRecorder();
     }
 
@@ -511,12 +522,18 @@ export class BrowserSpeechController {
    * 4. Normalizes BCP-47 locale tags (en-US, hi-IN).
    */
   private initWebSpeechRecognition(): void {
+    if (typeof window !== 'undefined' && window.isSecureContext === false) {
+      this.callbacks.onError?.('Voice requires a secure HTTPS connection.');
+      return;
+    }
+
     const SpeechRec =
-      (window as unknown as { SpeechRecognition?: new () => ISpeechRecognition; webkitSpeechRecognition?: new () => ISpeechRecognition }).SpeechRecognition ||
-      (window as unknown as { webkitSpeechRecognition?: new () => ISpeechRecognition }).webkitSpeechRecognition;
+      typeof window !== 'undefined'
+        ? window.SpeechRecognition || window.webkitSpeechRecognition
+        : null;
 
     if (!SpeechRec) {
-      this.callbacks.onError?.('Speech recognition is not supported in this browser. Please use text input.');
+      this.callbacks.onError?.('Voice input not supported on this browser. Please type.');
       return;
     }
 
@@ -533,8 +550,11 @@ export class BrowserSpeechController {
     }
 
     try {
+      const isIOS = typeof navigator !== 'undefined' && /iPhone|iPad|iPod/i.test(navigator.userAgent);
       const recognition = new SpeechRec();
-      recognition.continuous = true;
+      // On iOS Safari, continuous = true triggers premature aborts and audio session conflicts.
+      // Use continuous = false on iOS with automatic keep-alive on onend when still in active listening state.
+      recognition.continuous = !isIOS;
       recognition.interimResults = true;
       recognition.maxAlternatives = 1;
 
@@ -599,7 +619,7 @@ export class BrowserSpeechController {
           this.shouldBeListening = false;
           this.isListening = false;
           this.callbacks.onRecognitionState?.(false);
-          this.callbacks.onError?.('Microphone access blocked. Click the lock/camera icon in your address bar to enable microphone.');
+          this.callbacks.onError?.('Please enable microphone permissions in your browser settings.');
           return;
         }
 
@@ -642,7 +662,7 @@ export class BrowserSpeechController {
             if (this.shouldBeListening && !this.isSpeaking && !this.isProcessingUtterance && !this.useWhisperFallback) {
               this.initWebSpeechRecognition();
             }
-          }, 250);
+          }, isIOS ? 250 : 150);
         }
       };
 
@@ -660,7 +680,7 @@ export class BrowserSpeechController {
             if (this.shouldBeListening && !this.isSpeaking && !this.isProcessingUtterance && !this.useWhisperFallback) {
               this.initWebSpeechRecognition();
             }
-          }, 150);
+          }, isIOS ? 250 : 150);
         } else if (!this.useWhisperFallback) {
           this.callbacks.onRecognitionState?.(false);
         }

@@ -295,6 +295,18 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
     if (expectedState && wellnessStateMachine.getCurrentState() !== expectedState) {
       return;
     }
+    const isMobile =
+      typeof navigator !== 'undefined' &&
+      /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+    // Critical Mobile Fix 1: Strict User-Gesture Requirement
+    // Mobile browsers (Safari & Chrome) strictly disallow background/timer invocation of SpeechRecognition.
+    // On mobile, never attempt auto-start without a direct user tap.
+    if (isMobile) {
+      console.log('[GuidedWellnessConversation] Mobile detected: skipping background mic start to respect user-gesture requirement.');
+      return;
+    }
+
     if (hasMicConsentRef.current || getMicConsent()) {
       startVoiceListeningSessionRef.current(true);
     }
@@ -509,7 +521,11 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
           setIsListening(false);
           setIsProcessing(false);
           setAudioLevel(0);
-          setMicErrorMessage(err);
+          if (err && (err.includes('not-allowed') || err.includes('permission') || err.includes('blocked'))) {
+            setMicErrorMessage('Please enable microphone permissions in your browser settings.');
+          } else {
+            setMicErrorMessage(err);
+          }
         }
       );
 
@@ -523,7 +539,8 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
       setIsListening(false);
       setIsProcessing(false);
       setAudioLevel(0);
-      setMicErrorMessage(err?.message || 'Failed to start microphone. Please check your browser permissions.');
+      const isNotAllowed = err?.name === 'NotAllowedError' || err?.message?.includes('not-allowed');
+      setMicErrorMessage(isNotAllowed ? 'Please enable microphone permissions in your browser settings.' : (err?.message || 'Please enable microphone permissions in your browser settings.'));
     }
   };
   startVoiceListeningSessionRef.current = startVoiceListeningSession;
@@ -532,6 +549,28 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
     // If assistant is currently speaking in any phase, microphone is strictly disabled until speech finishes
     if (isSpeaking || isSpeakingRef.current || confirmStatus === 'speaking_prompt' || confirmStatus === 'retry_prompt') {
       console.log('[GuidedWellnessConversation] Mic toggle blocked: assistant is currently speaking');
+      return;
+    }
+
+    // Dismiss mobile virtual keyboard so the user can see voice feedback
+    if (typeof document !== 'undefined' && document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+
+    // Defensive Guard 1: Secure Context Check (HTTPS)
+    if (typeof window !== 'undefined' && window.isSecureContext === false) {
+      setMicErrorMessage('Voice requires a secure HTTPS connection.');
+      return;
+    }
+
+    // Defensive Guard 2: Web Speech API Prefixing & Compatibility Check
+    const SpeechRec =
+      typeof window !== 'undefined'
+        ? (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+        : null;
+
+    if (!SpeechRec) {
+      setMicErrorMessage('Voice input not supported on this browser. Please type.');
       return;
     }
 
