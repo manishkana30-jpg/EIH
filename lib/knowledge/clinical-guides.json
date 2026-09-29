@@ -5,7 +5,15 @@
     "category": "anxiety",
     "summary": "Immediate physiological and cognitive steps to halt an escalating anxiety spike in under 3 minutes.",
     "bodyMarkdown": "### Understanding the Anxiety Spike\n\nAnxiety is your nervous system's sympathetic alarm triggering preemptive metabolic arousal. When you perceive threat—real or imagined—epinephrine and cortisol constrict peripheral capillaries and accelerate heart rate.\n\n#### Immediate 3-Step Protocol:\n1. **Engage the Physiological Sigh:** Two consecutive nasal inhales followed by one prolonged oral sigh. Repeat 3 times to trigger the baroreceptor vagal brake.\n2. **Orient in Real Space (5-4-3-2-1):** Name 5 physical objects you see, 4 surfaces you can feel, 3 distinct sounds, 2 scents, and 1 taste.\n3. **De-catastrophize the Physical Sensations:** Remind yourself: *'My body is feeling adrenaline, but I am physically safe right now.'*",
-    "aiTriggerKeywords": ["anxiety", "panic", "heart racing", "shaking", "nervous", "anxious", "scared"]
+    "aiTriggerKeywords": [
+      "anxiety",
+      "panic",
+      "heart racing",
+      "shaking",
+      "nervous",
+      "anxious",
+      "scared"
+    ]
   },
   {
     "id": "anxiety_cycle",
@@ -13,7 +21,14 @@
     "category": "anxiety",
     "summary": "How avoidance fuels long-term anxiety amplification and how exposure rewires the amygdala.",
     "bodyMarkdown": "### The Behavioral Feedback Loop of Anxiety\n\n1. **Trigger:** An uncomfortable thought, sensation, or social situation emerges.\n2. **Perceived Threat:** The amygdala labels the discomfort as dangerous.\n3. **Avoidance / Safety Behavior:** You cancel plans, withdraw, or distract yourself.\n4. **Temporary Relief:** Adrenaline drops, giving immediate emotional gratification.\n5. **Long-Term Amplification:** The brain encodes the lesson: *'I only survived because I avoided.'* The next trigger is amplified.\n\n```\n  [ Trigger ] ───► [ Anxiety Spike ]\n       ▲                    │\n       │                    ▼\n  [ Future Trigger ] ◄── [ Avoidance ]\n     (Amplified)       (False Relief)\n```\n\n#### Breaking the Loop:\nLean into distress with willingness. The emotional wave peaks at 90 seconds and subsides when not fed by avoidance.",
-    "aiTriggerKeywords": ["avoidance", "cycle", "procrastination", "canceling plans", "running away", "trigger"]
+    "aiTriggerKeywords": [
+      "avoidance",
+      "cycle",
+      "procrastination",
+      "canceling plans",
+      "running away",
+      "trigger"
+    ]
   },
   {
     "id": "short_vs_long_treatments",
@@ -21,7 +36,14 @@
     "category": "anxiety",
     "summary": "Differentiating acute vagal down-regulation from cognitive schema restructuring and exposure.",
     "bodyMarkdown": "### Two Layers of Clinical Support\n\n#### Acute Down-Regulation (0-5 Minutes):\n- **Physiological Sigh (Huberman/Spiegel):** Rapid alveolar reinflation and CO2 release.\n- **Cold Water Mammalian Dive Reflex:** Splash cold water on eyes and cheeks to activate trigeminal parasympathetic slowing.\n- **Bilateral Tapping / Grounding:** Alternating physical touch to synchronize hemispheric processing.\n\n#### Long-Term Neuroplastic Restructuring (Weeks to Months):\n- **Interoceptive Exposure (CBT):** Gradually tolerating bodily sensations (e.g. breathlessness, racing heart) without panic.\n- **Values-Based Action (ACT):** Moving toward meaningful goals even while feeling fear.\n- **Cognitive Restructuring:** Identifying and challenging automatic negative thoughts (ANTs).",
-    "aiTriggerKeywords": ["treatment", "long term", "cure", "techniques", "methods", "exercises"]
+    "aiTriggerKeywords": [
+      "treatment",
+      "long term",
+      "cure",
+      "techniques",
+      "methods",
+      "exercises"
+    ]
   },
   {
     "id": "coping_skills_100",
@@ -29,7 +51,13 @@
     "category": "coping",
     "summary": "Searchable reference library of sensory, somatic, cognitive, and social regulation practices.",
     "bodyMarkdown": "### Evidence-Based Somatic & Sensory Coping Tools\n\n#### Sensory / Physical:\n- Holding ice cubes in your hands for 60 seconds.\n- Progressive Muscle Relaxation (PMR) from toes to scalp.\n- Acupressure on Yin Tang point (between eyebrows) and Pericardium 6 (inner wrist).\n- Drinking ice-cold water slowly through a narrow straw.\n- Wrapping in a weighted blanket (7-10% of body weight).\n- Stepping barefoot on grass or textured natural surfaces.\n- Rhythmic walking with 4-step inhale, 4-step exhale.\n\n#### Cognitive & Expressive:\n- Expressive pen-to-paper journaling for 10 unedited minutes.\n- Third-person self-talk (*'What does [Your Name] need right now?'*).\n- Box Breathing (4s Inhale, 4s Hold, 4s Exhale, 4s Hold).\n- Defusion: Sing your catastrophic thought to the tune of *Happy Birthday*.\n- Listing 3 things within your direct sphere of control today.",
-    "aiTriggerKeywords": ["coping", "coping skills", "what can i do", "list of tools", "help me calm down"]
+    "aiTriggerKeywords": [
+      "coping",
+      "coping skills",
+      "what can i do",
+      "list of tools",
+      "help me calm down"
+    ]
   },
   {
     "id": "depression_quickstart",
@@ -37,7 +65,15 @@
     "category": "depression",
     "summary": "Overcoming hypoarousal, dopamine depletion, and depressive inertia with micro-momentum.",
     "bodyMarkdown": "### The Neurochemistry of Depressive Freeze\n\nDepression frequently represents a dorsal vagal shutdown state where the nervous system conserves energy in response to prolonged overwhelm.\n\n#### The Rule of Micro-Momentum:\n*Motivation follows action, never precedes it.*\n\n1. **Shrink the Step to 2 Minutes:** Do not aim to clean your room or work for hours. Aim to stand up and drink half a glass of water.\n2. **Engage Sunlight & Photons:** 10 minutes of morning daylight into your eyes triggers retinal ganglion cells to stimulate ventral tegmental dopamine release.\n3. **Opposite Action to Isolation:** Send a short neutral emoji or text message to one trusted person without needing to explain your mood.",
-    "aiTriggerKeywords": ["depression", "sad", "hopeless", "tired", "no motivation", "empty", "exhausted"]
+    "aiTriggerKeywords": [
+      "depression",
+      "sad",
+      "hopeless",
+      "tired",
+      "no motivation",
+      "empty",
+      "exhausted"
+    ]
   },
   {
     "id": "decision_paralysis",
@@ -45,7 +81,14 @@
     "category": "adhd",
     "summary": "How to escape executive function bottlenecks and analysis loops with somatic satisficing.",
     "bodyMarkdown": "### Breaking Analysis Paralysis\n\nWhen choices feel high-stakes, the prefrontal cortex experiences cognitive load overload, triggering avoidance.\n\n#### Clinical Hacks:\n- **Satisficing vs. Maximizing:** Aim for the *good enough* decision (80% criterion) rather than the elusive *perfect* choice.\n- **The 10/10/10 Rule:** Will this choice matter in 10 minutes? 10 months? 10 years?\n- **The Coin Toss Test:** Assign Option A to Heads and Option B to Tails. Flip the coin. While it is in the air, notice which outcome you secretly hope for—your emotional brain has already chosen.",
-    "aiTriggerKeywords": ["decision", "paralysis", "cant decide", "overthinking", "crossroads", "what to choose"]
+    "aiTriggerKeywords": [
+      "decision",
+      "paralysis",
+      "cant decide",
+      "overthinking",
+      "crossroads",
+      "what to choose"
+    ]
   },
   {
     "id": "black_and_white_thinking",
@@ -53,7 +96,13 @@
     "category": "coping",
     "summary": "Transforming polarized all-or-nothing cognitive traps into dialectical both/and perspectives.",
     "bodyMarkdown": "### Recognizing Polarized Distortions\n\nBlack-and-white thinking categorizes reality into absolutes: *success vs. failure, good vs. bad, loved vs. hated*.\n\n#### The Dialectical Bridge:\nReplace **'Either / Or'** with **'Both / And'**:\n- *'I made a mistake AND I am still capable and worthy.'*\n- *'I feel afraid AND I am taking step forward.'*\n- *'Things did not go as planned AND I learned valuable information.'*",
-    "aiTriggerKeywords": ["black and white", "all or nothing", "perfectionism", "failure", "ruined everything"]
+    "aiTriggerKeywords": [
+      "black and white",
+      "all or nothing",
+      "perfectionism",
+      "failure",
+      "ruined everything"
+    ]
   },
   {
     "id": "anxious_child_support",
@@ -61,7 +110,14 @@
     "category": "parenting",
     "summary": "Co-regulation strategies to de-escalate childhood fears without reinforcing avoidance.",
     "bodyMarkdown": "### The Power of Parental Co-Regulation\n\nA child's nervous system mirrors their caregiver's autonomic tone. Before talking, soften your own voice, drop your shoulders, and slow your respiration.\n\n#### 3 Key Principles:\n1. **Validate Before Problem-Solving:** Say *'I see how scary that feels for you right now'* instead of *'You don't need to worry.'*\n2. **Avoid Absolute Guarantees:** Do not say *'Nothing bad will ever happen.'* Say *'Whatever happens, we will handle it together.'*\n3. **Praise Brave Behavior:** Reinforce small steps of exposure rather than avoidance.",
-    "aiTriggerKeywords": ["child", "kid", "parenting", "my son", "my daughter", "anxious child"]
+    "aiTriggerKeywords": [
+      "child",
+      "kid",
+      "parenting",
+      "my son",
+      "my daughter",
+      "anxious child"
+    ]
   },
   {
     "id": "intrusive_thoughts_phrases",
@@ -69,7 +125,13 @@
     "category": "anxiety",
     "summary": "Cognitive defusion anchors to neutralize obsessive, alarming, or intrusive mental loops.",
     "bodyMarkdown": "### Intrusive Thoughts Are Not Intentions\n\nIntrusive thoughts are random cortical static generated by an overactive threat-detection network.\n\n#### 6 Defusion Mantras:\n1. *'I am noticing the thought that [X], and thoughts are not facts.'*\n2. *'My brain is trying to protect me by imagining worst-case scenarios, but I am safe right here.'*\n3. *'I do not have to agree, argue, or debate with this mental pop-up.'*\n4. *'Having a scary thought does not mean I want it or that it will happen.'*\n5. *'Thank you mind for that story, but I choose to focus on my breath.'*\n6. *'This is a sensation passing through my awareness like a cloud across the sky.'*",
-    "aiTriggerKeywords": ["intrusive thoughts", "bad thoughts", "obsessing", "cant stop thinking", "scary thought"]
+    "aiTriggerKeywords": [
+      "intrusive thoughts",
+      "bad thoughts",
+      "obsessing",
+      "cant stop thinking",
+      "scary thought"
+    ]
   },
   {
     "id": "adhd_anxiety_overlap",
@@ -77,7 +139,13 @@
     "category": "adhd",
     "summary": "Addressing executive dysfunction, dopamine foraging, and working memory fatigue.",
     "bodyMarkdown": "### The Interplay of ADHD and Anxiety\n\nADHD brains often generate anxiety as an artificial adrenaline trigger to compensate for low tonic dopamine levels.\n\n#### Integrated Strategies:\n- **Externalize Working Memory:** Never keep task lists in your head. Write them on a physical whiteboard or paper.\n- **Body Doubling:** Work or study alongside someone (in person or on video) to anchor executive focus.\n- **Dopamine Menu:** Create an established list of healthy low-barrier micro-rewards (stretch, tea, short song).",
-    "aiTriggerKeywords": ["adhd", "focus", "distracted", "executive function", "cant concentrate"]
+    "aiTriggerKeywords": [
+      "adhd",
+      "focus",
+      "distracted",
+      "executive function",
+      "cant concentrate"
+    ]
   },
   {
     "id": "trauma_modalities",
@@ -85,7 +153,14 @@
     "category": "trauma",
     "summary": "Overview of EMDR, Somatic Experiencing, and Internal Family Systems (IFS).",
     "bodyMarkdown": "### Understanding Trauma in the Body (Bessel van der Kolk)\n\nTrauma is stored in subcortical somatic memory networks that do not respond to purely logical talk therapy.\n\n#### Evidence-Based Clinical Modalities:\n- **EMDR (Eye Movement Desensitization and Reprocessing):** Utilizes bilateral stimulation to reprocess traumatic memory fragments into adaptive autobiographical memory.\n- **Somatic Experiencing (Peter Levine):** Gently discharges trapped sympathetic survival energy through physical sensation tracking.\n- **IFS (Internal Family Systems):** Befriending protective parts (managers, firefighters) and healing vulnerable exiles.",
-    "aiTriggerKeywords": ["trauma", "ptsd", "emdr", "flashback", "past pain", "abuse"]
+    "aiTriggerKeywords": [
+      "trauma",
+      "ptsd",
+      "emdr",
+      "flashback",
+      "past pain",
+      "abuse"
+    ]
   },
   {
     "id": "when_overwhelmed",
@@ -93,7 +168,13 @@
     "category": "coping",
     "summary": "Emergency triage when demands drastically exceed emotional and metabolic capacity.",
     "bodyMarkdown": "### The Capacity Triage Protocol\n\nWhen your system is overloaded, stop trying to fix everything at once.\n\n1. **Drop to Sensory Floor:** Lie down on the floor on your back with legs elevated on a chair or wall for 5 minutes.\n2. **Triage to 1 Essential Task:** Ask: *'What is the single thing that genuinely must happen in the next 60 minutes?'* Everything else can wait.\n3. **Relinquish the Non-Essential:** Give yourself permission to cancel non-critical commitments without guilt.",
-    "aiTriggerKeywords": ["overwhelmed", "too much", "drowning", "cant take it", "breaking down"]
+    "aiTriggerKeywords": [
+      "overwhelmed",
+      "too much",
+      "drowning",
+      "cant take it",
+      "breaking down"
+    ]
   },
   {
     "id": "let_go_regret",
@@ -101,6 +182,212 @@
     "category": "depression",
     "summary": "Shifting from rumination and self-blame to self-compassion and adaptive learning.",
     "bodyMarkdown": "### The Retrospective Fallacy of Regret\n\nRegret falsely assumes that your past self possessed the insight, emotional capacity, and awareness that you only acquired *because* of what happened.\n\n#### 3-Step Release:\n1. **Acknowledge Information Asymmetry:** Your past self made the best choice available given the stress, resources, and consciousness you had at that exact moment.\n2. **Grieve the Unlived Path:** Allow yourself 5 minutes of honest sadness for what was lost without turning it into self-condemnation.\n3. **Extract the Core Value:** Regret reveals what you cherish most. Use it as an active compass for today's choices.",
-    "aiTriggerKeywords": ["regret", "past mistake", "guilt", "should have", "wish i did", "if only"]
+    "aiTriggerKeywords": [
+      "regret",
+      "past mistake",
+      "guilt",
+      "should have",
+      "wish i did",
+      "if only"
+    ]
+  },
+  {
+    "id": "polyvagal_theory_live",
+    "title": "Polyvagal Theory: Neurobiology & Clinical Protocol",
+    "category": "neuroscience",
+    "summary": "Polyvagal theory (PVT) is a collection of proposed evolutionary, neuroscientific, and psychological constructs pertaining to the role of the vagus nerve in emotion regulation, social connection, and fear responses.",
+    "bodyMarkdown": "### Polyvagal theory: Neurobiological Principles & Clinical Action\n\nPolyvagal theory (PVT) is a collection of proposed evolutionary, neuroscientific, and psychological constructs pertaining to the role of the vagus nerve in emotion regulation, social connection, and fear responses. The theory was introduced in 1994 by Stephen Porges. PVT is popular among some clinical practitioners and patients. However, multiple aspects of the theory are widely criticized for being at odds with known science. For example, neuroanatomists point out that the theory is incorrect in claiming direct communication between the brainstem branchiomotor nuclei and the visceromotor portion of the nucleus ambiguus. Evolutionary biologists consider the presence of myelinated vagus nerve fibers in lungfish leading from the nucleus ambiguus to the heart a contradiction of the theory's view of the mammalian nucleus ambiguus.\n\n#### Autonomic & Cognitive Implications:\n\n- **Nervous System Hierarchy:** Modulates autonomic state shifts between safe social engagement, sympathetic hyperarousal, and dorsal vagal shutdown.\n- **Interoceptive Awareness:** Attending to somatic markers (breath rate, chest constriction, ocular micro-saccades) allows intentional vagal braking.\n- **Neuroplastic Integration:** Combining cognitive restructuring with somatic release halts chronic distress loops.\n\n#### Latest Peer-Reviewed PubMed Clinical Evidence:\n\n1. **[Afterword to the Biological Psychology Special Issue: Contributions of the Vagus to Psychological Functioning and Health: Reflections upon genuine relations between vagus-nerve functioning and psychological processes](https://pubmed.ncbi.nlm.nih.gov/42401237/)**\n   *Investigators:* Grossman P (Biol Psychol, 2026 Oct)\n   *Clinical Keynote:* Highlights evidence-based modulation of autonomic biomarkers and therapeutic efficacy.\n2. **[Toward a biologically grounded understanding of autonomic function in developmental science](https://pubmed.ncbi.nlm.nih.gov/42749237/)**\n   *Investigators:* Bambha VP, Franklin BE, Sahoo M et al. (Neurosci Biobehav Rev, 2026 Sep 16)\n   *Clinical Keynote:* Highlights evidence-based modulation of autonomic biomarkers and therapeutic efficacy.\n3. **[Adaptive signal theory: an integrative evolutionary, ecological, and intergenerational framework for psychological distress](https://pubmed.ncbi.nlm.nih.gov/42359311/)**\n   *Investigators:* Suncire-Nerison A (Front Psychol, 2026)\n   *Clinical Keynote:* Highlights evidence-based modulation of autonomic biomarkers and therapeutic efficacy.\n\n#### Autonomous Practice Recommendation:\n- **Somatic Anchor:** 2-minute physiological sigh (2 inhales nose, 1 extended exhale mouth) to stimulate baroreceptor vagal slowing.\n- **Cognitive Step:** Label the current state objectively (*'My nervous system is experiencing activation, but I am in a safe space right now'*).",
+    "aiTriggerKeywords": [
+      "polyvagal",
+      "polyvagal theory",
+      "vagus nerve",
+      "ventral vagal",
+      "dorsal vagal",
+      "autonomic nervous system",
+      "vagal brake",
+      "neuroception",
+      "social engagement system",
+      "somatic safety",
+      "parasympathetic",
+      "heart rate variability",
+      "hrv"
+    ],
+    "last_updated_utc": "2026-09-29T12:19:32.491752+00:00",
+    "source_url": "https://pubmed.ncbi.nlm.nih.gov/42401237/",
+    "evidence_level": "peer_reviewed_pubmed_and_wikipedia",
+    "citations": [
+      {
+        "title": "Afterword to the Biological Psychology Special Issue: Contributions of the Vagus to Psychological Functioning and Health: Reflections upon genuine relations between vagus-nerve functioning and psychological processes",
+        "authors": "Grossman P",
+        "journal": "Biol Psychol",
+        "pub_date": "2026 Oct",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/42401237/",
+        "pmid": "42401237"
+      },
+      {
+        "title": "Toward a biologically grounded understanding of autonomic function in developmental science",
+        "authors": "Bambha VP, Franklin BE, Sahoo M et al.",
+        "journal": "Neurosci Biobehav Rev",
+        "pub_date": "2026 Sep 16",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/42749237/",
+        "pmid": "42749237"
+      },
+      {
+        "title": "Adaptive signal theory: an integrative evolutionary, ecological, and intergenerational framework for psychological distress",
+        "authors": "Suncire-Nerison A",
+        "journal": "Front Psychol",
+        "pub_date": "2026",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/42359311/",
+        "pmid": "42359311"
+      }
+    ]
+  },
+  {
+    "id": "default_mode_network_live",
+    "title": "Default Mode Network: Neurobiology & Clinical Protocol",
+    "category": "neuroscience",
+    "summary": "In neuroscience, the default mode network (DMN), also known as the default network, default state network, or anatomically the medial frontoparietal network (M-FPN), is a large-scale brain network primarily composed of the medial prefrontal cortex, posterior cingulate cortex, precuneus and angular gyrus.",
+    "bodyMarkdown": "### Default mode network: Neurobiological Principles & Clinical Action\n\nIn neuroscience, the default mode network (DMN), also known as the default network, default state network, or anatomically the medial frontoparietal network (M-FPN), is a large-scale brain network primarily composed of the medial prefrontal cortex, posterior cingulate cortex, precuneus and angular gyrus. It is best known for being active when a person is not focused on the outside world and the brain is at wakeful rest, such as during daydreaming and mind-wandering. It can also be active during detailed thoughts related to external task performance. Other times that the DMN is active include when the individual is thinking about others, thinking about themselves, remembering the past, and planning for the future. The DMN creates a coherent \"internal narrative\" central to the construction of a sense of self.\n\n#### Autonomic & Cognitive Implications:\n\n- **Nervous System Hierarchy:** Modulates autonomic state shifts between safe social engagement, sympathetic hyperarousal, and dorsal vagal shutdown.\n- **Interoceptive Awareness:** Attending to somatic markers (breath rate, chest constriction, ocular micro-saccades) allows intentional vagal braking.\n- **Neuroplastic Integration:** Combining cognitive restructuring with somatic release halts chronic distress loops.\n\n#### Latest Peer-Reviewed PubMed Clinical Evidence:\n\n1. **[A multi-metric profiling of OFC subregion connectivity identifies system-level alterations in major depressive disorder](https://pubmed.ncbi.nlm.nih.gov/42600783/)**\n   *Investigators:* Wen X, Han B, Zhang J et al. (J Affect Disord, 2026 Dec 15)\n   *Clinical Keynote:* Highlights evidence-based modulation of autonomic biomarkers and therapeutic efficacy.\n2. **[Identification of structural disconnection subnetworks in acute and subacute post-stroke depression](https://pubmed.ncbi.nlm.nih.gov/42508581/)**\n   *Investigators:* Liang W, Fang Y, Li T et al. (J Affect Disord, 2026 Dec 1)\n   *Clinical Keynote:* Highlights evidence-based modulation of autonomic biomarkers and therapeutic efficacy.\n3. **[Polarisation of brain dynamics in mania and depression](https://pubmed.ncbi.nlm.nih.gov/42052967/)**\n   *Investigators:* Martino M, Magioncalda P, Conio B et al. (Dialogues Clin Neurosci, 2026 Dec)\n   *Clinical Keynote:* Highlights evidence-based modulation of autonomic biomarkers and therapeutic efficacy.\n\n#### Autonomous Practice Recommendation:\n- **Somatic Anchor:** 2-minute physiological sigh (2 inhales nose, 1 extended exhale mouth) to stimulate baroreceptor vagal slowing.\n- **Cognitive Step:** Label the current state objectively (*'My nervous system is experiencing activation, but I am in a safe space right now'*).",
+    "aiTriggerKeywords": [
+      "default mode network",
+      "dmn",
+      "rumination",
+      "racing thoughts",
+      "mind wandering",
+      "self-referential thought",
+      "meditation dmn",
+      "anterior cingulate",
+      "precuneus",
+      "overthinking loop",
+      "cognitive quiet",
+      "trataka dmn"
+    ],
+    "last_updated_utc": "2026-09-29T12:19:34.902975+00:00",
+    "source_url": "https://pubmed.ncbi.nlm.nih.gov/42600783/",
+    "evidence_level": "peer_reviewed_pubmed_and_wikipedia",
+    "citations": [
+      {
+        "title": "A multi-metric profiling of OFC subregion connectivity identifies system-level alterations in major depressive disorder",
+        "authors": "Wen X, Han B, Zhang J et al.",
+        "journal": "J Affect Disord",
+        "pub_date": "2026 Dec 15",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/42600783/",
+        "pmid": "42600783"
+      },
+      {
+        "title": "Identification of structural disconnection subnetworks in acute and subacute post-stroke depression",
+        "authors": "Liang W, Fang Y, Li T et al.",
+        "journal": "J Affect Disord",
+        "pub_date": "2026 Dec 1",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/42508581/",
+        "pmid": "42508581"
+      },
+      {
+        "title": "Polarisation of brain dynamics in mania and depression",
+        "authors": "Martino M, Magioncalda P, Conio B et al.",
+        "journal": "Dialogues Clin Neurosci",
+        "pub_date": "2026 Dec",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/42052967/",
+        "pmid": "42052967"
+      }
+    ]
+  },
+  {
+    "id": "somatic_experiencing_live",
+    "title": "Somatic Experiencing: Neurobiology & Clinical Protocol",
+    "category": "somatic",
+    "summary": "Somatic experiencing (SE) is a form of alternative therapy aimed at treating trauma and stress-related disorders, such as post-traumatic stress disorder (PTSD).",
+    "bodyMarkdown": "### Somatic experiencing: Neurobiological Principles & Clinical Action\n\nSomatic experiencing (SE) is a form of alternative therapy aimed at treating trauma and stress-related disorders, such as post-traumatic stress disorder (PTSD). The primary goal of SE is to modify the trauma-related stress response through bottom-up processing. The client's attention is directed toward internal sensations rather than cognitive or emotional experiences. Peter A. Levine developed the method.\n\n#### Autonomic & Cognitive Implications:\n\n- **Nervous System Hierarchy:** Modulates autonomic state shifts between safe social engagement, sympathetic hyperarousal, and dorsal vagal shutdown.\n- **Interoceptive Awareness:** Attending to somatic markers (breath rate, chest constriction, ocular micro-saccades) allows intentional vagal braking.\n- **Neuroplastic Integration:** Combining cognitive restructuring with somatic release halts chronic distress loops.\n\n#### Latest Peer-Reviewed PubMed Clinical Evidence:\n\n1. **[From Somatic Experiencing to felt safety: assessing the effects of a body-oriented intervention in adults with various degrees of child maltreatment](https://pubmed.ncbi.nlm.nih.gov/41586542/)**\n   *Investigators:* Lehmivaara J, Jansson B, Bernhardsson J et al. (Eur J Psychotraumatol, 2026 Dec)\n   *Clinical Keynote:* Highlights evidence-based modulation of autonomic biomarkers and therapeutic efficacy.\n2. **[Body Attunement: An Integrative Framework for Embodied Awareness and Therapeutic Presence in Counseling](https://pubmed.ncbi.nlm.nih.gov/42792323/)**\n   *Investigators:* Taylor R, Wood S, Jackson E (Behav Sci (Basel), 2026 Aug 29)\n   *Clinical Keynote:* Highlights evidence-based modulation of autonomic biomarkers and therapeutic efficacy.\n3. **[Felt sense dynamics: a practice-based framework for tracking the arc of somatic emotional processing](https://pubmed.ncbi.nlm.nih.gov/42625846/)**\n   *Investigators:* Sanderovsky N (Front Psychol, 2026)\n   *Clinical Keynote:* Highlights evidence-based modulation of autonomic biomarkers and therapeutic efficacy.\n\n#### Autonomous Practice Recommendation:\n- **Somatic Anchor:** 2-minute physiological sigh (2 inhales nose, 1 extended exhale mouth) to stimulate baroreceptor vagal slowing.\n- **Cognitive Step:** Label the current state objectively (*'My nervous system is experiencing activation, but I am in a safe space right now'*).",
+    "aiTriggerKeywords": [
+      "somatic experiencing",
+      "somatic regulation",
+      "peter levine",
+      "pendulation",
+      "titration",
+      "interoception",
+      "trauma release",
+      "bodily sensations",
+      "fight flight freeze",
+      "felt sense",
+      "discharge tension"
+    ],
+    "last_updated_utc": "2026-09-29T12:19:37.876656+00:00",
+    "source_url": "https://pubmed.ncbi.nlm.nih.gov/41586542/",
+    "evidence_level": "peer_reviewed_pubmed_and_wikipedia",
+    "citations": [
+      {
+        "title": "From Somatic Experiencing to felt safety: assessing the effects of a body-oriented intervention in adults with various degrees of child maltreatment",
+        "authors": "Lehmivaara J, Jansson B, Bernhardsson J et al.",
+        "journal": "Eur J Psychotraumatol",
+        "pub_date": "2026 Dec",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/41586542/",
+        "pmid": "41586542"
+      },
+      {
+        "title": "Body Attunement: An Integrative Framework for Embodied Awareness and Therapeutic Presence in Counseling",
+        "authors": "Taylor R, Wood S, Jackson E",
+        "journal": "Behav Sci (Basel)",
+        "pub_date": "2026 Aug 29",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/42792323/",
+        "pmid": "42792323"
+      },
+      {
+        "title": "Felt sense dynamics: a practice-based framework for tracking the arc of somatic emotional processing",
+        "authors": "Sanderovsky N",
+        "journal": "Front Psychol",
+        "pub_date": "2026",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/42625846/",
+        "pmid": "42625846"
+      }
+    ]
+  },
+  {
+    "id": "cognitive_behavioral_therapy_live",
+    "title": "Cognitive Behavioral Therapy: Neurobiology & Clinical Protocol",
+    "category": "cbt",
+    "summary": "Cognitive behavioral therapy (CBT) is a form of psychotherapy that combines basic principles from cognitive psychology and behaviorism.",
+    "bodyMarkdown": "### Cognitive behavioral therapy: Neurobiological Principles & Clinical Action\n\nCognitive behavioral therapy (CBT) is a form of psychotherapy that combines basic principles from cognitive psychology and behaviorism. It aims to reduce symptoms of various mental health conditions by challenging and adjusting convictions and assumptions, while helping patients learn better-adapted behavior by trying and training new behaviours. While CBT has philosophical precursors in Stoicism, it developed in three waves in the 20th century.\n\n#### Autonomic & Cognitive Implications:\n\n- **Nervous System Hierarchy:** Modulates autonomic state shifts between safe social engagement, sympathetic hyperarousal, and dorsal vagal shutdown.\n- **Interoceptive Awareness:** Attending to somatic markers (breath rate, chest constriction, ocular micro-saccades) allows intentional vagal braking.\n- **Neuroplastic Integration:** Combining cognitive restructuring with somatic release halts chronic distress loops.\n\n#### Latest Peer-Reviewed PubMed Clinical Evidence:\n\n1. **[Smartphone-delivered cognitive behavioral therapy for subthreshold depression with physical comorbidities: Evidence from the RESiLIENT trial](https://pubmed.ncbi.nlm.nih.gov/42155856/)**\n   *Investigators:* Cui B, Luo Y, Tajika A et al. (J Affect Disord, 2026 Nov 1)\n   *Clinical Keynote:* Highlights evidence-based modulation of autonomic biomarkers and therapeutic efficacy.\n2. **[Group cognitive behavioral therapy for reducing procrastination in college students: a randomized controlled trial](https://pubmed.ncbi.nlm.nih.gov/40832803/)**\n   *Investigators:* de Haas SMH, Blaesing L, Oosterhoff R et al. (Cogn Behav Ther, 2026 Nov)\n   *Clinical Keynote:* Highlights evidence-based modulation of autonomic biomarkers and therapeutic efficacy.\n3. **[Multimodal approach to identify neuropsychophysiological subgroups in myalgic encephalomyelitis/chronic fatigue syndrome and their relevance for rehabilitation: protocol for a mechanistic cross-sectional and longitudinal study](https://pubmed.ncbi.nlm.nih.gov/42472232/)**\n   *Investigators:* Dooms Y, Qiu L, Coppieters I et al. (Brain Behav Immun Health, 2026 Oct)\n   *Clinical Keynote:* Highlights evidence-based modulation of autonomic biomarkers and therapeutic efficacy.\n\n#### Autonomous Practice Recommendation:\n- **Somatic Anchor:** 2-minute physiological sigh (2 inhales nose, 1 extended exhale mouth) to stimulate baroreceptor vagal slowing.\n- **Cognitive Step:** Label the current state objectively (*'My nervous system is experiencing activation, but I am in a safe space right now'*).",
+    "aiTriggerKeywords": [
+      "cbt",
+      "cognitive behavioral therapy",
+      "cognitive distortion",
+      "automatic thought",
+      "socratic questioning",
+      "cognitive restructuring",
+      "beck",
+      "behavioral activation",
+      "reframing",
+      "thought record",
+      "evidence challenge"
+    ],
+    "last_updated_utc": "2026-09-29T12:19:40.287235+00:00",
+    "source_url": "https://pubmed.ncbi.nlm.nih.gov/42155856/",
+    "evidence_level": "peer_reviewed_pubmed_and_wikipedia",
+    "citations": [
+      {
+        "title": "Smartphone-delivered cognitive behavioral therapy for subthreshold depression with physical comorbidities: Evidence from the RESiLIENT trial",
+        "authors": "Cui B, Luo Y, Tajika A et al.",
+        "journal": "J Affect Disord",
+        "pub_date": "2026 Nov 1",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/42155856/",
+        "pmid": "42155856"
+      },
+      {
+        "title": "Group cognitive behavioral therapy for reducing procrastination in college students: a randomized controlled trial",
+        "authors": "de Haas SMH, Blaesing L, Oosterhoff R et al.",
+        "journal": "Cogn Behav Ther",
+        "pub_date": "2026 Nov",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/40832803/",
+        "pmid": "40832803"
+      },
+      {
+        "title": "Multimodal approach to identify neuropsychophysiological subgroups in myalgic encephalomyelitis/chronic fatigue syndrome and their relevance for rehabilitation: protocol for a mechanistic cross-sectional and longitudinal study",
+        "authors": "Dooms Y, Qiu L, Coppieters I et al.",
+        "journal": "Brain Behav Immun Health",
+        "pub_date": "2026 Oct",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/42472232/",
+        "pmid": "42472232"
+      }
+    ]
   }
 ]

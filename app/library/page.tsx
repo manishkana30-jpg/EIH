@@ -10,13 +10,16 @@ import {
   BreathCadence,
 } from "@/lib/knowledge/psychology-library-rag";
 import { GitaLibraryView } from "@/components/gita/GitaLibraryView";
+import { LivingLibraryView } from "@/components/library/LivingLibraryView";
 
 function LibraryContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const initialTab = searchParams.get("tab") === "conditions" ? "conditions" : "gita";
+  const tabParam = searchParams.get("tab");
+  const initialTab: "gita" | "conditions" | "living" =
+    tabParam === "conditions" ? "conditions" : tabParam === "living" ? "living" : "gita";
 
-  const [activeView, setActiveView] = useState<"gita" | "conditions">(initialTab);
+  const [activeView, setActiveView] = useState<"gita" | "conditions" | "living">(initialTab);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedTriguna, setSelectedTriguna] = useState<string>("all");
@@ -183,7 +186,11 @@ function LibraryContent() {
               </Link>
               <span className="text-slate-600">/</span>
               <span className="text-xs font-medium text-amber-400 uppercase tracking-wider">
-                {activeView === "gita" ? "Bhagavad Gita Cognitive Library" : "Clinical Neuropsychology (20 Conditions)"}
+                {activeView === "gita"
+                  ? "Bhagavad Gita Cognitive Library"
+                  : activeView === "living"
+                  ? "Living Clinical Library (PubMed & Wikipedia)"
+                  : "Clinical Neuropsychology (20 Conditions)"}
               </span>
             </div>
 
@@ -203,7 +210,7 @@ function LibraryContent() {
             </div>
           </div>
 
-          {/* View Mode Switcher: Gita vs Conditions */}
+          {/* View Mode Switcher: Gita vs Conditions vs Living */}
           <div className="flex flex-wrap items-center gap-2 mt-6 p-1 bg-slate-900/80 rounded-xl border border-slate-800 w-fit">
             <button
               type="button"
@@ -226,6 +233,17 @@ function LibraryContent() {
               }`}
             >
               🧠 Clinical Conditions & Breathwork (20 Conditions)
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveView("living")}
+              className={`px-4 py-2 rounded-lg text-xs font-mono font-semibold transition-all ${
+                activeView === "living"
+                  ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm"
+                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
+              }`}
+            >
+              🌐 Living Clinical Library (PubMed & Wikipedia Auto-Updated)
             </button>
           </div>
         </header>
@@ -557,6 +575,9 @@ function LibraryContent() {
             </main>
           </div>
         )}
+
+        {/* VIEW 3: Living Clinical Library (PubMed & Wikipedia Auto-Updated) */}
+        {activeView === "living" && <LivingLibraryView />}
       </div>
 
       {/* Interactive Breathwork Pacer Modal */}

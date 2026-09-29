@@ -1594,6 +1594,46 @@ export class BrowserSpeechController {
         }
       };
 
+      // Watchdog: Chrome bug recovery if utterance stays stuck in pending:true without firing onstart
+      let hasStarted = false;
+      const stuckPendingWatchdog = setTimeout(() => {
+        if (!hasStarted && !isFinished && this.speechSynth?.pending) {
+          console.warn('[BrowserSpeechController] SpeechSynthesis stuck in pending state without onstart. Cancelling and recovering utterance...');
+          try {
+            this.speechSynth.cancel();
+            this.speechSynth.resume();
+            this.speechSynth.speak(utterance);
+          } catch (_) {
+            finishSpeech();
+          }
+        }
+      }, 3500);
+
+      const originalOnStart = utterance.onstart;
+      utterance.onstart = (evt) => {
+        hasStarted = true;
+        clearTimeout(stuckPendingWatchdog);
+        if (typeof originalOnStart === 'function') {
+          originalOnStart.call(utterance, evt);
+        }
+      };
+
+      const originalOnEnd = utterance.onend;
+      utterance.onend = (evt) => {
+        clearTimeout(stuckPendingWatchdog);
+        if (typeof originalOnEnd === 'function') {
+          originalOnEnd.call(utterance, evt);
+        }
+      };
+
+      const originalOnError = utterance.onerror;
+      utterance.onerror = (evt) => {
+        clearTimeout(stuckPendingWatchdog);
+        if (typeof originalOnError === 'function') {
+          originalOnError.call(utterance, evt);
+        }
+      };
+
       try {
         this.speechSynth.speak(utterance);
         if (this.speechSynth.paused) {
@@ -1608,6 +1648,7 @@ export class BrowserSpeechController {
           }
         }, 60);
       } catch (err) {
+        clearTimeout(stuckPendingWatchdog);
         console.warn('Speech synthesis speak error:', err);
         finishSpeech();
       }

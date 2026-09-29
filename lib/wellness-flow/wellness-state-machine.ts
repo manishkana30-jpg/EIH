@@ -24,6 +24,8 @@ import {
   clearEncryptedWellnessSession,
 } from './storage-encryption.ts';
 import { detectLocationAndLanguage } from '../i18n/language-catalog.ts';
+import { sttTextCorrector } from '../audio/stt-corrector.ts';
+import { clientBM25Engine } from '../knowledge/semantic-rag.ts';
 import type { VoiceAcousticState } from '../types/emotions';
 import type {
   WellnessFlowState,
@@ -205,14 +207,18 @@ export class WellnessStateMachine {
   public handleMoodInput(text: string, voiceState?: VoiceAcousticState): {
     isCrisis: boolean;
     isPurposeQuery?: boolean;
+    isLowConfidenceRetry?: boolean;
     welcomeMessage?: string;
     confirmationText: string;
     profile: MoodProfile;
   } {
-    this.initialUtterance = text;
+    // 1. STT Auto-Correction: Fix common speech recognition typos before processing
+    const sttResult = sttTextCorrector.correct(text);
+    const normalizedText = sttResult.correctedText;
+    this.initialUtterance = normalizedText;
 
-    // Safety check first
-    const crisis = emotionEngine.checkCrisis(text);
+    // 2. Deterministic Safety check
+    const crisis = emotionEngine.checkCrisis(normalizedText);
     if (crisis.isCrisis) {
       return {
         isCrisis: true,
@@ -227,10 +233,9 @@ export class WellnessStateMachine {
       };
     }
 
-    // Phase 0: Purpose-Fit Interceptor
-    // Before analyzing mood, intercept conversational/informational queries (e.g. "What does this app do?").
-    // Respond with a 1-sentence welcome and bypass clinical analysis, asking: "I am a neuro-vedantic guide. How are you feeling right now?"
-    if (emotionEngine.isPurposeQuery(text)) {
+    // 3. Phase 0: Purpose-Fit Interceptor
+    // Intercepts app-purpose meta-queries (e.g. "What does this app do?").
+    if (emotionEngine.isPurposeQuery(normalizedText)) {
       const welcomeMsg = emotionEngine.getPurposeWelcomeMessage(this.language);
       this.currentState = 'MOOD_INPUT';
       this.notify();
@@ -249,9 +254,59 @@ export class WellnessStateMachine {
       };
     }
 
-    const profile = emotionEngine.analyze(text, voiceState);
+    // 4. Phase 0: Conversational Knowledge Bridge (RAG over PubMed & Wikipedia)
+    const isInformationalQuery =
+      normalizedText.endsWith('?') ||
+      /\b(what is|how does|why does|tell me about|explain|meaning of)\b/i.test(normalizedText);
+
+    if (isInformationalQuery) {
+      const bridgeAnswer = clientBM25Engine.answerConversationalBridge(normalizedText);
+      if (bridgeAnswer && bridgeAnswer.score >= 1.0) {
+        const fullMessage = `${bridgeAnswer.answerText} ${bridgeAnswer.reorientationPrompt}`;
+        this.currentState = 'MOOD_INPUT';
+        this.notify();
+        return {
+          isCrisis: false,
+          isPurposeQuery: true,
+          welcomeMessage: fullMessage,
+          confirmationText: fullMessage,
+          profile: {
+            primary_emotion: 'inquiry',
+            intensity: 2,
+            confidence: 0.95,
+            root_theme: 'informational_rag',
+            identified_at: Date.now(),
+          },
+        };
+      }
+    }
+
+    // 5. Clinical Emotion Classification
+    const profile = emotionEngine.analyze(normalizedText, voiceState);
     this.moodProfile = profile;
     this.initialIntensity = profile.intensity;
+
+    // 6. Logic Auto-Correction: If confidence < 0.3, trigger self-correction clarification prompt
+    if (profile.confidence < 0.3) {
+      const selfCorrectionPrompts: Record<WellnessLanguage, string> = {
+        en: "I didn't quite understand that. Are you feeling more overwhelmed, or more exhausted?",
+        hi: "मैं पूरी तरह समझ नहीं पाया। क्या आप अधिक तनावग्रस्त महसूस कर रहे हैं, या अधिक थकावट महसूस कर रहे हैं?",
+        es: "No logré entenderte del todo. ¿Te sientes más abrumado o más agotado?",
+        fr: "Je n'ai pas tout à fait compris. Vous sentez-vous plutôt submergé ou plutôt épuisé ?",
+        de: "Ich habe das nicht ganz verstanden. Fühlen Sie sich eher überfordert oder eher erschöpft?",
+      };
+      const retryMessage = selfCorrectionPrompts[this.language] || selfCorrectionPrompts.en;
+      this.currentState = 'MOOD_INPUT';
+      this.notify();
+      return {
+        isCrisis: false,
+        isPurposeQuery: false,
+        isLowConfidenceRetry: true,
+        welcomeMessage: retryMessage,
+        confirmationText: retryMessage,
+        profile,
+      };
+    }
 
     this.confirmationStatement = emotionEngine.generateConfirmationStatement(profile, this.language);
     this.currentState = 'CONFIRM';

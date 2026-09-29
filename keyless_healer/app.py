@@ -101,6 +101,30 @@ except ImportError:
         def detect_existential_dilemma(text: str) -> bool:  # type: ignore[misc]
             return False
 
+try:
+    from keyless_healer.lib.stt_corrector import stt_text_corrector
+except ImportError:
+    try:
+        from lib.stt_corrector import stt_text_corrector  # type: ignore[import-not-found]
+    except ImportError:
+        stt_text_corrector = None
+
+try:
+    from keyless_healer.lib.semantic_search import bm25_search_engine
+except ImportError:
+    try:
+        from lib.semantic_search import bm25_search_engine  # type: ignore[import-not-found]
+    except ImportError:
+        bm25_search_engine = None
+
+try:
+    from keyless_healer.services.knowledge_updater import knowledge_updater_service
+except ImportError:
+    try:
+        from services.knowledge_updater import knowledge_updater_service  # type: ignore[import-not-found]
+    except ImportError:
+        knowledge_updater_service = None
+
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 logger = logging.getLogger("KeylessHealerApp")
 
@@ -228,6 +252,8 @@ class WellnessMoodClassifyResponse(BaseModel):
     root_theme: str = Field(default="general_distress", description="Identified root theme")
     trigger_domain: str | None = Field(default=None, description="Domain triggering emotion")
     confirmation_statement: str | None = Field(default=None, description="Empathetic confirmation text")
+    is_low_confidence_retry: bool = Field(default=False, description="Whether input was ambiguous and needs user self-correction")
+    corrected_input_text: str | None = Field(default=None, description="STT fuzzy-corrected transcript")
 
 
 if hasattr(sys.stdout, "reconfigure"):
@@ -986,22 +1012,35 @@ async def classify_wellness_mood_endpoint(payload: WellnessMoodClassifyRequest, 
     """
     Dedicated Local Daemon NLP classifier for the 4-Phase Guided Wellness State Machine.
     100% Zero-API-Key:
-    - Phase 0: Intercepts purpose queries, returning a welcoming guide message without clinical analysis.
+    - STT Auto-Correction: Fuzzy phonetic & Levenshtein matching on 150+ clinical terms.
+    - Phase 0 RAG Conversational Knowledge Bridge: Cites PubMed/Wikipedia and re-orients user.
     - Crisis Hard-Stop: Immediately halts on self-harm / suicide ideation with Tele-MANAS (14416).
     - Clinical Extraction: Extracts {primary_emotion, secondary_emotion, intensity, confidence, root_theme}.
+    - Logic Auto-Correction: If confidence < 0.3 or ambiguous, triggers self-correction prompt.
     """
     enforce_rate_limit(request)
     raw_text = payload.text.strip()
     locale = payload.locale or "en-US"
     lang = locale.split("-")[0].lower()
 
-    # 1. Deterministic Crisis Hard-Stop
+    # 0. STT Auto-Correction: Fix phonetic/fuzzy transcription errors
+    corrected_text = raw_text
+    if stt_text_corrector:
+        try:
+            corrected_text = stt_text_corrector.correct(raw_text)
+        except Exception as e:
+            logger.warning(f"STT correction notice: {e}")
+            corrected_text = raw_text
+
+    # 1. Deterministic Crisis Hard-Stop (checked on both raw and corrected)
     crisis_patterns = [
         r"\b(suicide|suicidal|kill myself|end my life|end it all|want to die|hang myself|slit my wrist|overdose)\b",
         r"\b(hurt myself|harm myself|better off dead|no reason to live|mar jana|mar jaana|aatmhatya|khudkushi)\b",
         r"(आत्महत्या|खुदकुशी|मर जाना चाहता|मरना चाहता|जीना नहीं चाहता)",
     ]
-    is_crisis = any(re.search(p, raw_text, re.IGNORECASE) for p in crisis_patterns)
+    is_crisis = any(re.search(p, raw_text, re.IGNORECASE) for p in crisis_patterns) or any(
+        re.search(p, corrected_text, re.IGNORECASE) for p in crisis_patterns
+    )
     if is_crisis:
         deflection_msg = (
             "आपकी सुरक्षा हमारे लिए सबसे महत्वपूर्ण है। कृपया तुरंत 14416 (Tele-MANAS) या 112 पर कॉल करें।"
@@ -1016,9 +1055,42 @@ async def classify_wellness_mood_endpoint(payload: WellnessMoodClassifyRequest, 
             confidence=1.0,
             root_theme="safety_emergency",
             confirmation_statement=deflection_msg,
+            is_low_confidence_retry=False,
+            corrected_input_text=corrected_text,
         )
 
-    # 2. Phase 0: Purpose-Fit Interceptor
+    # 2. Phase 0: Informational & Psychoeducational RAG Conversational Knowledge Bridge
+    is_question = bool(
+        "?" in corrected_text
+        or any(
+            corrected_text.lower().startswith(qw)
+            for qw in [
+                "what is", "what are", "how does", "how do", "why does", "tell me about",
+                "explain", "meaning of", "define", "kya hai", "kaise kare", "batao"
+            ]
+        )
+    )
+    if is_question and bm25_search_engine:
+        try:
+            bridge = bm25_search_engine.answer_conversational_bridge(corrected_text, locale=locale)
+            if bridge and bridge.get("evidence_answer"):
+                combined_msg = f"{bridge['evidence_answer']} {bridge.get('reorient_prompt', '')}".strip()
+                return WellnessMoodClassifyResponse(
+                    is_crisis=False,
+                    is_purpose_query=True,
+                    purpose_welcome_message=combined_msg,
+                    primary_emotion="inquiry",
+                    intensity=2,
+                    confidence=0.95,
+                    root_theme="psychoeducation_bridge",
+                    confirmation_statement=combined_msg,
+                    is_low_confidence_retry=False,
+                    corrected_input_text=corrected_text,
+                )
+        except Exception as e:
+            logger.warning(f"RAG Conversational Bridge error: {e}")
+
+    # 3. Phase 0: Purpose-Fit Interceptor
     purpose_patterns = [
         r"what does this app do",
         r"what is this app",
@@ -1045,7 +1117,7 @@ async def classify_wellness_mood_endpoint(payload: WellnessMoodClassifyRequest, 
         r"was macht diese app",
         r"wer bist du",
     ]
-    clean_text = raw_text.lower().replace("?", "").replace("!", "").strip()
+    clean_text = corrected_text.lower().replace("?", "").replace("!", "").strip()
     is_purpose = any(re.search(p, clean_text, re.IGNORECASE) for p in purpose_patterns)
     if is_purpose:
         welcome_map = {
@@ -1065,10 +1137,12 @@ async def classify_wellness_mood_endpoint(payload: WellnessMoodClassifyRequest, 
             confidence=0.95,
             root_theme="purpose_orientation",
             confirmation_statement=welcome_msg,
+            is_low_confidence_retry=False,
+            corrected_input_text=corrected_text,
         )
 
-    # 3. Clinical Emotion & Root Theme Classification
-    clean_lower = raw_text.lower()
+    # 4. Clinical Emotion & Root Theme Classification
+    clean_lower = corrected_text.lower()
 
     # Emotion keywords
     lexicons = {
@@ -1089,14 +1163,32 @@ async def classify_wellness_mood_endpoint(payload: WellnessMoodClassifyRequest, 
             scores[emo] = score
 
     sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
-    if sorted_scores:
-        primary = sorted_scores[0][0]
-        secondary = sorted_scores[1][0] if len(sorted_scores) > 1 else None
-        confidence = min(0.95, 0.65 + (sorted_scores[0][1] * 0.05))
-    else:
-        primary = "overthinking"
-        secondary = None
-        confidence = 0.50
+
+    # 5. Logic Auto-Correction: If confidence < 0.3 or no emotion keywords match
+    if not sorted_scores or sorted_scores[0][1] == 0:
+        clarify_map = {
+            "hi": "माफ़ कीजिए, मैं पूरी तरह समझ नहीं पाया। क्या आप बहुत अधिक अभिभूत (overwhelmed) महसूस कर रहे हैं, या बहुत थके हुए हैं?",
+            "es": "No entendí del todo con certeza. ¿Te sientes más abrumado o más agotado?",
+            "fr": "Je n'ai pas bien compris avec certitude. Vous sentez-vous plutôt dépassé ou plutôt épuisé ?",
+            "de": "Ich habe das nicht ganz verstanden. Fühlen Sie sich eher überwältigt oder eher erschöpft?",
+            "en": "I didn't quite catch that with certainty. Are you feeling more overwhelmed, or more exhausted right now?",
+        }
+        clarify_msg = clarify_map.get(lang, clarify_map["en"])
+        return WellnessMoodClassifyResponse(
+            is_crisis=False,
+            is_purpose_query=False,
+            primary_emotion="uncertain",
+            intensity=5,
+            confidence=0.20,
+            root_theme="general_distress",
+            confirmation_statement=clarify_msg,
+            is_low_confidence_retry=True,
+            corrected_input_text=corrected_text,
+        )
+
+    primary = sorted_scores[0][0]
+    secondary = sorted_scores[1][0] if len(sorted_scores) > 1 else None
+    confidence = min(0.95, 0.65 + (sorted_scores[0][1] * 0.05))
 
     # Intensity heuristic based on word length and punctuation
     intensity = 6
@@ -1133,6 +1225,8 @@ async def classify_wellness_mood_endpoint(payload: WellnessMoodClassifyRequest, 
         root_theme=root_theme,
         trigger_domain=root_theme,
         confirmation_statement=confirm_text,
+        is_low_confidence_retry=False,
+        corrected_input_text=corrected_text,
     )
 
 
@@ -1433,6 +1527,86 @@ async def get_all_clinical_conditions_endpoint():
     if psychology_rag:
         return psychology_rag.get_all_conditions()
     return []
+
+
+# =========================================================================
+# LIVING SYSTEM KNOWLEDGE LIBRARY & ZERO-KEY RAG ENDPOINTS
+# =========================================================================
+
+class ConversationalBridgeRequest(BaseModel):
+    query: str = Field(..., min_length=1, max_length=1000, description="User's query or question")
+    locale: str | None = Field(default="en-US", description="Regional speech locale e.g. hi-IN, es-ES, en-US")
+
+
+@app.post("/api/knowledge/sync-library")
+async def sync_knowledge_library_endpoint(request: Request):
+    """
+    Syncs the Living Knowledge Library from open-access sources (NCBI PubMed E-Utilities and Wikipedia REST API).
+    Runs atomically without third-party cloud keys and refreshes the local BM25 semantic index.
+    """
+    enforce_rate_limit(request)
+    if not knowledge_updater_service:
+        raise HTTPException(status_code=503, detail="Knowledge updater service not initialized")
+
+    results = await knowledge_updater_service.sync_all_target_topics()
+
+    # Reload local BM25 index after sync
+    if bm25_search_engine:
+        bm25_search_engine.reload()
+
+    return {
+        "status": "success",
+        "synced_topics_count": len(results),
+        "results": results,
+        "timestamp": datetime.now().isoformat(),
+    }
+
+
+@app.get("/api/knowledge/rag-search")
+async def rag_search_endpoint(
+    request: Request,
+    query: str,
+    top_k: int = 5,
+    category: str | None = None,
+):
+    """
+    Zero-Cloud local Okapi BM25 semantic search across clinical guides, CBT protocols, and Gita verses.
+    """
+    enforce_rate_limit(request)
+    if not query or not query.strip():
+        raise HTTPException(status_code=400, detail="Query parameter cannot be empty")
+
+    if not bm25_search_engine:
+        raise HTTPException(status_code=503, detail="BM25 semantic search engine not initialized")
+
+    results = bm25_search_engine.search(query.strip(), top_k=top_k, category=category)
+    return {
+        "query": query,
+        "total_results": len(results),
+        "results": results,
+    }
+
+
+@app.post("/api/knowledge/conversational-bridge")
+async def conversational_bridge_endpoint(payload: ConversationalBridgeRequest, request: Request):
+    """
+    Phase 0 Conversational Knowledge Bridge: provides evidence-based answer citing PubMed/Wikipedia
+    and gently re-orients the user back to somatic body awareness.
+    """
+    enforce_rate_limit(request)
+    if not bm25_search_engine:
+        raise HTTPException(status_code=503, detail="BM25 semantic search engine not initialized")
+
+    bridge = bm25_search_engine.answer_conversational_bridge(payload.query, locale=payload.locale or "en-US")
+    if not bridge:
+        return {"matched": False, "evidence_answer": None, "reorient_prompt": None, "sources": []}
+
+    return {
+        "matched": True,
+        "evidence_answer": bridge["evidence_answer"],
+        "reorient_prompt": bridge["reorient_prompt"],
+        "sources": bridge["sources"],
+    }
 
 
 # =========================================================================

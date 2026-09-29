@@ -33,6 +33,7 @@ import type {
   WellnessLanguage,
   PersistentSessionData,
 } from '@/lib/wellness-flow/types';
+import { HardwareErrorBoundary } from '@/components/common/HardwareErrorBoundary';
 
 export interface GuidedWellnessConversationProps {
   isOpen: boolean;
@@ -585,6 +586,13 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
         return;
       }
       if (result.isPurposeQuery && result.welcomeMessage) {
+        setPurposeMessage(result.welcomeMessage);
+        speakAloud(result.welcomeMessage, () => {
+          autoStartMicWhenSpeechEnds('MOOD_INPUT');
+        });
+        return;
+      }
+      if (result.isLowConfidenceRetry && result.welcomeMessage) {
         setPurposeMessage(result.welcomeMessage);
         speakAloud(result.welcomeMessage, () => {
           autoStartMicWhenSpeechEnds('MOOD_INPUT');
@@ -1690,17 +1698,30 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
 
                   {/* Mode 5: Mirror / Pratibimb */}
                   {session.selectedTrataka.variant.visual_type === 'mirror' && (
-                    <div className="relative w-full h-full flex items-center justify-center">
-                      <video
-                        ref={videoRef}
-                        autoPlay
-                        playsInline
-                        muted
-                        className="w-full h-full object-cover transform -scale-x-100 rounded-2xl opacity-75"
-                      />
-                      <div className="absolute inset-0 bg-cyan-950/20 border-2 border-cyan-400/40 rounded-2xl pointer-events-none" />
-                      <div className="absolute w-24 h-24 rounded-full border border-cyan-400/60 pointer-events-none animate-pulse" />
-                    </div>
+                    <HardwareErrorBoundary
+                      componentName="PratibimbMirrorVideo"
+                      fallbackTitle={language === 'hi' ? 'प्रतिबिंब दर्पण मोड (शुद्ध पाठ्य ध्यान)' : 'Pratibimb Sacred Mirror (Pure Focus)'}
+                      fallbackMessage={
+                        language === 'hi'
+                          ? 'कैमरा उपलब्ध नहीं है। अंतर्मुखी आत्म-स्वीकृति के लिए विश्रामपूर्ण ध्यान जारी है।'
+                          : 'Camera resting. Continuing in inward self-witnessing contemplative focus.'
+                      }
+                      onRecover={() => {
+                        if (startTratakaSession) startTratakaSession();
+                      }}
+                    >
+                      <div className="relative w-full h-full flex items-center justify-center">
+                        <video
+                          ref={videoRef}
+                          autoPlay
+                          playsInline
+                          muted
+                          className="w-full h-full object-cover transform -scale-x-100 rounded-2xl opacity-75"
+                        />
+                        <div className="absolute inset-0 bg-cyan-950/20 border-2 border-cyan-400/40 rounded-2xl pointer-events-none" />
+                        <div className="absolute w-24 h-24 rounded-full border border-cyan-400/60 pointer-events-none animate-pulse" />
+                      </div>
+                    </HardwareErrorBoundary>
                   )}
                 </div>
 
