@@ -82,10 +82,13 @@ export class TratakaSelector {
       }
     }
 
-    // RULE 1: Shame, Guilt, Imposter Syndrome, Self-Doubt -> Mirror / Eye-Reflection Gazing
+    // RULE 1: Self-Compassion, Shame, Guilt, Imposter Syndrome, Self-Doubt -> Mirror / Eye-Reflection Gazing (Pratibimb)
     else if (
       emotion === 'guilt' ||
+      emotion === 'shame' ||
       secondary === 'guilt' ||
+      secondary === 'shame' ||
+      theme.includes('self_compassion') ||
       theme.includes('self_worth') ||
       theme.includes('self_condemnation') ||
       theme.includes('shame')
@@ -97,14 +100,30 @@ export class TratakaSelector {
         'चूंकि आप आत्म-संदेह या ग्लानि का अनुभव कर रहे हैं, इसलिए प्रतिबिम्ब त्राटक चुना गया है ताकि आप अपनी आंखों में करुणा से देखकर आत्म-स्वीकृति और आंतरिक शांति पा सकें।';
     }
 
-    // RULE 2: Anger, Irritation, High-Arousal Restlessness, Betrayal -> Bindu (Dot) Gazing
+    // RULE 2: Grief, Bereavement, Deep Loss -> Moon & Star Gazing (Shoonya)
+    else if (
+      emotion === 'grief' ||
+      secondary === 'grief' ||
+      theme.includes('grief') ||
+      theme.includes('bereavement') ||
+      theme.includes('loss_and_impermanence')
+    ) {
+      selectedKey = 'moon_star';
+      rationale_en =
+        'Because you are carrying deep grief and sorrow, Moon and Star Gazing was selected to hold your pain within the vast, soothing spaciousness of the cosmos.';
+      rationale_hi =
+        'चूंकि आप गहरे शोक या दुःख से गुजर रहे हैं, इसलिए चंद्र व तारा त्राटक चुना गया है ताकि ब्रह्मांड का शांत और शीतल आकाश आपके दर्द को सौम्य सहारा दे सके।';
+    }
+
+    // RULE 3: Anger, Irritation, High-Arousal Restlessness, Betrayal -> Bindu (Dot) Gazing
     else if (
       emotion === 'anger' ||
       secondary === 'anger' ||
       emotion === 'fear' ||
       intensity >= 8 ||
       theme.includes('boundary_violation') ||
-      theme.includes('conflict')
+      theme.includes('conflict') ||
+      theme.includes('restlessness')
     ) {
       selectedKey = 'bindu_dot';
       rationale_en =
@@ -113,7 +132,7 @@ export class TratakaSelector {
         'चूंकि आप तीव्र क्रोध, अशांति या अत्यधिक उत्तेजना महसूस कर रहे हैं, इसलिए बिन्दु त्राटक चुना गया है ताकि आपकी बिखरी हुई मानसिक ऊर्जा एक शांत बिन्दु पर केंद्रित हो सके।';
     }
 
-    // RULE 3: Anxiety, Overthinking, Racing Thoughts, Stress -> Candle Flame Gazing (or Moon Gazing at Night)
+    // RULE 4: Anxiety, Overthinking, Racing Thoughts, Stress -> Candle Flame Gazing (Jyoti)
     else if (
       emotion === 'anxiety' ||
       emotion === 'overthinking' ||
@@ -122,22 +141,14 @@ export class TratakaSelector {
       theme.includes('future_uncertainty') ||
       theme.includes('racing_mind')
     ) {
-      if (time === 'night' && intensity <= 6) {
-        selectedKey = 'moon_star';
-        rationale_en =
-          'Because you are dealing with mental overthinking during nighttime hours, Moon and Star Gazing was selected to cool cognitive heat and expand your awareness into calm night spaciousness.';
-        rationale_hi =
-          'चूंकि रात्रि के समय आपका मन विचारों में उलझा हुआ है, इसलिए चंद्र व तारा त्राटक चुना गया है ताकि आकाश की विशालता आपके मन के तनाव को शीतल कर सके।';
-      } else {
-        selectedKey = 'candle_flame';
-        rationale_en =
-          'Because you are experiencing racing anxiety and mental overthinking, Candle Flame Gazing was selected to gently captivate your optic flow and soothe your nervous system.';
-        rationale_hi =
-          'चूंकि आप घबराहट और दौड़ते विचारों से परेशान हैं, इसलिए ज्योति त्राटक चुना गया है ताकि दीपक की स्थिर लौ आपके मन के भटकाव को शांत कर सके।';
-      }
+      selectedKey = 'candle_flame';
+      rationale_en =
+        'Because you are experiencing racing anxiety and mental overthinking, Candle Flame Gazing was selected to gently captivate your optic flow and soothe your nervous system.';
+      rationale_hi =
+        'चूंकि आप घबराहट और दौड़ते विचारों से परेशान हैं, इसलिए ज्योति त्राटक चुना गया है ताकि दीपक की स्थिर लौ आपके मन के भटकाव को शांत कर सके।';
     }
 
-    // RULE 4: Sadness, Loneliness, Low Motivation, Emptiness -> Om Symbol or Moon/Star
+    // RULE 5: Sadness, Low Mood, Loneliness, Low Motivation -> Om Symbol (Murti)
     else if (
       emotion === 'sadness' ||
       emotion === 'loneliness' ||
@@ -146,19 +157,11 @@ export class TratakaSelector {
       theme.includes('emotional_loss') ||
       theme.includes('isolation')
     ) {
-      if (time === 'evening' || time === 'night') {
-        selectedKey = 'moon_star';
-        rationale_en =
-          'Because you are feeling low mood or loneliness in the evening, Moon and Star Gazing was chosen to connect you with the soothing, boundless presence of the night sky.';
-        rationale_hi =
-          'चूंकि शाम के समय आप उदासी या अकेलापन महसूस कर रहे हैं, इसलिए चंद्र व तारा त्राटक चुना गया है ताकि शांत रात्रि का आकाश आपके मन को स्नेहपूर्ण विश्राम दे सके।';
-      } else {
-        selectedKey = 'om_symbol';
-        rationale_en =
-          'Because your energy feels low or weighed down by sadness, Om Symbol Gazing was chosen to uplift your inner spirit through sacred symmetry and transcendent focus.';
-        rationale_hi =
-          'चूंकि आप उदासी या ऊर्जा की कमी महसूस कर रहे हैं, इसलिए ॐ प्रतीक त्राटक चुना गया है ताकि पवित्र ज्यामिति आपके हृदय में नई आशा और सकारात्मक ऊर्जा का संचार कर सके।';
-      }
+      selectedKey = 'om_symbol';
+      rationale_en =
+        'Because your energy feels low or weighed down by sadness, Om Symbol Gazing was chosen to uplift your inner spirit through sacred symmetry and transcendent focus.';
+      rationale_hi =
+        'चूंकि आप उदासी या ऊर्जा की कमी महसूस कर रहे हैं, इसलिए ॐ प्रतीक त्राटक चुना गया है ताकि पवित्र ज्यामिति आपके हृदय में नई आशा और सकारात्मक ऊर्जा का संचार कर सके।';
     }
 
     // RULE 5: Default / Equanimity balance based on Time of Day

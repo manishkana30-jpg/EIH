@@ -199,10 +199,13 @@ export class WellnessStateMachine {
 
   /**
    * Processes user's initial mood statement.
-   * State: MOOD_INPUT -> CONFIRM
+   * Phase 0: Intercepts purpose queries, responding with 1-sentence welcome and staying in MOOD_INPUT.
+   * State: MOOD_INPUT -> CONFIRM (or remains MOOD_INPUT for purpose inquiry)
    */
   public handleMoodInput(text: string, voiceState?: VoiceAcousticState): {
     isCrisis: boolean;
+    isPurposeQuery?: boolean;
+    welcomeMessage?: string;
     confirmationText: string;
     profile: MoodProfile;
   } {
@@ -224,6 +227,28 @@ export class WellnessStateMachine {
       };
     }
 
+    // Phase 0: Purpose-Fit Interceptor
+    // Before analyzing mood, intercept conversational/informational queries (e.g. "What does this app do?").
+    // Respond with a 1-sentence welcome and bypass clinical analysis, asking: "I am a neuro-vedantic guide. How are you feeling right now?"
+    if (emotionEngine.isPurposeQuery(text)) {
+      const welcomeMsg = emotionEngine.getPurposeWelcomeMessage(this.language);
+      this.currentState = 'MOOD_INPUT';
+      this.notify();
+      return {
+        isCrisis: false,
+        isPurposeQuery: true,
+        welcomeMessage: welcomeMsg,
+        confirmationText: welcomeMsg,
+        profile: {
+          primary_emotion: 'inquiry',
+          intensity: 2,
+          confidence: 0.95,
+          root_theme: 'purpose_orientation',
+          identified_at: Date.now(),
+        },
+      };
+    }
+
     const profile = emotionEngine.analyze(text, voiceState);
     this.moodProfile = profile;
     this.initialIntensity = profile.intensity;
@@ -234,6 +259,7 @@ export class WellnessStateMachine {
 
     return {
       isCrisis: false,
+      isPurposeQuery: false,
       confirmationText: this.confirmationStatement,
       profile,
     };

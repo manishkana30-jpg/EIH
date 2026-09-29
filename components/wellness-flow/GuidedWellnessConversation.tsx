@@ -40,6 +40,69 @@ export interface GuidedWellnessConversationProps {
   initialLanguage?: WellnessLanguage;
 }
 
+interface KaraokeTextProps {
+  text: string;
+  charIndex: number;
+  isSpeaking: boolean;
+  className?: string;
+  testId?: string;
+}
+
+const KaraokeText: React.FC<KaraokeTextProps> = ({
+  text,
+  charIndex,
+  isSpeaking,
+  className = '',
+  testId,
+}) => {
+  const containerRef = useRef<HTMLParagraphElement | null>(null);
+  const activeWordRef = useRef<HTMLSpanElement | null>(null);
+
+  useEffect(() => {
+    if (activeWordRef.current && containerRef.current) {
+      activeWordRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'nearest',
+      });
+    }
+  }, [charIndex]);
+
+  if (!isSpeaking || charIndex < 0 || charIndex >= text.length) {
+    return (
+      <p data-testid={testId} ref={containerRef} className={className}>
+        {text}
+      </p>
+    );
+  }
+
+  let start = charIndex;
+  while (start > 0 && !/\s/.test(text[start - 1])) {
+    start--;
+  }
+  let end = charIndex;
+  while (end < text.length && !/\s/.test(text[end])) {
+    end++;
+  }
+
+  const before = text.slice(0, start);
+  const word = text.slice(start, end);
+  const after = text.slice(end);
+
+  return (
+    <p data-testid={testId} ref={containerRef} className={className}>
+      <span className="opacity-80">{before}</span>
+      <span
+        ref={activeWordRef}
+        className="px-1 py-0.5 rounded bg-cyan-400/25 text-cyan-200 border-b-2 border-cyan-400 font-bold shadow-[0_0_12px_rgba(6,182,212,0.4)] transition-all inline-block"
+      >
+        {word}
+      </span>
+      <span className="opacity-95">{after}</span>
+    </p>
+  );
+};
+
 export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProps> = ({
   isOpen,
   onClose,
@@ -60,6 +123,14 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
   const [audioLevel, setAudioLevel] = useState<number>(0);
   const [voiceTelemetry, setVoiceTelemetry] = useState<VoiceAcousticState | null>(null);
   const [activeVoicePrompt, setActiveVoicePrompt] = useState<string>('');
+
+  // ─── Phase 0 Purpose Banner ───
+  const [purposeMessage, setPurposeMessage] = useState<string | null>(null);
+
+  // ─── Karaoke Highlighting State ───
+  const [spokenCharIndex, setSpokenCharIndex] = useState<number>(-1);
+  const [_spokenCharLength, setSpokenCharLength] = useState<number>(0);
+  const [_spokenWord, setSpokenWord] = useState<string>('');
 
   // ─── Phase 1 Dedicated Confirmation Voice State ───
   const [confirmStatus, setConfirmStatus] = useState<ConfirmVoiceStatus>('idle');
@@ -134,10 +205,18 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
           isSpeakingRef.current = false;
           setIsSpeaking(false);
           setActiveVoicePrompt('');
+          setSpokenCharIndex(-1);
+          setSpokenCharLength(0);
+          setSpokenWord('');
         },
         onAssistantStart: () => {
           isSpeakingRef.current = true;
           setIsSpeaking(true);
+        },
+        onWordBoundary: (charIndex: number, charLength: number, wordText?: string) => {
+          setSpokenCharIndex(charIndex);
+          setSpokenCharLength(charLength);
+          if (wordText) setSpokenWord(wordText);
         },
       });
     }
@@ -195,6 +274,9 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
           isSpeakingRef.current = false;
           setIsSpeaking(false);
           setActiveVoicePrompt('');
+          setSpokenCharIndex(-1);
+          setSpokenCharLength(0);
+          setSpokenWord('');
           if (onEnded) onEnded();
         },
         targetLocale
@@ -243,6 +325,18 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
     }
   }, [isOpen, currentState, language, session.initialUtterance, speakAloud, autoStartMicWhenSpeechEnds]);
 
+  // ─── Phase 2 (Gita) Controls ───
+  const handleSkipGita = useCallback(() => {
+    browserSpeechController.cancelSpeech();
+    const next = wellnessStateMachine.advanceFromGitaToCBT();
+    speakAloud(next.transitionSpeech, () => {
+      // Auto-trigger voice listening for CBT Step 1 if mic consent is present
+      if (wellnessStateMachine.getCurrentState() === 'CBT' && wellnessStateMachine.getCbtCurrentStep() === 1) {
+        autoStartMicWhenSpeechEnds('CBT');
+      }
+    });
+  }, [speakAloud, autoStartMicWhenSpeechEnds]);
+
   // ─── Phase 1 Confirmation Transition Handler (Guarded against duplicate executions) ───
   const handleConfirmSelection = useCallback(
     (isAffirmative: boolean) => {
@@ -270,9 +364,9 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
       const next = wellnessStateMachine.handleConfirmationResponse(isAffirmative);
       setConfirmStatus('idle');
       if (isAffirmative) {
-        // Speak Gita wisdom naturally. When speech concludes, auto-enable mic for voice commands ("आगे", "दोबारा", etc.)
+        // Speak Gita wisdom naturally. Auto-transition to Phase 3 (CBT) when speech concludes!
         speakAloud(next.nextSpeechText, () => {
-          autoStartMicWhenSpeechEnds('GITA');
+          handleSkipGita();
         });
       } else {
         // Clarify question: Speak question and auto-trigger listening for user's clarification answer
@@ -281,7 +375,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
         });
       }
     },
-    [speakAloud, autoStartMicWhenSpeechEnds]
+    [speakAloud, autoStartMicWhenSpeechEnds, handleSkipGita]
   );
 
   // ─── Phase 1 Dedicated Confirmation Voice Flow ───
@@ -383,11 +477,16 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
       setMicErrorMessage(null);
       setInputText('');
 
-      // 3. Wire real-time audio level callback to drive the live audio meter visualizer
+      // 3. Wire real-time audio level and karaoke word boundary callbacks
       browserSpeechController.setCallbacks({
         onAudioLevel: (lvl: number) => {
           setAudioLevel(lvl);
-        }
+        },
+        onWordBoundary: (charIndex: number, charLength: number, wordText?: string) => {
+          setSpokenCharIndex(charIndex);
+          setSpokenCharLength(charLength);
+          if (wordText) setSpokenWord(wordText);
+        },
       });
 
       const started = await browserSpeechController.startListening(
@@ -485,6 +584,13 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
         speakAloud(result.confirmationText);
         return;
       }
+      if (result.isPurposeQuery && result.welcomeMessage) {
+        setPurposeMessage(result.welcomeMessage);
+        speakAloud(result.welcomeMessage, () => {
+          autoStartMicWhenSpeechEnds('MOOD_INPUT');
+        });
+        return;
+      }
       // Note: wellnessStateMachine.handleMoodInput transitioned state to 'CONFIRM',
       // so the ConfirmVoiceManager useEffect triggers automatically!
     } else if (currentState === 'CONFIRM') {
@@ -510,7 +616,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
           const gita = wellnessStateMachine.getSelectedGitaVerse();
           const gitaText = language === 'hi' ? gita?.speech_text_hi || '' : gita?.speech_text_en || '';
           speakAloud(gitaText, () => {
-            autoStartMicWhenSpeechEnds('GITA');
+            handleSkipGita();
           });
         });
       } else if (loopResult.nextQuestion) {
@@ -563,7 +669,8 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
             ? `Ihr neuer ausgewogener Gedanke: ${res.replacementThought}. Ihr heutiger kleiner Handlungsschritt: ${res.actionStep}`
             : `Your balanced replacement thought: ${res.replacementThought}. Your small action step today: ${res.actionStep}`;
         speakAloud(speech, () => {
-          autoStartMicWhenSpeechEnds('CBT');
+          wellnessStateMachine.advanceFromCBTToTrataka();
+          startTratakaSession();
         });
       }
     }
@@ -575,18 +682,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
     if (!verse) return;
     const text = language === 'hi' ? verse.speech_text_hi : verse.speech_text_en;
     speakAloud(text, () => {
-      autoStartMicWhenSpeechEnds('GITA');
-    });
-  };
-
-  const handleSkipGita = () => {
-    browserSpeechController.cancelSpeech();
-    const next = wellnessStateMachine.advanceFromGitaToCBT();
-    speakAloud(next.transitionSpeech, () => {
-      // Auto-trigger voice listening for CBT Step 1 if mic consent is present
-      if (wellnessStateMachine.getCurrentState() === 'CBT' && wellnessStateMachine.getCbtCurrentStep() === 1) {
-        autoStartMicWhenSpeechEnds('CBT');
-      }
+      handleSkipGita();
     });
   };
 
@@ -885,20 +981,37 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Language Toggle (EN / HI) */}
+            {/* Multilingual Selector Toggle (EN / HI / ES / FR / DE) */}
             <button
               data-testid="language-toggle-btn"
               onClick={() => {
-                const nextLang = language === 'en' ? 'hi' : 'en';
+                const supportedLangs: WellnessLanguage[] = ['en', 'hi', 'es', 'fr', 'de'];
+                const nextIdx = (supportedLangs.indexOf(language) + 1) % supportedLangs.length;
+                const nextLang = supportedLangs[nextIdx];
                 setLanguage(nextLang);
                 wellnessStateMachine.setLanguage(nextLang);
-                browserSpeechController.setLanguageLocale(nextLang === 'hi' ? 'hi-IN' : 'en-US');
+                const localeMap: Record<WellnessLanguage, string> = {
+                  en: 'en-US',
+                  hi: 'hi-IN',
+                  es: 'es-ES',
+                  fr: 'fr-FR',
+                  de: 'de-DE',
+                };
+                browserSpeechController.setLanguageLocale(localeMap[nextLang] || 'en-US').catch(() => {});
                 confirmVoiceManagerRef.current?.setLanguage(nextLang);
               }}
               className="px-2.5 py-1 rounded-full bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs font-mono font-medium transition-all"
-              title="Toggle English / Hindi"
+              title="Cycle Language (EN / HI / ES / FR / DE)"
             >
-              {language === 'en' ? '🇮🇳 हिन्दी' : '🌐 English'}
+              {language === 'en'
+                ? '🌐 English'
+                : language === 'hi'
+                ? '🇮🇳 हिन्दी'
+                : language === 'es'
+                ? '🇪🇸 Español'
+                : language === 'fr'
+                ? '🇫🇷 Français'
+                : '🇩🇪 Deutsch'}
             </button>
 
             {/* Mute Toggle */}
@@ -953,10 +1066,58 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
           className="flex items-center justify-between px-4 sm:px-6 py-2.5 bg-slate-950/40 border-b border-slate-800/40 text-[11px] font-mono select-none"
         >
           {[
-            { num: 1, label: language === 'hi' ? '1. मनोभाव' : '1. Mood' },
-            { num: 2, label: language === 'hi' ? '2. गीता दर्शन' : '2. Gita Wisdom' },
-            { num: 3, label: language === 'hi' ? '3. CBT चिकित्सा' : '3. CBT Reframe' },
-            { num: 4, label: language === 'hi' ? '4. त्राटक ध्यान' : '4. Trataka Gazing' },
+            {
+              num: 1,
+              label:
+                language === 'hi'
+                  ? '1. मनोभाव'
+                  : language === 'es'
+                  ? '1. Emoción'
+                  : language === 'fr'
+                  ? '1. Humeur'
+                  : language === 'de'
+                  ? '1. Stimmung'
+                  : '1. Mood',
+            },
+            {
+              num: 2,
+              label:
+                language === 'hi'
+                  ? '2. गीता दर्शन'
+                  : language === 'es'
+                  ? '2. Gita'
+                  : language === 'fr'
+                  ? '2. Guîtâ'
+                  : language === 'de'
+                  ? '2. Gita'
+                  : '2. Gita',
+            },
+            {
+              num: 3,
+              label:
+                language === 'hi'
+                  ? '3. CBT चिकित्सा'
+                  : language === 'es'
+                  ? '3. TCC'
+                  : language === 'fr'
+                  ? '3. TCC'
+                  : language === 'de'
+                  ? '3. KVT'
+                  : '3. CBT',
+            },
+            {
+              num: 4,
+              label:
+                language === 'hi'
+                  ? '4. त्राटक ध्यान'
+                  : language === 'es'
+                  ? '4. Trataka'
+                  : language === 'fr'
+                  ? '4. Trataka'
+                  : language === 'de'
+                  ? '4. Trataka'
+                  : '4. Trataka',
+            },
           ].map((phase, idx) => {
             const isCompleted = currentPhaseIndex > phase.num;
             const isActive = currentPhaseIndex === phase.num;
@@ -1017,6 +1178,12 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
                     &ldquo;{session.initialUtterance}&rdquo;
                   </div>
                 )}
+                {purposeMessage && (
+                  <div data-testid="purpose-interceptor-banner" className="mt-2.5 p-3 rounded-xl bg-cyan-950/40 border border-cyan-500/40 text-cyan-200 text-xs sm:text-sm font-medium flex items-center gap-2 shadow-lg">
+                    <Sparkles className="w-4 h-4 text-cyan-400 shrink-0" />
+                    <span>{purposeMessage}</span>
+                  </div>
+                )}
               </div>
 
               {/* Confirmation Step (States its understanding) */}
@@ -1036,9 +1203,15 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
                     </span>
                   </div>
 
-                  <p data-testid="confirmation-question" className="text-sm sm:text-base text-purple-100 font-medium leading-relaxed">
-                    {session.confirmationStatement}
-                  </p>
+                  <div data-testid="confirmation-question">
+                    <KaraokeText
+                      testId="confirmation-statement-text"
+                      text={session.confirmationStatement}
+                      charIndex={spokenCharIndex}
+                      isSpeaking={isSpeaking}
+                      className="text-sm sm:text-base text-purple-100 font-medium leading-relaxed"
+                    />
+                  </div>
 
                   {/* VISIBLE LISTENING & STATUS FEEDBACK BANNER */}
                   <div className="p-3 rounded-xl bg-slate-950/70 border border-purple-500/30 space-y-2">
@@ -1194,11 +1367,18 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
                     <strong className="text-amber-300">
                       {language === 'hi' ? 'सरल अर्थ: ' : 'Core Meaning: '}
                     </strong>
-                    <span data-testid="gita-meaning">
-                      {language === 'hi'
-                        ? session.selectedGitaVerse.hindi_meaning
-                        : session.selectedGitaVerse.english_meaning}
-                    </span>
+                    <div data-testid="gita-meaning" className="inline">
+                      <KaraokeText
+                        text={
+                          language === 'hi'
+                            ? session.selectedGitaVerse.hindi_meaning
+                            : session.selectedGitaVerse.english_meaning
+                        }
+                        charIndex={spokenCharIndex}
+                        isSpeaking={isSpeaking}
+                        className="inline text-slate-200"
+                      />
+                    </div>
                   </div>
 
                   <div>
@@ -1212,7 +1392,14 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
                     <strong className="text-amber-300">
                       {language === 'hi' ? 'दैनिक व्यावहारिक समाधान: ' : 'Practical Solution: '}
                     </strong>
-                    <span data-testid="gita-practical-solution">{session.selectedGitaVerse.practical_solution}</span>
+                    <div data-testid="gita-practical-solution" className="inline">
+                      <KaraokeText
+                        text={session.selectedGitaVerse.practical_solution}
+                        charIndex={spokenCharIndex}
+                        isSpeaking={isSpeaking}
+                        className="inline text-amber-200"
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -1519,9 +1706,13 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
 
                 {/* Voice Cue Display */}
                 {currentTratakaCue && (
-                  <p data-testid="trataka-voice-cue" className="text-xs font-medium text-cyan-200 animate-fadeIn">
-                    {currentTratakaCue}
-                  </p>
+                  <KaraokeText
+                    testId="trataka-voice-cue"
+                    text={currentTratakaCue}
+                    charIndex={spokenCharIndex}
+                    isSpeaking={isSpeaking}
+                    className="text-xs font-medium text-cyan-200 animate-fadeIn"
+                  />
                 )}
 
                 {/* Controls */}

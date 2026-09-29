@@ -211,6 +211,25 @@ class ClinicalExpansionRequest(BaseModel):
     custom_prompt: str | None = Field(default=None, description="Optional custom guidance")
 
 
+class WellnessMoodClassifyRequest(BaseModel):
+    text: str = Field(..., min_length=1, max_length=4000, description="User utterance to classify for guided wellness flow")
+    locale: str | None = Field(default="en-US", description="Language or locale e.g. hi-IN, es-ES, en-US")
+    voice_state: dict[str, Any] | None = Field(default=None, description="Optional acoustic signals")
+
+
+class WellnessMoodClassifyResponse(BaseModel):
+    is_crisis: bool = Field(default=False, description="Whether immediate crisis / self-harm was detected")
+    is_purpose_query: bool = Field(default=False, description="Whether input is a purpose/informational query (Phase 0)")
+    purpose_welcome_message: str | None = Field(default=None, description="Phase 0 welcome response")
+    primary_emotion: str = Field(..., description="Primary clinical emotion")
+    secondary_emotion: str | None = Field(default=None, description="Optional secondary emotion")
+    intensity: int = Field(default=6, description="Intensity score 1-10")
+    confidence: float = Field(default=0.8, description="Classification confidence 0-1")
+    root_theme: str = Field(default="general_distress", description="Identified root theme")
+    trigger_domain: str | None = Field(default=None, description="Domain triggering emotion")
+    confirmation_statement: str | None = Field(default=None, description="Empathetic confirmation text")
+
+
 if hasattr(sys.stdout, "reconfigure"):
     try:
         sys.stdout.reconfigure(encoding="utf-8")  # type: ignore[attr-defined] # pyright: ignore[reportAttributeAccessIssue]
@@ -960,6 +979,161 @@ async def gita_dilemma_endpoint(payload: SearchRequest, request: Request):
         "is_dilemma": is_dilemma,
         "wisdom": wisdom,
     }
+
+
+@app.post("/api/wellness/classify-mood", response_model=WellnessMoodClassifyResponse)
+async def classify_wellness_mood_endpoint(payload: WellnessMoodClassifyRequest, request: Request):
+    """
+    Dedicated Local Daemon NLP classifier for the 4-Phase Guided Wellness State Machine.
+    100% Zero-API-Key:
+    - Phase 0: Intercepts purpose queries, returning a welcoming guide message without clinical analysis.
+    - Crisis Hard-Stop: Immediately halts on self-harm / suicide ideation with Tele-MANAS (14416).
+    - Clinical Extraction: Extracts {primary_emotion, secondary_emotion, intensity, confidence, root_theme}.
+    """
+    enforce_rate_limit(request)
+    raw_text = payload.text.strip()
+    locale = payload.locale or "en-US"
+    lang = locale.split("-")[0].lower()
+
+    # 1. Deterministic Crisis Hard-Stop
+    crisis_patterns = [
+        r"\b(suicide|suicidal|kill myself|end my life|end it all|want to die|hang myself|slit my wrist|overdose)\b",
+        r"\b(hurt myself|harm myself|better off dead|no reason to live|mar jana|mar jaana|aatmhatya|khudkushi)\b",
+        r"(आत्महत्या|खुदकुशी|मर जाना चाहता|मरना चाहता|जीना नहीं चाहता)",
+    ]
+    is_crisis = any(re.search(p, raw_text, re.IGNORECASE) for p in crisis_patterns)
+    if is_crisis:
+        deflection_msg = (
+            "आपकी सुरक्षा हमारे लिए सबसे महत्वपूर्ण है। कृपया तुरंत 14416 (Tele-MANAS) या 112 पर कॉल करें।"
+            if lang == "hi"
+            else "I care deeply about your life and safety. Please reach out right now to Tele-MANAS at 14416 or call 112."
+        )
+        return WellnessMoodClassifyResponse(
+            is_crisis=True,
+            is_purpose_query=False,
+            primary_emotion="crisis",
+            intensity=10,
+            confidence=1.0,
+            root_theme="safety_emergency",
+            confirmation_statement=deflection_msg,
+        )
+
+    # 2. Phase 0: Purpose-Fit Interceptor
+    purpose_patterns = [
+        r"what does this app do",
+        r"what is this app",
+        r"what is eih",
+        r"who are you",
+        r"what do you do",
+        r"what can you do",
+        r"how does this work",
+        r"tell me about yourself",
+        r"yeh app kya karta hai",
+        r"yeh app kya hai",
+        r"tum kaun ho",
+        r"aap kaun hain",
+        r"ye kya hai",
+        r"tum kya karte ho",
+        r"यह ऐप क्या करता है",
+        r"यह क्या है",
+        r"तुम कौन हो",
+        r"आप कौन हैं",
+        r"que hace esta aplicacion",
+        r"quien eres",
+        r"que fait cette application",
+        r"qui es tu",
+        r"was macht diese app",
+        r"wer bist du",
+    ]
+    clean_text = raw_text.lower().replace("?", "").replace("!", "").strip()
+    is_purpose = any(re.search(p, clean_text, re.IGNORECASE) for p in purpose_patterns)
+    if is_purpose:
+        welcome_map = {
+            "hi": "मैं एक न्यूरो-वेदांतिक मार्गदर्शक हूँ। आप अभी कैसा महसूस कर रहे हैं?",
+            "es": "Soy un guía neurovedántico. ¿Cómo te sientes en este momento?",
+            "fr": "Je suis un guide neuro-védantique. Comment vous sentez-vous en ce moment ?",
+            "de": "Ich bin ein neuro-vedantischer Begleiter. Wie fühlen Sie sich gerade?",
+            "en": "I am a neuro-vedantic guide. How are you feeling right now?",
+        }
+        welcome_msg = welcome_map.get(lang, welcome_map["en"])
+        return WellnessMoodClassifyResponse(
+            is_crisis=False,
+            is_purpose_query=True,
+            purpose_welcome_message=welcome_msg,
+            primary_emotion="inquiry",
+            intensity=2,
+            confidence=0.95,
+            root_theme="purpose_orientation",
+            confirmation_statement=welcome_msg,
+        )
+
+    # 3. Clinical Emotion & Root Theme Classification
+    clean_lower = raw_text.lower()
+
+    # Emotion keywords
+    lexicons = {
+        "anxiety": ["anxious", "anxiety", "nervous", "panic", "panicking", "racing heart", "dread", "ghabrahat", "bechaini", "chinta", "डर", "घबराहट", "चिंता"],
+        "overthinking": ["overthinking", "racing thoughts", "cannot stop thinking", "spiral", "spiraling", "ruminating", "soch", "vichar", "अति विचार"],
+        "sadness": ["sad", "sadness", "depressed", "depression", "crying", "miserable", "heartbroken", "udas", "dukhi", "rona", "dard", "उदासी", "दुख"],
+        "grief": ["grief", "grieving", "mourning", "loss of", "passed away", "died", "death in the family", "bichhadne", "shok", "देहांत", "शोक"],
+        "anger": ["angry", "anger", "furious", "irritated", "pissed", "betrayed", "rage", "gussa", "krodh", "क्रोध", "गुस्सा"],
+        "stress": ["stress", "stressed", "burnout", "overwhelmed", "exhausted", "tired", "thak gaya", "bojh", "तनाव", "थकावट"],
+        "guilt": ["guilt", "guilty", "shame", "worthless", "imposter", "my fault", "glani", "apradhbodh", "ग्लानि", "अपराधबोध"],
+        "calm": ["calm", "peace", "peaceful", "relaxed", "serene", "content", "shant", "shanti", "sukoon", "शांत", "सुकून"],
+    }
+
+    scores = {}
+    for emo, kws in lexicons.items():
+        score = sum(2 for kw in kws if kw in clean_lower)
+        if score > 0:
+            scores[emo] = score
+
+    sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+    if sorted_scores:
+        primary = sorted_scores[0][0]
+        secondary = sorted_scores[1][0] if len(sorted_scores) > 1 else None
+        confidence = min(0.95, 0.65 + (sorted_scores[0][1] * 0.05))
+    else:
+        primary = "overthinking"
+        secondary = None
+        confidence = 0.50
+
+    # Intensity heuristic based on word length and punctuation
+    intensity = 6
+    if any(w in clean_lower for w in ["extremely", "so much", "unbearable", "terrible", "bohot zyada", "bardasht nahi", "बहुत ज्यादा"]):
+        intensity = 8
+    elif any(w in clean_lower for w in ["little", "mild", "slight", "thoda", "हल्का"]):
+        intensity = 4
+
+    theme_map = {
+        "anxiety": "future_uncertainty",
+        "overthinking": "racing_mind",
+        "sadness": "emotional_loss",
+        "grief": "loss_and_impermanence",
+        "anger": "boundary_violation",
+        "stress": "burnout_and_exhaustion",
+        "guilt": "self_worth_crisis",
+        "calm": "equanimity_and_peace",
+    }
+    root_theme = theme_map.get(primary, "general_distress")
+
+    confirm_text = (
+        f"ऐसा प्रतीत होता है कि आप {primary} का अनुभव कर रहे हैं। क्या यह सही है?"
+        if lang == "hi"
+        else f"It sounds like you're experiencing {primary} around {root_theme.replace('_', ' ')}. Is that right?"
+    )
+
+    return WellnessMoodClassifyResponse(
+        is_crisis=False,
+        is_purpose_query=False,
+        primary_emotion=primary,
+        secondary_emotion=secondary,
+        intensity=intensity,
+        confidence=round(confidence, 2),
+        root_theme=root_theme,
+        trigger_domain=root_theme,
+        confirmation_statement=confirm_text,
+    )
 
 
 

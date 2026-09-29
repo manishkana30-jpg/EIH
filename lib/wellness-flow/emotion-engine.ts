@@ -879,6 +879,118 @@ export class EmotionEngine {
   }
 
   /**
+   * Phase 0 Purpose-Fit Interceptor:
+   * Detects conversational/informational queries about the app or agent's purpose,
+   * bypassing clinical mood analysis.
+   */
+  public isPurposeQuery(text: string): boolean {
+    if (!text || typeof text !== 'string') return false;
+    const lower = text.toLowerCase().trim();
+    const clean = lower.replace(/[?!.,;:_'"()\[\]{}]/g, ' ').replace(/\s+/g, ' ').trim();
+
+    const enPatterns = [
+      /what does this app do/i,
+      /what can this app do/i,
+      /what is this app/i,
+      /what is eih/i,
+      /who are you/i,
+      /what are you/i,
+      /what do you do/i,
+      /what can you do/i,
+      /what is your purpose/i,
+      /how does this work/i,
+      /how does this app work/i,
+      /tell me about yourself/i,
+      /tell me what you do/i,
+      /how can you help/i,
+      /how do you help/i,
+      /explain this app/i,
+      /what is the goal/i,
+    ];
+
+    const hiPatterns = [
+      /yeh app kya karta hai/i,
+      /ye app kya karta hai/i,
+      /yeh app kya hai/i,
+      /ye app kya hai/i,
+      /aap kya karte ho/i,
+      /aap kya karte hain/i,
+      /tum kya karte ho/i,
+      /tum kaun ho/i,
+      /aap kaun ho/i,
+      /aap kaun hain/i,
+      /ye kya hai/i,
+      /yeh kya hai/i,
+      /kaise kaam karta hai/i,
+      /यह ऐप क्या करता है/,
+      /यह क्या करता है/,
+      /यह क्या है/,
+      /यह ऐप क्या है/,
+      /तुम कौन हो/,
+      /आप कौन हैं/,
+      /आप क्या करते हैं/,
+      /तुम क्या करते हो/,
+      /यह कैसे काम करता है/,
+      /तुम्हारी क्या उपयोगिता है/,
+    ];
+
+    const esPatterns = [
+      /qu[eé] hace esta aplicaci[oó]n/i,
+      /qu[eé] es esta app/i,
+      /qui[eé]n eres/i,
+      /qu[eé] puedes hacer/i,
+      /c[oó]mo funciona esto/i,
+      /c[oó]mo funciona esta app/i,
+      /cu[aá]l es tu prop[oó]sito/i,
+      /para qu[eé] sirves/i,
+    ];
+
+    const frPatterns = [
+      /que fait cette application/i,
+      /qui es[- ]tu/i,
+      /qui [eê]tes[- ]vous/i,
+      /comment [cç]a marche/i,
+      /comment cela fonctionne/i,
+      /que peux[- ]tu faire/i,
+      /quel est ton r[oô]le/i,
+    ];
+
+    const dePatterns = [
+      /was macht diese app/i,
+      /wer bist du/i,
+      /wer sind sie/i,
+      /wie funktioniert das/i,
+      /was kannst du tun/i,
+      /was ist deine aufgabe/i,
+    ];
+
+    const allPatterns = [
+      ...enPatterns,
+      ...hiPatterns,
+      ...esPatterns,
+      ...frPatterns,
+      ...dePatterns,
+    ];
+
+    return allPatterns.some((pattern) => pattern.test(clean));
+  }
+
+  /**
+   * Phase 0 Purpose-Fit Welcome Statement:
+   * "I am a neuro-vedantic guide. How are you feeling right now?"
+   */
+  public getPurposeWelcomeMessage(lang: WellnessLanguage = 'en'): string {
+    const messages: Record<WellnessLanguage, string> = {
+      en: 'I am a neuro-vedantic guide. How are you feeling right now?',
+      hi: 'मैं एक न्यूरो-वेदांतिक मार्गदर्शक हूँ। आप अभी कैसा महसूस कर रहे हैं?',
+      es: 'Soy un guía neurovedántico. ¿Cómo te sientes en este momento?',
+      fr: 'Je suis un guide neuro-védantique. Comment vous sentez-vous en ce moment ?',
+      de: 'Ich bin ein neuro-vedantischer Begleiter. Wie fühlen Sie sich gerade?',
+    };
+    return messages[lang] || messages.en;
+  }
+
+  /**
    * Full analysis fusing text NLP and voice biomarkers.
    */
   public analyze(text: string, voiceState?: VoiceAcousticState): MoodProfile {
@@ -1075,40 +1187,59 @@ export class EmotionEngine {
       theme: ClarificationTurn['questionTheme'];
       en: string;
       hi: string;
+      es: string;
+      fr: string;
+      de: string;
     }> = [
       {
         theme: 'trigger',
         en: 'What triggered this feeling for you today?',
         hi: 'आज किस विशेष बात या घटना ने इस भावना को उभारा?',
+        es: '¿Qué desencadenó este sentimiento en ti hoy?',
+        fr: "Qu'est-ce qui a déclenché ce sentiment chez vous aujourd'hui ?",
+        de: 'Was hat dieses Gefühl heute bei Ihnen ausgelöst?',
       },
       {
         theme: 'somatic',
         en: 'Where do you feel this tension or weight in your body right now—like your chest, head, or stomach?',
         hi: 'शरीर में यह तनाव या भारीपन आपको कहाँ महसूस हो रहा है—जैसे सीने में, सिर में, या पेट में?',
+        es: '¿Dónde sientes esta tensión o peso en tu cuerpo ahora mismo: en el pecho, la cabeza o el estómago?',
+        fr: "Où ressentez-vous cette tension ou ce poids dans votre corps en ce moment : dans la poitrine, la tête ou l'estomac ?",
+        de: 'Wo spüren Sie diese Anspannung oder Schwere in Ihrem Körper gerade – in der Brust, im Kopf oder im Magen?',
       },
       {
         theme: 'duration',
         en: 'How long has this feeling been lingering with you?',
         hi: 'यह स्थिति आपके साथ कितने समय से बनी हुई है?',
+        es: '¿Cuánto tiempo ha estado presente este sentimiento en ti?',
+        fr: 'Depuis combien de temps ce sentiment est-il présent en vous ?',
+        de: 'Wie lange begleitet Sie dieses Gefühl schon?',
       },
       {
         theme: 'sleep_appetite',
         en: 'How has your sleep and appetite been over the past few days?',
         hi: 'हाल के दिनों में आपकी नींद और भूख पर इसका क्या प्रभाव पड़ा है?',
+        es: '¿Cómo han estado tu sueño y tu apetito en los últimos días?',
+        fr: 'Comment se sont passés votre sommeil et votre appétit ces derniers jours ?',
+        de: 'Wie waren Ihr Schlaf und Ihr Appetit in den letzten Tagen?',
       },
       {
         theme: 'interpersonal_vs_thoughts',
         en: 'Is this primarily about a specific person, an external situation, or repetitive thoughts in your mind?',
         hi: 'क्या यह मुख्य रूप से किसी व्यक्ति से संबंधित है, किसी बाहरी परिस्थिति से, या मन में चल रहे विचारों से?',
+        es: '¿Se trata principalmente de una persona específica, una situación externa o pensamientos repetitivos en tu mente?',
+        fr: "S'agit-il principalement d'une personne en particulier, d'une situation extérieure ou de pensées répétitives dans votre esprit ?",
+        de: 'Geht es dabei in erster Linie um eine bestimmte Person, eine äußere Situation oder wiederkehrende Gedanken in Ihrem Kopf?',
       },
     ];
 
     const idx = Math.min(turnCount, questions.length - 1);
     const chosen = questions[idx];
+    const textByLang = chosen[lang] || chosen.en;
 
     return {
       questionNumber: qNum,
-      questionText: lang === 'hi' ? chosen.hi : chosen.en,
+      questionText: textByLang,
       questionTheme: chosen.theme,
     };
   }
