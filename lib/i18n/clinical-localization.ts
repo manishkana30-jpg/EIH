@@ -408,6 +408,246 @@ export const GENERAL_LOCALIZED_ADVICE: Record<SupportedLocaleKey, Record<string,
  * Get human-crafted localized intervention for a clinical condition.
  * Dynamically synthesizes tailored interventions from the psychology library if not bundled in catalog.
  */
+function localizeDynamicSolutions(
+  sols: any,
+  norm: string,
+  rawConditionName?: string
+): LocalizedIntervention {
+  const cleanReframe = sols?.cbt_reframing ? sols.cbt_reframing.split('[Wikipedia Context]')[0].trim() : '';
+  const cleanAnchor = sols?.somatic_anchor ? sols.somatic_anchor.trim() : '';
+  const cleanPranayama = sols?.pranayama ? sols.pranayama.trim() : '';
+  const cleanHabit = sols?.micro_habit ? sols.micro_habit.trim() : '';
+
+  if (norm === 'hi') {
+    let conditionName = 'क्लिनिकल न्यूरो-संज्ञानात्मक प्रोटोकॉल';
+    if (rawConditionName && /[\u0900-\u097F]/.test(rawConditionName)) {
+      conditionName = rawConditionName;
+    }
+
+    const validation = 'मैं समझ सकता हूँ कि आप इस समय इस मानसिक चुनौती और भावनात्मक तनाव से जूझ रहे हैं, और यह अनुभव कितना थका देने वाला है।';
+
+    // 1. CBT Reframing in Hindi
+    let cbt_reframing = 'इस अनुभव को तंत्रिका तंत्र का एक अस्थायी शारीरिक संकेत मानें। बिना किसी पूर्वाग्रह या निर्णय के अपने विचारों को साक्षी भाव से देखें।';
+    if (cleanReframe && /[\u0900-\u097F]/.test(cleanReframe)) {
+      cbt_reframing = cleanReframe;
+    } else if (/transient|physiological signal|without judgment/i.test(cleanReframe)) {
+      cbt_reframing = 'इस अनुभव को तंत्रिका तंत्र का एक अस्थायी शारीरिक संकेत मानें। बिना किसी पूर्वाग्रह या निर्णय के अपने विचारों को साक्षी भाव से देखें।';
+    } else if (/adrenaline|8 to 12 minutes|physically safe|panic/i.test(cleanReframe)) {
+      cbt_reframing = 'यह लहर केवल एड्रेनालाईन का एक अस्थायी बहाव है जो 8 से 12 मिनट में अपने आप शांत हो जाता है। यह असहज अवश्य है, पर आप पूरी तरह सुरक्षित हैं।';
+    } else if (/precedes motivation|1% physical step|neurochemistry/i.test(cleanReframe)) {
+      cbt_reframing = 'प्रेरणा काम करने के बाद आती है, पहले नहीं। ऊर्जा महसूस होने का इंतज़ार न करें; केवल 1% का एक छोटा सा कदम भी आपके मस्तिष्क के रसायनों को बदलना शुरू कर देता है।';
+    } else if (/cortisol|brain fog|working memory/i.test(cleanReframe)) {
+      cbt_reframing = 'तनाव के दौरान मानसिक धुंधलापन और स्मृति में रुकावट केवल अस्थायी कोर्टिसोल वृद्धि के कारण होती है, यह कोई स्थायी मानसिक कमी नहीं है।';
+    } else if (/not an identity|helplessness|factually true/i.test(cleanReframe)) {
+      cbt_reframing = 'यह समझें कि यह भावना तंत्रिका तंत्र की एक स्वाभाविक शारीरिक प्रतिक्रिया है, आपकी स्थायी पहचान नहीं। असहायता की भविष्यवाणी करने वाले स्वचालित विचारों को पहचानें और वर्तमान वास्तविकता में पुनः स्थिर हों।';
+    }
+
+    // 2. Somatic Anchor in Hindi
+    let somatic_anchor = 'कंधों को कानों से दूर ढीला छोड़ें, एक हाथ नाभि के निचले हिस्से पर रखें और 30 सेकंड तक अपने पैरों के नीचे ज़मीन की स्थिरता को महसूस करें।';
+    if (cleanAnchor && /[\u0900-\u097F]/.test(cleanAnchor)) {
+      somatic_anchor = cleanAnchor;
+    } else if (/ears|lower abdomen|floor underneath your feet/i.test(cleanAnchor)) {
+      somatic_anchor = 'कंधों को कानों से दूर ढीला छोड़ें, एक हाथ नाभि के निचले हिस्से पर रखें और 30 सेकंड तक अपने पैरों के नीचे ज़मीन की स्थिरता को महसूस करें।';
+    } else if (/unglue your tongue|ground both feet/i.test(cleanAnchor)) {
+      somatic_anchor = 'कंधों को ढीला छोड़ें, अपनी जीभ को तालू से अलग करें और 30 सेकंड के लिए दोनों पैरों को ज़मीन पर मजबूती से टिकाएं।';
+    } else if (/sip of cool water|tap temples/i.test(cleanAnchor)) {
+      somatic_anchor = 'ठंडे पानी का एक घूंट लें, उसे निगलते समय संवेदना पर ध्यान दें और 30 सेकंड तक उंगलियों से कनपटियों को धीरे-धीरे थपथपाएं।';
+    } else if (/barefoot|tap your sternum/i.test(cleanAnchor)) {
+      somatic_anchor = 'नंगे पैर फर्श पर खड़े हों, पृथ्वी के सहारे को महसूस करें और 60 सेकंड के लिए अपनी छाती के केंद्र को हल्के से थपथपाएं।';
+    } else if (/mammalian|ice cube|damp towel|cheeks/i.test(cleanAnchor)) {
+      somatic_anchor = 'डाइव रिफ्लेक्स तकनीक: 20 सेकंड के लिए अपने गालों और आंखों के नीचे ठंडा गीला तौलिया या बर्फ का टुकड़ा हल्के से दबाएं।';
+    }
+
+    // 3. Pranayama in Hindi
+    let pranayama = 'स्वायत्त तंत्रिका तंत्र को संतुलित करने के लिए 3 मिनट तक 4-4-4-4 समवृत्ति बॉक्स ब्रीदिंग या नाड़ी शोधन प्राणायाम का अभ्यास करें।';
+    if (cleanPranayama && /[\u0900-\u097F]/.test(cleanPranayama)) {
+      pranayama = cleanPranayama;
+    } else if (/box breathing|nadi shodhana|autonomic balance/i.test(cleanPranayama)) {
+      pranayama = 'स्वायत्त तंत्रिका तंत्र को संतुलित करने के लिए 3 मिनट तक 4-4-4-4 समवृत्ति बॉक्स ब्रीदिंग या नाड़ी शोधन प्राणायाम का अभ्यास करें।';
+    } else if (/sama vritti|alternate nostril|vagal balance/i.test(cleanPranayama)) {
+      pranayama = 'वैगल टोन और तंत्रिका तंत्र संतुलन के लिए 3 मिनट तक 4-4-4-4 समवृत्ति बॉक्स ब्रीदिंग या नाड़ी शोधन प्राणायाम करें।';
+    } else if (/bhramari|humming bee|nitric oxide/i.test(cleanPranayama)) {
+      pranayama = 'कपाल में सूक्ष्म स्पंदन पैदा करने और नाइट्रिक ऑक्साइड प्रवाह बढ़ाने के लिए 4 मिनट तक भ्रामरी प्राणायाम का अभ्यास करें।';
+    } else if (/surya bhedana|solar breathing|tamasic/i.test(cleanPranayama)) {
+      pranayama = 'मानसिक आलस्य और भारीपन को दूर करने के लिए 3 मिनट तक सूर्य भेदन प्राणायाम (दायीं नासिका से श्वास) करें।';
+    } else if (/extended exhale|pursed lips/i.test(cleanPranayama)) {
+      pranayama = 'लंबी प्रश्वास प्राणायाम: 4 सेकंड नाक से सांस अंदर लें और होंठों को गोल करके 7 सेकंड में धीरे-धीरे बाहर छोड़ें।';
+    }
+
+    // 4. Micro-habit in Hindi
+    let micro_habit = 'वर्तमान क्षण में अपने सीधे नियंत्रण में आने वाले अगले सकारात्मक छोटे कदम पर ध्यान केंद्रित करें।';
+    if (cleanHabit && /[\u0900-\u097F]/.test(cleanHabit)) {
+      micro_habit = cleanHabit;
+    } else if (/write down|rumination/i.test(cleanHabit)) {
+      micro_habit = 'इस समय अपने सीधे नियंत्रण में आने वाले किसी एक अत्यंत छोटे कार्य को लिखें और बाकी चिंता को छोड़ दें।';
+    } else if (/single micro-action|overwhelm/i.test(cleanHabit)) {
+      micro_habit = 'दीर्घकालिक तनाव को भूलकर, अभी अपने सीधे नियंत्रण में मौजूद केवल एक छोटे से कदम पर ध्यान दें।';
+    } else if (/externalize|paper|working memory/i.test(cleanHabit)) {
+      micro_habit = 'कार्यों को मन में रखने के बजाय तुरंत कागज़ पर लिख लें ताकि मस्तिष्क पर अतिरिक्त भार न पड़े।';
+    } else if (/2-minute|impossible to fail/i.test(cleanHabit)) {
+      micro_habit = 'एक ऐसा अत्यंत छोटा 2 मिनट का कार्य करें जिसमें विफलता असंभव हो (जैसे पानी पीना या खिड़की खोलना)।';
+    } else if (/whisper|adrenaline|safe in this room/i.test(cleanHabit)) {
+      micro_habit = 'धीमे स्वर में स्वयं से कहें: "मेरा शरीर केवल तनाव मुक्त कर रहा है। मैं यहाँ पूरी तरह सुरक्षित हूँ।"';
+    }
+
+    return { conditionName, validation, cbt_reframing, somatic_anchor, pranayama, micro_habit };
+  }
+
+  if (norm === 'es') {
+    const conditionName = 'Protocolo Clínico Cognitivo (TCC)';
+    const validation = 'Comprendo profundamente lo desafiante que resulta afrontar esta situación y lo agotador que se siente ahora mismo.';
+    let cbt_reframing = 'Reconozca esta experiencia como una señal fisiológica transitoria. Observe sus pensamientos sin juzgarlos.';
+    if (/adrenaline|8 to 12 minutes|panic/i.test(cleanReframe)) {
+      cbt_reframing = 'Esta oleada es un pico de adrenalina que se metaboliza de forma natural en 8 a 12 minutos. Es incómodo, pero está físicamente a salvo.';
+    } else if (/precedes motivation|1% physical step/i.test(cleanReframe)) {
+      cbt_reframing = 'La acción precede a la motivación. No espere a sentirse con energía; dar un paso mínimo del 1% comienza a transformar su neuroquímica.';
+    } else if (/cortisol|brain fog/i.test(cleanReframe)) {
+      cbt_reframing = 'Los lapsos de memoria y la niebla mental bajo estrés se deben a picos transitorios de cortisol, no a un deterioro neurológico permanente.';
+    } else if (/not an identity|helplessness/i.test(cleanReframe)) {
+      cbt_reframing = 'Reconozca que este sentimiento es una respuesta fisiológica válida, no su identidad. Identifique pensamientos catastróficos y concéntrese en lo que es objetivamente cierto ahora.';
+    }
+
+    let somatic_anchor = 'Baje los hombros lejos de las orejas, apoye una mano sobre el abdomen inferior y sienta el suelo firme bajo sus pies durante 30 segundos.';
+    if (/tongue|ground both feet/i.test(cleanAnchor)) {
+      somatic_anchor = 'Baje los hombros, despegue la lengua del paladar y apoye firmemente ambos pies sobre el suelo durante 30 segundos.';
+    } else if (/water|tap temples/i.test(cleanAnchor)) {
+      somatic_anchor = 'Beba un sorbo de agua fresca, preste atención al tragar y golpee suavemente las sienes con las yemas de los dedos durante 30 segundos.';
+    } else if (/barefoot|sternum/i.test(cleanAnchor)) {
+      somatic_anchor = 'Póngase de pie descalzo sobre el suelo, sienta el apoyo de la tierra y golpee suavemente su esternón durante 60 segundos.';
+    } else if (/mammalian|ice cube/i.test(cleanAnchor)) {
+      somatic_anchor = 'Reflejo de inmersión: presione una toalla fría y húmeda o hielo sobre sus mejillas durante 20 segundos.';
+    }
+
+    let pranayama = 'Practique la respiración cuadrada 4-4-4-4 o Nadi Shodhana durante 3 minutos para restaurar el equilibrio autonómico.';
+    if (/bhramari|humming bee/i.test(cleanPranayama)) {
+      pranayama = 'Realice Bhramari (respiración del zumbido de abeja) durante 4 minutos para generar microvibraciones craneales calmantes.';
+    } else if (/surya bhedana|solar breathing/i.test(cleanPranayama)) {
+      pranayama = 'Realice Surya Bhedana (respiración solar por la fosa nasal derecha) durante 3 minutos para disipar el letargo.';
+    } else if (/extended exhale/i.test(cleanPranayama)) {
+      pranayama = 'Respiración de exhalación prolongada: inhale 4 segundos por la nariz y exhale 7 segundos con los labios entreabiertos.';
+    }
+
+    let micro_habit = 'Concéntrese únicamente en la siguiente micro-acción constructiva dentro de su control inmediato.';
+    if (/write down|rumination/i.test(cleanHabit)) {
+      micro_habit = 'Anote una única micro-tarea que esté bajo su control directo en este momento y suelte la rumiación futura.';
+    } else if (/single micro-action/i.test(cleanHabit)) {
+      micro_habit = 'Realice una micro-acción inmediata que esté bajo su control directo, ignorando el agobio a largo plazo.';
+    } else if (/externalize/i.test(cleanHabit)) {
+      micro_habit = 'Escriba las tareas de inmediato en papel físico en lugar de sobrecargar su memoria de trabajo.';
+    } else if (/2-minute/i.test(cleanHabit)) {
+      micro_habit = 'Comprométase con una micro-tarea de 2 minutos donde sea imposible fallar (beber agua, abrir la ventana).';
+    }
+
+    return { conditionName, validation, cbt_reframing, somatic_anchor, pranayama, micro_habit };
+  }
+
+  if (norm === 'fr') {
+    const conditionName = 'Protocole Clinique Cognitif (TCC)';
+    const validation = 'Je mesure pleinement combien il est éprouvant de traverser cette épreuve et à quel point cela est épuisant actuellement.';
+    let cbt_reframing = 'Considérez cette expérience comme un signal physiologique transitoire. Observez vos pensées avec bienveillance et sans jugement.';
+    if (/adrenaline|8 to 12 minutes|panic/i.test(cleanReframe)) {
+      cbt_reframing = 'Cette vague est une montée d\'adrénaline qui se dissipe naturellement en 8 à 12 minutes. C\'est inconfortable, mais vous êtes en sécurité physique.';
+    } else if (/precedes motivation|1% physical step/i.test(cleanReframe)) {
+      cbt_reframing = 'L\'action précède la motivation. N\'attendez pas d\'avoir de l\'énergie : accomplir ne serait-ce qu\'une micro-action de 1 % commence à modifier votre neurochimie.';
+    } else if (/cortisol|brain fog/i.test(cleanReframe)) {
+      cbt_reframing = 'Les trous de mémoire et le brouillard mental sous stress résultent de pics temporaires de cortisol, et non d\'un déclin neurologique.';
+    } else if (/not an identity|helplessness/i.test(cleanReframe)) {
+      cbt_reframing = 'Comprenez que cette sensation est une réaction physiologique passagère et non votre identité. Prenez du recul sur les pensées d\'impuissance et revenez aux faits actuels.';
+    }
+
+    let somatic_anchor = 'Relâchez les épaules loin des oreilles, posez une main sur le bas-ventre et ressentez le contact ferme du sol sous vos pieds pendant 30 secondes.';
+    if (/tongue|ground both feet/i.test(cleanAnchor)) {
+      somatic_anchor = 'Abaissez vos épaules, décollez votre langue du palais et ancrez vos deux pieds fermement au sol pendant 30 secondes.';
+    } else if (/water|tap temples/i.test(cleanAnchor)) {
+      somatic_anchor = 'Buvez une gorgée d\'eau fraîche en observant la déglutition, puis tapotez doucement vos tempes du bout des doigts pendant 30 secondes.';
+    } else if (/barefoot|sternum/i.test(cleanAnchor)) {
+      somatic_anchor = 'Tenez-vous pieds nus sur le sol, ressentez l\'ancrage de la terre et tapotez doucement votre sternum pendant 60 secondes.';
+    } else if (/mammalian|ice cube/i.test(cleanAnchor)) {
+      somatic_anchor = 'Réflexe d\'immersion : appliquez une serviette fraîche et humide ou un glaçon sur le haut de vos joues pendant 20 secondes.';
+    }
+
+    let pranayama = 'Pratiquez la respiration carrée 4-4-4-4 ou Nadi Shodhana pendant 3 minutes pour rétablir l\'équilibre autonome.';
+    if (/bhramari|humming bee/i.test(cleanPranayama)) {
+      pranayama = 'Pratiquez Bhramari (souffle de l\'abeille) pendant 4 minutes pour créer des micro-vibrations crâniennes apaisantes.';
+    } else if (/surya bhedana|solar breathing/i.test(cleanPranayama)) {
+      pranayama = 'Pratiquez Surya Bhedana (respiration solaire par la narine droite) pendant 3 minutes pour dissiper la léthargie.';
+    } else if (/extended exhale/i.test(cleanPranayama)) {
+      pranayama = 'Respiration à expiration prolongée : inspirez 4 secondes par le nez et expirez 7 secondes par les lèvres pincées.';
+    }
+
+    let micro_habit = 'Concentrez-vous uniquement sur la prochaine micro-action constructive sous votre contrôle immédiat.';
+    if (/write down|rumination/i.test(cleanHabit)) {
+      micro_habit = 'Notez une seule micro-tâche sous votre contrôle direct dès maintenant et laissez de côté les ruminations.';
+    } else if (/single micro-action/i.test(cleanHabit)) {
+      micro_habit = 'Posez une seule micro-action sous votre contrôle immédiat, sans vous préoccuper de l\'inconnu futur.';
+    } else if (/externalize/i.test(cleanHabit)) {
+      micro_habit = 'Notez immédiatement vos tâches sur papier pour désencombrer votre mémoire de travail.';
+    } else if (/2-minute/i.test(cleanHabit)) {
+      micro_habit = 'Engagez-vous dans une micro-tâche de 2 minutes impossible à rater (boire un verre d\'eau, ouvrir les rideaux).';
+    }
+
+    return { conditionName, validation, cbt_reframing, somatic_anchor, pranayama, micro_habit };
+  }
+
+  if (norm === 'de') {
+    const conditionName = 'Klinisches Kognitives Protokoll (CBT)';
+    const validation = 'Ich verstehe gut, wie fordernd die Bewältigung dieser Situation derzeit ist und wie sehr sie erschöpft.';
+    let cbt_reframing = 'Betrachten Sie dieses Erleben als ein vorübergehendes physiologisches Signal. Beobachten Sie Ihre Gedanken völlig wertfrei.';
+    if (/adrenaline|8 to 12 minutes|panic/i.test(cleanReframe)) {
+      cbt_reframing = 'Diese Welle ist ein Adrenalinschub, der sich innerhalb von 8 bis 12 Minuten von selbst abbaut. Es fühlt sich unangenehm an, aber Sie sind vollkommen sicher.';
+    } else if (/precedes motivation|1% physical step/i.test(cleanReframe)) {
+      cbt_reframing = 'Handlung geht Motivation voraus. Warten Sie nicht auf Energie; selbst ein minimaler Schritt von 1% beginnt bereits, Ihre Neurochemie positiv zu verändern.';
+    } else if (/cortisol|brain fog/i.test(cleanReframe)) {
+      cbt_reframing = 'Konzentrationslücken und Denkblockaden unter Stress entstehen durch kurzfristige Cortisolspitzen und stellen keinen dauerhaften Abbau dar.';
+    } else if (/not an identity|helplessness/i.test(cleanReframe)) {
+      cbt_reframing = 'Erkennen Sie, dass dieses Gefühl eine natürliche physiologische Reaktion ist und nicht Ihre Identität. Hinterfragen Sie Ohnmachtsgedanken und verankern Sie sich im gegenwärtigen Moment.';
+    }
+
+    let somatic_anchor = 'Lassen Sie die Schultern locker nach unten sinken, legen Sie eine Hand auf den Unterbauch und spüren Sie 30 Sekunden lang den festen Boden unter Ihren Füßen.';
+    if (/tongue|ground both feet/i.test(cleanAnchor)) {
+      somatic_anchor = 'Senken Sie Ihre Schultern, lösen Sie die Zunge vom Gaumen und stellen Sie beide Füße für 30 Sekunden fest auf den Boden.';
+    } else if (/water|tap temples/i.test(cleanAnchor)) {
+      somatic_anchor = 'Nehmen Sie einen Schluck kühles Wasser, spüren Sie das Schlucken bewusst und tippen Sie mit den Fingerspitzen 30 Sekunden lang sanft an die Schläfen.';
+    } else if (/barefoot|sternum/i.test(cleanAnchor)) {
+      somatic_anchor = 'Stellen Sie sich barfuß auf den Boden, spüren Sie den festen Halt und klopfen Sie 60 Sekunden lang sanft auf Ihr Brustbein.';
+    } else if (/mammalian|ice cube/i.test(cleanAnchor)) {
+      somatic_anchor = 'Tauchreflex-Stimulation: Drücken Sie 20 Sekunden lang ein kühles, feuchtes Tuch oder Eis sanft an Ihre Wangen.';
+    }
+
+    let pranayama = 'Praktizieren Sie 3 Minuten lang 4-4-4-4 Box-Atmung oder Nadi Shodhana, um das vegetative Nervensystem auszugleichen.';
+    if (/bhramari|humming bee/i.test(cleanPranayama)) {
+      pranayama = 'Üben Sie 4 Minuten lang Bhramari (Bienensummen-Atmung), um beruhigende Mikrovibrationen im Kopfbereich zu erzeugen.';
+    } else if (/surya bhedana|solar breathing/i.test(cleanPranayama)) {
+      pranayama = 'Praktizieren Sie 3 Minuten lang Surya Bhedana (Sonnenatmung durch das rechte Nasenloch), um Trägheit aufzulösen.';
+    } else if (/extended exhale/i.test(cleanPranayama)) {
+      pranayama = 'Verlängerte Ausatmung: 4 Sekunden durch die Nase einatmen und 7 Sekunden langsam durch die leicht geöffneten Lippen ausatmen.';
+    }
+
+    let micro_habit = 'Konzentrieren Sie sich rein auf die nächste konstruktive Mikro-Handlung in Ihrem direkten Einflussbereich.';
+    if (/write down|rumination/i.test(cleanHabit)) {
+      micro_habit = 'Notieren Sie eine einzige Mikro-Aufgabe, die Sie jetzt direkt kontrollieren können, und lassen Sie Grübeleien los.';
+    } else if (/single micro-action/i.test(cleanHabit)) {
+      micro_habit = 'Führen Sie eine einzige kleine Handlung aus, die Sie sofort bewältigen können, und ignorieren Sie die Gesamtsituation.';
+    } else if (/externalize/i.test(cleanHabit)) {
+      micro_habit = 'Bringen Sie Aufgaben sofort auf Papier, anstatt das Arbeitsgedächtnis damit zu überlasten.';
+    } else if (/2-minute/i.test(cleanHabit)) {
+      micro_habit = 'Führen Sie eine 2-Minuten-Aufgabe aus, die nicht fehlschlagen kann (ein Glas Wasser trinken, das Fenster öffnen).';
+    }
+
+    return { conditionName, validation, cbt_reframing, somatic_anchor, pranayama, micro_habit };
+  }
+
+  // English default
+  return {
+    conditionName: rawConditionName || 'Clinical Condition Protocol',
+    validation: `I hear what you are navigating with ${rawConditionName || 'this experience'} and understand how exhausting it feels right now.`,
+    cbt_reframing: cleanReframe || 'Acknowledge your emotional experience with compassionate, objective awareness.',
+    somatic_anchor: cleanAnchor || 'Ground your feet onto the floor, unclench your jaw, and let your shoulders drop.',
+    pranayama: cleanPranayama || 'Practice 4-4-4-4 Box Breathing or extended exhalations to settle your nervous system.',
+    micro_habit: cleanHabit || 'Focus purely on the single next constructive micro-action within your immediate control.',
+  };
+}
+
 export function getLocalizedClinicalIntervention(
   conditionId: string,
   languageCode?: string,
@@ -420,38 +660,31 @@ export function getLocalizedClinicalIntervention(
   if (entry) {
     return entry;
   }
-  if (norm !== 'en') {
-    const enData = getLocaleData('en');
-    const enEntry = enData.interventions?.[conditionId];
-    if (enEntry) return enEntry;
-  }
 
   // Dynamic clinical synthesis for psychology library and self-learned conditions
   const conditionObj = fallbackObject || getConditionById(conditionId);
   if (conditionObj && conditionObj.solutions) {
-    const sols = conditionObj.solutions;
-    const cleanReframe = sols.cbt_reframing ? sols.cbt_reframing.split('[Wikipedia Context]')[0].trim() : '';
-
-    return {
-      conditionName: conditionObj.name || 'Clinical Condition Protocol',
-      validation:
-        norm === 'hi'
-          ? `मैं समझ सकता हूँ कि आप इस समय ${conditionObj.name || 'इस मानसिक चुनौती'} से जूझ रहे हैं और यह अनुभव कितना थका देने वाला है।`
-          : norm === 'es'
-          ? `Comprendo profundamente lo desafiante que resulta afrontar ${conditionObj.name || 'esta situación'}.`
-          : norm === 'fr'
-          ? `Je mesure pleinement combien il est éprouvant de traverser ${conditionObj.name || 'cette épreuve'}.`
-          : norm === 'de'
-          ? `Ich verstehe gut, wie fordernd die Bewältigung von ${conditionObj.name || 'diesem Zustand'} derzeit ist.`
-          : `I hear what you are navigating with ${conditionObj.name || 'this experience'} and understand how exhausting it feels right now.`,
-      cbt_reframing: cleanReframe || 'Acknowledge your emotional experience with compassionate, objective awareness.',
-      somatic_anchor: sols.somatic_anchor || 'Ground your feet onto the floor, unclench your jaw, and let your shoulders drop.',
-      pranayama: sols.pranayama || 'Practice 4-4-4-4 Box Breathing or extended exhalations to settle your nervous system.',
-      micro_habit: sols.micro_habit || 'Focus purely on the single next constructive micro-action within your immediate control.',
-    };
+    return localizeDynamicSolutions(conditionObj.solutions, norm, conditionObj.name);
   }
 
-  // Universal Default Condition Interventions (GAD / Anxiety Fallback)
+  if (norm !== 'en') {
+    const enData = getLocaleData('en');
+    const enEntry = enData.interventions?.[conditionId];
+    if (enEntry) {
+      return localizeDynamicSolutions(
+        {
+          cbt_reframing: enEntry.cbt_reframing,
+          somatic_anchor: enEntry.somatic_anchor,
+          pranayama: enEntry.pranayama,
+          micro_habit: enEntry.micro_habit,
+        },
+        norm,
+        enEntry.conditionName
+      );
+    }
+  }
+
+  // Universal Default Condition Interventions (GAD / Anxiety Fallback in target locale)
   return data.interventions?.gad || getLocaleData('en').interventions?.gad;
 }
 
@@ -618,15 +851,16 @@ export function buildDiagnosticSufferingAssessment(
   } else if (lower.includes('overwhelm') || lower.includes('racing') || lower.includes('hurricane') || lower.includes('chaos') || lower.includes('adhd')) {
     inputSummary = data.assessment.inputSummaries.overwhelm;
   } else {
+    const hasEnglishLetters = /[a-zA-Z]{3,}/.test(cleanCondition);
     const conditionSnippet = cleanCondition
       ? (norm === 'hi'
-          ? ` जो ${cleanCondition} से जुड़ा है`
+          ? (hasEnglishLetters ? ' इस मानसिक चुनौती व भावनात्मक दबाव' : ` जो ${cleanCondition} से जुड़ा है`)
           : norm === 'es'
-          ? ` vinculado a ${cleanCondition}`
+          ? (hasEnglishLetters ? ' esta situación de sobrecarga emocional' : ` vinculado a ${cleanCondition}`)
           : norm === 'fr'
-          ? ` liée à ${cleanCondition}`
+          ? (hasEnglishLetters ? ' cette épreuve de tension émotionnelle' : ` liée à ${cleanCondition}`)
           : norm === 'de'
-          ? ` im Zusammenhang mit ${cleanCondition}`
+          ? (hasEnglishLetters ? ' dieser emotionalen Belastungssituation' : ` im Zusammenhang mit ${cleanCondition}`)
           : ` related to ${cleanCondition}`)
       : '';
     inputSummary = data.assessment.inputSummaries.defaultTemplate.replace('{condition}', conditionSnippet);

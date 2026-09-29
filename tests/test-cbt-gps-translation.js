@@ -280,6 +280,49 @@ assert.strictEqual(stage3De.title, 'Kognitive Umstrukturierung und Somatik', `Ex
 assert(stage3De.badge.includes('CBT'), `Expected CBT in badge, got: ${stage3De.badge}`);
 console.log('[PASS] German Card 3 CBT parsed accurately:', stage3De.title, '| Badge:', stage3De.badge);
 
+// 5. Test Dynamic & Self-Learned CBT Intervention Translations
+console.log('\n--- TEST SUITE: Dynamic & Self-Learned CBT Interventions ---');
+const sampleLearnedDoc = {
+  id: 'learned_job_stress_and_anxiety',
+  name: 'Learned: Job Stress And Anxiety Protocol',
+  solutions: {
+    cbt_reframing: 'Acknowledge this experience as a transient physiological signal. Notice thoughts without judgment.\n\n[Wikipedia Context] Evidence-based...',
+    somatic_anchor: 'Drop shoulders away from ears, place one hand on the lower abdomen, and feel the solid floor underneath your feet for 30 seconds.',
+    pranayama: 'Practice 4-4-4-4 Box Breathing or Nadi Shodhana for 3 minutes to restore autonomic balance.',
+    micro_habit: 'Write down one single micro-task within your direct control right now and release long-term rumination.',
+  }
+};
+
+// Hindi Dynamic Translation
+const locHi = getLocalizedClinicalIntervention(sampleLearnedDoc.id, 'hi', sampleLearnedDoc);
+assert(locHi, 'Must return localized intervention for learned doc in Hindi');
+assert(/[\u0900-\u097F]/.test(locHi.cbt_reframing), `Hindi cbt_reframing must contain Devanagari: ${locHi.cbt_reframing}`);
+assert(/[\u0900-\u097F]/.test(locHi.somatic_anchor), `Hindi somatic_anchor must contain Devanagari: ${locHi.somatic_anchor}`);
+assert(/[\u0900-\u097F]/.test(locHi.pranayama), `Hindi pranayama must contain Devanagari: ${locHi.pranayama}`);
+assert(!/Drop shoulders/i.test(locHi.somatic_anchor), 'Hindi somatic_anchor must NOT contain raw English');
+console.log('[PASS] Dynamic Learned Condition (Hindi): Devanagari CBT reframe, anchor, and pranayama verified');
+
+// Spanish Dynamic Translation
+const locEs = getLocalizedClinicalIntervention(sampleLearnedDoc.id, 'es', sampleLearnedDoc);
+assert(locEs, 'Must return localized intervention for learned doc in Spanish');
+assert(/\b(Reconozca|fisiol[oó]gica|pensamientos)\b/i.test(locEs.cbt_reframing), `Spanish CBT reframe check failed: ${locEs.cbt_reframing}`);
+assert(/\b(hombros|suelo|pies)\b/i.test(locEs.somatic_anchor), `Spanish somatic anchor check failed: ${locEs.somatic_anchor}`);
+console.log('[PASS] Dynamic Learned Condition (Spanish): Translated CBT reframe and anchor verified');
+
+// French Dynamic Translation
+const locFr = getLocalizedClinicalIntervention(sampleLearnedDoc.id, 'fr', sampleLearnedDoc);
+assert(locFr, 'Must return localized intervention for learned doc in French');
+assert(/\b(Consid[eé]rez|physiologique|pens[eé]es)\b/i.test(locFr.cbt_reframing), `French CBT reframe check failed: ${locFr.cbt_reframing}`);
+assert(/\b([eé]paules|sol|pieds)\b/i.test(locFr.somatic_anchor), `French somatic anchor check failed: ${locFr.somatic_anchor}`);
+console.log('[PASS] Dynamic Learned Condition (French): Translated CBT reframe and anchor verified');
+
+// German Dynamic Translation
+const locDe = getLocalizedClinicalIntervention(sampleLearnedDoc.id, 'de', sampleLearnedDoc);
+assert(locDe, 'Must return localized intervention for learned doc in German');
+assert(/\b(Betrachten|physiologisches|Gedanken)\b/i.test(locDe.cbt_reframing), `German CBT reframe check failed: ${locDe.cbt_reframing}`);
+assert(/\b(Schultern|Boden|F[uü][sß]en)\b/i.test(locDe.somatic_anchor), `German somatic anchor check failed: ${locDe.somatic_anchor}`);
+console.log('[PASS] Dynamic Learned Condition (German): Translated CBT reframe and anchor verified');
+
 console.log('\n=========================================');
 console.log('✅ ALL CBT GPS TRANSLATION TESTS PASSED!');
 console.log('=========================================');
