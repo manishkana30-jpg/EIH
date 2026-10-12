@@ -488,6 +488,12 @@ export function detectUserSpokenLanguage(text: string): { langCode: string; spee
   const raw = text.trim();
   const lower = raw.toLowerCase();
 
+  // 0. Explicit Regional / Hindi Intent Detection
+  const regionalIntentRegex = /\b(regenal|regional|hindi|hindee|matribhasha|desi\s+bhasha|khetriya|kshetriya|prantiy)\b|क्षेत्रीय|मातृभाषा|हिंदी|हिन्दी/i;
+  if (regionalIntentRegex.test(raw)) {
+    return { langCode: 'hi', speechLocale: 'hi-IN', name: 'Hindi' };
+  }
+
   // 1. Unicode Script Checks
   if (/[\u0900-\u097F]/.test(raw)) {
     return { langCode: 'hi', speechLocale: 'hi-IN', name: 'Hindi' };
@@ -652,6 +658,12 @@ export function resolveSpokenLanguageWithGpsOverride(
 
   const raw = text.trim();
   const lower = raw.toLowerCase();
+
+  // 0. Explicit Regional / Hindi Intent Detection
+  const regionalIntentRegex = /\b(regenal|regional|hindi|hindee|matribhasha|desi\s+bhasha|khetriya|kshetriya|prantiy)\b|क्षेत्रीय|मातृभाषा|हिंदी|हिन्दी/i;
+  if (regionalIntentRegex.test(raw)) {
+    return { langCode: 'hi', speechLocale: 'hi-IN', name: 'Hindi', isOverridden: true };
+  }
 
   // 1. Definite Non-Latin Unicode Script Checks (Direct override)
   if (/[\u0900-\u097F]/.test(raw)) {

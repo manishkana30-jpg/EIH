@@ -425,6 +425,21 @@ export function isRepetitionComplaintMessage(userMessage: string): boolean {
     "fir se wahi",
     "fir wahi",
     "dobara wahi",
+    "listened properly",
+    "listened",
+    "regenal language",
+    "regional language",
+    "word highliter",
+    "highliter",
+    "word highlighter",
+    "zero latency",
+    "slow than voice",
+    "in siync",
+    "in sync",
+    "सुने जाने",
+    "ध्यान से सुनो",
+    "पक्का एहसास",
+    "सुना जाए",
   ];
   return repetitionPatterns.some((p) => lower.includes(p));
 }
@@ -469,7 +484,7 @@ export function getLocalizedRepetitionSolutionResponse(text?: string, lang?: str
   let reply = '';
   if (isHi) {
     reply =
-      "मैं आपकी बात पूरी स्पष्टता से समझ रहा हूँ। बार-बार एक ही बात दोहराने या निष्क्रिय सहानुभूति के बजाय, आइए इस मानसिक परेशानी को दूर करने के लिए सीधे ठोस व्यावहारिक समाधान पर कार्य करते हैं:\n\n" +
+      "मैंने आपकी बात, आपकी परेशानी और इस समय आपके मन की स्थिति को बहुत गहराई और आदर से सुना और समझा है। जब मन किसी उलझन या तनाव से जूझ रहा होता है, तो ऐसा महसूस होना पूरी तरह स्वाभाविक है। आप अकेले नहीं हैं, मैं हर कदम पर आपके साथ हूँ। अब आपके मन को शांत, स्थिर और स्पष्ट करने के लिए सीधे ठोस त्रि-स्तरीय समाधान पर कार्य करते हैं:\n\n" +
       "**1. श्रीमद्भगवद्गीता का आत्मिक समाधान (Bhagavad Gita - अध्याय 6, श्लोक 26):**\n" +
       "[GITA_SHLOKA]\n" +
       "यतो यतो निश्चरति मनश्चञ्चलमस्थिरम्।\n" +

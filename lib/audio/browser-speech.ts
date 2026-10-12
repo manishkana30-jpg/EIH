@@ -1203,11 +1203,10 @@ export class BrowserSpeechController {
             activeItem = wordMap[wordMap.length - 1];
           }
         } else {
-          const totalDur = totalDurationSec || (cleanText.length / 10.0);
+          const totalDur = (totalDurationSec > 0 && isFinite(totalDurationSec)) ? totalDurationSec : (cleanText.length / 15.0);
           const progress = Math.min(1, Math.max(0, currentSec / totalDur));
-          const targetChar = Math.min(cleanText.length - 1, Math.floor(progress * cleanText.length));
-          activeItem = wordMap.find((w) => targetChar >= w.startChar && targetChar <= w.endChar) ||
-            wordMap[Math.min(wordMap.length - 1, Math.floor(progress * wordMap.length))];
+          const targetWordIdx = Math.min(wordMap.length - 1, Math.floor(progress * wordMap.length));
+          activeItem = wordMap[targetWordIdx];
         }
 
         if (activeItem && activeItem.wordIndex !== lastReportedIdx) {
@@ -1385,10 +1384,10 @@ export class BrowserSpeechController {
             activeItem = wordMap[wordMap.length - 1];
           }
         } else {
-          const progress = Math.min(1, Math.max(0, elapsedSec / totalDuration));
-          const targetChar = Math.min(cleanText.length - 1, Math.floor(progress * cleanText.length));
-          activeItem = wordMap.find((w) => targetChar >= w.startChar && targetChar <= w.endChar) ||
-            wordMap[Math.min(wordMap.length - 1, Math.floor(progress * wordMap.length))];
+          const totalDur = (totalDuration > 0 && isFinite(totalDuration)) ? totalDuration : (cleanText.length / 15.0);
+          const progress = Math.min(1, Math.max(0, elapsedSec / totalDur));
+          const targetWordIdx = Math.min(wordMap.length - 1, Math.floor(progress * wordMap.length));
+          activeItem = wordMap[targetWordIdx];
         }
 
         if (activeItem && activeItem.wordIndex !== lastReportedIdx) {
@@ -1640,7 +1639,19 @@ export class BrowserSpeechController {
       let chunkStartTime = performance.now();
       let lastEmittedCharIndex = 0;
       let boundaryTicker: ReturnType<typeof setInterval> | null = null;
-      let nativeBoundaryReceived = false;
+      let lastEmittedWordIdx = -1;
+
+      // Pre-tokenize chunk into word offsets for zero-latency lockstep synchronization
+      const chunkWords: Array<{ start: number; end: number; text: string }> = [];
+      const wordRegex = /\S+/g;
+      let wordMatch: RegExpExecArray | null;
+      while ((wordMatch = wordRegex.exec(chunkText)) !== null) {
+        chunkWords.push({
+          start: wordMatch.index,
+          end: wordMatch.index + wordMatch[0].length,
+          text: wordMatch[0],
+        });
+      }
 
       const stopBoundaryTicker = () => {
         if (boundaryTicker) {
@@ -1654,8 +1665,6 @@ export class BrowserSpeechController {
         if (isFinished || this.activeSpeechGeneration !== speechGeneration || !this.isSpeaking) return;
         resetWatchdog();
         if (event.name && event.name !== 'word') return;
-        nativeBoundaryReceived = true;
-        stopBoundaryTicker();
         lastBoundaryFiredTime = performance.now();
         const relativeCharIndex = event.charIndex || 0;
         const charLength = event.charLength || 0;
@@ -1673,6 +1682,12 @@ export class BrowserSpeechController {
           const match = chunkText.slice(relativeCharIndex).match(/^\S+/);
           word = match ? match[0] : '';
         }
+
+        const matchedWordIdx = chunkWords.findIndex((w) => relativeCharIndex >= w.start && relativeCharIndex <= w.end);
+        if (matchedWordIdx >= 0) {
+          lastEmittedWordIdx = matchedWordIdx;
+        }
+
         this.callbacks.onWordBoundary?.(absoluteCharIndex, charLength || word.length, word);
       };
 
@@ -1687,6 +1702,7 @@ export class BrowserSpeechController {
         chunkStartTime = performance.now();
         lastBoundaryFiredTime = performance.now();
         lastEmittedCharIndex = 0;
+        lastEmittedWordIdx = -1;
 
         if (chunkIdx === 1) {
           this.isSpeaking = true;
@@ -1694,44 +1710,48 @@ export class BrowserSpeechController {
           onStart?.();
         }
 
-        // Emit first word after a brief 40ms audio DAC startup compensation
-        // so visual highlight does not lead actual vocal sound
-        setTimeout(() => {
-          if (isFinished || this.activeSpeechGeneration !== speechGeneration || !this.isSpeaking) return;
-          if (!nativeBoundaryReceived && lastEmittedCharIndex === 0) {
-            const firstMatch = chunkText.match(/^\S+/);
-            const firstWord = firstMatch ? firstMatch[0] : '';
-            this.callbacks.onWordBoundary?.(currentChunkOffset, firstWord.length, firstWord);
-          }
-        }, 40);
+        // Zero-latency instant highlight of first word as voice sound begins
+        if (chunkWords.length > 0) {
+          const firstWord = chunkWords[0];
+          lastEmittedWordIdx = 0;
+          lastEmittedCharIndex = firstWord.start;
+          this.callbacks.onWordBoundary?.(currentChunkOffset + firstWord.start, firstWord.text.length, firstWord.text);
+        }
 
-        // Calibrated boundary ticker for voices without native onboundary
+        // Calibrated boundary ticker for zero-latency lockstep synchronization
         stopBoundaryTicker();
         const isIndic = /[\u0900-\u097F]/.test(chunkText);
-        const baseRate = isIndic ? 7.2 : 10.2;
+        // Human speech pace at 0.85 rate: ~15.8 chars/sec (2.4-2.8 words/sec)
+        const baseRate = isIndic ? 15.8 : 15.2;
         const effectiveCharsPerSec = baseRate * (utterance.rate || 0.85);
 
         boundaryTicker = setInterval(() => {
-          if (isFinished || this.activeSpeechGeneration !== speechGeneration || !this.isSpeaking || nativeBoundaryReceived) {
+          if (isFinished || this.activeSpeechGeneration !== speechGeneration || !this.isSpeaking) {
             stopBoundaryTicker();
             return;
           }
           const now = performance.now();
-          if (now - lastBoundaryFiredTime > 400) {
-            const elapsedSec = Math.max(0, (now - chunkStartTime - 100)) / 1000;
-            const estimatedRelativeChar = Math.min(
-              chunkText.length - 1,
-              Math.max(lastEmittedCharIndex, Math.floor(elapsedSec * effectiveCharsPerSec))
+          // If native boundary has not fired within 120ms (voices without onboundary or dropped events),
+          // advance in lockstep with zero latency
+          if (now - lastBoundaryFiredTime > 120) {
+            const elapsedSec = Math.max(0, now - chunkStartTime) / 1000;
+            const estimatedRelativeChar = Math.floor(elapsedSec * effectiveCharsPerSec);
+            let targetWordIdx = chunkWords.findIndex(
+              (w) => estimatedRelativeChar >= w.start && estimatedRelativeChar <= w.end
             );
-            if (estimatedRelativeChar > lastEmittedCharIndex) {
-              lastEmittedCharIndex = estimatedRelativeChar;
-              const absoluteCharIndex = currentChunkOffset + estimatedRelativeChar;
-              const match = chunkText.slice(estimatedRelativeChar).match(/^\S+/);
-              const word = match ? match[0] : '';
-              this.callbacks.onWordBoundary?.(absoluteCharIndex, word.length || 1, word);
+            if (targetWordIdx < 0) {
+              const progress = Math.min(1, estimatedRelativeChar / Math.max(1, chunkText.length));
+              targetWordIdx = Math.min(chunkWords.length - 1, Math.floor(progress * chunkWords.length));
+            }
+            if (targetWordIdx > lastEmittedWordIdx && chunkWords[targetWordIdx]) {
+              lastEmittedWordIdx = targetWordIdx;
+              const activeWord = chunkWords[targetWordIdx];
+              lastEmittedCharIndex = activeWord.start;
+              const absoluteCharIndex = currentChunkOffset + activeWord.start;
+              this.callbacks.onWordBoundary?.(absoluteCharIndex, activeWord.text.length, activeWord.text);
             }
           }
-        }, 80);
+        }, 25);
       };
 
       utterance.onpause = () => {
