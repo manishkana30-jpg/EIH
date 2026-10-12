@@ -19,6 +19,14 @@ import {
   getLocalizedGeneralAdvice,
   normalizeLanguageCode,
 } from '../i18n/clinical-localization';
+import {
+  isTemplateLoopComplaint,
+  getLoopBreakingResponse,
+  isInformationalOrInquiry,
+  generateInquiryResponse,
+  generateMultiTurnConversationalReply,
+  generateEmotionalSharingReply,
+} from '../services/conversational-research-engine';
 import { resolveSpokenLanguageWithGpsOverride } from '../i18n/language-catalog';
 import { findGitaWisdom } from '../knowledge/gita-library';
 import {
@@ -256,6 +264,31 @@ class HealerBackendClient {
       };
     }
 
+    if (isTemplateLoopComplaint(cleanMessage)) {
+      const loopReply = getLoopBreakingResponse(cleanMessage, effectiveLanguage);
+      return {
+        reply: loopReply,
+        sources: [
+          {
+            title: 'Adaptive Clinical Attunement',
+            summary: 'Dynamic conversational grounding replacing rigid templates with evidence-based reasoning.',
+            source: 'PubMed',
+          },
+        ],
+        engine: 'Dynamic Conversational Research Companion',
+        is_crisis: false,
+        recommended_trataka: 'bindu',
+        telemetry: {
+          dominant_emotion: 'Receptivity',
+          polyvagal_state: 'Ventral Vagal (Safe)',
+          cbt_distortion: 'None',
+          percentages: { Receptivity: 90, Clarity: 85 },
+          strategy: 'Direct non-formulaic therapeutic presence and dynamic inquiry.',
+          voice_state: voiceState?.description || 'Authentic connected tone',
+        },
+      };
+    }
+
     if (isRepetitionComplaintMessage(cleanMessage)) {
       const repRes = getLocalizedRepetitionSolutionResponse(cleanMessage, effectiveLanguage, effectiveLocale);
       return {
@@ -461,14 +494,47 @@ class HealerBackendClient {
         !isPositiveOrNeutral &&
         hasEmotionalDistressSignal;
 
+       const isInquiry = isInformationalOrInquiry(cleanMessage);
+      const isFollowUpTurn = Boolean(history && history.length >= 1);
+
       let fallbackReply = '';
-      if (hasClinicalDistress) {
-        if (libraryResult) {
+      if (isInquiry && !isSolutionRequest) {
+        fallbackReply = generateInquiryResponse(
+          cleanMessage,
+          targetLang,
+          diag.dimensionId,
+          libraryResult?.condition,
+          study
+        );
+      } else if (isFollowUpTurn) {
+        fallbackReply = generateMultiTurnConversationalReply(
+          cleanMessage,
+          history?.map((h) => ({ role: h.sender === 'ai' ? 'assistant' : 'user', content: h.text })),
+          targetLang,
+          diag.dimensionId,
+          polyvagalState,
+          libraryResult?.condition,
+          study
+        );
+      } else if (hasClinicalDistress) {
+        const isAcuteInitialPresentation =
+          isSolutionRequest ||
+          hasDistressKeywords ||
+          (libraryResult !== null && (diag.coreAffect?.valence ?? 0) <= -0.15);
+
+        if (isAcuteInitialPresentation && libraryResult) {
           fallbackReply = formatHumanTherapeuticMessage(libraryResult.condition, targetLang, cleanMessage);
-        } else if (study) {
+        } else if (isAcuteInitialPresentation && study) {
           fallbackReply = getLocalizedGeneralAdvice(diag.dimensionName || 'anxiety', targetLang, cleanMessage);
         } else {
-          fallbackReply = getLocalizedGeneralAdvice('default', targetLang, cleanMessage);
+          fallbackReply = generateEmotionalSharingReply(
+            cleanMessage,
+            targetLang,
+            diag.dimensionId,
+            polyvagalState,
+            libraryResult?.condition,
+            study
+          );
         }
 
         // Empathetically attune to physiological vocal indicators (tremor, strain, flat exhaustion)

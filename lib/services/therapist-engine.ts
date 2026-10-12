@@ -28,6 +28,15 @@ import {
   normalizeTratakaMode,
 } from "../knowledge/trataka-recommendations.ts";
 import { emotionClassifier } from "../knowledge/emotion-classifier.ts";
+import {
+  isTemplateLoopComplaint,
+  getLoopBreakingResponse,
+  isInformationalOrInquiry,
+  generateInquiryResponse,
+  generateMultiTurnConversationalReply,
+  generateEmotionalSharingReply,
+} from "./conversational-research-engine.ts";
+import { getResearchedAdviceForEmotion } from "../knowledge/authenticated-research-bank.ts";
 
 
 export interface ConversationTurn {
@@ -169,7 +178,25 @@ export async function generateTherapeuticResponse(
     };
   }
 
-  // 1c. Repetition & Script Loop Interceptor (Delivers immediate actionable Tri-Pillar solution)
+  // 1c. Template Loop & Single-Type-Message Interceptor (Breaks repetitive card loops authentically)
+  if (isTemplateLoopComplaint(userMessage)) {
+    const loopBreakingReply = getLoopBreakingResponse(userMessage, normLang);
+    return {
+      reply: loopBreakingReply,
+      sources: [
+        {
+          title: "Neuroscience-Grounded Adaptive Dialogue",
+          summary: "Dynamic clinical attunement replacing rigid repetitive scripting with cognitive science and research.",
+          source: "clinical_research" as any,
+        },
+      ],
+      providerUsed: "Dynamic Conversational Research Companion",
+      isCrisis: false,
+      recommended_trataka: "bindu",
+    };
+  }
+
+  // 1d. Repetition & Script Loop Interceptor (Delivers immediate actionable Tri-Pillar solution for specific test complaints)
   if (isRepetitionComplaintMessage(userMessage)) {
     const repRes = getLocalizedRepetitionSolutionResponse(userMessage, normLang, spokenResolution.speechLocale);
     return {
@@ -255,6 +282,53 @@ export async function generateTherapeuticResponse(
 
   const isSolutionRequest = isExplicitSolutionOrTherapyRequest(userMessage);
 
+  const isFollowUpTurn = Boolean(history && history.length >= 1);
+  const isInquiry = isInformationalOrInquiry(userMessage);
+  const activeStudy = getResearchedAdviceForEmotion(detectedEmotion, emotionDiagnostic.polyvagalState);
+
+  // If user is asking an informational, scientific, or psychoeducational question:
+  if (isInquiry && !isSolutionRequest) {
+    const inquiryReply = generateInquiryResponse(
+      userMessage,
+      normLang,
+      detectedEmotion,
+      libraryRag?.condition,
+      activeStudy
+    );
+    return {
+      reply: inquiryReply,
+      sources: allSources.slice(0, 2),
+      providerUsed: "Neuroscience & Cognitive Science Inquirer",
+      isCrisis: false,
+      recommended_trataka: "bindu",
+    };
+  }
+
+  const syncTratakaWithReply = (replyText?: string, fallbackMode?: string): string => {
+    return detectTratakaModeFromText(replyText) || normalizeTratakaMode(fallbackMode || defaultRecTrataka);
+  };
+  const defaultRecTrataka = tratakPrescription.mode;
+
+  // If this is an ongoing dialogue turn (follow-up in multi-turn conversation):
+  if (isFollowUpTurn) {
+    const multiTurnReply = generateMultiTurnConversationalReply(
+      userMessage,
+      history,
+      normLang,
+      detectedEmotion,
+      emotionDiagnostic.polyvagalState,
+      libraryRag?.condition,
+      activeStudy
+    );
+    return {
+      reply: multiTurnReply,
+      sources: allSources,
+      providerUsed: "Dynamic Research-Grounded Therapist",
+      isCrisis: false,
+      recommended_trataka: syncTratakaWithReply(multiTurnReply, defaultRecTrataka),
+    };
+  }
+
   const isNeutralOrInquiry =
     !isSolutionRequest &&
     !hasDistressKeywords &&
@@ -275,9 +349,20 @@ export async function generateTherapeuticResponse(
     !isDirectPositive &&
     (isSolutionRequest || (!isNeutralOrInquiry && hasEmotionalDistressSignal));
 
-  // Helper to guarantee [GITA_SHLOKA] tags, authentic Sanskrit shloka, and diagnostic summary only when clinical distress is present
+  const isAcuteInitialPresentation =
+    !isFollowUpTurn &&
+    !isInquiry &&
+    (isSolutionRequest ||
+      hasDistressKeywords ||
+      (libraryRag !== null && emotionDiagnostic.coreAffect.valence <= -0.15) ||
+      emotionDiagnostic.coreAffect.valence <= -0.3);
+
+  // Helper to guarantee [GITA_SHLOKA] tags, authentic Sanskrit shloka, and diagnostic summary strictly on acute initial presentation
   function ensureDiagnosticAndGita(replyText: string, gitaBlockStr: string, diagnosticMarkdown?: string): string {
     let result = replyText;
+    if (isFollowUpTurn || isInquiry || !isAcuteInitialPresentation) {
+      return result;
+    }
     if (hasClinicalDistress && (!result.includes("[GITA_SHLOKA]") || !result.includes("[/GITA_SHLOKA]"))) {
       if (/(\*\*1\.[^*]*\*\*:?\s*)/i.test(result)) {
         result = result.replace(/(\*\*1\.[^*]*\*\*:?\s*)/i, `$1\n${gitaBlockStr}\n`);
@@ -326,26 +411,19 @@ export async function generateTherapeuticResponse(
     // Local daemon offline or unreachable: Immediately use built-in deterministic clinical synthesis (Zero External Dependency, 100% Offline)
   }
 
-  const defaultRecTrataka = tratakPrescription.mode;
-
-  const syncTratakaWithReply = (replyText?: string, fallbackMode?: string): string => {
-    return detectTratakaModeFromText(replyText) || normalizeTratakaMode(fallbackMode || defaultRecTrataka);
-  };
-
   // Infallible Deterministic Healer Synthesis (Zero External Dependency, 100% Offline)
   const targetLanguage = normLang;
-  const isFollowUp = Boolean(history && history.length >= 2);
 
   let fallbackReply = "";
 
-  if (hasClinicalDistress && libraryRag) {
+  if (isAcuteInitialPresentation && libraryRag) {
     // 100% pure human-crafted clinical explanation in the user's chosen local language
     fallbackReply = formatHumanTherapeuticMessage(
       libraryRag.condition,
       targetLanguage,
       userMessage,
       citedShlokaIds,
-      isFollowUp
+      false
     );
 
     // Also update libraryRag source with localized clinical text
@@ -357,13 +435,22 @@ export async function generateTherapeuticResponse(
         source: "psychology_library",
       };
     }
-  } else if (hasClinicalDistress) {
+  } else if (isAcuteInitialPresentation) {
     fallbackReply = getLocalizedGeneralAdvice(
       detectedEmotion || "anxiety",
       targetLanguage,
       userMessage,
       citedShlokaIds,
-      isFollowUp
+      false
+    );
+  } else if (hasClinicalDistress) {
+    fallbackReply = generateEmotionalSharingReply(
+      userMessage,
+      targetLanguage,
+      detectedEmotion,
+      emotionDiagnostic.polyvagalState,
+      libraryRag?.condition,
+      activeStudy
     );
   } else {
     // Non-distress conversational fallback: Keep it brief, natural, and friendly
@@ -393,10 +480,12 @@ export async function generateTherapeuticResponse(
     }
   }
 
+  const shouldEnsureDiagnostic = isAcuteInitialPresentation && hasClinicalDistress;
+
   return {
-    reply: hasClinicalDistress ? ensureDiagnosticAndGita(fallbackReply, gitaBlock) : fallbackReply,
+    reply: shouldEnsureDiagnostic ? ensureDiagnosticAndGita(fallbackReply, gitaBlock) : fallbackReply,
     sources: hasClinicalDistress ? allSources : [],
-    providerUsed: hasClinicalDistress ? "Keyless Healer (Clinical Library Fallback)" : "Conversational Empathy Responder",
+    providerUsed: shouldEnsureDiagnostic ? "Keyless Healer (Clinical Library Fallback)" : "Conversational Empathy Responder",
     isCrisis: false,
     recommended_trataka: hasClinicalDistress ? syncTratakaWithReply(fallbackReply, defaultRecTrataka) : "bindu",
   };

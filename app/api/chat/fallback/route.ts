@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { generateTherapeuticResponse, type ConversationTurn } from '@/lib/services/therapist-engine';
 import { emotionClassifier, NeuroscienceDiagnosticResult } from '@/lib/knowledge/emotion-classifier';
 import {
   isGreetingMessage,
@@ -14,12 +15,7 @@ import {
 import { resolveSpokenLanguageWithGpsOverride } from '@/lib/i18n/language-catalog';
 import { findGitaWisdom, GITA_LIBRARY } from '@/lib/knowledge/gita-library';
 import { resolveTratakaPrescription } from '@/lib/knowledge/trataka-recommendations';
-import {
-  formatHumanTherapeuticMessage,
-  getLocalizedGeneralAdvice,
-  getLocalizedClinicalIntervention,
-  normalizeLanguageCode,
-} from '@/lib/i18n/clinical-localization';
+import { normalizeLanguageCode } from '@/lib/i18n/clinical-localization';
 import type { UserCognitiveProfile } from '@/lib/memory/cbt-memory-types';
 
 export const runtime = 'edge';
@@ -129,35 +125,20 @@ export async function POST(req: NextRequest) {
       libRes?.condition?.recommended_trataka_mode
     );
 
-    const languageNames: Record<string, string> = {
-      hi: 'Hindi (हिंदी)',
-      es: 'Spanish (Español)',
-      fr: 'French (Français)',
-      de: 'German (Deutsch)',
-      en: 'English',
-    };
+    const typedHistory: ConversationTurn[] = (history || []).map((h) => ({
+      role: (h.role === 'assistant' || h.role === 'system' ? h.role : 'user') as 'user' | 'assistant' | 'system',
+      text: h.text,
+      content: h.text,
+    }));
 
-    const _langDirective = targetLang !== 'en'
-      ? `\n\n### MANDATORY MULTILINGUAL CLINICAL DIRECTIVE:
-You MUST formulate your ENTIRE therapeutic response in ${languageNames[targetLang] || targetLang}.
-Strictly DO NOT mix English sentences, phrases, or raw English jargon into your response.`
-      : '';
-
-    const locIntervention = libRes?.condition ? getLocalizedClinicalIntervention(libRes.condition.id, targetLang, libRes.condition) : null;
-    const _conditionCbtWisdom = locIntervention ? `
-Matched Clinical Condition: ${locIntervention.conditionName}
-Authentic CBT Reframing: ${locIntervention.cbt_reframing}` : '';
-
-    // Infallible Deterministic Clinical Engine: Gita + Clinical CBT + Tratak (100% Keyless & Offline)
-    const isFollowUp = Boolean(history && history.length >= 2);
-    const fallbackReply = libRes
-      ? formatHumanTherapeuticMessage(libRes.condition, targetLang, cleanPrompt, citedGitaIds, isFollowUp)
-      : getLocalizedGeneralAdvice(effectiveDiag?.dimensionId || 'anxiety', targetLang, cleanPrompt, citedGitaIds, isFollowUp);
+    // Infallible Deterministic Clinical Engine: Dynamic Cognitive & Research Synthesis (100% Keyless & Offline)
+    const engineRes = await generateTherapeuticResponse(cleanPrompt, typedHistory, targetLang);
 
     return NextResponse.json({
-      reply: fallbackReply,
-      provider: 'keyless_healer_deterministic',
-      recommended_trataka: tratakItem.mode,
+      reply: engineRes.reply,
+      provider: engineRes.providerUsed || 'keyless_healer_deterministic',
+      recommended_trataka: engineRes.recommended_trataka || tratakItem.mode,
+      sources: engineRes.sources,
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown fallback error';
