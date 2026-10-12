@@ -425,7 +425,7 @@ export class NeuroscienceEmotionClassifier {
     const peakMarkers = ['extremely', 'unbearable', 'terrified', 'furious', 'overwhelmed', 'ecstatic', 'panic', 'intense', 'rage', 'deepest', 'unbearably', 'desperately', 'devastated'];
     const mildMarkers = ['a bit', 'slightly', 'kind of', 'mildly', 'little', 'somewhat', 'a touch', 'a little', 'sort of', 'maybe'];
 
-    if (peakMarkers.some((m) => lower.includes(m)) || (voiceState && (voiceState.state === 'acute_hyperarousal' || voiceState.jitterTremor > 0.22))) {
+    if (peakMarkers.some((m) => lower.includes(m)) || (voiceState && (voiceState.state === 'acute_hyperarousal' || (voiceState.jitterTremor ?? 0) > 0.22))) {
       intensity = 'peak';
     } else if (mildMarkers.some((m) => lower.includes(m))) {
       intensity = 'mild';

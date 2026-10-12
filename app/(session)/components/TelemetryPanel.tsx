@@ -2,7 +2,7 @@
 
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Activity, Sparkles, Volume2, VolumeX, X } from "lucide-react";
+import { Activity, Brain, Sparkles, Volume2, VolumeX, X } from "lucide-react";
 import type { PsychologicalTelemetry, TrigunaAnalysis } from "@/lib/api/healer-client";
 import type { VoiceAcousticState } from "@/lib/types/emotions";
 
@@ -260,6 +260,51 @@ export const TelemetryPanel: React.FC<TelemetryPanelProps> = React.memo(({
             {activeTriguna.recommendation}
           </p>
         )}
+      </div>
+
+      {/* Self-Learning Clinical Memory & RAG Card */}
+      <div className="p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-2.5">
+        <div className="flex items-center justify-between text-xs">
+          <span className="text-slate-400 font-medium flex items-center gap-1.5">
+            <Brain className="w-3.5 h-3.5 text-teal-400" />
+            <span>Clinical Memory & RAG</span>
+          </span>
+          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span>Self-Learning</span>
+          </span>
+        </div>
+
+        <div className="space-y-1.5 text-[11px]">
+          <div className="flex items-center justify-between text-slate-400">
+            <span>Vector Store:</span>
+            <span className="text-emerald-300 font-mono font-medium">ChromaDB Hybrid</span>
+          </div>
+          <div className="flex items-center justify-between text-slate-400">
+            <span>Clinical Ingestion:</span>
+            <span className="text-teal-300 font-mono font-medium">NIH PMC & Wiki</span>
+          </div>
+          <div className="flex items-center justify-between text-slate-400">
+            <span>Adaptive Overrides:</span>
+            <span className="text-amber-300 font-mono font-medium">Tier 1 Active</span>
+          </div>
+        </div>
+
+        <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px]">
+          <a
+            href="/analytics"
+            className="text-teal-400 hover:text-teal-300 font-medium transition-colors flex items-center gap-1"
+          >
+            <span>Learning Dashboard</span>
+            <span>→</span>
+          </a>
+          <a
+            href="/library?tab=conditions"
+            className="text-slate-400 hover:text-slate-200 transition-colors"
+          >
+            Living Library
+          </a>
+        </div>
       </div>
     </div>
   );

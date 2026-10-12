@@ -16,7 +16,20 @@
  * - Culturally attuned, localized empathetic clarification prompts.
  */
 
+import configOverrides from '../../learning/config-overrides.json' with { type: 'json' };
+
 export type ConfirmationIntent = 'yes' | 'no' | 'unclear';
+
+// Self-learning Tier 1 overrides dynamically expanded by auto-improver
+const LEARNED_AFFIRMATIONS: string[] = (configOverrides?.tier_1_overrides?.additive_affirmation_keywords as string[]) || [];
+const LEARNED_NEGATIONS: string[] = (configOverrides?.tier_1_overrides?.additive_negation_keywords as string[]) || [];
+
+export function getSelfLearningKeywords(): { affirmations: string[]; negations: string[] } {
+  return {
+    affirmations: [...LEARNED_AFFIRMATIONS],
+    negations: [...LEARNED_NEGATIONS],
+  };
+}
 
 export interface ParseIntentResult {
   intent: ConfirmationIntent;
@@ -54,8 +67,9 @@ export function logConfirmDebug(
 
 // ─── Phrase & Keyword Lexicons ───
 
-// Multi-word negative phrases checked first
+// Multi-word negative phrases checked first (including self-learning overrides)
 const NO_MULTI_WORD_PHRASES: string[] = [
+  ...LEARNED_NEGATIONS,
   // English
   "that's not right",
   "thats not right",
@@ -215,8 +229,9 @@ const NO_SINGLE_KEYWORDS: string[] = [
   'ਨਹੀਂ',
 ];
 
-// Multi-word affirmative phrases
+// Multi-word affirmative phrases (including self-learning overrides)
 const YES_MULTI_WORD_PHRASES: string[] = [
+  ...LEARNED_AFFIRMATIONS,
   // English
   "that's right",
   "thats right",

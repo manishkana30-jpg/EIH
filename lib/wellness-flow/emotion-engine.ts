@@ -14,6 +14,11 @@
 import { detectCrisis, type CrisisDetectionResult } from '../safety/crisis-detector.ts';
 import type { VoiceAcousticState } from '../types/emotions';
 import type { MoodProfile, ClarificationTurn, WellnessLanguage } from './types';
+import configOverrides from '../../learning/config-overrides.json' with { type: 'json' };
+
+// Self-learning Tier 1 overrides dynamically tuned from telemetry
+const LEARNED_MAX_CLARIFY_TURNS = Number(configOverrides?.tier_1_overrides?.max_clarify_turns ?? 3);
+const LEARNED_CLARIFY_THRESHOLD = Number(configOverrides?.tier_1_overrides?.clarify_confidence_threshold ?? 0.72);
 
 export interface NLPAnalysisResult {
   primary_emotion: string;
@@ -830,16 +835,16 @@ export class DefaultVoiceAnalysisProvider implements IVoiceAnalysisProvider {
       pitchHz: voiceState.pitchHz,
       speechRate: voiceState.speechRate,
       rmsEnergy: voiceState.rmsEnergy,
-      tremorDetected: voiceState.tremorDetected || voiceState.jitterTremor > 0.12,
+      tremorDetected: voiceState.tremorDetected || ((voiceState.jitterTremor ?? 0) > 0.12),
       vocalState: voiceState.state,
     };
 
     // Supporting emotional signals from acoustics
     if (voiceState.state === 'trembling_distress' || (voiceState.jitterTremor && voiceState.jitterTremor > 0.16)) {
       result.acousticEmotionBias = { emotion: 'sadness', weight: 0.25 };
-    } else if (voiceState.state === 'acute_hyperarousal' || (voiceState.pitchHz && voiceState.pitchHz > 240 && voiceState.rmsEnergy > 0.10)) {
+    } else if (voiceState.state === 'acute_hyperarousal' || (voiceState.pitchHz && voiceState.pitchHz > 240 && (voiceState.rmsEnergy ?? 0) > 0.10)) {
       result.acousticEmotionBias = { emotion: 'anxiety', weight: 0.25 };
-    } else if (voiceState.state === 'hypoarousal_depressed' || (voiceState.speechRate === 'hesitant_slow' && voiceState.rmsEnergy < 0.035)) {
+    } else if (voiceState.state === 'hypoarousal_depressed' || (voiceState.speechRate === 'hesitant_slow' && voiceState.rmsEnergy !== undefined && voiceState.rmsEnergy < 0.035)) {
       result.acousticEmotionBias = { emotion: 'low motivation', weight: 0.20 };
     }
 
@@ -1275,7 +1280,7 @@ export class EmotionEngine {
       identified_at: Date.now(),
     };
 
-    const shouldStopClarifying = turns.length >= 5 || newConfidence >= 0.75;
+    const shouldStopClarifying = turns.length >= LEARNED_MAX_CLARIFY_TURNS || newConfidence >= LEARNED_CLARIFY_THRESHOLD;
 
     return {
       refinedProfile,

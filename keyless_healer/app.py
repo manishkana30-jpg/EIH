@@ -916,7 +916,25 @@ async def chat_endpoint(payload: TherapyRequest, request: Request, background_ta
         else:
             target_locale = "en-US"
 
+        # Step A: Query persistent ChromaDB clinical memory if available
+        past_memory = ""
+        if self_learning_therapist:
+            try:
+                past_memory = self_learning_therapist.query_clinical_memory(clean_user_query, n_results=3)
+            except Exception as mem_err:
+                logger.warning(f"Self-learning memory query notice: {mem_err}")
+
         response = await partner.respond(clean_user_query, history=history_turns, locale=target_locale)
+
+        # Step B: Asynchronously update clinical memory in background
+        if self_learning_therapist and response.reply:
+            session_id = getattr(payload, "session_id", "default_user") or "default_user"
+            background_tasks.add_task(
+                self_learning_therapist.update_clinical_memory,
+                clean_user_query,
+                response.reply,
+                session_id,
+            )
 
         # Synthesize edge-tts neural voice matching target locale and detected script
         if re.search(r"[\u0900-\u097F]", response.reply):

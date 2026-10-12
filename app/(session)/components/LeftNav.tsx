@@ -2,6 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 import {
   Compass,
   Brain,
@@ -11,6 +12,8 @@ import {
   Check,
   Download,
   User,
+  BookOpen,
+  Sparkles,
 } from "lucide-react";
 import { LanguageSelector } from "./LanguageSelector";
 import type { LanguageItem } from "@/lib/i18n/language-catalog";
@@ -144,6 +147,34 @@ export const LeftNav: React.FC<LeftNavProps> = React.memo(({
               Zero-Log Privacy
             </span>
           </button>
+
+          <Link
+            href="/library"
+            className="flex items-center gap-3 w-full p-2.5 rounded-xl text-slate-400 hover:text-teal-300 hover:bg-slate-800/80 border border-transparent hover:border-teal-500/30 transition-all duration-300 group"
+            title="Living Clinical Library (Self-Learned Protocols & Research Papers)"
+          >
+            <BookOpen className="w-5 h-5 shrink-0 group-hover:scale-110 transition-transform text-teal-400" />
+            <span className="hidden md:inline text-xs font-medium tracking-wide">
+              Living Library
+            </span>
+            <span className="hidden md:inline text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-teal-950/80 text-teal-300 border border-teal-600/40 ml-auto">
+              30+ LEARNED
+            </span>
+          </Link>
+
+          <Link
+            href="/analytics"
+            className="flex items-center gap-3 w-full p-2.5 rounded-xl text-slate-400 hover:text-amber-300 hover:bg-slate-800/80 border border-transparent hover:border-amber-500/30 transition-all duration-300 group"
+            title="Self-Learning Engine Analytics & Continuous Improvement Dashboard"
+          >
+            <Sparkles className="w-5 h-5 shrink-0 group-hover:scale-110 transition-transform text-amber-400" />
+            <span className="hidden md:inline text-xs font-medium tracking-wide">
+              Self-Learning
+            </span>
+            <span className="hidden md:inline text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-950/80 text-amber-300 border border-amber-600/40 ml-auto">
+              AI ENGINE
+            </span>
+          </Link>
 
           {/* Divider for App Access & Utilities */}
           <div className="pt-2 pb-1">

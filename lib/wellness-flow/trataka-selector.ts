@@ -17,6 +17,14 @@
 
 import tratakaData from '../../data/wellness_flow/trataka_instructions.json' with { type: 'json' };
 import type { MoodProfile, TratakaVariantKey, TratakaVariantData, TratakaSelectionResult } from './types';
+import configOverrides from '../../learning/config-overrides.json' with { type: 'json' };
+
+export const LEARNED_TRATAKA_PREFERENCES: Record<string, string> =
+  (configOverrides?.tier_1_overrides?.preferred_trataka_modes as Record<string, string>) || {};
+
+export function getLearnedTratakaPreferences(): Record<string, string> {
+  return LEARNED_TRATAKA_PREFERENCES;
+}
 
 export type TimeOfDay = 'morning' | 'afternoon' | 'evening' | 'night';
 

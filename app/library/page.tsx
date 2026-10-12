@@ -8,6 +8,7 @@ import {
   PsychologyCondition,
   CLINICAL_BREATHWORK_PACERS,
   BreathCadence,
+  getAllConditions,
 } from "@/lib/knowledge/psychology-library-rag";
 import { GitaLibraryView } from "@/components/gita/GitaLibraryView";
 import { LivingLibraryView } from "@/components/library/LivingLibraryView";
@@ -39,15 +40,32 @@ function LibraryContent() {
   const [pacerCycleCount, setPacerCycleCount] = useState<number>(0);
   const [isPacerRunning, setIsPacerRunning] = useState<boolean>(true);
 
-  const categories = useMemo(() => {
-    const set = new Set(PSYCHOLOGY_LIBRARY.map((c) => c.category));
-    return ["all", ...Array.from(set)];
+  // Self-Learning & Clinical Conditions List
+  const [conditionsList, setConditionsList] = useState<PsychologyCondition[]>(() => getAllConditions());
+
+  useEffect(() => {
+    // Dynamically refresh conditions including any newly learned documents
+    setConditionsList(getAllConditions());
   }, []);
 
+  const categories = useMemo(() => {
+    const set = new Set(conditionsList.map((c) => c.category));
+    return ["all", "🌟 Self-Learned Protocols", ...Array.from(set)];
+  }, [conditionsList]);
+
   const filteredConditions = useMemo(() => {
-    return PSYCHOLOGY_LIBRARY.filter((condition) => {
+    return conditionsList.filter((condition) => {
+      const isLearnedDoc = Boolean(
+        (condition as any).source_url ||
+        condition.id.startsWith("learned_") ||
+        (condition as any).isLearnedDocument
+      );
+
       const matchesCategory =
-        selectedCategory === "all" || condition.category === selectedCategory;
+        selectedCategory === "all" ||
+        (selectedCategory === "🌟 Self-Learned Protocols"
+          ? isLearnedDoc
+          : condition.category === selectedCategory);
 
       const matchesTriguna =
         selectedTriguna === "all" ||
@@ -58,6 +76,7 @@ function LibraryContent() {
         !query ||
         condition.name.toLowerCase().includes(query) ||
         condition.category.toLowerCase().includes(query) ||
+        ((condition as any).query_trigger && (condition as any).query_trigger.toLowerCase().includes(query)) ||
         condition.core_symptoms.some((s) => s.toLowerCase().includes(query)) ||
         condition.cognitive_distortions.some((d) => d.toLowerCase().includes(query)) ||
         condition.solutions.cbt_reframing.toLowerCase().includes(query) ||
@@ -66,7 +85,7 @@ function LibraryContent() {
 
       return matchesCategory && matchesTriguna && matchesSearch;
     });
-  }, [searchQuery, selectedCategory, selectedTriguna]);
+  }, [conditionsList, searchQuery, selectedCategory, selectedTriguna]);
 
   const handleSetTab = (conditionId: string, tab: "cbt" | "somatic" | "pranayama" | "habit") => {
     setActiveTabMap((prev) => ({ ...prev, [conditionId]: tab }));
@@ -232,7 +251,7 @@ function LibraryContent() {
                   : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
               }`}
             >
-              🧠 Clinical Conditions & Breathwork (20 Conditions)
+              🧠 Clinical &amp; Self-Learned Conditions ({conditionsList.length} Protocols)
             </button>
             <button
               type="button"
@@ -266,10 +285,10 @@ function LibraryContent() {
                 Evidence-Based CBT, Polyvagal Theory & Sattvavajaya Chikitsa
               </div>
               <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
-                Clinical & Psychoeducational Library
+                Clinical &amp; Self-Learned Psychoeducational Library
               </h1>
               <p className="mt-2 text-base sm:text-lg text-slate-400 leading-relaxed">
-                Explore 20 peer-reviewed neuropsychological condition maps, cognitive trap reframings, interactive pranayama breathwork pacers, and somatic grounding anchors.
+                Explore {conditionsList.length} peer-reviewed neuropsychological condition maps and autonomously learned protocols from NCBI PubMed Central and Wikipedia, with cognitive trap reframings, interactive pranayama breathwork pacers, and somatic grounding anchors.
               </p>
             </div>
 
@@ -287,7 +306,7 @@ function LibraryContent() {
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search 20 conditions (e.g., anxiety, ghabrahat, ocd, burnout, chronic pain)..."
+                    placeholder={`Search ${conditionsList.length} conditions (e.g., anxiety, ghabrahat, ocd, burnout, learned protocols)...`}
                     className="w-full pl-10 pr-4 py-3 bg-slate-900/80 border border-slate-800 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500/50 transition-all text-sm shadow-inner"
                   />
                   {searchQuery && (
@@ -322,6 +341,7 @@ function LibraryContent() {
               <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400 pt-1">
                 <span className="font-semibold text-slate-500 uppercase tracking-wider text-[10px]">Quick Search:</span>
                 {[
+                  { label: "🌟 Self-Learned", term: "learned" },
                   { label: "GAD & Worry", term: "worry" },
                   { label: "Intrusive Thoughts (OCD)", term: "intrusive" },
                   { label: "Burnout", term: "burnout" },
@@ -373,6 +393,26 @@ function LibraryContent() {
                       >
                         {/* Card Header */}
                         <div className="p-6 pb-4 border-b border-slate-800/60 bg-gradient-to-b from-slate-900/90 to-slate-900/40">
+                          {Boolean((condition as any).source_url || condition.id.startsWith("learned_") || (condition as any).isLearnedDocument) && (
+                            <div className="mb-3 px-3 py-1.5 rounded-xl bg-emerald-950/60 border border-emerald-500/30 flex flex-wrap items-center justify-between gap-2 text-xs">
+                              <div className="flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                                <span className="text-emerald-300 font-semibold font-mono text-[11px]">
+                                  🌟 Autonomously Learned Protocol
+                                </span>
+                              </div>
+                              {(condition as any).source_url && (
+                                <a
+                                  href={(condition as any).source_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-emerald-400 hover:text-emerald-200 underline font-mono text-[10px] flex items-center gap-1"
+                                >
+                                  View Evidence Paper ↗
+                                </a>
+                              )}
+                            </div>
+                          )}
                           <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                             <span className="text-[11px] font-semibold uppercase tracking-wider text-teal-400 bg-teal-950/80 px-2.5 py-0.5 rounded-full border border-teal-800/40">
                               {condition.category}
