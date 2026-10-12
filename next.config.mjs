@@ -18,9 +18,12 @@ const nextConfig = {
       exclude: ['error', 'warn'],
     } : false,
   },
+  generateBuildId: async () => {
+    return process.env.VERCEL_GIT_COMMIT_SHA || `${Date.now()}`;
+  },
   env: {
     NEXT_PUBLIC_BUILD_TIME: process.env.VERCEL_GIT_COMMIT_SHA || String(Date.now()),
-    NEXT_PUBLIC_APP_VERSION: '1.2.1',
+    NEXT_PUBLIC_APP_VERSION: '1.2.2',
   },
   images: isExport
     ? { unoptimized: true }
@@ -73,6 +76,32 @@ const nextConfig = {
       ],
     },
     {
+      source: '/sw.js',
+      headers: [
+        {
+          key: 'Cache-Control',
+          value: 'no-cache, no-store, must-revalidate, max-age=0',
+        },
+        {
+          key: 'Pragma',
+          value: 'no-cache',
+        },
+        {
+          key: 'Expires',
+          value: '0',
+        },
+      ],
+    },
+    {
+      source: '/manifest.webmanifest',
+      headers: [
+        {
+          key: 'Cache-Control',
+          value: 'no-cache, no-store, must-revalidate, max-age=0',
+        },
+      ],
+    },
+    {
       source: '/static/(.*)',
       headers: [
         {
@@ -82,7 +111,7 @@ const nextConfig = {
       ],
     },
     {
-      source: '/(.*).(jpg|jpeg|png|svg|webp|ico|css|js|woff|woff2)',
+      source: '/_next/static/(.*)',
       headers: [
         {
           key: 'Cache-Control',
@@ -108,7 +137,15 @@ const nextConfig = {
       headers: [
         {
           key: 'Cache-Control',
-          value: 'no-store, max-age=0',
+          value: 'no-store, no-cache, must-revalidate, max-age=0',
+        },
+        {
+          key: 'Pragma',
+          value: 'no-cache',
+        },
+        {
+          key: 'Expires',
+          value: '0',
         },
       ],
     },

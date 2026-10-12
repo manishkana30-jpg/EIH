@@ -3,6 +3,7 @@ import { Inter, Outfit } from 'next/font/google';
 import Link from 'next/link';
 import { Brain } from 'lucide-react';
 import { GlobalFooter } from '@/components/navigation/GlobalFooter';
+import { AppVersionStatus } from '@/components/layout/AppVersionStatus';
 import './globals.css';
 
 export const dynamic = 'force-dynamic';
@@ -149,11 +150,14 @@ export default function RootLayout({
             </nav>
 
             <div className="flex items-center gap-2.5">
+              {/* Live Webapp Version & Update Indicator */}
+              <AppVersionStatus />
+
               <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-950/40 border border-emerald-500/30 text-emerald-400 text-[10px] font-mono">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
                 <span>Ventral Vagal (Regulated)</span>
               </div>
-              <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-400 text-[10px] font-mono" title="Zero-Knowledge Client-Side AES-GCM-256 Vault">
+              <div className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-400 text-[10px] font-mono" title="Zero-Knowledge Client-Side AES-GCM-256 Vault">
                 <span>🔒 Vault Active</span>
               </div>
             </div>
@@ -174,7 +178,7 @@ export default function RootLayout({
               if ('caches' in window) {
                 caches.keys().then(function(names) {
                   for (var i = 0; i < names.length; i++) {
-                    if (names[i] !== 'eih-pwa-v5' && names[i] !== 'eih-static-v5' && names[i] !== 'eih-fonts-v1') {
+                    if (names[i] !== 'eih-pwa-v6' && names[i] !== 'eih-static-v6' && names[i] !== 'eih-fonts-v1') {
                       caches.delete(names[i]);
                     }
                   }
@@ -184,11 +188,9 @@ export default function RootLayout({
                 var refreshing = false;
                 navigator.serviceWorker.addEventListener('controllerchange', function() {
                   if (!refreshing) {
-                    // Do not reload in localhost/development to avoid disrupting test runs and active sessions
                     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
                       return;
                     }
-                    // Only reload silently if tab is hidden in background
                     if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
                       refreshing = true;
                       window.location.reload();
@@ -199,15 +201,18 @@ export default function RootLayout({
                   navigator.serviceWorker.register('/sw.js').then(
                     function(registration) {
                       registration.update();
-                      // Register periodic background sync (updates app when closed/in background)
+                      // Register periodic background sync
                       if ('periodicSync' in registration) {
                         registration.periodicSync.register('eih-periodic-update', {
                           minInterval: 15 * 60 * 1000
                         }).catch(function() {});
                       }
                       // Check for updates periodically
-                      setInterval(function() { registration.update(); }, 60000);
-                      // If a worker is waiting, trigger immediate takeover
+                      setInterval(function() { registration.update(); }, 45000);
+                      // Notify when new worker is installing
+                      registration.addEventListener('updatefound', function() {
+                        window.dispatchEvent(new CustomEvent('eih:updatefound', { detail: { registration: registration } }));
+                      });
                       if (registration.waiting) {
                         registration.waiting.postMessage({ type: 'SKIP_WAITING' });
                       }

@@ -30,6 +30,49 @@
       ]
     },
     {
+      "source": "/sw.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate, max-age=0"
+        },
+        {
+          "key": "Pragma",
+          "value": "no-cache"
+        },
+        {
+          "key": "Expires",
+          "value": "0"
+        }
+      ]
+    },
+    {
+      "source": "/manifest.webmanifest",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate, max-age=0"
+        }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, no-cache, must-revalidate, max-age=0"
+        },
+        {
+          "key": "Pragma",
+          "value": "no-cache"
+        },
+        {
+          "key": "Expires",
+          "value": "0"
+        }
+      ]
+    },
+    {
       "source": "/_next/static/(.*)",
       "headers": [
         {
@@ -39,7 +82,7 @@
       ]
     },
     {
-      "source": "/(.*).(jpg|jpeg|png|svg|webp|avif|ico|css|js|woff|woff2|ttf)",
+      "source": "/static/(.*)",
       "headers": [
         {
           "key": "Cache-Control",
@@ -57,20 +100,11 @@
       ]
     },
     {
-      "source": "/((?!api|_next).*)",
+      "source": "/((?!api|_next|sw.js).*)",
       "headers": [
         {
           "key": "Cache-Control",
-          "value": "public, s-maxage=3600, stale-while-revalidate=86400"
-        }
-      ]
-    },
-    {
-      "source": "/api/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store, max-age=0"
+          "value": "no-cache, no-store, must-revalidate, max-age=0"
         }
       ]
     }

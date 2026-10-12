@@ -99,7 +99,7 @@ export function AutoUpdateBanner() {
     }
   };
 
-  const triggerInstantUpdate = () => {
+  const triggerInstantUpdate = async () => {
     setIsUpdating(true);
     if (countdownIntervalRef.current) {
       clearInterval(countdownIntervalRef.current);
@@ -110,15 +110,28 @@ export function AutoUpdateBanner() {
         for (const reg of registrations) {
           if (reg.waiting) {
             reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+            reg.waiting.postMessage({ type: 'PURGE_AND_UPDATE' });
+          }
+          if (reg.active) {
+            reg.active.postMessage({ type: 'PURGE_AND_UPDATE' });
           }
         }
       });
     }
 
+    // Purge browser caches to prevent stale bundles
+    if ('caches' in window) {
+      try {
+        const keys = await window.caches.keys();
+        await Promise.all(keys.map((k) => window.caches.delete(k)));
+      } catch (_) {}
+    }
+
     // Brief delay to let animations complete and caches bust
     setTimeout(() => {
-      window.location.reload();
-    }, 600);
+      const path = window.location.pathname;
+      window.location.replace(`${path}?_upd=${Date.now()}`);
+    }, 400);
   };
 
   // Countdown auto-updater when update is found
@@ -210,14 +223,26 @@ export function AutoUpdateBanner() {
                 </p>
               </div>
 
-              <button
-                onClick={triggerInstantUpdate}
-                disabled={isUpdating}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-semibold text-xs transition-all active:scale-95 shadow-md shadow-teal-500/30 shrink-0"
-              >
-                <RefreshCw className={`w-3.5 h-3.5 ${isUpdating ? 'animate-spin' : ''}`} />
-                <span>{isUpdating ? 'Updating...' : 'Update Now'}</span>
-              </button>
+              <div className="flex items-center gap-1.5 shrink-0">
+                <button
+                  onClick={triggerInstantUpdate}
+                  disabled={isUpdating}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-semibold text-xs transition-all active:scale-95 shadow-md shadow-teal-500/30"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${isUpdating ? 'animate-spin' : ''}`} />
+                  <span>{isUpdating ? 'Updating...' : 'Update Now'}</span>
+                </button>
+                <button
+                  onClick={() => {
+                    if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
+                    setUpdateAvailable(false);
+                  }}
+                  className="px-2 py-1.5 rounded-xl hover:bg-slate-800 text-slate-400 hover:text-slate-200 text-xs transition-colors"
+                  title="Dismiss auto-update countdown"
+                >
+                  Later
+                </button>
+              </div>
             </div>
           </motion.div>
         )}

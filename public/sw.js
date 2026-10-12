@@ -6,8 +6,8 @@
  *   - Network First: API routes
  */
 
-const CACHE_NAME = 'eih-pwa-v5';
-const STATIC_CACHE = 'eih-static-v5';
+const CACHE_NAME = 'eih-pwa-v6';
+const STATIC_CACHE = 'eih-static-v6';
 const FONT_CACHE = 'eih-fonts-v1';
 
 const PRECACHE_URLS = [
@@ -30,7 +30,16 @@ self.addEventListener('install', (event) => {
 
 /* ─── Message: Support programmatic instant activation from app ─── */
 self.addEventListener('message', (event) => {
-  if (event.data && (event.data.type === 'SKIP_WAITING' || event.data === 'skipWaiting')) {
+  if (event.data && (
+    event.data.type === 'SKIP_WAITING' || 
+    event.data === 'skipWaiting' || 
+    event.data.type === 'PURGE_AND_UPDATE'
+  )) {
+    if (event.data.type === 'PURGE_AND_UPDATE') {
+      caches.keys().then((names) => {
+        return Promise.all(names.map((name) => caches.delete(name)));
+      });
+    }
     self.skipWaiting();
   }
 });
@@ -158,7 +167,7 @@ self.addEventListener('fetch', (event) => {
 
   if (isNavigation) {
     event.respondWith(
-      fetch(event.request)
+      fetch(event.request, { cache: 'no-store' })
         .then((response) => {
           if (response.status === 200) {
             const clone = response.clone();
