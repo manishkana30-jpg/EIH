@@ -45,7 +45,7 @@ export type SupportedLocaleKey = 'hi' | 'es' | 'fr' | 'de' | 'en';
 export function normalizeLanguageCode(code?: string): SupportedLocaleKey {
   if (!code) return 'en';
   const c = code.toLowerCase().trim().split('-')[0].split('_')[0];
-  if (c === 'hi' || c === 'hindi') return 'hi';
+  if (['hi', 'hindi', 'mr', 'gu', 'bn', 'ta', 'te', 'kn', 'ml', 'pa', 'ur', 'or', 'as', 'bho', 'ne'].includes(c)) return 'hi';
   if (c === 'es' || c === 'spanish') return 'es';
   if (c === 'fr' || c === 'french') return 'fr';
   if (c === 'de' || c === 'german') return 'de';

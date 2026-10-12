@@ -9,8 +9,8 @@ import {
   isRepetitionComplaintMessage,
   isExplicitSolutionOrTherapyRequest,
   getLocalizedRepetitionSolutionResponse,
-  GREETING_RESPONSE,
-  TEST_RESPONSE,
+  getLocalizedGreetingResponse,
+  getLocalizedTestResponse,
   getLocalizedIncompleteUtteranceResponse,
 } from "../knowledge/psychology-library-rag.ts";
 import { resolveSpokenLanguageWithGpsOverride } from "../i18n/language-catalog.ts";
@@ -141,8 +141,18 @@ export async function generateTherapeuticResponse(
     const hotlineList = (crisis.recommendedHotlines || [])
       .map((h) => `• ${h.name} (${h.region}): ${h.phone}`)
       .join("\n");
+    let crisisMsg = `I hear how much pain you are carrying right now, and your safety is the absolute priority. Please connect immediately with confidential, professional support:\n\n${hotlineList}\n\nYou do not have to carry this alone.`;
+    if (normLang === 'hi') {
+      crisisMsg = `मैं समझ सकता हूँ कि आप इस समय अत्यधिक दर्द और मानसिक कष्ट में हैं। आपकी सुरक्षा और जीवन सबसे महत्वपूर्ण है। कृपया तुरंत इन निःशुल्क और पूरी तरह गोपनीय हेल्पलाइन नंबरों पर संपर्क करें:\n\n${hotlineList}\n\nआपको यह दर्द अकेले सहने की आवश्यकता नहीं है, मदद हमेशा उपलब्ध है।`;
+    } else if (normLang === 'es') {
+      crisisMsg = `Siento mucho el dolor que estás atravesando. Tu seguridad y bienestar son la máxima prioridad. Por favor comunícate de inmediato con estas líneas de ayuda confidenciales:\n\n${hotlineList}\n\nNo tienes que pasar por esto a solas.`;
+    } else if (normLang === 'fr') {
+      crisisMsg = `J'entends la souffrance que vous traversez en ce moment. Votre sécurité est la priorité absolue. Veuillez contacter immédiatement ces lignes d'écoute confidentielles et gratuites :\n\n${hotlineList}\n\nVous n'avez pas à porter cela seul.`;
+    } else if (normLang === 'de') {
+      crisisMsg = `Ich nehme wahr, wie viel Schmerz Sie gerade tragen. Ihre Sicherheit hat oberste Priorität. Bitte wenden Sie sich umgehend an diese kostenlosen und vertraulichen Notrufnummern:\n\n${hotlineList}\n\nSie müssen diesen Weg nicht alleine gehen.`;
+    }
     return {
-      reply: `I hear how much pain you are carrying right now, and your safety is the absolute priority. Please connect immediately with confidential, professional support:\n\n${hotlineList}\n\nYou do not have to carry this alone.`,
+      reply: crisisMsg,
       sources: [],
       providerUsed: "Deterministic Crisis Safety Interceptor",
       isCrisis: true
@@ -152,7 +162,7 @@ export async function generateTherapeuticResponse(
   // 1b. Conversational Greeting & Mic Test Fast-Path (Single sentence responses, no clinical trataka)
   if (isTestMessage(userMessage)) {
     return {
-      reply: TEST_RESPONSE,
+      reply: getLocalizedTestResponse(userMessage, normLang, spokenResolution.speechLocale),
       sources: [],
       providerUsed: "Audio Verification Protocol",
       isCrisis: false,
@@ -161,7 +171,7 @@ export async function generateTherapeuticResponse(
 
   if (isGreetingMessage(userMessage)) {
     return {
-      reply: GREETING_RESPONSE,
+      reply: getLocalizedGreetingResponse(userMessage, normLang, spokenResolution.speechLocale),
       sources: [],
       providerUsed: "Conversational Empathy Responder",
       isCrisis: false,
@@ -286,24 +296,6 @@ export async function generateTherapeuticResponse(
   const isInquiry = isInformationalOrInquiry(userMessage);
   const activeStudy = getResearchedAdviceForEmotion(detectedEmotion, emotionDiagnostic.polyvagalState);
 
-  // If user is asking an informational, scientific, or psychoeducational question:
-  if (isInquiry && !isSolutionRequest) {
-    const inquiryReply = generateInquiryResponse(
-      userMessage,
-      normLang,
-      detectedEmotion,
-      libraryRag?.condition,
-      activeStudy
-    );
-    return {
-      reply: inquiryReply,
-      sources: allSources.slice(0, 2),
-      providerUsed: "Neuroscience & Cognitive Science Inquirer",
-      isCrisis: false,
-      recommended_trataka: "bindu",
-    };
-  }
-
   const syncTratakaWithReply = (replyText?: string, fallbackMode?: string): string => {
     return detectTratakaModeFromText(replyText) || normalizeTratakaMode(fallbackMode || defaultRecTrataka);
   };
@@ -326,6 +318,24 @@ export async function generateTherapeuticResponse(
       providerUsed: "Dynamic Research-Grounded Therapist",
       isCrisis: false,
       recommended_trataka: syncTratakaWithReply(multiTurnReply, defaultRecTrataka),
+    };
+  }
+
+  // If user is asking an initial informational, scientific, or psychoeducational question:
+  if (isInquiry && !isSolutionRequest) {
+    const inquiryReply = generateInquiryResponse(
+      userMessage,
+      normLang,
+      detectedEmotion,
+      libraryRag?.condition,
+      activeStudy
+    );
+    return {
+      reply: inquiryReply,
+      sources: allSources.slice(0, 2),
+      providerUsed: "Neuroscience & Cognitive Science Inquirer",
+      isCrisis: false,
+      recommended_trataka: "bindu",
     };
   }
 

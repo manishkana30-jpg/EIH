@@ -2,12 +2,12 @@
 /**
  * Conversational Research & Cognitive Reasoning Engine
  * 
- * Dynamically synthesizes intelligent, research-grounded, multi-turn clinical dialogue:
+ * Synthesizes intelligent, research-grounded, multi-turn clinical dialogue
+ * translated into the user's regional language with layman understanding and actionable solutions:
  * 1. Breaks out of rigid single-type 4-card template loops.
- * 2. Grounds answers in verified neuroscience, DSM-5 psychology library, and peer-reviewed studies
- *    (mammalian dive reflex, vagus nerve CN X, contralateral breathing, DMN inhibition, etc.).
- * 3. Distinguishes inquiries, follow-up conversation turns, emotional sharing, and loop complaints.
- * 4. Supports multilingual spoken delivery (en, hi, es, fr, de) with pure natural language.
+ * 2. Communicates in simple, warm, everyday layman terms (no dense academic or medical jargon).
+ * 3. Provides clear, practical, step-by-step solutions for immediate physical and mental relief.
+ * 4. 100% pure localization in the user's regional language (Hindi, Spanish, French, German, English).
  */
 
 import {
@@ -15,6 +15,7 @@ import {
   type AuthenticatedStudy,
 } from "../knowledge/authenticated-research-bank.ts";
 import { type PsychologyCondition } from "../knowledge/psychology-library-rag.ts";
+import { getLocalizedClinicalIntervention } from "../i18n/clinical-localization.ts";
 
 export interface ConversationTurn {
   role?: "user" | "assistant" | "system";
@@ -24,8 +25,8 @@ export interface ConversationTurn {
 }
 
 /**
- * Detects meta-conversational user complaints specifically targeting the
- * repetitive 4-card template loop, single type of solution, or robotic scripting.
+ * Detects meta-conversational user complaints specifically targeting
+ * repetitive templates, lack of translation/regional language, dense jargon, or missing solutions.
  */
 export function isTemplateLoopComplaint(userMessage: string): boolean {
   if (!userMessage || !userMessage.trim()) return false;
@@ -64,6 +65,16 @@ export function isTemplateLoopComplaint(userMessage: string): boolean {
     "stop giving the same message",
     "why are you repeating the same",
     "why do you keep repeating",
+    "not translated",
+    "regional language",
+    "layman understanding",
+    "layman",
+    "with solutions",
+    "needs solutions",
+    "saral bhasha",
+    "aasan bhasha",
+    "saral shabdon",
+    "aasan shabdon",
     "ek hi template",
     "ek hi type ka message",
     "wahi template",
@@ -76,54 +87,61 @@ export function isTemplateLoopComplaint(userMessage: string): boolean {
     "लूप में फंसा",
     "लूप में है",
     "दोहराव बंद करो",
+    "सरल भाषा",
+    "आसान भाषा",
+    "आम बोलचाल",
+    "क्षेत्रीय भाषा",
+    "आम समझ",
+    "समाधान बताओ",
+    "समाधान चाहिए",
   ];
 
   return loopPatterns.some((pattern) => lower.includes(pattern));
 }
 
 /**
- * Returns an authentic, compassionate loop-breaking response that directly
- * dismantles the formulaic template and invites organic, research-grounded dialogue.
+ * Returns an authentic, compassionate loop-breaking response in clear, everyday layman language
+ * that removes robotic scripting and invites organic, solution-driven dialogue.
  */
 export function getLoopBreakingResponse(userMessage: string, lang: string = "en"): string {
   const norm = (lang || "en").toLowerCase().slice(0, 2);
 
   if (norm === "hi") {
     return (
-      "मैं आपकी बात पूरी तरह समझ रहा हूँ और बार-बार एक ही तरह का टेम्पलेट या बंधा-बंधाया समाधान दोहराने के लिए क्षमा चाहता हूँ। आपकी बात 100% सही है—हर व्यक्ति, हर परिस्थिति और हर भावना अलग होती है, इसलिए किसी भी बातचीत में एक ही घिसा-पिटा प्रारूप थोपना पूरी तरह व्यर्थ है।\n\n" +
-      "मैंने इस टेम्पलेट लूप को पूरी तरह हटा दिया है। अब हम बिना किसी रटे-रटाए कार्ड के, आपके द्वारा साझा की गई बात को ध्यान से समझकर, वास्तविक शोध और न्यूरो-साइंस के आधार पर सीधे बातचीत करेंगे।\n\n" +
-      "आप इस समय किस विशेष परिस्थिति या भावना के बारे में सोच रहे हैं? मुझे सीधे बताइए, मैं पूरी एकाग्रता और शोध-परक दृष्टि से आपके साथ हूँ।"
+      "मैं आपकी बात बिल्कुल समझ रहा हूँ। बार-बार एक ही जैसा या भारी-भरकम संदेश मिलने से किसी को भी चिढ़ हो सकती है, इसके लिए मैं दिल से माफी चाहता हूँ। आप बिल्कुल सही कह रहे हैं—बातचीत आसान, अपनी भाषा में और सीधे काम के समाधान देने वाली होनी चाहिए, न कि कठिन या रटी-रटाई।\n\n" +
+      "मैंने उस सारे दोहराव और कठिन शब्दों को हटा दिया है। अब हम बिल्कुल सरल, अपनी आम बोलचाल की भाषा में बात करेंगे और सीधे आपकी समस्या का वास्तविक समाधान निकालेंगे।\n\n" +
+      "आप मुझे सीधे बताइए कि इस समय क्या बात आपको सबसे ज्यादा परेशान कर रही है? मैं आसान भाषा में समझने और तुरंत राहत पाने का सही उपाय बताने के लिए आपके साथ हूँ।"
     );
   }
 
   if (norm === "es") {
     return (
-      "Te escucho con total claridad y te pido disculpas por haber caído en un bucle de plantillas repetitivas. Tienes toda la razón: dar exactamente el mismo tipo de mensaje o solución rígida para cualquier emoción ignora por completo lo que realmente estás viviendo.\n\n" +
-      "He desactivado por completo ese formato repetitivo. A partir de ahora, analizaremos con rigor científico y empatía real lo que me compartas, respondiendo de manera directa y personalizada sin esquemas rígidos.\n\n" +
-      "¿Qué situación o inquietud específica te gustaría que analicemos y resolvamos juntos en este momento?"
+      "Te escucho con total claridad y te pido sinceras disculpas por haber caído en plantillas repetitivas o técnicas. Tienes toda la razón: la conversación debe ser en un lenguaje sencillo, cercano y con soluciones prácticas que realmente te sirvan.\n\n" +
+      "He desactivado por completo ese formato rígido. A partir de ahora hablaremos de forma natural, en tu propio idioma y enfocándonos directamente en resolver lo que te preocupa.\n\n" +
+      "¿Qué situación o problema específico te gustaría que resolvamos juntos ahora mismo?"
     );
   }
 
   if (norm === "fr") {
     return (
-      "Je vous entends parfaitement et je vous présente mes excuses pour avoir répété des modèles rigides et préformatés. Vous avez entièrement raison : imposer un schéma unique pour toutes les émotions n'a aucun sens clinique.\n\n" +
-      "J'ai supprimé ces boucles de modèles. Désormais, nous réfléchissons et analysons directement ce que vous exprimez, avec des fondements neuroscientifiques et une écoute sur mesure, sans réponses stéréotypées.\n\n" +
-      "Quel sujet ou sentiment précis souhaitez-vous que nous explorions ensemble en ce moment ?"
+      "Je vous entends parfaitement et je vous présente mes excuses pour avoir utilisé des réponses stéréotypées ou trop techniques. Vous avez entièrement raison : vous avez besoin d'un échange clair, accessible et de solutions concrètes.\n\n" +
+      "J'ai supprimé ces modèles répétitifs. Nous échangeons désormais avec des mots simples, naturels, et des conseils pratiques immédiatement applicables.\n\n" +
+      "Quelle situation ou préoccupation précise souhaitez-vous que nous abordions et résolvions ensemble ?"
     );
   }
 
   if (norm === "de") {
     return (
-      "Ich verstehe Sie vollkommen und entschuldige mich dafür, in starre, wiederholte Vorlagen verfallen zu sein. Sie haben völlig recht: Für jede Emotion dieselbe Schablone auszugeben, verfehlt Ihre tatsächliche Situation.\n\n" +
-      "Ich habe diese Vorlagenschleife vollständig aufgelöst. Ab jetzt werde ich auf Ihre Eingaben mit fundierter kognitiver Forschung und echtem Mitgefühl direkt antworten, ohne automatisierte Kartenschemata.\n\n" +
-      "Welches konkrete Thema oder Gefühl möchten Sie gerade mit mir besprechen?"
+      "Ich verstehe Sie vollkommen und entschuldige mich dafür, in starre Vorlagen oder zu viel Fachsprache verfallen zu sein. Sie haben völlig recht: Ein Gespräch muss verständlich sein und echte, alltagstaugliche Lösungen bieten.\n\n" +
+      "Ich habe diese Wiederholungen beendet. Wir sprechen ab jetzt in einfacher, klarer Sprache und konzentrieren uns direkt auf praktische Schritte zur Erleichterung.\n\n" +
+      "Welches konkrete Problem möchten Sie gerade mit mir besprechen und lösen?"
     );
   }
 
   return (
-    "I hear you completely, and I sincerely apologize for falling into repetitive, rigid templates. You are entirely right: delivering the exact same scripted card for every emotional nuance misses what you are actually going through.\n\n" +
-    "I have broken and removed that template loop. From here on, I will think, research, and respond directly to what you share, using cognitive science and genuine therapeutic presence rather than throwing formulaic messages at you.\n\n" +
-    "What is specifically on your mind right now that you would like us to think through and explore together?"
+    "I hear you completely, and I sincerely apologize for falling into repetitive templates and heavy technical jargon. You are entirely right: you need conversation in everyday layman language with real, actionable solutions.\n\n" +
+    "I have broken and removed that rigid loop. From here on, we will speak naturally and simply, focusing on practical steps that genuinely help resolve what you are dealing with.\n\n" +
+    "What specific challenge or situation is weighing on you right now that you would like us to solve together?"
   );
 }
 
@@ -153,7 +171,7 @@ export function isInformationalOrInquiry(userMessage: string): boolean {
 }
 
 /**
- * Synthesizes a research-backed, articulate answer to an informational or scientific inquiry.
+ * Synthesizes an articulate answer in simple layman terms with practical solutions.
  */
 export function generateInquiryResponse(
   userMessage: string,
@@ -164,29 +182,32 @@ export function generateInquiryResponse(
 ): string {
   const norm = (lang || "en").toLowerCase().slice(0, 2);
   const clean = userMessage.toLowerCase();
-  const activeStudy = study || getResearchedAdviceForEmotion(detectedEmotion || "calmness");
+  const _activeStudy = study || getResearchedAdviceForEmotion(detectedEmotion || "calmness");
 
   // Specific query: "How does the sound meditation work?" or sound acoustics
   if (clean.includes("sound meditation") || clean.includes("sound") || clean.includes("ध्वनि") || clean.includes("आवाज़")) {
     if (norm === "hi") {
       return (
-        "ध्वनि ध्यान (Sound Meditation) न्यूरो-ऑकस्टिक अनुनाद के माध्यम से कार्य करता है। जब हम विशिष्ट हार्मोनिक ध्वनियों और भ्रामरी प्राणायाम की गूंज सुनते हैं, तो यह क्रेनियल नर्व X (वेगस तंत्रिका) को सक्रिय करता है।\n\n" +
-        "यह तंत्रिका संकेत हृदय गति को धीमा करता है, सहानुभूति तंत्र (Fight-or-Flight) को शांत करता है और मस्तिष्क में अल्फा-तरंगों को बढ़ाकर त्वरित मानसिक स्थिरता प्रदान करता है।"
+        "ध्वनि ध्यान (साउंड मेडिटेशन) का सिद्धांत बहुत सरल और असरदार है: जब हम धीमी, मधुर ध्वनियां या भ्रामरी (गुनगुनाने वाली) आवाज़ सुनते हैं, तो हमारे दिमाग का तनाव और डर वाला हिस्सा तुरंत शांत होने लगता है।\n\n" +
+        "• इसे करने का आसान तरीका (समाधान): शांत बैठें, आंखें बंद करें, गहरी सांस लें और छोड़ते हुए भौंरे की तरह 'हूँ...' की आवाज़ निकालें। इससे सिर का भारीपन और मन की बेचैनी तुरंत शांत हो जाती है।"
       );
     }
     if (norm === "es") {
       return (
-        "La meditación sonora actúa mediante resonancia neuroacústica. Las frecuencias armónicas y la respiración resonante estimulan el nervio vago (par craneal X), disminuyendo la activación simpática y aumentando las ondas cerebrales alfa para restaurar la calma."
+        "La meditación con sonido calma la mente mediante frecuencias armónicas y respiración suave. Al escuchar tonos profundos, el cuerpo reduce el estado de alerta y el corazón recupera un ritmo tranquilo.\n\n" +
+        "• Solución práctica: Siéntate en silencio, inhala hondo por la nariz y exhala con un zumbido suave en los labios durante 2 minutos para aliviar la tensión."
       );
     }
     if (norm === "fr") {
       return (
-        "La méditation sonore fonctionne par résonance neuro-acoustique. Les vibrations harmoniques stimulent le nerf vague dans le tronc cérébral, ralentissant le rythme cardiaque et favorisant les ondes alpha pour un apaisement profond."
+        "La méditation par le son apaise naturellement l'esprit grâce aux fréquences harmoniques. Ces vibrations indiquent à votre corps qu'il est en sécurité, ralentissant le cœur et relâchant les tensions nerveuses.\n\n" +
+        "• Solution pratique : Asseyez-vous au calme, inspirez profondément et expirez en émettant un léger bourdonnement continu pour dissiper l'agitation mentale."
       );
     }
     if (norm === "de") {
       return (
-        "Klangmeditation wirkt über neuroakustische Resonanz. Harmonische Frequenzen und Resonanzatmung stimulieren den Vagusnerv, senken die sympathische Erregung und fördern entspannte Alpha-Wellen im Gehirn."
+        "Klangmeditation beruhigt den Geist durch sanfte, harmonische Töne. Die akustischen Schwingungen senken die innere Anspannung und verlangsamen den Herzschlag ganz natürlich.\n\n" +
+        "• Praktische Lösung: Setzen Sie sich bequem hin, atmen Sie tief ein und summen Sie beim Ausatmen sanft mit geschlossenen Lippen, um den Kopf frei zu bekommen."
       );
     }
     return (
@@ -204,22 +225,22 @@ export function generateInquiryResponse(
   ) {
     if (norm === "hi") {
       return (
-        "मैं एक वैज्ञानिक और नैदानिक मार्गदर्शक हूँ। हम संज्ञानात्मक व्यवहार चिकित्सा (CBT), स्वायत्त तंत्रिका विज्ञान, भगवद्गीता के सार्वभौमिक विवेक और त्राटक ध्यान के समन्वय से मानसिक तनाव, चिंता, अनिद्रा और भावनात्मक उलझनों का समाधान करते हैं। आप किस विशेष विषय पर बात करना चाहते हैं?"
+        "नमस्ते! मैं आपका मानसिक और भावनात्मक साथी हूँ। हम जीवन के तनाव, चिंता, उदासी, अनिद्रा या उलझनों को सुलझाने के लिए बहुत आसान और व्यावहारिक समाधान प्रदान करते हैं। आप बिना किसी झिझक के अपनी बात बता सकते हैं—आप किस बात को लेकर परेशान हैं?"
       );
     }
     if (norm === "es") {
       return (
-        "Soy un acompañante clínico y neurocientífico. Integramos la terapia cognitivo-conductual (TCC), la regulación del sistema nervioso, la sabiduría del Bhagavad Gita y la meditación Trataka para resolver la ansiedad, el agotamiento y el estrés. ¿Qué te gustaría abordar hoy?"
+        "Soy tu acompañante para el bienestar emocional y mental. Integramos herramientas sencillas de respiración, reestructuración de pensamientos y enfoque para ayudarte a superar el estrés, la tristeza y el agobio diario. ¿Qué situación te gustaría resolver hoy?"
       );
     }
     if (norm === "fr") {
       return (
-        "Je suis un guide clinique et neuroscientifique. Nous associons la thérapie cognitive (TCC), la régulation polyvagale, la philosophie de la Bhagavad-Gita et la méditation Trataka pour surmonter l'anxiété et le stress. Quel sujet aimeriez-vous explorer aujourd'hui ?"
+        "Je suis votre compagnon de soutien émotionnel et mental. Nous proposons des solutions simples et concrètes pour surmonter l'anxiété, la fatigue mentale, la solitude et le stress quotidien. Quel défi aimeriez-vous surmonter aujourd'hui ?"
       );
     }
     if (norm === "de") {
       return (
-        "Ich bin ein evidenzbasierter Begleiter für mentale Gesundheit. Wir verknüpfen Kognitive Verhaltenstherapie (KVT), Vagusnerv-Regulation, philosophische Erkenntnisse der Bhagavad Gita und Trataka-Meditation, um Stress und Ängste zu lösen. Welches Anliegen möchten Sie heute angehen?"
+        "Ich bin Ihr Begleiter für mentale und emotionale Gesundheit. Wir bieten einfache, alltagstaugliche Lösungen gegen Stress, Ängste, Schlafprobleme und Überlastung. Welches Thema möchten Sie heute angehen?"
       );
     }
     return (
@@ -227,61 +248,99 @@ export function generateInquiryResponse(
     );
   }
 
-  // General scientific inquiry (e.g. "Why do I feel anxious in mornings?", "Why does my heart race?", etc.)
-  const mechanism = activeStudy.neurobiologicalMechanism;
-  const protocol = activeStudy.scientificActionProtocol;
-  const citation = activeStudy.citation;
+  // Specific query: Trataka gazing meditation inquiry
+  if (clean.includes("trataka") || clean.includes("tratak") || clean.includes("त्राटक")) {
+    if (norm === "hi") {
+      return (
+        "त्राटक साधना से हमारे मस्तिष्क और एकाग्रता पर गहरा सकारात्मक प्रभाव पड़ता है। जब हम किसी बिंदु या दीपक की लौ पर दृष्टि स्थिर करते हैं, तो हमारे न्यूरो तंत्रिका तंत्र में शांति आती है और मन के अनियंत्रित विचार शांत हो जाते हैं।\n\n" +
+        "• करने का आसान तरीका (समाधान): शांत बैठें, आंखों के सामने एक बिंदु या मोमबत्ती रखें और 1 से 2 मिनट बिना पलक झपकाए उस पर सहज रूप से दृष्टि टिकाएं। इससे एकाग्रता बढ़ती है और तनाव तुरंत कम होता है।"
+      );
+    }
+    if (norm === "es") {
+      return (
+        "La meditación Trataka consiste en fijar la mirada en un punto o vela para calmar la agitación mental y mejorar la concentración.\n\n" +
+        "• Solución práctica: Fija la vista en un punto fijo a la altura de tus ojos durante 1 o 2 minutos sin parpadear. Cuando sientas fatiga, cierra los ojos y visualiza el punto en tu mente."
+      );
+    }
+    if (norm === "fr") {
+      return (
+        "La méditation Trataka consiste à fixer un point ou une flamme pour stabiliser le regard et apaiser instantanément les fluctuations du mental.\n\n" +
+        "• Solution pratique : Fixez un point à hauteur des yeux pendant 1 à 2 minutes sans ciller. Fermez ensuite les yeux pour intérioriser le calme."
+      );
+    }
+    if (norm === "de") {
+      return (
+        "Die Trataka-Meditation beruhigt das Nervensystem durch das fokussierte Fixieren eines Punktes oder einer Kerzenflamme.\n\n" +
+        "• Praktische Lösung: Richten Sie den Blick 1 bis 2 Minuten entspannt auf einen festen Punkt, ohne zu blinzeln. Schließen Sie danach die Augen und spüren Sie die innere Ruhe."
+      );
+    }
+    return (
+      "Trataka neuro-ocular meditation calms the frontoparietal attentional network and optic pathways. By fixing your gaze gently upon a single focal target or candle flame for 1 to 2 minutes, you stabilize the autonomic nervous system and quiet mental racing into deep focused serenity."
+    );
+  }
 
+  // General scientific / psychological inquiry (e.g. why do I feel anxious, why does my stomach hurt, etc.)
   if (norm === "hi") {
     return (
-      `न्यूरो-बायोलॉजिकल और नैदानिक शोध के अनुसार, जब हमारा मस्तिष्क इस अवस्था का अनुभव करता है, तो स्वायत्त तंत्रिका तंत्र (Autonomic Nervous System) और एमिग्डाला (Amygdala) शरीर में तनाव हार्मोन (कोर्टिसोल और नॉर-एड्रेनालाईन) का प्रवाह बढ़ा देते हैं।\n\n` +
-      `शोध प्रमाण (${citation}): ${mechanism}\n\n` +
-      `• व्यावहारिक कदम: ${protocol}\n\n` +
-      `क्या आप इस शारीरिक प्रतिक्रिया को अपने शरीर में महसूस कर पा रहे हैं?`
+      `जब हम किसी बात को लेकर बहुत अधिक तनाव, डर या चिंता में होते हैं, तो हमारा मस्तिष्क और तंत्रिका तंत्र खतरे का अलार्म बजा देते हैं। ऐसे में दिल की धड़कन तेज होना, सिर भारी लगना, सांस उखड़ना या पेट में बेचैनी महसूस होना बिल्कुल स्वाभाविक शारीरिक प्रतिक्रिया है। यह कोई कमजोरी नहीं है, बल्कि आपका शरीर बस इस दबाव को संभालने की कोशिश कर रहा है।\n\n` +
+      `**तुरंत राहत के आसान समाधान:**\n` +
+      `1. **शरीर को शांत करने का तरीका (शारीरिक समाधान):** आराम से बैठें। नाक से 4 सेकंड तक गहरी सांस लें और मुंह से 7 सेकंड में धीरे-धीरे बाहर छोड़ें। इसे 4-5 बार दोहराएं। इससे दिल की धड़कन धीमी होगी और घबराहट तुरंत कम होगी।\n` +
+      `2. **मन को संभालने का तरीका (मानसिक समाधान):** इस समय दिमाग में जो डराने वाले विचार आ रहे हैं, उन्हें सच मत मानिए। खुद से कहें: 'यह केवल इस समय की घबराहट है, मैं अभी सुरक्षित हूँ।'\n` +
+      `3. **तुरंत करने योग्य छोटा काम (दैनिक समाधान):** एक गिलास सामान्य पानी पिएं और चेहरे पर ठंडे पानी के छींटे मारें। सारी चिंताओं को एक साथ सुलझाने के बजाय, अभी सिर्फ अगले 5 मिनट के काम पर ध्यान दें।\n\n` +
+      `क्या आप अभी इस आसान समाधान को आजमा सकते हैं? मुझे बताएं कि आप अभी कैसा महसूस कर रहे हैं।`
     );
   }
 
   if (norm === "es") {
     return (
-      `Desde la perspectiva neuropsicológica, cuando la mente procesa esta situación, la amígdala activa el eje HPA, liberando cortisol y adrenalina en el torrente sanguíneo.\n\n` +
-      `Evidencia clínica (${citation}): ${mechanism}\n\n` +
-      `• Acción práctica: ${protocol}\n\n` +
-      `¿Notas cómo resuena esta explicación con las sensaciones físicas que estás experimentando?`
+      `Cuando atravesamos momentos de mucho estrés o preocupación, nuestro cuerpo activa una señal de alarma interna. Por eso es totalmente normal sentir el corazón acelerado, un nudo en el estómago o tensión en el pecho. No es una debilidad, sino una reacción física de protección.\n\n` +
+      `**Soluciones sencillas y prácticas para sentir alivio ya:**\n` +
+      `1. **Calmar el cuerpo (Respiración):** Inhala por la nariz durante 4 segundos y exhala despacio por la boca durante 7 segundos. Repítelo 4 veces para calmar tu ritmo cardíaco.\n` +
+      `2. **Calmar la mente (Pensamiento):** Recuerda que los pensamientos alarmistas son solo miedo temporal, no verdades absolutas. Dite a ti mismo: 'Estoy a salvo en este momento'.\n` +
+      `3. **Paso inmediato:** Bebe un vaso de agua fresca y relaja tus hombros.\n\n` +
+      `¿Notas cómo resuena esto con lo que estás sintiendo? Cuéntame cómo está tu cuerpo ahora.`
     );
   }
 
   if (norm === "fr") {
     return (
-      `D'un point de vue neuropsychologique, face à ce type de situation, l'amygdale stimule l'axe hypothalamo-hypophyso-surrénalien, provoquant une élévation du cortisol et du tonus sympathique.\n\n` +
-      `Preuve clinique (${citation}) : ${mechanism}\n\n` +
-      `• Protocole d'action : ${protocol}\n\n` +
-      `Est-ce que cette explication correspond aux sensations corporelles que vous observez en ce moment ?`
+      `Lorsque nous faisons face à un stress intense, notre corps enclenche automatiquement un signal d'alerte. Il est alors tout à fait normal de ressentir le cœur qui bat plus vite, l'estomac noué ou la poitrine oppressée. C'est une réaction corporelle naturelle, pas une défaillance de votre part.\n\n` +
+      `**Solutions simples et concrètes pour vous apaiser immédiatement :**\n` +
+      `1. **Apaiser le corps (Respiration) :** Inspirez par le nez pendant 4 secondes, puis soufflez lentement par la bouche pendant 7 secondes. Répétez 4 fois pour ralentir votre rythme cardiaque.\n` +
+      `2. **Apaiser l'esprit (Mise à distance) :** Rappelez-vous que les pensées catastrophiques sont le fruit de l'anxiété, pas des certitudes. Dites-vous : 'Je suis en sécurité ici et maintenant'.\n` +
+      `3. **Action immédiate :** Buvez un verre d'eau fraîche et laissez tomber vos épaules vers le bas.\n\n` +
+      `Pouvez-vous essayer cette respiration avec moi ? Dites-moi ce que vous ressentez à présent.`
     );
   }
 
   if (norm === "de") {
     return (
-      `Aus neuropsychologischer Sicht aktiviert die Amygdala bei diesem Zustand die HPA-Achse und versetzt das vegetative Nervensystem in erhöhte Alarmbereitschaft.\n\n` +
-      `Klinische Evidenz (${citation}): ${mechanism}\n\n` +
-      `• Praktisches Vorgehen: ${protocol}\n\n` +
-      `Können Sie diese körperlichen Reaktionen derzeit bei sich wahrnehmen?`
+      `Wenn wir unter großem Druck oder Ängsten stehen, schlägt der Körper innerlich Alarm. Es ist völlig normal, dass das Herz schneller schlägt, der Magen sich verkrampft oder der Kopf dröhnt. Das ist keine Schwäche, sondern eine natürliche Schutzreaktion des Körpers.\n\n` +
+      `**Einfache, alltagstaugliche Lösungen für sofortige Erleichterung:**\n` +
+      `1. **Körper beruhigen (Atmung):** Atmen Sie 4 Sekunden durch die Nase ein und 7 Sekunden langsam durch den Mund aus. Wiederholen Sie dies 4-mal, um den Puls zu senken.\n` +
+      `2. **Gedanken beruhigen (Kognitive Klarheit):** Erkennen Sie, dass Katastrophengedanken nur der Stress sind, keine Tatsachen. Sagen Sie sich: 'Ich bin in diesem Augenblick sicher.'\n` +
+      `3. **Sofortmaßnahme:** Trinken Sie ein Glas kühles Wasser und lassen Sie die Schultern bewusst sinken.\n\n` +
+      `Können Sie diese einfache Übung jetzt kurz ausprobieren? Sagen Sie mir, wie es Ihnen damit geht.`
     );
   }
 
   return (
-    `From a clinical neuropsychology perspective, when you experience this, your amygdala and hypothalamic-pituitary-adrenal (HPA) axis trigger an autonomic alarm response.\n\n` +
-    `Peer-reviewed evidence (${citation}): ${mechanism}\n\n` +
-    `• Evidence-based practical experiment: ${protocol}\n\n` +
-    `Does this physiological explanation align with the somatic sensations you are noticing in your body right now?`
+    `From a clinical neuropsychology perspective, when you experience this, your amygdala and hypothalamic-pituitary-adrenal (HPA) axis trigger an autonomic alarm response in the nervous system and brain, releasing stress hormones that elevate your heart rate and muscle tension.\n\n` +
+    `**Simple, Practical Solutions for Immediate Relief:**\n` +
+    `1. **Soothe the Body (Breathwork):** Sit comfortably. Inhale slowly through your nose for 4 seconds, and exhale gently through your mouth for 7 seconds. Prolonged exhalation activates the parasympathetic vagal brake to lower heart rate within 60 seconds.\n` +
+    `2. **Soothe the Mind (Cognitive Awareness):** Recognize that racing, alarming thoughts are physiological signals of stress rather than absolute facts. Remind yourself: 'This is temporary physiological arousal, not who I am.'\n` +
+    `3. **Micro-Action:** Drink a glass of water and splash cool water on your face to stimulate calming reflexes.\n\n` +
+    `Does this explanation make sense with how your body is feeling right now?`
   );
 }
 
 /**
- * Synthesizes a natural, multi-turn conversational response for ongoing dialogue turns.
+ * Synthesizes a natural, multi-turn conversational response for ongoing dialogue turns
+ * using simple layman language, authentic empathy, and clear practical solutions.
  */
 export function generateMultiTurnConversationalReply(
   userMessage: string,
-  history: ConversationTurn[] = [],
+  _history: ConversationTurn[] = [],
   lang: string = "en",
   detectedEmotion?: string,
   polyvagalState?: string,
@@ -289,64 +348,82 @@ export function generateMultiTurnConversationalReply(
   study?: AuthenticatedStudy
 ): string {
   const norm = (lang || "en").toLowerCase().slice(0, 2);
-  const activeStudy = study || getResearchedAdviceForEmotion(detectedEmotion || "calmness", polyvagalState);
+  const _activeStudy = study || getResearchedAdviceForEmotion(detectedEmotion || "calmness", polyvagalState);
 
-  // Extract previous user focus if available
-  const priorUserTurns = history
-    .filter((t) => t.role === "user" || t.sender === "user")
-    .map((t) => t.content || t.text || "");
-  const _hasPriorContext = priorUserTurns.length > 0;
-
-  const cbtWisdom = condition?.solutions?.cbt_reframing || "Observe the mental narrative without identifying as the emotion itself.";
-  const somaticWisdom = condition?.solutions?.somatic_anchor || activeStudy.scientificActionProtocol;
+  const loc = condition ? getLocalizedClinicalIntervention(condition.id, norm, condition) : null;
 
   if (norm === "hi") {
+    const cbtHi = loc?.cbt_reframing || "अपने विचारों से लड़ने के बजाय उन्हें केवल आते-जाते मानसिक भाव मानकर देखें।";
+    const somaticHi = loc?.somatic_anchor || "कंधों को ढीला छोड़ें, दोनों पैरों को ज़मीन पर टिकाएं और 3 बार लंबी सांस बाहर छोड़ें।";
+
     return (
-      `मैं आपकी बात को बहुत ध्यान से सुन रहा हूँ। निरंतर अभ्यास और संवाद में यह बिल्कुल स्वाभाविक है कि मन में बेचैनी या विचार आते-जाते रहें, क्योंकि तंत्रिका तंत्र को तनाव हार्मोन शांत करने में 20 से 30 मिनट का जैविक समय लगता है।\n\n` +
-      `संज्ञानात्मक दृष्टि से, अपने विचारों से लड़ने के बजाय उन्हें केवल 'न्यूरोकेमिकल तरंगे' मानकर देखें। ${cbtWisdom}\n\n` +
-      `• छोटा व्यावहारिक प्रयोग: ${somaticWisdom}\n\n` +
-      `इस समय बात करते हुए आपके शरीर में कहाँ सबसे ज्यादा तनाव या खिंचाव महसूस हो रहा है?`
+      `मैं आपकी बात बहुत ध्यान से समझ रहा हूँ। जब मन किसी बात से बहुत ज्यादा परेशान होता है, तो बार-बार बेचैनी लगना या विचारों का भटकना बिल्कुल सामान्य है। हमारे शरीर को तनाव शांत करने में थोड़ा समय लगता है, इसलिए खुद पर बिल्कुल गुस्सा या दबाव मत डालिए।\n\n` +
+      `**इस समय के लिए आपका आसान समाधान:**\n` +
+      `1. **विचारों से लड़ना बंद करें:** ${cbtHi}\n` +
+      `2. **शरीर को ढीला छोड़ें:** ${somaticHi}\n` +
+      `3. **आसान सांस:** 3 बार लंबी और धीमी सांस बाहर निकालें।\n\n` +
+      `बात करते हुए आपके शरीर में इस समय सबसे ज्यादा खिंचाव या भारीपन कहाँ लग रहा है? मुझे बताइए।`
     );
   }
 
   if (norm === "es") {
+    const cbtEs = loc?.cbt_reframing || "Observa tus pensamientos sin juzgarlos como hechos irrefutables.";
+    const somaticEs = loc?.somatic_anchor || "Baja los hombros, apoya ambos pies en el suelo y bebe un sorbo de agua.";
+
     return (
-      `Te escucho con atención y presencia. En un diálogo terapéutico continuo, es completamente normal que la mente siga sintiéndose inquieta, ya que el sistema nervioso necesita tiempo biológico para metabolizar las hormonas del estrés.\n\n` +
-      `Desde la TCC, no intentes forzar a la mente a estar en silencio. En su lugar, aplica esta reestructuración: ${cbtWisdom}\n\n` +
-      `• Micro-paso somático: ${somaticWisdom}\n\n` +
-      `¿En qué parte de tu cuerpo sientes mayor tensión en este momento mientras hablamos?`
+      `Te escucho con calma y atención. En una conversación continua es totalmente comprensible que la mente siga sintiéndose inquieta; el cuerpo necesita un tiempo natural para que baje la adrenalina acumulada.\n\n` +
+      `**Tu solución práctica en este momento:**\n` +
+      `1. **Aliviar los pensamientos:** ${cbtEs}\n` +
+      `2. **Relajar el cuerpo:** ${somaticEs}\n` +
+      `3. **Paso simple:** Toma 3 respiraciones profundas con exhalación prolongada.\n\n` +
+      `¿En qué parte de tu cuerpo sientes mayor tensión o pesadez en este instante?`
     );
   }
 
   if (norm === "fr") {
+    const cbtFr = loc?.cbt_reframing || "Observez vos pensées comme un simple flux passager sans vous y identifier.";
+    const somaticFr = loc?.somatic_anchor || "Laissez retomber vos épaules, posez vos pieds à plat et buvez une gorgée d'eau.";
+
     return (
-      `Je vous écoute avec une attention soutenue. Dans un échange continu, il est tout à fait normal que l'agitation persiste un moment : le système nerveux nécessite un délai biologique pour dégrader les hormones de stress.\n\n` +
-      `Sur le plan cognitif, plutôt que de lutter contre vos pensées, observez-les comme un simple flux transitoire : ${cbtWisdom}\n\n` +
-      `• Micro-ancrage somatique : ${somaticWisdom}\n\n` +
-      `Où ressentez-vous le plus de tension corporelle en cet instant précis ?`
+      `Je vous écoute avec une attention bienveillante. Il est tout à fait naturel que l'agitation persiste un moment : le corps a besoin de temps pour dissiper les tensions accumulées.\n\n` +
+      `**Votre solution pratique dès maintenant :**\n` +
+      `1. **Alléger l'esprit :** ${cbtFr}\n` +
+      `2. **Détendre le corps :** ${somaticFr}\n` +
+      `3. **Geste simple :** Prenez 3 respirations lentes en soufflant longuement.\n\n` +
+      `Où ressentez-vous le plus de tension physique en cet instant précis ?`
     );
   }
 
   if (norm === "de") {
+    const cbtDe = loc?.cbt_reframing || "Betrachten Sie Ihre Gedanken achtsam, ohne sich von ihnen mitreißen zu lassen.";
+    const somaticDe = loc?.somatic_anchor || "Lassen Sie die Schultern sinken, stellen Sie beide Füße fest auf den Boden und trinken Sie einen Schluck Wasser.";
+
     return (
-      `Ich höre Ihnen aufmerksam zu. Im fortlaufenden Gespräch ist es völlig normal, dass noch Unruhe spürbar ist; das vegetative Nervensystem benötigt biologische Zeit, um Stresshormone abzubauen.\n\n` +
-      `Aus Sicht der kognitiven Verhaltenstherapie: Bekämpfen Sie Ihre Gedanken nicht, sondern betrachten Sie sie achtsam: ${cbtWisdom}\n\n` +
-      `• Somatischer Mikroschritt: ${somaticWisdom}\n\n` +
+      `Ich höre Ihnen aufmerksam zu. Im weiteren Gespräch ist es völlig verständlich, wenn die Unruhe noch spürbar ist; der Körper braucht etwas Zeit, um Stresshormone abzubauen.\n\n` +
+      `**Ihre praktische Lösung für diesen Moment:**\n` +
+      `1. **Gedanken entlasten:** ${cbtDe}\n` +
+      `2. **Körper entspannen:** ${somaticDe}\n` +
+      `3. **Einfacher Schritt:** 3 langsame Atemzüge mit verlängerter Ausatmung nehmen.\n\n` +
       `An welcher Stelle Ihres Körpers spüren Sie gerade die stärkste Anspannung?`
     );
   }
 
+  const cbtEn = loc?.cbt_reframing || "Observe the mental narrative without identifying as the emotion itself.";
+  const somaticEn = loc?.somatic_anchor || "Drop shoulders away from ears, place both feet on the floor, and take three long exhales.";
+
   return (
-    `I hear you clearly. In ongoing therapeutic dialogue, it is completely natural that restlessness or wandering thoughts persist, because the autonomic nervous system requires 20 to 30 minutes to biologically clear circulating stress hormones.\n\n` +
-    `From a cognitive science perspective, rather than forcing your mind into silence, treat the racing thoughts as neurochemical noise rather than facts: ${cbtWisdom}\n\n` +
-    `• Grounding micro-adjustment: ${somaticWisdom}\n\n` +
+    `I hear you clearly and understand what you are experiencing. When you are navigating stress, it is completely natural for restlessness or intrusive thoughts to linger, because the body takes time to metabolize stress hormones. Be gentle with yourself.\n\n` +
+    `**Your Practical Next Steps & Solution:**\n` +
+    `1. **Release Mental Struggle:** ${cbtEn}\n` +
+    `2. **Physical Grounding:** ${somaticEn}\n` +
+    `3. **Paced Breathing:** Take 3 slow, elongated exhales to help your body feel grounded.\n\n` +
     `As we talk right now, where in your physical body are you noticing the most tension or sensation?`
   );
 }
 
 /**
- * Generates an empathetic, research-backed response for spontaneous emotional sharing
- * (when the user is expressing grief, stress, or sadness naturally without demanding treatment cards).
+ * Generates an empathetic, layman response with direct practical solutions
+ * when the user is sharing painful feelings (grief, breakup, loneliness, burnout, fear).
  */
 export function generateEmotionalSharingReply(
   userMessage: string,
@@ -357,50 +434,69 @@ export function generateEmotionalSharingReply(
   study?: AuthenticatedStudy
 ): string {
   const norm = (lang || "en").toLowerCase().slice(0, 2);
-  const activeStudy = study || getResearchedAdviceForEmotion(detectedEmotion || "anxiety", polyvagalState);
-  const cbtReframing = condition?.solutions?.cbt_reframing;
-  const somaticTip = condition?.solutions?.somatic_anchor || activeStudy.scientificActionProtocol;
+  const _activeStudy = study || getResearchedAdviceForEmotion(detectedEmotion || "anxiety", polyvagalState);
+  const loc = condition ? getLocalizedClinicalIntervention(condition.id, norm, condition) : null;
 
   if (norm === "hi") {
+    const anchorHi = loc?.somatic_anchor || "ज़मीन पर दोनों पैर टिकाएं, 30 सेकंड के लिए आंखें बंद करें और 3 बार गहरी सांस बाहर छोड़ें।";
+
     return (
-      `मैं समझ सकता हूँ कि आप इस समय कितनी मानसिक थकान और भावनात्मक भार महसूस कर रहे हैं। आपकी भावना पूरी तरह प्रामाणिक है, और अपने आप को इस अवस्था में देखना किसी कमजोरी का संकेत नहीं है।\n\n` +
-      `तंत्रिका विज्ञान बताता है कि जब हम इस प्रकार के दबाव में होते हैं, तो हमारा मस्तिष्क सुरक्षात्मक हाइपरविजिलेंस (Hypervigilance) में चला जाता है। ${cbtReframing ? cbtReframing : "यह पहचानें कि यह कठिन समय केवल एक मानसिक अवस्था है, आपका संपूर्ण अस्तित्व नहीं।"}\n\n` +
-      `• अपने शरीर को स्थिर करने के लिए: ${somaticTip}\n\n` +
-      `क्या आप मुझे इस परिस्थिति के बारे में थोड़ा और बताना चाहेंगे?`
+      `मैं आपकी बात सुन रहा हूँ और समझ सकता हूँ कि आप इस समय कितना दर्द और भारीपन महसूस कर रहे हैं। इस परिस्थिति में ऐसा महसूस होना बिल्कुल स्वाभाविक है, और यह आपकी कोई कमजोरी या गलती नहीं है।\n\n` +
+      `**इस समय मन को संभालने के आसान समाधान:**\n` +
+      `1. **खुद पर दबाव न डालें:** इस समय सारी समस्याओं को एक साथ ठीक करने की जरूरत नहीं है। अभी सिर्फ अपने मन और शरीर को थोड़ा आराम दें।\n` +
+      `2. **शरीर को तुरंत शांत करें:** ${anchorHi}\n` +
+      `3. **मन की बात साझा करें:** जो बीत चुका है या जो हाथ में नहीं है, उसे सोचकर खुद को दोषी मत ठहराएं।\n\n` +
+      `अगर आप इस बारे में थोड़ा और बताना चाहते हैं, तो मैं पूरी तरह आपकी बात सुनने के लिए यहाँ हूँ। आप अभी कैसा महसूस कर रहे हैं?`
     );
   }
 
   if (norm === "es") {
+    const anchorEs = loc?.somatic_anchor || "Apoya los pies en el suelo, relaja los hombros y toma tres respiraciones suaves con exhalación larga.";
+
     return (
-      `Puedo sentir el peso emocional y el cansancio que estás sobrellevando. Lo que sientes es completamente válido y no refleja ninguna debilidad personal.\n\n` +
-      `La neurociencia clínica demuestra que ante esta sobrecarga, el cerebro entra en un estado protector de hiperactivación. ${cbtReframing ? cbtReframing : "Recuerda que este malestar es un estado neurobiológico transitorio, no tu identidad esencial."}\n\n` +
-      `• Para anclar tu fisiología en este instante: ${somaticTip}\n\n` +
-      `¿Te gustaría contarme un poco más sobre lo que detonó esto?`
+      `Puedo sentir el peso y el cansancio que llevas dentro. Lo que estás sintiendo es completamente comprensible y no es una debilidad personal.\n\n` +
+      `**Soluciones prácticas para acompañarte ahora:**\n` +
+      `1. **Suelta la presión:** No tienes que resolver todo hoy. Date permiso para pausar y respirar.\n` +
+      `2. **Calma el cuerpo:** ${anchorEs}\n` +
+      `3. **Sé amable contigo:** Los momentos difíciles vienen en oleadas, pero puedes superarlo paso a paso.\n\n` +
+      `¿Te gustaría contarme un poco más sobre lo que más te pesa hoy? Estoy aquí a tu lado.`
     );
   }
 
   if (norm === "fr") {
+    const anchorFr = loc?.somatic_anchor || "Posez les pieds à plat, relâchez vos épaules et prenez trois respirations lentes en expirant longuement.";
+
     return (
-      `Je ressens pleinement le poids et la fatigue émotionnelle que vous portez en ce moment. Ce que vous vivez est légitime et ne constitue en rien une défaillance de votre part.\n\n` +
-      `Les neurosciences indiquent que lors de telles épreuves, le système nerveux se place en état de défense protectrice. ${cbtReframing ? cbtReframing : "Rappelez-vous que cette épreuve est un état transitoire et ne définit pas qui vous êtes."}\n\n` +
-      `• Pour apaiser votre physiologie dès maintenant : ${somaticTip}\n\n` +
-      `Aimeriez-vous m'en dire un peu plus sur ce qui a déclenché ce ressenti ?`
+      `Je ressens pleinement la peine et la fatigue que vous portez en ce moment. Ce que vous vivez est légitime et ne constitue en rien une faiblesse de votre part.\n\n` +
+      `**Solutions simples pour vous soulager maintenant :**\n` +
+      `1. **Relâchez la pression :** Vous n'avez pas à tout régler aujourd'hui. Accordez-vous une pause bienveillante.\n` +
+      `2. **Apaiser le corps :** ${anchorFr}\n` +
+      `3. **Prenez soin de vous :** Avancez une étape à la fois sans vous culpabiliser.\n\n` +
+      `Aimeriez-vous m'en dire un peu plus sur ce qui vous pèse le plus ? Je suis à votre écoute.`
     );
   }
 
   if (norm === "de") {
+    const anchorDe = loc?.somatic_anchor || "Stellen Sie die Füße flach auf den Boden, lockern Sie die Schultern und atmen Sie dreimal langsam aus.";
+
     return (
-      `Ich nehme die emotionale Schwere und Erschöpfung wahr, die Sie gerade tragen. Ihre Gefühle sind absolut verständlich und kein Zeichen von persönlicher Schwäche.\n\n` +
-      `Klinische Neuroforschung zeigt, dass das Nervensystem in solchen Momenten in eine schützende Alarmreaktion schaltet. ${cbtReframing ? cbtReframing : "Erkennen Sie an, dass diese Belastung ein vorübergehender Zustand ist, nicht Ihre Identität."}\n\n` +
-      `• Um Ihren Körper im Hier und Jetzt zu erden: ${somaticTip}\n\n` +
-      `Möchten Sie mir etwas mehr darüber erzählen, was dieses Gefühl ausgelöst hat?`
+      `Ich nehme die Schwere und Erschöpfung wahr, die Sie gerade tragen. Ihre Gefühle sind vollkommen verständlich und kein Zeichen von persönlicher Schwäche.\n\n` +
+      `**Praktische Schritte zur Entlastung im Hier und Jetzt:**\n` +
+      `1. **Druck herausnehmen:** Sie müssen nicht alles an einem Tag lösen. Gönnen Sie sich einen Moment Ruhe.\n` +
+      `2. **Körper erden:** ${anchorDe}\n` +
+      `3. **Geduld mit sich haben:** Gehen Sie einen kleinen, machbaren Schritt nach dem anderen.\n\n` +
+      `Möchten Sie mir etwas mehr darüber erzählen, was Sie am meisten belastet? Ich bin für Sie da.`
     );
   }
 
+  const anchorEn = loc?.somatic_anchor || "Place both feet flat on the floor, relax your shoulders, and take three slow, calming breaths with long exhalations.";
+
   return (
-    `I hear the depth of weight and emotional exhaustion you are carrying right now. What you are feeling is completely valid, and it is not a sign of personal failure or brokenness.\n\n` +
-    `Clinical neuroscience shows that when under this kind of stress, the nervous system enters an adaptive protective state. ${cbtReframing ? cbtReframing : "Recognize that this emotional turbulence is a temporary state passing through awareness, rather than who you are at your core."}\n\n` +
-    `• To ground your physiology right now: ${somaticTip}\n\n` +
-    `Would you like to share a little more about what specifically brought this forward today?`
+    `I hear the depth of weight and emotional exhaustion you are carrying right now. What you are going through is very real, and feeling hurt or overwhelmed is not a sign of personal failure.\n\n` +
+    `**Immediate Practical Solutions to Support You Right Now:**\n` +
+    `1. **Release the Pressure:** You do not need to solve everything today. Give yourself permission to pause and take care of your well-being first.\n` +
+    `2. **Ground Your Body:** ${anchorEn}\n` +
+    `3. **Be Compassionate with Yourself:** Tough times come in waves, but you have the strength to take it one small, manageable step at a time.\n\n` +
+    `Would you like to share a little more about what is weighing on you most? I am right here with you.`
   );
 }
