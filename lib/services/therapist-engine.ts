@@ -188,7 +188,23 @@ export async function generateTherapeuticResponse(
     };
   }
 
-  // 1c. Template Loop & Single-Type-Message Interceptor (Breaks repetitive card loops authentically)
+  // 1c. Repetition, Solution Demands & Gita/CBT/Tratak Inquiries
+  const demandsGitaOrActiveSolution =
+    isRepetitionComplaintMessage(userMessage) ||
+    (isTemplateLoopComplaint(userMessage) && /(gita|cbt|tratak|solution|slotuion|learing|learning|open|question|sawal|एक ही|समाधान)/i.test(userMessage));
+
+  if (demandsGitaOrActiveSolution) {
+    const repRes = getLocalizedRepetitionSolutionResponse(userMessage, normLang, spokenResolution.speechLocale);
+    return {
+      reply: repRes.reply,
+      sources: repRes.sources,
+      providerUsed: "Tri-Pillar Active Solution Protocol",
+      isCrisis: false,
+      recommended_trataka: "bindu",
+    };
+  }
+
+  // 1d. Meta Template Loop & Single-Type-Message Interceptor (Breaks repetitive card loops authentically)
   if (isTemplateLoopComplaint(userMessage)) {
     const loopBreakingReply = getLoopBreakingResponse(userMessage, normLang);
     return {
@@ -201,18 +217,6 @@ export async function generateTherapeuticResponse(
         },
       ],
       providerUsed: "Dynamic Conversational Research Companion",
-      isCrisis: false,
-      recommended_trataka: "bindu",
-    };
-  }
-
-  // 1d. Repetition & Script Loop Interceptor (Delivers immediate actionable Tri-Pillar solution for specific test complaints)
-  if (isRepetitionComplaintMessage(userMessage)) {
-    const repRes = getLocalizedRepetitionSolutionResponse(userMessage, normLang, spokenResolution.speechLocale);
-    return {
-      reply: repRes.reply,
-      sources: repRes.sources,
-      providerUsed: "Tri-Pillar Active Solution Protocol",
       isCrisis: false,
       recommended_trataka: "bindu",
     };
@@ -301,8 +305,16 @@ export async function generateTherapeuticResponse(
   };
   const defaultRecTrataka = tratakPrescription.mode;
 
-  // If this is an ongoing dialogue turn (follow-up in multi-turn conversation):
-  if (isFollowUpTurn) {
+  // If this is an ongoing dialogue turn (follow-up in multi-turn conversation) strictly for practice inquiries:
+  const isPracticeFollowUpInquiry =
+    isFollowUpTurn &&
+    isInquiry &&
+    !hasDistressKeywords &&
+    !isSolutionRequest &&
+    !demandsGitaOrActiveSolution &&
+    !/(gita|cbt|tratak|shloka|learning|learing|गीता|त्राटक|श्लोक|समाधान|solution|slotuion|help)/i.test(userMessage);
+
+  if (isPracticeFollowUpInquiry) {
     const multiTurnReply = generateMultiTurnConversationalReply(
       userMessage,
       history,
@@ -360,17 +372,16 @@ export async function generateTherapeuticResponse(
     (isSolutionRequest || (!isNeutralOrInquiry && hasEmotionalDistressSignal));
 
   const isAcuteInitialPresentation =
-    !isFollowUpTurn &&
     !isInquiry &&
     (isSolutionRequest ||
       hasDistressKeywords ||
       (libraryRag !== null && emotionDiagnostic.coreAffect.valence <= -0.15) ||
       emotionDiagnostic.coreAffect.valence <= -0.3);
 
-  // Helper to guarantee [GITA_SHLOKA] tags, authentic Sanskrit shloka, and diagnostic summary strictly on acute initial presentation
+  // Helper to guarantee [GITA_SHLOKA] tags, authentic Sanskrit shloka, and diagnostic summary strictly on clinical presentation
   function ensureDiagnosticAndGita(replyText: string, gitaBlockStr: string, diagnosticMarkdown?: string): string {
     let result = replyText;
-    if (isFollowUpTurn || isInquiry || !isAcuteInitialPresentation) {
+    if (isInquiry || !isAcuteInitialPresentation) {
       return result;
     }
     if (hasClinicalDistress && (!result.includes("[GITA_SHLOKA]") || !result.includes("[/GITA_SHLOKA]"))) {

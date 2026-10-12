@@ -56,6 +56,32 @@ export function isTemplateLoopComplaint(userMessage: string): boolean {
     "think research",
     "user bain",
     "use brain and research",
+    "after 1 msg",
+    "after 1 message",
+    "falls in loop",
+    "fall in loop",
+    "algain falls",
+    "again falls",
+    "doen not open",
+    "does not open",
+    "not open gita",
+    "open gita",
+    "gita learing",
+    "gita learning",
+    "cbt learing",
+    "cbt learning",
+    "tratak automaticlly",
+    "tratak automatically",
+    "asking question",
+    "repeating same slotuion",
+    "repeating same solution",
+    "same slotuion",
+    "same solution",
+    "ek msg ke baad",
+    "gita nahi khul",
+    "tratak nahi khul",
+    "sawal pooch",
+    "question pooch",
     "again in loop",
     "in a loop",
     "in loop",
@@ -352,7 +378,29 @@ export function generateMultiTurnConversationalReply(
 
   const loc = condition ? getLocalizedClinicalIntervention(condition.id, norm, condition) : null;
 
+  const isDistraction = /(distract|wandering|wander|भटक|विचार आ रहे|thoughts keep|intrusive thoughts)/i.test(userMessage);
+  const isTiming = /(sleep|morning|night|evening|when to do|कब करें|सोने|सुबह|रात|समय|before going)/i.test(userMessage);
+
   if (norm === "hi") {
+    if (isDistraction) {
+      return (
+        "जब आप अभ्यास कर रहे हों और मन भटकने लगे या विचार आने लगें, तो यह पूरी तरह स्वाभाविक है। मन को जबरदस्ती दबाने या खुद पर गुस्सा होने की बिल्कुल जरूरत नहीं है।\n\n" +
+        "**भटकाव संभालने का सीधा तरीका:**\n" +
+        "1. **स्वीकार करें:** बस मन में महसूस करें कि 'हाँ, अभी मन कहीं और भटक गया था'—इसे कोई गलती मत मानिए।\n" +
+        "2. **श्वास पर वापसी:** धीरे से 1 लंबी सांस बाहर छोड़ें और फिर से अपनी सांस की गति पर ध्यान केंद्रित करें।\n" +
+        "3. **सहज रहें:** जितनी बार मन भटके, उतनी बार शांत भाव से सांस पर लौट आएं। यही मानसिक स्थिरता का असली अभ्यास है।"
+      );
+    }
+
+    if (isTiming) {
+      return (
+        "श्वास और ध्यान का अभ्यास दिन के समय के अनुसार बहुत सुंदर प्रभाव डालता है:\n\n" +
+        "• **रात को सोने से पहले:** यह समय सबसे असरदार है क्योंकि लंबी धीमी सांसें तंत्रिका तंत्र को शांत करती हैं और रात की गहरी नींद में मदद करती हैं।\n" +
+        "• **सुबह उठने के बाद:** सुबह 2 से 3 मिनट का अभ्यास पूरे दिन के लिए मन को एकाग्र और शांत रखता है।\n\n" +
+        "आप अपनी सुविधा अनुसार दोनों समय इसे कर सकते हैं, विशेष रूप से जब भी मन पर भारीपन महसूस हो।"
+      );
+    }
+
     const cbtHi = loc?.cbt_reframing || "अपने विचारों से लड़ने के बजाय उन्हें केवल आते-जाते मानसिक भाव मानकर देखें।";
     const somaticHi = loc?.somatic_anchor || "कंधों को ढीला छोड़ें, दोनों पैरों को ज़मीन पर टिकाएं और 3 बार लंबी सांस बाहर छोड़ें।";
 
@@ -362,11 +410,28 @@ export function generateMultiTurnConversationalReply(
       `1. **विचारों से लड़ना बंद करें:** ${cbtHi}\n` +
       `2. **शरीर को ढीला छोड़ें:** ${somaticHi}\n` +
       `3. **आसान सांस:** 3 बार लंबी और धीमी सांस बाहर निकालें।\n\n` +
-      `बात करते हुए आपके शरीर में इस समय सबसे ज्यादा खिंचाव या भारीपन कहाँ लग रहा है? मुझे बताइए।`
+      `आप इसे अपनी गति से सहजता से आजमाएं। मैं हर कदम पर आपके साथ हूँ।`
     );
   }
 
   if (norm === "es") {
+    if (isDistraction) {
+      return (
+        "Es completamente natural que la mente se disperse o surjan pensamientos durante la práctica. No intentes forzar la mente a estar en blanco.\n\n" +
+        "**Cómo manejar la distracción:**\n" +
+        "1. **Reconocer sin juzgar:** Simplemente nota que tu atención se desvió.\n" +
+        "2. **Volver a la respiración:** Toma una exhalación lenta y devuelve tu atención al flujo del aire.\n" +
+        "3. **Paciencia:** Cada vez que regresas la atención, fortaleces tu calma interior."
+      );
+    }
+    if (isTiming) {
+      return (
+        "Ambos momentos tienen beneficios clínicos comprobados:\n\n" +
+        "• **Antes de dormir:** Es excelente para desactivar el estrés acumulado y preparar el cerebro para un descanso profundo.\n" +
+        "• **Por la mañana:** Ayuda a iniciar el día con equilibrio y concentración.\n\n" +
+        "Puedes practicarlo en cualquiera de los dos momentos según tu rutina diaria."
+      );
+    }
     const cbtEs = loc?.cbt_reframing || "Observa tus pensamientos sin juzgarlos como hechos irrefutables.";
     const somaticEs = loc?.somatic_anchor || "Baja los hombros, apoya ambos pies en el suelo y bebe un sorbo de agua.";
 
@@ -376,35 +441,26 @@ export function generateMultiTurnConversationalReply(
       `1. **Aliviar los pensamientos:** ${cbtEs}\n` +
       `2. **Relajar el cuerpo:** ${somaticEs}\n` +
       `3. **Paso simple:** Toma 3 respiraciones profundas con exhalación prolongada.\n\n` +
-      `¿En qué parte de tu cuerpo sientes mayor tensión o pesadez en este instante?`
+      `Realiza esta práctica con calma a tu propio ritmo sin exigencias. Te acompaño en cada paso.`
     );
   }
 
-  if (norm === "fr") {
-    const cbtFr = loc?.cbt_reframing || "Observez vos pensées comme un simple flux passager sans vous y identifier.";
-    const somaticFr = loc?.somatic_anchor || "Laissez retomber vos épaules, posez vos pieds à plat et buvez une gorgée d'eau.";
-
+  if (isDistraction) {
     return (
-      `Je vous écoute avec une attention bienveillante. Il est tout à fait naturel que l'agitation persiste un moment : le corps a besoin de temps pour dissiper les tensions accumulées.\n\n` +
-      `**Votre solution pratique dès maintenant :**\n` +
-      `1. **Alléger l'esprit :** ${cbtFr}\n` +
-      `2. **Détendre le corps :** ${somaticFr}\n` +
-      `3. **Geste simple :** Prenez 3 respirations lentes en soufflant longuement.\n\n` +
-      `Où ressentez-vous le plus de tension physique en cet instant précis ?`
+      "When you are practicing breathwork or mindfulness, it is completely natural for your attention to drift or for thoughts to pop in. Do not fight your mind or judge yourself.\n\n" +
+      "**How to Handle Distraction:**\n" +
+      "1. **Notice Gently:** Simply label it internally: 'wandering thought'—without frustration.\n" +
+      "2. **Anchor in Exhale:** Take one elongated exhale and gently guide your focus back to the sensation of your breath.\n" +
+      "3. **Consistency:** Each time you gently return to your breath, you are rewiring and stabilizing your nervous system."
     );
   }
 
-  if (norm === "de") {
-    const cbtDe = loc?.cbt_reframing || "Betrachten Sie Ihre Gedanken achtsam, ohne sich von ihnen mitreißen zu lassen.";
-    const somaticDe = loc?.somatic_anchor || "Lassen Sie die Schultern sinken, stellen Sie beide Füße fest auf den Boden und trinken Sie einen Schluck Wasser.";
-
+  if (isTiming) {
     return (
-      `Ich höre Ihnen aufmerksam zu. Im weiteren Gespräch ist es völlig verständlich, wenn die Unruhe noch spürbar ist; der Körper braucht etwas Zeit, um Stresshormone abzubauen.\n\n` +
-      `**Ihre praktische Lösung für diesen Moment:**\n` +
-      `1. **Gedanken entlasten:** ${cbtDe}\n` +
-      `2. **Körper entspannen:** ${somaticDe}\n` +
-      `3. **Einfacher Schritt:** 3 langsame Atemzüge mit verlängerter Ausatmung nehmen.\n\n` +
-      `An welcher Stelle Ihres Körpers spüren Sie gerade die stärkste Anspannung?`
+      "Both times offer distinct neuro-physiological benefits:\n\n" +
+      "• **Before Bed / Sleep:** This is exceptionally powerful for down-regulating sympathetic arousal, releasing daytime stress hormones, and preparing the brain for restorative sleep.\n" +
+      "• **In the Morning:** Doing 2 to 3 minutes sets a grounded, non-reactive emotional baseline for your entire day.\n\n" +
+      "You can comfortably practice at either or both times according to what feels best for your body."
     );
   }
 
@@ -417,7 +473,7 @@ export function generateMultiTurnConversationalReply(
     `1. **Release Mental Struggle:** ${cbtEn}\n` +
     `2. **Physical Grounding:** ${somaticEn}\n` +
     `3. **Paced Breathing:** Take 3 slow, elongated exhales to help your body feel grounded.\n\n` +
-    `As we talk right now, where in your physical body are you noticing the most tension or sensation?`
+    `Take this gently at your own pace without pressure. You are doing well by taking this step.`
   );
 }
 

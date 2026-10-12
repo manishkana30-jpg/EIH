@@ -118,6 +118,10 @@ export default function SanctuarySessionPage() {
     strategy: "Active reflective listening",
   });
   const [recommendedTrataka, setRecommendedTrataka] = useState<string>("bindu");
+  const recommendedTratakaRef = useRef<string>("bindu");
+  useEffect(() => {
+    recommendedTratakaRef.current = recommendedTrataka;
+  }, [recommendedTrataka]);
   const [activeTriguna, setActiveTriguna] = useState<TrigunaAnalysis | null>(null);
   const [activeVoiceState, setActiveVoiceState] = useState<VoiceAcousticState | null>(null);
   const activeVoiceStateRef = useRef<VoiceAcousticState | null>(null);
@@ -543,8 +547,22 @@ export default function SanctuarySessionPage() {
           }
         }
 
-        if (stage === 2) {
-          // Card 2 (Gita) finished reading -> check if Card 3 (CBT) exists to speak
+        if (stage === 1) {
+          // Card 1 (Sanctuary Emotion Understanding) finished -> automatically advance to Card 2 (Gita Learning)
+          const stage2 = parsed?.stages?.find((s: any) => s.stage === 2);
+          if (stage2 && stage2.speechText && stage2.speechText.trim().length > 5) {
+            willAdvanceToNextStage = true;
+            setTimeout(() => {
+              setMessageStages((prev) => ({ ...prev, [messageId]: 2 }));
+              messageStagesRef.current = { ...messageStagesRef.current, [messageId]: 2 };
+              activeSpeakingStageRef.current = { messageId, stage: 2 };
+              playVoiceRef.current(stage2.speechText, undefined, messageId);
+            }, 450);
+          } else {
+            activeSpeakingStageRef.current = null;
+          }
+        } else if (stage === 2) {
+          // Card 2 (Gita) finished reading -> automatically advance to Card 3 (CBT)
           const stage3 = parsed?.stages?.find((s: any) => s.stage === 3);
           if (stage3 && stage3.speechText && stage3.speechText.trim().length > 5) {
             willAdvanceToNextStage = true;
@@ -558,7 +576,7 @@ export default function SanctuarySessionPage() {
             activeSpeakingStageRef.current = null;
           }
         } else if (stage === 3) {
-          // Card 3 (CBT) finished reading -> check if Card 4 (Tratak) exists to speak
+          // Card 3 (CBT) finished reading -> automatically advance to Card 4 (Tratak)
           const stage4 = parsed?.stages?.find((s: any) => s.stage === 4);
           if (stage4 && stage4.speechText && stage4.speechText.trim().length > 5) {
             willAdvanceToNextStage = true;
@@ -571,8 +589,18 @@ export default function SanctuarySessionPage() {
           } else {
             activeSpeakingStageRef.current = null;
           }
+        } else if (stage === 4) {
+          // Card 4 (Tratak) concluded -> automatically open the interactive Tratak gazing module!
+          activeSpeakingStageRef.current = null;
+          const targetTratakaMode =
+            detectTratakaModeFromText(parsed?.defaultSpeechText || "") ||
+            recommendedTratakaRef.current ||
+            "bindu";
+          setTimeout(() => {
+            setRecommendedTrataka(normalizeTratakaMode(targetTratakaMode));
+            setIsTratakaOpen(true);
+          }, 800);
         } else {
-          // Stage 1 or Stage 4 concluded
           activeSpeakingStageRef.current = null;
         }
       }

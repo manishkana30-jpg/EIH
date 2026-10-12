@@ -561,14 +561,16 @@ const KaraokeMessageComponent: React.FC<KaraokeMessageProps> = ({
                 const isCurrent = activeStage === step.num;
                 return (
                   <React.Fragment key={step.num}>
-                    <div
+                    <button
+                      type="button"
                       data-testid={`step-indicator-${step.num}`}
-                      className={`flex items-center gap-1 px-2 py-0.5 rounded-full border transition-all ${
+                      onClick={() => handleAdvanceTo(step.num)}
+                      className={`flex items-center gap-1 px-2 py-0.5 rounded-full border transition-all cursor-pointer ${
                         isPassed
-                          ? "bg-emerald-500/15 border-emerald-500/40 text-emerald-300"
+                          ? "bg-emerald-500/15 border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/25"
                           : isCurrent
                           ? "bg-purple-500/25 border-purple-400 text-purple-200 shadow-[0_0_10px_rgba(168,85,247,0.3)] animate-pulse"
-                          : "bg-slate-900/40 border-slate-800 text-slate-500"
+                          : "bg-slate-900/40 border-slate-800 text-slate-400 hover:border-slate-700"
                       }`}
                     >
                       {isPassed ? (
@@ -577,7 +579,7 @@ const KaraokeMessageComponent: React.FC<KaraokeMessageProps> = ({
                         <span>{step.num}</span>
                       )}
                       <span className="inline font-medium">{step.label}</span>
-                    </div>
+                    </button>
                     {idx < 3 && (
                       <span className={`text-[10px] ${activeStage > step.num ? "text-emerald-500" : "text-slate-700"}`}>
                         →
