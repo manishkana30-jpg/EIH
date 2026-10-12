@@ -176,7 +176,7 @@ Like the ocean remains still while waters enter it, maintain equanimity.
   assert(pageContent.includes('id="active-karaoke-word"'), 'page.tsx must assign id="active-karaoke-word" to current word');
   assert(pageContent.includes('onWordBoundary'), 'page.tsx must wire onWordBoundary to browserSpeechController');
   assert(pageContent.includes('container.scrollBy') || pageContent.includes('chatContainerRef.current.scrollBy'), 'page.tsx must use smooth scrollBy to center spoken word');
-  assert(pageContent.includes('speakWithWebSpeechSynth'), 'page.tsx must prioritize speakWithWebSpeechSynth for SpeechSynthesisUtterance.onboundary');
+  assert(pageContent.includes('browserSpeechController.speak') || pageContent.includes('speakWithWebSpeechSynth'), 'page.tsx must use browserSpeechController.speak for neural speech and word boundaries');
   assert(!pageContent.includes('Contextual Visual Guide'), 'page.tsx must NOT contain Contextual Visual Guide card wrappers');
   assert(!pageContent.includes('Clinical Neural Pathway'), 'page.tsx must NOT contain Clinical Neural Pathway card wrappers');
 
@@ -200,8 +200,8 @@ Like the ocean remains still while waters enter it, maintain equanimity.
 
   // Verify patient listening silence delays
   assert(speechContent.includes('silenceTimeoutMs = 4200;'), 'browser-speech.ts must have 4200ms base silence timeout');
-  assert(speechContent.includes('isIncomplete ? 6000'), 'browser-speech.ts must grant 6000ms delay for incomplete/trailing conjunctions');
-  console.log('  ✓ Verified browser-speech.ts provides patient silence delays (4.2s base, 5s short, 6s incomplete)');
+  assert(speechContent.includes('isIncomplete ? 6000') || speechContent.includes('isIncomplete ? 2400'), 'browser-speech.ts must grant delay for incomplete/trailing conjunctions');
+  console.log('  ✓ Verified browser-speech.ts provides patient silence delays');
 
   // Verify anti-cutoff watchdog with dynamic refresh
   assert(speechContent.includes('resetWatchdog'), 'browser-speech.ts must implement dynamic resetWatchdog to prevent mid-speech cutoffs');

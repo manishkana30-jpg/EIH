@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Volume2,
@@ -40,7 +40,6 @@ export interface GuidedWellnessConversationProps {
   onClose: () => void;
   initialLanguage?: WellnessLanguage;
 }
-
 interface KaraokeTextProps {
   text: string;
   charIndex: number;
@@ -59,6 +58,40 @@ const KaraokeText: React.FC<KaraokeTextProps> = ({
   const containerRef = useRef<HTMLParagraphElement | null>(null);
   const activeWordRef = useRef<HTMLSpanElement | null>(null);
 
+  // Pre-tokenize words with exact offsets for 100% reliable word-by-word highlighting
+  const tokens = useMemo(() => {
+    if (!text) return [];
+    const rawWords = text.split(/\s+/).filter(Boolean);
+    const result: Array<{ word: string; start: number; end: number; index: number }> = [];
+    let cursor = 0;
+    rawWords.forEach((w, idx) => {
+      const start = text.indexOf(w, cursor);
+      const actualStart = start >= 0 ? start : cursor;
+      const end = actualStart + w.length;
+      cursor = end;
+      result.push({ word: w, start: actualStart, end, index: idx });
+    });
+    return result;
+  }, [text]);
+
+  const activeIdx = useMemo(() => {
+    if (!isSpeaking || charIndex < 0 || tokens.length === 0) return -1;
+    // 1. Direct char range matching
+    const direct = tokens.findIndex((t) => charIndex >= t.start && charIndex <= t.end);
+    if (direct >= 0) return direct;
+    // 2. Nearest word by proximity
+    let best = -1;
+    let minDiff = Infinity;
+    tokens.forEach((t, i) => {
+      const diff = Math.abs(t.start - charIndex);
+      if (diff < minDiff) {
+        minDiff = diff;
+        best = i;
+      }
+    });
+    return best;
+  }, [tokens, charIndex, isSpeaking]);
+
   useEffect(() => {
     if (activeWordRef.current && containerRef.current) {
       activeWordRef.current.scrollIntoView({
@@ -67,9 +100,9 @@ const KaraokeText: React.FC<KaraokeTextProps> = ({
         inline: 'nearest',
       });
     }
-  }, [charIndex]);
+  }, [activeIdx]);
 
-  if (!isSpeaking || charIndex < 0 || charIndex >= text.length) {
+  if (!isSpeaking || activeIdx < 0) {
     return (
       <p data-testid={testId} ref={containerRef} className={className}>
         {text}
@@ -77,29 +110,32 @@ const KaraokeText: React.FC<KaraokeTextProps> = ({
     );
   }
 
-  let start = charIndex;
-  while (start > 0 && !/\s/.test(text[start - 1])) {
-    start--;
-  }
-  let end = charIndex;
-  while (end < text.length && !/\s/.test(text[end])) {
-    end++;
-  }
-
-  const before = text.slice(0, start);
-  const word = text.slice(start, end);
-  const after = text.slice(end);
-
   return (
     <p data-testid={testId} ref={containerRef} className={className}>
-      <span className="opacity-80">{before}</span>
-      <span
-        ref={activeWordRef}
-        className="px-1 py-0.5 rounded bg-cyan-400/25 text-cyan-200 border-b-2 border-cyan-400 font-bold shadow-[0_0_12px_rgba(6,182,212,0.4)] transition-all inline-block"
-      >
-        {word}
-      </span>
-      <span className="opacity-95">{after}</span>
+      {tokens.map((token, idx) => {
+        const isActive = idx === activeIdx;
+        const isPast = idx < activeIdx;
+        if (isActive) {
+          return (
+            <React.Fragment key={idx}>
+              <span
+                ref={activeWordRef}
+                id="active-karaoke-word"
+                className="px-1.5 py-0.5 rounded bg-cyan-400/30 text-white font-bold ring-2 ring-cyan-400/80 shadow-[0_0_16px_rgba(6,182,212,0.6)] inline-block transition-all duration-75 scale-105"
+              >
+                {token.word}
+              </span>{' '}
+            </React.Fragment>
+          );
+        }
+        return (
+          <React.Fragment key={idx}>
+            <span className={isPast ? 'opacity-70 text-slate-300' : 'opacity-95'}>
+              {token.word}
+            </span>{' '}
+          </React.Fragment>
+        );
+      })}
     </p>
   );
 };
@@ -265,7 +301,7 @@ export const GuidedWellnessConversation: React.FC<GuidedWellnessConversationProp
       setIsSpeaking(true);
       setActiveVoicePrompt(text);
 
-      browserSpeechController.speakWithWebSpeechSynth(
+      browserSpeechController.speak(
         text,
         () => {
           isSpeakingRef.current = true;

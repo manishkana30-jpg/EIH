@@ -13,6 +13,8 @@ import re
 import tempfile
 from typing import TYPE_CHECKING, Any
 
+import socket
+
 # STT: faster-whisper
 if TYPE_CHECKING:
     from faster_whisper import WhisperModel
@@ -25,6 +27,14 @@ else:
 # TTS: edge-tts (Neural Cloud Voice - No Key Required)
 try:
     import edge_tts
+    import aiohttp
+    # Patch aiohttp to force IPv4 on Windows to prevent WinError 64 / IPv6 DNS drops
+    _orig_tcp_init = aiohttp.TCPConnector.__init__
+    def _patched_tcp_init(self, *args, **kwargs):
+        if "family" not in kwargs or kwargs["family"] == 0:
+            kwargs["family"] = socket.AF_INET
+        _orig_tcp_init(self, *args, **kwargs)
+    aiohttp.TCPConnector.__init__ = _patched_tcp_init
 except ImportError:
     edge_tts = None
 
@@ -263,8 +273,7 @@ class FreeAudioEngine:
                 async for chunk in communicate.stream():
                     if chunk.get("type") == "audio" and "data" in chunk and isinstance(chunk["data"], (bytes, bytearray)):
                         mp3_buffer.write(chunk["data"])
-                    mp3_buffer.seek(0)
-                audio_data = mp3_buffer.read()
+                audio_data = mp3_buffer.getvalue()
                 if len(audio_data) > 0:
                     return audio_data
             except Exception as err:
@@ -291,6 +300,60 @@ class FreeAudioEngine:
                 return b""
 
         return await asyncio.to_thread(_pyttsx3_synthesize)
+
+    async def synthesize_with_boundaries(
+        self, text: str, voice: str | None = None, rate: str | None = None
+    ) -> tuple[bytes, list[dict[str, Any]]]:
+        """
+        Synthesizes text into MP3 audio bytes AND returns millisecond-precise word boundaries.
+        Returns: (audio_bytes, list of {"offset_ms": float, "duration_ms": float, "text": str})
+        """
+        if not text or not text.strip():
+            return b"", []
+
+        clean_text = sanitize_text_for_speech(text)
+        if not clean_text:
+            return b"", []
+
+        if len(clean_text) > 1800:
+            last_period = clean_text[:1800].rfind(".")
+            if last_period > 1000:
+                clean_text = clean_text[:last_period + 1]
+            else:
+                clean_text = clean_text[:1800]
+
+        selected_voice = voice or self.default_voice
+        selected_rate = rate or "-12%"
+
+        boundaries: list[dict[str, Any]] = []
+
+        if edge_tts is not None:
+            try:
+                communicate = edge_tts.Communicate(
+                    clean_text, selected_voice, rate=selected_rate, pitch="-2Hz", boundary="WordBoundary"
+                )
+                mp3_buffer = io.BytesIO()
+                async for chunk in communicate.stream():
+                    if chunk.get("type") == "audio" and "data" in chunk and isinstance(chunk["data"], (bytes, bytearray)):
+                        mp3_buffer.write(chunk["data"])
+                    elif chunk.get("type") == "WordBoundary":
+                        # offset and duration in 100-nanosecond units (ticks)
+                        offset_ticks = chunk.get("offset", 0)
+                        duration_ticks = chunk.get("duration", 0)
+                        word_text = chunk.get("text", "")
+                        boundaries.append({
+                            "offset_ms": round(offset_ticks / 10000.0, 1),
+                            "duration_ms": round(duration_ticks / 10000.0, 1),
+                            "text": word_text,
+                        })
+                audio_data = mp3_buffer.getvalue()
+                if len(audio_data) > 0:
+                    return audio_data, boundaries
+            except Exception as err:
+                logger.warning(f"edge-tts boundary synthesis failed: {err}. Falling back...")
+
+        audio_data = await self.synthesize_speech_bytes(text, voice=voice, rate=rate)
+        return audio_data, []
 
     async def synthesize(self, text: str, voice: str | None = None) -> bytes:
         """Convenience alias for synthesize_speech_bytes."""

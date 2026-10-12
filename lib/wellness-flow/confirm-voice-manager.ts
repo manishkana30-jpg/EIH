@@ -192,10 +192,10 @@ export class ConfirmVoiceManager {
     }, maxPromptDurationMs);
 
     browserSpeechController.cancelSpeech();
-    browserSpeechController.speakWithWebSpeechSynth(
+    browserSpeechController.speak(
       textToSpeak,
       () => {
-        logConfirmDebug('TTS', 'Native speech onstart fired');
+        logConfirmDebug('TTS', 'Neural speech onstart fired');
       },
       () => {
         logConfirmDebug('TTS', 'onDone: TTS playback completed cleanly');

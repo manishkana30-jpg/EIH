@@ -25,7 +25,7 @@ from typing import Any
 import uvicorn
 from fastapi import BackgroundTasks, FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, Response
+from fastapi.responses import HTMLResponse, JSONResponse, Response
 from pydantic import BaseModel, Field
 
 # Setup system path
@@ -1745,6 +1745,37 @@ async def stream_voice(
         voice_str = "en-US-AriaNeural"
 
     try:
+        wants_json = (
+            request.query_params.get("format") == "json"
+            or request.query_params.get("boundary") in ("1", "true")
+            or "application/json" in request.headers.get("accept", "").lower()
+        )
+        if request.method == "POST":
+            content_type = request.headers.get("content-type", "")
+            if content_type.startswith("application/json") and "body" in locals() and isinstance(body, dict):
+                if body.get("format") == "json" or body.get("boundary") in (True, "1", "true"):
+                    wants_json = True
+
+        if wants_json:
+            audio_bytes, boundaries = await audio_engine.synthesize_with_boundaries(
+                clean_text, voice=voice_str, rate=str(target_rate)
+            )
+            if not audio_bytes:
+                raise HTTPException(status_code=500, detail="Voice synthesis returned empty audio")
+
+            return JSONResponse(
+                content={
+                    "audio": base64.b64encode(audio_bytes).decode("ascii"),
+                    "format": "audio/mpeg",
+                    "wordBoundaries": boundaries,
+                    "voice": voice_str,
+                    "text": clean_text,
+                },
+                headers={
+                    "Cache-Control": "public, max-age=3600",
+                },
+            )
+
         audio_bytes = await audio_engine.synthesize_speech_bytes(clean_text, voice=voice_str, rate=str(target_rate))
         if not audio_bytes:
             raise HTTPException(status_code=500, detail="Voice synthesis returned empty audio")

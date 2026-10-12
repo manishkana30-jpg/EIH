@@ -58,49 +58,63 @@ export const getBestTherapeuticVoice = async (targetLang = 'en'): Promise<Speech
   });
   const candidates = matchedVoices.length > 0 ? matchedVoices : voices;
 
-  // 2. The Heuristic Scoring Engine
+  // 2. The Heuristic Scoring Engine - 100% Human-Like Voice Prioritization
+  const isRoboticVoice = (voice: SpeechSynthesisVoice): boolean => {
+    const name = voice.name.toLowerCase();
+    return (
+      name.includes('desktop') ||
+      name.includes('david') ||
+      name.includes('zira') ||
+      name.includes('mark') ||
+      name.includes('hazel') ||
+      name.includes('george') ||
+      name.includes('sapi') ||
+      (name.includes('android') && !name.includes('google')) ||
+      name.includes('espeak') ||
+      name.includes('sam')
+    );
+  };
+
   const scoreVoice = (voice: SpeechSynthesisVoice): number => {
     let score = 0;
     const name = voice.name.toLowerCase();
 
-    // -- REGIONAL & HIGH-FIDELITY NEURAL VOICES --
-    if (name.includes('swara') || name.includes('madhur') || name.includes('kalpana') || name.includes('hemant')) score += 100;
-    if (name.includes('elvira') || name.includes('alvaro') || name.includes('denise') || name.includes('henri') || name.includes('katja') || name.includes('conrad')) score += 100;
-    if (name.includes('हिन्दी') || name.includes('hindi')) score += 85;
+    // -- SEVERE PENALTY FOR ROBOTIC / DESKTOP VOICES --
+    if (isRoboticVoice(voice)) {
+      return -1000;
+    }
 
-    // -- WINDOWS & EDGE TIER --
-    // Microsoft's "Natural" voices are cloud-backed neural engines (Highest Quality)
-    if (name.includes('natural')) score += 100;
-    if (name.includes('aria') || name.includes('jenny') || name.includes('guy') || name.includes('sonia') || name.includes('neerja')) score += 50;
+    // -- MICROSOFT NATURAL & EDGE NEURAL VOICES (100% Human-Like) --
+    if (name.includes('natural') || name.includes('online')) score += 300;
+    if (name.includes('neural')) score += 250;
+    if (name.includes('swara') || name.includes('madhur') || name.includes('kalpana') || name.includes('hemant')) score += 200;
+    if (name.includes('aria') || name.includes('jenny') || name.includes('guy') || name.includes('sonia') || name.includes('neerja')) score += 200;
+    if (name.includes('elvira') || name.includes('denise') || name.includes('katja')) score += 200;
+    if (name.includes('हिन्दी') || name.includes('hindi')) score += 150;
 
-    // -- APPLE (iOS / macOS) TIER --
-    // Apple labels their high-fidelity downloaded voices as Premium or Enhanced
-    if (name.includes('siri')) score += 90; // Siri voices are natively neural
-    if (name.includes('premium') || name.includes('enhanced')) score += 80;
-    if (name.includes('samantha') || name.includes('daniel') || name.includes('karen') || name.includes('rishi') || name.includes('lekha')) score += 40;
+    // -- GOOGLE HIGH-FIDELITY VOICES (Smooth, Human Neural) --
+    if (name.includes('google')) score += 180;
 
-    // -- ANDROID & CHROME TIER --
-    // Google's network voices are vastly superior to local offline processing
-    if (name.includes('network') || name.includes('online')) score += 70;
-    if (name.includes('google')) score += 30;
+    // -- APPLE SIRI / ENHANCED / PREMIUM (100% Human Neural) --
+    if (name.includes('siri')) score += 250;
+    if (name.includes('premium') || name.includes('enhanced')) score += 200;
+    if (name.includes('samantha') || name.includes('daniel') || name.includes('karen') || name.includes('rishi') || name.includes('lekha')) score += 100;
 
-    // -- PENALTIES (Avoid Robotic Voices) --
-    // "Desktop" voices are legacy Windows 7/10 robotic engines (Zira, David)
-    if (name.includes('desktop')) score -= 200; 
-    // Old Android fallback voices sound highly synthesized
-    if (name.includes('android') && !name.includes('google')) score -= 100;
-
-    // Tie-breaker: If OS explicitly marks a voice as default, give it a slight bump
+    // Default system priority
     if (voice.default) score += 5;
 
     return score;
   };
 
-  // 3. Sort voices by score descending
-  candidates.sort((a, b) => scoreVoice(b) - scoreVoice(a));
+  // 3. Filter out robotic voices if ANY non-robotic alternative exists
+  const nonRoboticCandidates = candidates.filter(v => !isRoboticVoice(v));
+  const pool = nonRoboticCandidates.length > 0 ? nonRoboticCandidates : candidates;
+
+  // 4. Sort voices by score descending
+  pool.sort((a, b) => scoreVoice(b) - scoreVoice(a));
 
   // Return the highest scoring voice
-  const best = candidates[0] || null;
+  const best = pool[0] || null;
   if (best) {
     voiceCacheByLang.set(cleanLang, best);
   }

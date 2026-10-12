@@ -55,7 +55,6 @@ import {
 } from "@/lib/wellness-flow/confirm-intent-parser";
 import { wellnessStateMachine } from "@/lib/wellness-flow/wellness-state-machine";
 import type { WellnessLanguage } from "@/lib/wellness-flow/types";
-import { sessionTelemetry } from "@/lib/telemetry/session-telemetry";
 import { TelemetryConsentModal } from "./components/TelemetryConsentModal";
 import { saveLivePsychologyTelemetry, clearPsychologyTelemetry } from "@/lib/telemetry/psychology-store";
 import { getConditionById } from "@/lib/knowledge/psychology-library-rag";
@@ -267,7 +266,6 @@ export default function SanctuarySessionPage() {
   const currentLanguageRef = useRef<LanguageItem>(currentLanguage);
   const userLocaleRef = useRef<string>("en-US");
   const lastActiveWordIdxRef = useRef<number>(-1);
-  const highlighterDesyncCountRef = useRef<number>(0);
 
   useEffect(() => {
     messagesRef.current = messages;
@@ -435,36 +433,35 @@ export default function SanctuarySessionPage() {
       if (cleanWordList.length === 0) return;
 
       const prevIdx = lastActiveWordIdxRef.current;
-      const startScan = Math.max(0, prevIdx);
       let activeWordIdx = -1;
 
-      // 1. Fast bounded forward scan starting from last spoken word index
-      const maxForward = Math.min(cleanWordList.length, startScan + 4);
-      for (let i = startScan; i < maxForward; i++) {
-        const w = cleanWordList[i];
-        if (charIndex >= w.startChar && charIndex <= w.endChar) {
-          activeWordIdx = i;
-          break;
-        }
-      }
+      // 1. Direct match: find word token covering charIndex
+      activeWordIdx = cleanWordList.findIndex(
+        (w) => charIndex >= w.startChar && charIndex <= w.endChar
+      );
 
-      // 2. Local backwards recovery (up to 2 words)
-      if (activeWordIdx < 0) {
-        for (let i = startScan - 1; i >= Math.max(0, startScan - 2); i--) {
-          const w = cleanWordList[i];
-          if (charIndex >= w.startChar && charIndex <= w.endChar) {
-            activeWordIdx = i;
-            break;
+      // 2. Lexical word string recovery if direct range miss
+      if (activeWordIdx < 0 && wordText) {
+        const cleanTarget = wordText.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
+        if (cleanTarget) {
+          const startSearch = Math.max(0, prevIdx);
+          const endSearch = Math.min(cleanWordList.length, startSearch + 8);
+          for (let i = startSearch; i < endSearch; i++) {
+            if (cleanWordList[i].cleanWord === cleanTarget) {
+              activeWordIdx = i;
+              break;
+            }
+          }
+          if (activeWordIdx < 0) {
+            activeWordIdx = cleanWordList.findIndex((w) => w.cleanWord === cleanTarget);
           }
         }
       }
 
-      // 3. Local proximity fallback (strictly bounded to immediate neighborhood)
+      // 3. Proximity fallback: find nearest token by character offset
       if (activeWordIdx < 0) {
         let minD = Infinity;
-        const scanRangeStart = Math.max(0, startScan - 1);
-        const scanRangeEnd = Math.min(cleanWordList.length, startScan + 3);
-        for (let i = scanRangeStart; i < scanRangeEnd; i++) {
+        for (let i = 0; i < cleanWordList.length; i++) {
           const d = Math.abs(cleanWordList[i].startChar - charIndex);
           if (d < minD) {
             minD = d;
@@ -473,17 +470,12 @@ export default function SanctuarySessionPage() {
         }
       }
 
-      if (activeWordIdx < 0) activeWordIdx = startScan;
+      if (activeWordIdx < 0) activeWordIdx = Math.max(0, prevIdx);
       activeWordIdx = Math.max(0, Math.min(cleanWordList.length - 1, activeWordIdx));
 
-      // Monotonic and smooth progression safeguard:
-      // A human speaker speaks sequentially word-by-word; never allow skipping ahead faster than speech
-      if (prevIdx >= 0) {
-        if (activeWordIdx < prevIdx) {
-          activeWordIdx = prevIdx;
-        } else if (activeWordIdx > prevIdx + 1) {
-          activeWordIdx = prevIdx + 1;
-        }
+      // Monotonic progression: Never jump backwards during forward speech
+      if (prevIdx >= 0 && activeWordIdx < prevIdx) {
+        activeWordIdx = prevIdx;
       }
 
       // Skip duplicate state updates if activeWordIdx has not changed to avoid React render lag
@@ -623,22 +615,7 @@ export default function SanctuarySessionPage() {
 
     resetSafetyTimer();
 
-    // 1. Primary Engine: SpeechSynthesisUtterance.onboundary for millisecond-exact word & sentence tracking
-    if (typeof window !== "undefined" && "speechSynthesis" in window && window.speechSynthesis) {
-      try {
-        browserSpeechController.speakWithWebSpeechSynth(
-          effectiveClean,
-          undefined,
-          handleAudioEnd,
-          targetLocale
-        );
-        return;
-      } catch (synthErr) {
-        console.warn("SpeechSynthesisUtterance failed, fallback to direct audio/stream:", synthErr);
-      }
-    }
-
-    // 2. Fallback: Direct base64 MP3 audio playback if SpeechSynthesis is unavailable
+    // 1. If pre-generated neural audio is supplied, play it with synchronized tracking
     if (audioBase64) {
       playBase64AudioFallback(
         audioBase64,
@@ -653,7 +630,8 @@ export default function SanctuarySessionPage() {
       return;
     }
 
-    // 3. Fallback: Edge Neural Voice API
+    // 2. Primary Engine: High-Fidelity Microsoft Edge Neural Voice Streaming with 100% exact word boundaries
+    // Note: browserSpeechController.speak automatically falls back to natural Web Speech if offline or unreachable
     browserSpeechController.speak(effectiveClean, undefined, handleAudioEnd, targetLocale);
   }, []);
 

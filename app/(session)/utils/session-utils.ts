@@ -88,15 +88,31 @@ export const playBase64AudioFallback = (
     const audio = new Audio(`data:audio/mp3;base64,${audioBase64}`);
     setActiveAudio(audio);
 
+    const rawWords = effectiveClean.split(/\s+/).filter(Boolean);
+    let cursor = 0;
+    const tokens = rawWords.map((w, idx) => {
+      const start = effectiveClean.indexOf(w, cursor);
+      const actualStart = start >= 0 ? start : cursor;
+      const end = actualStart + w.length;
+      cursor = end;
+      return { word: w, startChar: actualStart, endChar: end, wordIndex: idx };
+    });
+
     let animFrame: number | null = null;
+    let lastWordIndex = -1;
+
     const trackBase64Progress = () => {
       if (!audio || audio.paused || !audio.duration) return;
       const progress = Math.min(1, Math.max(0, audio.currentTime / audio.duration));
-      const charIndex = Math.min(effectiveClean.length - 1, Math.floor(progress * effectiveClean.length));
-      const prefix = effectiveClean.slice(0, charIndex);
-      const words = prefix.trim().split(/\s+/).filter(Boolean);
-      const currentWord = words[words.length - 1] || "";
-      handleWordBoundary(charIndex, currentWord.length, currentWord);
+      const targetChar = Math.min(effectiveClean.length - 1, Math.floor(progress * effectiveClean.length));
+
+      const activeToken = tokens.find((t) => targetChar >= t.startChar && targetChar <= t.endChar) ||
+        tokens[Math.min(tokens.length - 1, Math.floor(progress * tokens.length))];
+
+      if (activeToken && activeToken.wordIndex !== lastWordIndex) {
+        lastWordIndex = activeToken.wordIndex;
+        handleWordBoundary(activeToken.startChar, activeToken.word.length, activeToken.word);
+      }
       animFrame = requestAnimationFrame(trackBase64Progress);
     };
 

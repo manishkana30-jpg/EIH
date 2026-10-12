@@ -1047,19 +1047,13 @@ export class BrowserSpeechController {
     const baseLang = cleanLocaleKey.split('-')[0];
     const selectedVoice = REGIONAL_NEURAL_VOICE_MAP[cleanLocaleKey] || REGIONAL_NEURAL_VOICE_MAP[baseLang] || 'en-US-AriaNeural';
 
-    // 1. Primary: Real-Time Word & Sentence Boundary Highlighting (Karaoke Mode)
-    // Uses native SpeechSynthesisUtterance.onboundary for millisecond-accurate boundary events!
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window && this.speechSynth) {
-      return this.speakWithWebSpeechSynth(cleanText, onStart, onEnd, effectiveLocale);
-    }
-
     this.stopListeningInternals();
     this.cancelSpeech();
     this.isSpeaking = true;
     this.callbacks.onAssistantStart?.();
     onStart?.();
 
-    // 2. Fallback: High-Fidelity Microsoft Edge Neural Voice Streaming with synchronized tracking
+    // 1. Primary Engine: High-Fidelity Microsoft Edge Neural Voice Streaming with 100% Exact Word Boundaries
     try {
       const backendUrl = typeof window !== 'undefined' && process.env.NEXT_PUBLIC_BACKEND_URL 
         ? process.env.NEXT_PUBLIC_BACKEND_URL.replace(/\/$/, '') 
@@ -1067,9 +1061,16 @@ export class BrowserSpeechController {
       const voiceBase = backendUrl ? `${backendUrl}/api/voice` : '/api/voice';
 
       let isFinished = false;
+      let animId: number | null = null;
       const finishSpeech = () => {
         if (isFinished) return;
         isFinished = true;
+        this.lastSpeechEndTime = Date.now();
+
+        if (animId) {
+          cancelAnimationFrame(animId);
+          animId = null;
+        }
 
         if (this.ttsWatchdogTimer) {
           clearTimeout(this.ttsWatchdogTimer);
@@ -1117,44 +1118,103 @@ export class BrowserSpeechController {
       };
 
       const wordCount = cleanText.split(/\s+/).length;
-      const maxEstimatedDurationMs = Math.max(4000, (wordCount / 2.0) * 1000 + 5000);
+      const maxEstimatedDurationMs = Math.max(5000, (wordCount / 1.5) * 1000 + 6000);
       this.ttsWatchdogTimer = setTimeout(() => {
         if (!isFinished && this.isSpeaking) {
           finishSpeech();
         }
       }, maxEstimatedDurationMs);
 
-      // Fetch neural audio stream (Prefer POST for longer payloads to prevent URI overflow)
+      // Fetch neural audio stream with WordBoundary request
       let res: Response;
-      if (cleanText.length > 200) {
-        res = await fetch(voiceBase, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            text: cleanText,
-            voice: selectedVoice,
-            locale: effectiveLocale,
-            rate: '-12%',
-          }),
-          signal: AbortSignal.timeout(3000),
-        });
-      } else {
+      const payload = {
+        text: cleanText,
+        voice: selectedVoice,
+        locale: effectiveLocale,
+        rate: '-12%',
+        format: 'json',
+        boundary: '1',
+      };
+
+      res = await fetch(voiceBase, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json, audio/mpeg' },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(6000),
+      }).catch(async () => {
+        // Fallback to GET if POST times out or fails
         const voiceParam = encodeURIComponent(selectedVoice);
         const localeParam = encodeURIComponent(effectiveLocale);
-        const voiceUrl = `${voiceBase}?text=${encodeURIComponent(cleanText)}&voice=${voiceParam}&locale=${localeParam}&rate=-12%`;
-        res = await fetch(voiceUrl, {
-          signal: AbortSignal.timeout(3000),
-        });
+        const voiceUrl = `${voiceBase}?text=${encodeURIComponent(cleanText)}&voice=${voiceParam}&locale=${localeParam}&rate=-12%&format=json&boundary=1`;
+        return fetch(voiceUrl, { signal: AbortSignal.timeout(6000) });
+      });
+
+      if (!res || !res.ok) {
+        throw new Error(`Neural voice stream response ${res ? res.status : 'failed'}`);
       }
 
-      if (!res.ok) {
-        throw new Error(`Neural voice stream response ${res.status}`);
+      let audioBlob: Blob;
+      let wordBoundaries: any[] = [];
+
+      const contentType = res.headers.get('content-type') || '';
+      if (contentType.includes('application/json')) {
+        const json = await res.json();
+        if (json.audio) {
+          const binaryStr = atob(json.audio);
+          const bytes = new Uint8Array(binaryStr.length);
+          for (let i = 0; i < binaryStr.length; i++) {
+            bytes[i] = binaryStr.charCodeAt(i);
+          }
+          audioBlob = new Blob([bytes], { type: 'audio/mpeg' });
+          wordBoundaries = json.wordBoundaries || [];
+        } else {
+          throw new Error('Neural voice JSON missing audio data');
+        }
+      } else {
+        audioBlob = await res.blob();
       }
 
-      const audioBlob = await res.blob();
       if (audioBlob.size < 100) {
         throw new Error('Neural voice returned empty payload');
       }
+
+      // Build word mapping table for 100% synchronized highlighting
+      const wordMap = this.buildWordTrackingMap(cleanText, wordBoundaries);
+      let lastReportedIdx = -1;
+
+      const updateWordHighlight = (currentSec: number, totalDurationSec: number) => {
+        if (!this.isSpeaking || wordMap.length === 0) return;
+        const currentMs = currentSec * 1000;
+        let activeItem: any = null;
+
+        if (wordBoundaries && wordBoundaries.length > 0) {
+          for (let i = 0; i < wordMap.length; i++) {
+            const m = wordMap[i];
+            if (currentMs >= m.startMs && currentMs <= m.endMs + 100) {
+              activeItem = m;
+              break;
+            }
+            if (currentMs < m.startMs) {
+              activeItem = i > 0 ? wordMap[i - 1] : wordMap[0];
+              break;
+            }
+          }
+          if (!activeItem && currentMs >= (wordMap[wordMap.length - 1]?.startMs || 0)) {
+            activeItem = wordMap[wordMap.length - 1];
+          }
+        } else {
+          const totalDur = totalDurationSec || (cleanText.length / 10.0);
+          const progress = Math.min(1, Math.max(0, currentSec / totalDur));
+          const targetChar = Math.min(cleanText.length - 1, Math.floor(progress * cleanText.length));
+          activeItem = wordMap.find((w) => targetChar >= w.startChar && targetChar <= w.endChar) ||
+            wordMap[Math.min(wordMap.length - 1, Math.floor(progress * wordMap.length))];
+        }
+
+        if (activeItem && activeItem.wordIndex !== lastReportedIdx) {
+          lastReportedIdx = activeItem.wordIndex;
+          this.callbacks.onWordBoundary?.(activeItem.startChar, activeItem.text.length, activeItem.text);
+        }
+      };
 
       // Method A: HTMLAudioElement with local blob: URL
       try {
@@ -1166,19 +1226,16 @@ export class BrowserSpeechController {
         const audio = new Audio(blobUrl);
         this.currentAudioElement = audio;
 
+        const loopTrack = () => {
+          if (!this.isSpeaking || !this.currentAudioElement) return;
+          updateWordHighlight(audio.currentTime, audio.duration || 0);
+          animId = requestAnimationFrame(loopTrack);
+        };
+
         audio.onplay = () => {
           this.isSpeaking = true;
           this.callbacks.onAssistantStart?.();
-        };
-
-        audio.ontimeupdate = () => {
-          if (!audio.duration || audio.duration === 0) return;
-          const progress = Math.min(1, Math.max(0, audio.currentTime / audio.duration));
-          const charIndex = Math.min(cleanText.length - 1, Math.floor(progress * cleanText.length));
-          const prefix = cleanText.slice(0, charIndex);
-          const words = prefix.trim().split(/\s+/).filter(Boolean);
-          const currentWord = words[words.length - 1] || '';
-          this.callbacks.onWordBoundary?.(charIndex, currentWord.length, currentWord);
+          animId = requestAnimationFrame(loopTrack);
         };
 
         audio.onended = finishSpeech;
@@ -1187,7 +1244,7 @@ export class BrowserSpeechController {
           console.warn('HTMLAudioElement error on blob, trying Web Audio decoding fallback...');
           await this.playWithAudioContext(audioBlob, finishSpeech, () => {
             this.speakWithWebSpeechSynth(cleanText, onStart, onEnd, effectiveLocale);
-          }, cleanText);
+          }, cleanText, wordBoundaries);
         };
 
         await audio.play();
@@ -1197,7 +1254,7 @@ export class BrowserSpeechController {
         // Method B: Web Audio API AudioBufferSourceNode (Bypasses HTML5 Autoplay restrictions)
         await this.playWithAudioContext(audioBlob, finishSpeech, () => {
           this.speakWithWebSpeechSynth(cleanText, onStart, onEnd, effectiveLocale);
-        }, cleanText);
+        }, cleanText, wordBoundaries);
         return;
       }
     } catch (neuralErr) {
@@ -1205,9 +1262,63 @@ export class BrowserSpeechController {
         clearTimeout(this.ttsWatchdogTimer);
         this.ttsWatchdogTimer = null;
       }
-      console.warn('Neural voice stream unreachable, falling back to Web Speech synthesis:', neuralErr);
+      console.warn('Neural voice stream unreachable, falling back to Web Speech synthesis with natural voice filter:', neuralErr);
       await this.speakWithWebSpeechSynth(cleanText, onStart, onEnd, effectiveLocale);
     }
+  }
+
+  /**
+   * Pre-builds word offset and timing map for 100% exact boundary synchronization.
+   */
+  private buildWordTrackingMap(
+    cleanText: string,
+    wordBoundaries?: Array<{ offset_ms?: number; offsetMs?: number; duration_ms?: number; durationMs?: number; text?: string }>
+  ) {
+    if (wordBoundaries && wordBoundaries.length > 0) {
+      let cursor = 0;
+      return wordBoundaries.map((wb, idx) => {
+        const text = (wb.text || '').trim();
+        const startMs = Number(wb.offset_ms ?? wb.offsetMs ?? 0);
+        const durationMs = Number(wb.duration_ms ?? wb.durationMs ?? 0);
+        const endMs = startMs + durationMs;
+        let startChar = cleanText.indexOf(text, cursor);
+        if (startChar < 0) {
+          startChar = cursor;
+        }
+        const endChar = startChar + text.length;
+        cursor = endChar;
+        return {
+          wordIndex: idx,
+          startMs,
+          durationMs,
+          endMs,
+          text,
+          startChar,
+          endChar,
+        };
+      });
+    }
+
+    // Fallback tokenization when boundary JSON is not present
+    const rawWords = cleanText.split(/\s+/).filter(Boolean);
+    const words: Array<{ wordIndex: number; startMs: number; durationMs: number; endMs: number; text: string; startChar: number; endChar: number }> = [];
+    let cursor = 0;
+    rawWords.forEach((w, idx) => {
+      const startChar = cleanText.indexOf(w, cursor);
+      const actualStart = startChar >= 0 ? startChar : cursor;
+      const endChar = actualStart + w.length;
+      cursor = endChar;
+      words.push({
+        wordIndex: idx,
+        startMs: 0,
+        durationMs: 0,
+        endMs: 0,
+        text: w,
+        startChar: actualStart,
+        endChar,
+      });
+    });
+    return words;
   }
 
   /**
@@ -1217,7 +1328,8 @@ export class BrowserSpeechController {
     blob: Blob,
     onEnded: () => void,
     onFallback: () => void,
-    cleanText?: string
+    cleanText?: string,
+    wordBoundaries?: any[]
   ): Promise<void> {
     try {
       if (!this.audioCtx) {
@@ -1246,18 +1358,43 @@ export class BrowserSpeechController {
       let animId: number | null = null;
       const startTime = this.audioCtx.currentTime;
       const totalDuration = audioBuffer.duration;
+      const wordMap = cleanText ? this.buildWordTrackingMap(cleanText, wordBoundaries) : [];
+      let lastReportedIdx = -1;
 
       const trackProgress = () => {
         if (!this.audioCtx || !this.isSpeaking || !cleanText) return;
-        const elapsed = this.audioCtx.currentTime - startTime;
-        if (elapsed >= totalDuration) return;
+        const elapsedSec = this.audioCtx.currentTime - startTime;
+        if (elapsedSec >= totalDuration) return;
 
-        const progress = Math.min(1, Math.max(0, elapsed / totalDuration));
-        const charIndex = Math.min(cleanText.length - 1, Math.floor(progress * cleanText.length));
-        const prefix = cleanText.slice(0, charIndex);
-        const words = prefix.trim().split(/\s+/).filter(Boolean);
-        const currentWord = words[words.length - 1] || '';
-        this.callbacks.onWordBoundary?.(charIndex, currentWord.length, currentWord);
+        const currentMs = elapsedSec * 1000;
+        let activeItem: any = null;
+
+        if (wordBoundaries && wordBoundaries.length > 0) {
+          for (let i = 0; i < wordMap.length; i++) {
+            const m = wordMap[i];
+            if (currentMs >= m.startMs && currentMs <= m.endMs + 100) {
+              activeItem = m;
+              break;
+            }
+            if (currentMs < m.startMs) {
+              activeItem = i > 0 ? wordMap[i - 1] : wordMap[0];
+              break;
+            }
+          }
+          if (!activeItem && currentMs >= (wordMap[wordMap.length - 1]?.startMs || 0)) {
+            activeItem = wordMap[wordMap.length - 1];
+          }
+        } else {
+          const progress = Math.min(1, Math.max(0, elapsedSec / totalDuration));
+          const targetChar = Math.min(cleanText.length - 1, Math.floor(progress * cleanText.length));
+          activeItem = wordMap.find((w) => targetChar >= w.startChar && targetChar <= w.endChar) ||
+            wordMap[Math.min(wordMap.length - 1, Math.floor(progress * wordMap.length))];
+        }
+
+        if (activeItem && activeItem.wordIndex !== lastReportedIdx) {
+          lastReportedIdx = activeItem.wordIndex;
+          this.callbacks.onWordBoundary?.(activeItem.startChar, activeItem.text.length, activeItem.text);
+        }
 
         animId = requestAnimationFrame(trackProgress);
       };

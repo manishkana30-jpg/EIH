@@ -40,7 +40,9 @@ export async function GET(request: NextRequest) {
   const text = searchParams.get('text') || '';
   const rawVoice = searchParams.get('voice') || '';
   const locale = searchParams.get('locale') || '';
-  const rate = searchParams.get('rate') || '-14%';
+  const rate = searchParams.get('rate') || '-12%';
+  const format = searchParams.get('format') || '';
+  const boundary = searchParams.get('boundary') || '';
 
   if (!text.trim()) {
     return new NextResponse('Missing text query parameter', { status: 400 });
@@ -50,14 +52,33 @@ export async function GET(request: NextRequest) {
   const backendUrl = (process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000').replace(/\/$/, '');
 
   try {
-    const targetUrl = `${backendUrl}/api/voice?text=${encodeURIComponent(text)}&voice=${encodeURIComponent(voice)}&locale=${encodeURIComponent(locale)}&rate=${encodeURIComponent(rate)}`;
+    let targetUrl = `${backendUrl}/api/voice?text=${encodeURIComponent(text)}&voice=${encodeURIComponent(voice)}&locale=${encodeURIComponent(locale)}&rate=${encodeURIComponent(rate)}`;
+    if (format === 'json' || boundary === '1') {
+      targetUrl += `&format=json&boundary=1`;
+    }
+
+    const headers: Record<string, string> = {
+      Accept: format === 'json' || boundary === '1' ? 'application/json, audio/mpeg' : 'audio/mpeg',
+    };
+
     const backendRes = await fetch(targetUrl, {
       method: 'GET',
-      headers: { 'Accept': 'audio/mpeg' },
+      headers,
     });
 
     if (!backendRes.ok) {
       return new NextResponse(`TTS backend error: ${backendRes.status}`, { status: backendRes.status });
+    }
+
+    const contentType = backendRes.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      const data = await backendRes.json();
+      return NextResponse.json(data, {
+        status: 200,
+        headers: {
+          'Cache-Control': 'public, max-age=3600, immutable',
+        },
+      });
     }
 
     const audioBuffer = await backendRes.arrayBuffer();
@@ -83,7 +104,9 @@ export async function POST(request: NextRequest) {
     const text = body.text || '';
     const rawVoice = body.voice;
     const locale = body.locale || '';
-    const rate = body.rate || '-14%';
+    const rate = body.rate || '-12%';
+    const format = body.format || '';
+    const boundary = body.boundary || false;
 
     if (!text.trim()) {
       return new NextResponse('Missing text in request body', { status: 400 });
@@ -91,17 +114,30 @@ export async function POST(request: NextRequest) {
 
     const voice = resolveVoice(text, rawVoice, locale);
     const backendUrl = (process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000').replace(/\/$/, '');
+    
+    const wantsJson = format === 'json' || boundary === true || boundary === '1';
     const backendRes = await fetch(`${backendUrl}/api/voice`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'audio/mpeg',
+        'Accept': wantsJson ? 'application/json, audio/mpeg' : 'audio/mpeg',
       },
-      body: JSON.stringify({ text, voice, locale, rate }),
+      body: JSON.stringify({ text, voice, locale, rate, format: wantsJson ? 'json' : format, boundary: wantsJson ? '1' : boundary }),
     });
 
     if (!backendRes.ok) {
       return new NextResponse(`TTS backend error: ${backendRes.status}`, { status: backendRes.status });
+    }
+
+    const contentType = backendRes.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      const data = await backendRes.json();
+      return NextResponse.json(data, {
+        status: 200,
+        headers: {
+          'Cache-Control': 'public, max-age=3600, immutable',
+        },
+      });
     }
 
     const audioBuffer = await backendRes.arrayBuffer();
