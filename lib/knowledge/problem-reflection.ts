@@ -537,6 +537,20 @@ function extractDynamicClause(message: string): string {
 }
 
 /**
+ * Checks whether an utterance constitutes an active problem statement or life challenge
+ * requiring therapeutic reflection rather than casual small-talk.
+ */
+export function isExplicitProblemStatement(message: string): boolean {
+  if (!message || typeof message !== 'string') return false;
+  const trimmed = message.trim();
+  const wordCount = trimmed.split(/\s+/).length;
+  if (wordCount < 3) return false;
+  const isGreetingOrTest = /^(hello|hi|hey|good morning|good evening|good afternoon|namaste|pranam|test|testing|mic check|one two three|just checking)\b/i.test(trimmed);
+  if (isGreetingOrTest) return false;
+  return true;
+}
+
+/**
  * Analyzes the user's message and returns the exact clinical problem category,
  * localized description, and empathic reflection opening.
  */

@@ -34,6 +34,7 @@ import {
   detectTratakaModeFromText,
   normalizeTratakaMode,
 } from '../knowledge/trataka-recommendations';
+import { isExplicitProblemStatement } from '../knowledge/problem-reflection';
 
 import { VoiceAcousticState } from '../types/emotions';
 
@@ -452,15 +453,17 @@ class HealerBackendClient {
       const gitaItem = findGitaWisdom(cleanMessage);
 
       const targetLang = normalizeLanguageCode(effectiveLanguage);
-      const hasDistressKeywords = /(?:distress|anxious|anxiety|depress|depressed|depression|sad|sadness|fear|scared|panic|stress|stressed|overwhelm|overwhelmed|worry|worried|grief|pain|burnout|lonely|loneliness|angry|anger|trauma|shame|guilt|fail|failed|failure|terrif|crying|tears|breakup|heartbreak|heartbroken|debt|debts|financial|burden|burdened|broke|struggling|struggle|loans|bills|hopeless|hopelessness|empty|numb|insomnia|can't sleep|cant sleep|insecure|rejection|rejected|abandoned|confused|restless|exhausted|fatigue|unmotivated|frustrated|frustration|hurting|suffering|mental problem|mental health|overthinking|racing thoughts|fight|argument|conflict|alone|nobody cares|chinta|tanaav|udas|gussa|troubled|need help|please help me|help me please|someone help me|help me i'm|help me i am|दर्द|रोना|रो |रोने|रोऊ|दुःख|दुख|तनाव|चिंता|उदासी|डर|घबराहट|घबरा|ब्रेकअप|परेशान|पीड़ा|कष्ट|क्रोध|अकेला|हार|असफल|टूटा|कर्ज|कर्जा|ऋण|बोझ|निराश|निराशा|उलझन|बेचैन|बेचैनी|थकान|थका|अच्छा नहीं|कुछ अच्छा नहीं|कुछ ठीक नहीं|ठीक नहीं लग|मन नहीं लग|टेंशन|तनावग्रस्त|रोना आ रहा|बुरा लग|उदासी)/i.test(cleanMessage);
+      const hasDistressKeywords = /(?:distress|anxious|anxiety|depress|depressed|depression|sad|sadness|fear|scared|panic|stress|stressed|overwhelm|overwhelmed|worry|worried|grief|pain|burnout|lonely|loneliness|angry|anger|trauma|shame|guilt|fail|failed|failure|terrif|crying|tears|breakup|heartbreak|heartbroken|debt|debts|financial|burden|burdened|broke|struggling|struggle|loans|bills|hopeless|hopelessness|empty|numb|insomnia|can't sleep|cant sleep|insecure|rejection|rejected|abandoned|confused|restless|exhausted|fatigue|unmotivated|frustrated|frustration|hurting|suffering|mental problem|mental health|overthinking|racing thoughts|fight|argument|conflict|alone|nobody cares|chinta|tanaav|udas|gussa|troubled|need help|please help me|help me please|someone help me|help me i'm|help me i am|landlord|evict|eviction|leave.*house|vacate|housing|fired|jobless|unemployed|dard|रोना|रो |रोने|रोऊ|दुःख|दुख|तनाव|चिंता|उदासी|डर|घबराहट|घबरा|ब्रेकअप|परेशान|पीड़ा|कष्ट|क्रोध|अकेला|हार|असफल|टूटा|कर्ज|कर्जा|ऋण|बोझ|निराश|निराशा|उलझन|बेचैन|बेचैनी|थकान|थका|अच्छा नहीं|कुछ अच्छा नहीं|कुछ ठीक नहीं|ठीक नहीं लग|मन नहीं लग|टेंशन|तनावग्रस्त|रोना आ रहा|बुरा लग|उदासी|मकान मालिक|घर खाली|बेदखल)/i.test(cleanMessage);
 
       const hasPositiveOrCalmExplicit =
         /(happy|great|excited|peaceful|calm|relaxed|wonderful|grateful|joy|glad|blessed|good|doing well|girlfriend|boyfriend|in love|new partner|dating|promoted|celebrat|प्रसन्न|खुश|आनंद|शांत|शांति|बढ़िया|ठीक हूँ)/i.test(cleanMessage);
 
       const isSolutionRequest = isExplicitSolutionOrTherapyRequest(cleanMessage);
+      const isProblemStatement = isExplicitProblemStatement(cleanMessage);
 
       const isPositiveOrNeutral =
         !isSolutionRequest &&
+        !isProblemStatement &&
         !hasDistressKeywords &&
         hasPositiveOrCalmExplicit &&
         (diag.dimensionId === 'joy' ||
@@ -483,6 +486,7 @@ class HealerBackendClient {
 
       const hasEmotionalDistressSignal =
         isSolutionRequest ||
+        isProblemStatement ||
         hasDistressKeywords ||
         hasAcousticDistress ||
         libraryResult !== null ||
@@ -498,7 +502,7 @@ class HealerBackendClient {
       const isFollowUpTurn = Boolean(history && history.length >= 1);
 
       let fallbackReply = '';
-      if (isInquiry && !isSolutionRequest) {
+      if (isInquiry && !isSolutionRequest && !isProblemStatement) {
         fallbackReply = generateInquiryResponse(
           cleanMessage,
           targetLang,
@@ -519,6 +523,7 @@ class HealerBackendClient {
       } else if (hasClinicalDistress) {
         const isAcuteInitialPresentation =
           isSolutionRequest ||
+          isProblemStatement ||
           hasDistressKeywords ||
           (libraryResult !== null && (diag.coreAffect?.valence ?? 0) <= -0.15);
 

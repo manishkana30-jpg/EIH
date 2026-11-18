@@ -445,6 +445,12 @@ export function parseTherapeuticStages(rawText: string, locale?: string): Struct
     if (sumMatch) summary = sumMatch[1].trim();
   }
 
+  // Strip leading/trailing markdown asterisks or formatting tokens
+  if (summary) summary = summary.replace(/^\*+\s*/, '').replace(/\*+$/, '').trim();
+  if (emotionName) emotionName = emotionName.replace(/^\*+\s*/, '').replace(/\*+$/, '').trim();
+  if (severity) severity = severity.replace(/^\*+\s*/, '').replace(/\*+$/, '').trim();
+  if (bodilyBurden) bodilyBurden = bodilyBurden.replace(/^\*+\s*/, '').replace(/\*+$/, '').trim();
+
   // If summary not found in diagPart, check if rawParts[0] was an opening empathic reflection sentence
   if (!summary && rawParts.length > 0 && !rawParts[0].startsWith('**')) {
     const firstPart = rawParts[0].trim();
