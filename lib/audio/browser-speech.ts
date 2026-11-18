@@ -551,10 +551,16 @@ export class BrowserSpeechController {
 
     try {
       const isIOS = typeof navigator !== 'undefined' && /iPhone|iPad|iPod/i.test(navigator.userAgent);
+      const isMobileDevice =
+        typeof navigator !== 'undefined' &&
+        /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
       const recognition = new SpeechRec();
-      // On iOS Safari, continuous = true triggers premature aborts and audio session conflicts.
-      // Use continuous = false on iOS with automatic keep-alive on onend when still in active listening state.
+      // On iOS Safari and Android Chrome, continuous = true triggers premature aborts, audio session conflicts, and duplication.
+      // Use continuous = false on mobile with automatic keep-alive on onend when still in active listening state.
       recognition.continuous = !isIOS;
+      if (isMobileDevice) {
+        recognition.continuous = false;
+      }
       recognition.interimResults = true;
       recognition.maxAlternatives = 1;
 
@@ -580,15 +586,18 @@ export class BrowserSpeechController {
         if (this.isProcessingUtterance) return;
 
         let interimText = '';
-        let newFinalText = '';
+        let sessionFinalText = '';
         let hasFinalResult = false;
 
-        for (let i = event.resultIndex || 0; i < event.results.length; ++i) {
+        // In Web Speech API, event.results is a cumulative list for the current recognition session.
+        // On Android Chrome, event.resultIndex is frequently 0 on every callback.
+        // Reading event.results cleanly from 0 prevents repeating/double-typing previously finalized words.
+        for (let i = 0; i < event.results.length; ++i) {
           const res = event.results[i];
           if (res && res[0]) {
             const transcript = res[0].transcript || '';
             if (res.isFinal) {
-              newFinalText += transcript + ' ';
+              sessionFinalText += transcript + ' ';
               hasFinalResult = true;
             } else {
               interimText += transcript;
@@ -596,11 +605,12 @@ export class BrowserSpeechController {
           }
         }
 
-        if (newFinalText.trim()) {
-          this.accumulatedFinalText += (this.accumulatedFinalText ? ' ' : '') + newFinalText.trim();
-        }
+        const candidate = (
+          (this.accumulatedFinalText ? this.accumulatedFinalText + ' ' : '') +
+          (sessionFinalText ? sessionFinalText.trim() + ' ' : '') +
+          interimText
+        ).trim();
 
-        const candidate = (this.accumulatedFinalText + (interimText ? ' ' + interimText : '')).trim();
         if (candidate) {
           this.liveInterimTranscript = candidate;
           // Zero-latency word-by-word streaming to UI

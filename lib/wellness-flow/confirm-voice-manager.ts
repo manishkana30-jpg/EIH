@@ -270,8 +270,12 @@ export class ConfirmVoiceManager {
 
     try {
       const isIOS = typeof navigator !== 'undefined' && /iPhone|iPad|iPod/i.test(navigator.userAgent);
+      const isMobile = typeof navigator !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
       const recognizer = new SpeechRec();
       recognizer.continuous = !isIOS;
+      if (isMobile) {
+        recognizer.continuous = false;
+      }
       recognizer.interimResults = true;
       recognizer.maxAlternatives = 1;
 

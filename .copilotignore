@@ -1,0 +1,31 @@
+# =========================================================================
+# Emotional Intelligence Healer (EIH) — GitHub Copilot Context Isolation (.copilotignore)
+# Prevents GitHub Copilot from indexing ephemeral reports, databases, and heavy fixtures.
+# =========================================================================
+
+# Virtual environments & dependencies
+**/.venv/**
+**/node_modules/**
+**/.next/**
+
+# Test artifacts & historical audit reports
+**/test-results/**
+**/playwright-report/**
+**/reports/**
+**/.coverage/**
+**/htmlcov/**
+
+# Large data and model dumps
+**/clinical_memory_db/**
+**/whisper_models/**
+**/tests/data/**
+**/tests/dom-map.md
+**/tests/dom-audio-map.md
+
+# Media & temp files
+**/*.mp3
+**/*.wav
+**/*.webm
+**/*.log
+**/.tmp.*/**
+**/scratch/**

@@ -1105,6 +1105,7 @@ const KaraokeMessageComponent: React.FC<KaraokeMessageProps> = ({
               const isSynergy = isLastCard || (!isLastCard && (part.startsWith("**4.") || part.toLowerCase().includes("synerg")));
               const isDiagnostic = !isLastCard && (part.startsWith("**SUMMARY") || part.includes("स्थिति व कष्ट"));
               const isGitaCard = !isLastCard && !isDiagnostic && !isSynergy && (part.startsWith("**1.") || part.includes("गीता"));
+              const isGita = !isLastCard && isGitaCard;
 
               let badgeLabel = "";
               if (isSynergy) {
@@ -1122,7 +1123,7 @@ const KaraokeMessageComponent: React.FC<KaraokeMessageProps> = ({
                       {badgeLabel}
                     </span>
                   )}
-                  {!isLastCard && isGitaCard && gitaParsed.isGita && gitaParsed.shlokaBlock && (
+                  {isGita && gitaParsed.isGita && gitaParsed.shlokaBlock && (
                     <div data-tts-silent="true" data-tts-skip="true" className="tts-skip select-text my-2">
                       <GitaShlokaCard shlokaContent={gitaParsed.shlokaBlock} variant="inline" />
                     </div>

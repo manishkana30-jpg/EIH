@@ -1,0 +1,68 @@
+# =========================================================================
+# Emotional Intelligence Healer (EIH) — Cursor AI Context Isolation (.cursorignore)
+# Prevents AI models from ingesting noise, binary dumps, and ephemeral files.
+# =========================================================================
+
+# Python virtual environment & caches
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Node.js & build outputs
+node_modules/
+.next/
+out/
+dist/
+build/
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# Test run artifacts & reports
+test-results/
+playwright-report/
+reports/
+.nyc_output/
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Large fixtures, raw data dumps & selector inventories
+tests/data/
+tests/dom-map.md
+tests/dom-audio-map.md
+data/learned_psychology_documents.json
+data/clinical_localization.json
+
+# Local vector databases & ML models
+clinical_memory_db/
+whisper_models/
+*.bin
+*.pt
+
+# Media, video, and audio recordings
+*.mp3
+*.wav
+*.webm
+*.ogg
+*.flac
+*.m4a
+
+# Google Drive sync & scratchpads
+.tmp.driveupload/
+.tmp.drivedownload/
+scratch/
+*.backup
+*.backup.json
+*.tmp
+*.log
+scratch_chrome_*/
+
+# IDE & OS caches
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

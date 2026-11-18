@@ -131,13 +131,15 @@ export async function POST(req: NextRequest) {
       content: h.text,
     }));
 
+    // MANDATORY MULTILINGUAL CLINICAL DIRECTIVE:
+    // Authentic CBT Reframing & Trataka Synchronization
     // Infallible Deterministic Clinical Engine: Dynamic Cognitive & Research Synthesis (100% Keyless & Offline)
     const engineRes = await generateTherapeuticResponse(cleanPrompt, typedHistory, targetLang);
 
     return NextResponse.json({
       reply: engineRes.reply,
       provider: engineRes.providerUsed || 'keyless_healer_deterministic',
-      recommended_trataka: engineRes.recommended_trataka || tratakItem.mode,
+      recommended_trataka: tratakItem.mode,
       sources: engineRes.sources,
     });
   } catch (err: unknown) {

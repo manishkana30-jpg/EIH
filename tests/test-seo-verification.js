@@ -165,7 +165,9 @@ console.log('================================================================');
 
 if (passCount === totalChecks) {
   console.log('🎉 ALL SEO CHECKS PASSED WITH 100% COMPLIANCE!');
-  process.exit(0);
+  if (require.main === module) {
+    process.exit(0);
+  }
 } else {
   console.error('❌ SOME CHECKS FAILED');
   process.exit(1);
