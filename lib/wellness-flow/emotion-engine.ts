@@ -14,6 +14,7 @@
 import { detectCrisis, type CrisisDetectionResult } from '../safety/crisis-detector.ts';
 import type { VoiceAcousticState } from '../types/emotions';
 import type { MoodProfile, ClarificationTurn, WellnessLanguage } from './types';
+import { extractSpecificProblemContext } from '../knowledge/problem-reflection.ts';
 import configOverrides from '../../learning/config-overrides.json' with { type: 'json' };
 
 // Self-learning Tier 1 overrides dynamically tuned from telemetry
@@ -312,174 +313,15 @@ export const DOMAIN_CONTEXT_PHRASES: Record<string, { en: string; hi: string; es
   },
 };
 
-export function extractLifeDomainAndContext(lower: string, _originalText?: string): { domain: string; contextPhraseEn: string; contextPhraseHi: string } {
-  // 1. Grief and Bereavement
-  if (
-    lower.includes('lost my') || lower.includes('passed away') || lower.includes('someone died') ||
-    lower.includes('grandmother') || lower.includes('grandfather') || lower.includes('mother died') ||
-    lower.includes('father died') || lower.includes('grieving') || lower.includes('mourning') ||
-    lower.includes('गुजर गए') || lower.includes('देहांत') || lower.includes('शोक') || lower.includes('निधन') ||
-    (lower.includes('खाली') && (lower.includes('घर') || lower.includes('house')))
-  ) {
-    return {
-      domain: 'grief_bereavement',
-      contextPhraseEn: DOMAIN_CONTEXT_PHRASES.grief_bereavement.en,
-      contextPhraseHi: DOMAIN_CONTEXT_PHRASES.grief_bereavement.hi,
-    };
-  }
+export function extractLifeDomainAndContext(lower: string, originalText?: string): { domain: string; contextPhraseEn: string; contextPhraseHi: string } {
+  const text = originalText || lower;
+  const enProblem = extractSpecificProblemContext(text, 'en');
+  const hiProblem = extractSpecificProblemContext(text, 'hi');
 
-  // 2. Breakup, Betrayal & Heartbreak
-  if (
-    lower.includes('breakup') || lower.includes('broke up') || lower.includes('heartbreak') || lower.includes('cheated') ||
-    lower.includes('dumped') || lower.includes('separated') || lower.includes('ब्रेकअप') || lower.includes('दिल टूट') ||
-    lower.includes('धोखा') || lower.includes('छोड़कर चला')
-  ) {
-    return {
-      domain: 'breakup_heartbreak',
-      contextPhraseEn: DOMAIN_CONTEXT_PHRASES.breakup_heartbreak.en,
-      contextPhraseHi: DOMAIN_CONTEXT_PHRASES.breakup_heartbreak.hi,
-    };
-  }
-
-  // 3. Financial and Debt
-  if (
-    lower.includes('कर्ज') || lower.includes('लोन') || lower.includes('उधारी') || lower.includes('आर्थिक तंगी') ||
-    lower.includes('पैसे की तंगी') || lower.includes('debt') || lower.includes('debts') || lower.includes('loan') ||
-    (!lower.includes('broke up') && !lower.includes('broke my') && /\bbroke\b/.test(lower)) ||
-    lower.includes('bills') || lower.includes('financial') || lower.includes('emi')
-  ) {
-    return {
-      domain: 'financial_debt',
-      contextPhraseEn: DOMAIN_CONTEXT_PHRASES.financial_debt.en,
-      contextPhraseHi: DOMAIN_CONTEXT_PHRASES.financial_debt.hi,
-    };
-  }
-
-  // 4. Interview, Exam & Evaluation
-  if (
-    lower.includes('interview') || lower.includes('exam') || lower.includes('evaluation') ||
-    lower.includes('presentation') || lower.includes('test') || lower.includes('upsc') || lower.includes('placement') ||
-    lower.includes('इंटरव्यू') || lower.includes('परीक्षा')
-  ) {
-    return {
-      domain: 'interview_exam',
-      contextPhraseEn: DOMAIN_CONTEXT_PHRASES.interview_exam.en,
-      contextPhraseHi: DOMAIN_CONTEXT_PHRASES.interview_exam.hi,
-    };
-  }
-
-  // 5. Interpersonal Humiliation / Conflict
-  if (
-    lower.includes('बेइज्जत') || lower.includes('humiliated') || lower.includes('insulted') ||
-    lower.includes('yelled at') || lower.includes('सबके सामने')
-  ) {
-    return {
-      domain: 'interpersonal_conflict',
-      contextPhraseEn: DOMAIN_CONTEXT_PHRASES.interpersonal_conflict.en,
-      contextPhraseHi: DOMAIN_CONTEXT_PHRASES.interpersonal_conflict.hi,
-    };
-  }
-
-  // 6. Workplace & Career Overload
-  if (
-    lower.includes('work') || lower.includes('job') || lower.includes('office') || lower.includes('boss') ||
-    lower.includes('deadline') || lower.includes('deadlines') || lower.includes('career') || lower.includes('burnout') ||
-    lower.includes('काम') || lower.includes('नौकरी') || lower.includes('ऑफिस') || lower.includes('बॉस')
-  ) {
-    return {
-      domain: 'work_career',
-      contextPhraseEn: DOMAIN_CONTEXT_PHRASES.work_career.en,
-      contextPhraseHi: DOMAIN_CONTEXT_PHRASES.work_career.hi,
-    };
-  }
-
-  // 7. Imposter Syndrome & Self-Worth
-  if (
-    lower.includes('failure') || lower.includes('imposter') || lower.includes('not good enough') ||
-    lower.includes('loser') || lower.includes('worthless') || lower.includes('hate myself') ||
-    lower.includes('shame') || lower.includes('ashamed') || lower.includes('अपराधबोध') || lower.includes('हीनभावना') ||
-    lower.includes('असफल') || lower.includes('नाकाबिल')
-  ) {
-    return {
-      domain: 'self_worth_imposter',
-      contextPhraseEn: DOMAIN_CONTEXT_PHRASES.self_worth_imposter.en,
-      contextPhraseHi: DOMAIN_CONTEXT_PHRASES.self_worth_imposter.hi,
-    };
-  }
-
-  // 8. Sleep Deprivation & Exhaustion
-  if (
-    lower.includes('haven\'t slept') || lower.includes('cannot sleep') || lower.includes('can\'t sleep') ||
-    lower.includes('insomnia') || lower.includes('exhausted') || lower.includes('zero energy') ||
-    lower.includes('नींद नहीं आती') || lower.includes('नींद नहीं आ रही') || lower.includes('अनिद्रा') ||
-    lower.includes('थकान') || lower.includes('ऊर्जा खत्म')
-  ) {
-    return {
-      domain: 'sleep_exhaustion',
-      contextPhraseEn: DOMAIN_CONTEXT_PHRASES.sleep_exhaustion.en,
-      contextPhraseHi: DOMAIN_CONTEXT_PHRASES.sleep_exhaustion.hi,
-    };
-  }
-
-  // 9. Health & Somatic Anxiety
-  if (
-    lower.includes('heart has been beating') || lower.includes('irregular') || lower.includes('chest is suffocating') ||
-    lower.includes('something serious') || lower.includes('palpitations') || lower.includes('doctor') ||
-    lower.includes('hospital') || lower.includes('sick') || lower.includes('illness') || lower.includes('disease') ||
-    lower.includes('दर्द') || lower.includes('बीमारी') || lower.includes('अस्पताल') || lower.includes('दिल तेजी')
-  ) {
-    return {
-      domain: 'health_somatic',
-      contextPhraseEn: DOMAIN_CONTEXT_PHRASES.health_somatic.en,
-      contextPhraseHi: DOMAIN_CONTEXT_PHRASES.health_somatic.hi,
-    };
-  }
-
-  // 10. Relationship & Family Tension
-  if (
-    lower.includes('partner') || lower.includes('husband') || lower.includes('wife') || lower.includes('family') ||
-    lower.includes('parents') || lower.includes('kids') || lower.includes('children') || lower.includes('marriage') ||
-    lower.includes('divorce') || lower.includes('fight') || lower.includes('argument') || lower.includes('snapped at') ||
-    lower.includes('परिवार') || lower.includes('पति') || lower.includes('पत्नी') || lower.includes('माता-पिता') ||
-    lower.includes('झगड़ा') || lower.includes('लड़ाई')
-  ) {
-    return {
-      domain: 'relationship_family',
-      contextPhraseEn: DOMAIN_CONTEXT_PHRASES.relationship_family.en,
-      contextPhraseHi: DOMAIN_CONTEXT_PHRASES.relationship_family.hi,
-    };
-  }
-
-  // 11. Future Uncertainty
-  if (
-    lower.includes('future') || lower.includes('uncertainty') || lower.includes('what if') || lower.includes('what will happen') ||
-    lower.includes('career is doomed') || lower.includes('भविष्य') || lower.includes('आगे क्या होगा') || lower.includes('दिशाहीन')
-  ) {
-    return {
-      domain: 'future_uncertainty',
-      contextPhraseEn: DOMAIN_CONTEXT_PHRASES.future_uncertainty.en,
-      contextPhraseHi: DOMAIN_CONTEXT_PHRASES.future_uncertainty.hi,
-    };
-  }
-
-  // 12. Loneliness & Isolation
-  if (
-    lower.includes('lonely') || lower.includes('loneliness') || lower.includes('alone') || lower.includes('isolated') ||
-    lower.includes('nobody understands') || lower.includes('nobody talks') || lower.includes('अकेला') || lower.includes('अकेलापन') ||
-    lower.includes('कोई बात नहीं करता')
-  ) {
-    return {
-      domain: 'loneliness',
-      contextPhraseEn: DOMAIN_CONTEXT_PHRASES.loneliness.en,
-      contextPhraseHi: DOMAIN_CONTEXT_PHRASES.loneliness.hi,
-    };
-  }
-
-  // Default: General Distress
   return {
-    domain: 'general_distress',
-    contextPhraseEn: DOMAIN_CONTEXT_PHRASES.general_distress.en,
-    contextPhraseHi: DOMAIN_CONTEXT_PHRASES.general_distress.hi,
+    domain: enProblem.category,
+    contextPhraseEn: enProblem.shortClause,
+    contextPhraseHi: hiProblem.shortClause,
   };
 }
 
@@ -1089,8 +931,13 @@ export class EmotionEngine {
     const seed = (profile.specific_context_phrase || '') + emotion + (profile.trigger_domain || '');
     const hash = Math.abs(seed.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) % 4;
 
+    const norm = (lang || 'en').toLowerCase().slice(0, 2);
     const domainKey = profile.trigger_domain || 'general_distress';
+    const localizedProblem = profile.specific_context_phrase
+      ? extractSpecificProblemContext(profile.specific_context_phrase, norm)
+      : null;
     const phrases = DOMAIN_CONTEXT_PHRASES[domainKey] || DOMAIN_CONTEXT_PHRASES['general_distress'];
+    const resolvedContext = localizedProblem ? localizedProblem.shortClause : ((phrases as any)[norm] || phrases.en);
 
     if (lang === 'hi') {
       const hiEmotionMap: Record<string, string> = {
@@ -1106,7 +953,7 @@ export class EmotionEngine {
         calm: 'शांति और सुकून',
       };
       const emoStr = hiEmotionMap[emotion] || 'तनाव';
-      const contextStr = phrases.hi;
+      const contextStr = resolvedContext;
 
       const hiVariants = [
         `आपकी बातों से ऐसा लग रहा है कि ${contextStr} आपके मन में ${emoStr} का भारी दबाव है। क्या मैं आपकी स्थिति को सही समझ पाया हूँ?`,
@@ -1118,7 +965,7 @@ export class EmotionEngine {
     }
 
     if (lang === 'es') {
-      const contextStr = phrases.es;
+      const contextStr = resolvedContext;
       const esVariants = [
         `Parece que estás experimentando un momento difícil respecto a ${contextStr}. ¿Es correcto cómo te sientes?`,
         `Comprendo que ${contextStr} te está generando una carga emocional significativa en este momento. ¿Refleja esto tu experiencia?`,
@@ -1129,7 +976,7 @@ export class EmotionEngine {
     }
 
     if (lang === 'fr') {
-      const contextStr = phrases.fr;
+      const contextStr = resolvedContext;
       const frVariants = [
         `Il semble que vous ressentiez une profonde émotion face à ${contextStr}. Est-ce bien ce que vous éprouvez ?`,
         `J'entends combien ${contextStr} pèse lourdement sur votre esprit en ce moment. Est-ce une perception exacte ?`,
@@ -1140,7 +987,7 @@ export class EmotionEngine {
     }
 
     if (lang === 'de') {
-      const contextStr = phrases.de;
+      const contextStr = resolvedContext;
       const deVariants = [
         `Es klingt so, als empfänden Sie im Zusammenhang mit ${contextStr} eine spürbare Belastung. Trifft das zu?`,
         `Ich spüre, wie sehr ${contextStr} Sie gerade emotional beschäftigt und unruhig macht. Verstehe ich das richtig?`,
@@ -1163,7 +1010,7 @@ export class EmotionEngine {
       'low motivation': 'low energy and lack of motivation',
     };
     const emoStr = enEmotionMap[emotion] || emotion;
-    const contextPhrase = phrases.en;
+    const contextPhrase = resolvedContext;
 
     const enVariants = [
       `It sounds like you're experiencing ${emoStr} around ${contextPhrase}. Does that capture what you're feeling?`,

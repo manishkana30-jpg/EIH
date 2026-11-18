@@ -12,6 +12,7 @@ import { findGitaWisdom, formatGitaShlokaBlock } from "../knowledge/gita-library
 import { resolveTratakaPrescription, TRATAKA_PRESCRIPTIONS, type TratakaModeId } from "../knowledge/trataka-recommendations.ts";
 import { getConditionById } from "../knowledge/psychology-library-rag.ts";
 import { emotionClassifier } from "../knowledge/emotion-classifier.ts";
+import { extractSpecificProblemContext } from "../knowledge/problem-reflection.ts";
 
 function getNodeRequire() {
   if (typeof process !== "undefined" && process.env && process.env.NEXT_RUNTIME === "edge") {
@@ -832,38 +833,9 @@ export function buildDiagnosticSufferingAssessment(
   let inputSummary = "";
   if (isPositive) {
     inputSummary = data.assessment.inputSummaries.positive;
-  } else if (lower.includes('debt') || lower.includes('financial') || lower.includes('loan') || lower.includes('money') || lower.includes('bills') || lower.includes('कर्ज') || lower.includes('पैसे') || lower.includes('आर्थिक')) {
-    inputSummary = data.assessment.inputSummaries.debt;
-  } else if (lower.includes('lonely') || lower.includes('loneliness') || lower.includes('alone') || lower.includes('isolated') || lower.includes('nobody') || lower.includes('अकेला')) {
-    inputSummary = data.assessment.inputSummaries.lonely;
-  } else if (lower.includes('family') || lower.includes('parents') || lower.includes('argument') || lower.includes('fight') || lower.includes('divorce') || lower.includes('झगड़ा') || lower.includes('लड़ाई')) {
-    inputSummary = data.assessment.inputSummaries.family;
-  } else if (lower.includes('hopeless') || lower.includes('empty') || lower.includes('meaningless') || lower.includes('numb') || lower.includes('निराश') || lower.includes('उदास')) {
-    inputSummary = data.assessment.inputSummaries.hopeless;
-  } else if (lower.includes('interview') || lower.includes('exam') || lower.includes('test') || lower.includes('failing') || lower.includes('career')) {
-    inputSummary = data.assessment.inputSummaries.interview;
-  } else if (lower.includes('breakup') || lower.includes('broke up') || lower.includes('partner') || lower.includes('heartbreak') || lower.includes('grief')) {
-    inputSummary = data.assessment.inputSummaries.breakup;
-  } else if (lower.includes('boss') || lower.includes('yelled') || lower.includes('gaslight') || lower.includes('rage') || lower.includes('furious')) {
-    inputSummary = data.assessment.inputSummaries.boss;
-  } else if (lower.includes('fake') || lower.includes('failure') || lower.includes('hate myself') || lower.includes('loser') || lower.includes('imposter')) {
-    inputSummary = data.assessment.inputSummaries.fake;
-  } else if (lower.includes('overwhelm') || lower.includes('racing') || lower.includes('hurricane') || lower.includes('chaos') || lower.includes('adhd')) {
-    inputSummary = data.assessment.inputSummaries.overwhelm;
   } else {
-    const hasEnglishLetters = /[a-zA-Z]{3,}/.test(cleanCondition);
-    const conditionSnippet = cleanCondition
-      ? (norm === 'hi'
-          ? (hasEnglishLetters ? ' इस मानसिक चुनौती व भावनात्मक दबाव' : ` जो ${cleanCondition} से जुड़ा है`)
-          : norm === 'es'
-          ? (hasEnglishLetters ? ' esta situación de sobrecarga emocional' : ` vinculado a ${cleanCondition}`)
-          : norm === 'fr'
-          ? (hasEnglishLetters ? ' cette épreuve de tension émotionnelle' : ` liée à ${cleanCondition}`)
-          : norm === 'de'
-          ? (hasEnglishLetters ? ' dieser emotionalen Belastungssituation' : ` im Zusammenhang mit ${cleanCondition}`)
-          : ` related to ${cleanCondition}`)
-      : '';
-    inputSummary = data.assessment.inputSummaries.defaultTemplate.replace('{condition}', conditionSnippet);
+    const problemDetails = extractSpecificProblemContext(userMessage || '', norm);
+    inputSummary = problemDetails.distressSummary;
   }
 
   // Full section Markdown
@@ -943,6 +915,7 @@ export function formatHumanTherapeuticMessage(
   const locGita = getLocalizedGitaItem(gitaItem, norm);
   const locTratak = getLocalizedTratakaItem(tratakItem, norm);
 
+  const problemDetails = extractSpecificProblemContext(userMessage || '', norm);
   const diagnosticAssessment = buildDiagnosticSufferingAssessment(userMessage, condId, intervention.conditionName, norm);
   const synergyResolution = buildTriPillarSynergyResolution(norm, locTratak.name, gitaItem.theme, isFollowUp);
 
@@ -951,8 +924,11 @@ export function formatHumanTherapeuticMessage(
   const tratakHeader = p.tratakaTitle.replace('{name}', locTratak.name);
   const tratakPractice = p.tratakaPractice.replace('{duration}', String(tratakItem.durationMinutes));
 
+  const isPos = ['calm', 'joy', 'peace', 'serene', 'relieved', 'happy', 'grateful', 'आनंद', 'प्रसन्न', 'शांत'].some(k => (userMessage || '').toLowerCase().includes(k));
+  const empathicOpening = isPos ? "" : `${problemDetails.mirroringOpening}\n\n`;
+
   if (norm === 'en') {
-    return `${diagnosticAssessment.markdown}
+    return `${empathicOpening}${diagnosticAssessment.markdown}
 
 ${gitaHeader}
 ${gitaBlock}
@@ -970,7 +946,7 @@ ${tratakHeader}
 ${synergyResolution}`;
   }
 
-  return `${diagnosticAssessment.markdown}
+  return `${empathicOpening}${diagnosticAssessment.markdown}
 
 ${gitaHeader}
 ${gitaBlock}
@@ -1022,6 +998,7 @@ export function getLocalizedGeneralAdvice(
   const locGita = getLocalizedGitaItem(gitaItem, norm);
   const locTratak = getLocalizedTratakaItem(tratakItem, norm);
 
+  const problemDetails = extractSpecificProblemContext(userMessage || '', norm);
   const diagnosticAssessment = buildDiagnosticSufferingAssessment(userMessage, emotion, undefined, norm);
   const synergyResolution = buildTriPillarSynergyResolution(norm, locTratak.name, gitaItem.theme, isFollowUp);
 
@@ -1031,8 +1008,11 @@ export function getLocalizedGeneralAdvice(
   const tratakHeader = p.tratakaTitle.replace('{name}', locTratak.name);
   const tratakPractice = p.tratakaPractice.replace('{duration}', String(tratakItem.durationMinutes));
 
+  const isPos = ['calm', 'joy', 'peace', 'serene', 'relieved', 'happy', 'grateful', 'आनंद', 'प्रसन्न', 'शांत'].some(k => (userMessage || '').toLowerCase().includes(k));
+  const empathicOpening = isPos ? "" : `${problemDetails.mirroringOpening}\n\n`;
+
   if (norm === 'en') {
-    return `${diagnosticAssessment.markdown}
+    return `${empathicOpening}${diagnosticAssessment.markdown}
 
 ${gitaHeader}
 ${gitaBlock}
@@ -1049,7 +1029,7 @@ ${tratakHeader}
 ${synergyResolution}`;
   }
 
-  return `${diagnosticAssessment.markdown}
+  return `${empathicOpening}${diagnosticAssessment.markdown}
 
 ${gitaHeader}
 ${gitaBlock}

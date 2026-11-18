@@ -1750,5 +1750,63 @@
     "source_platform": "NCBI PubMed & Wikipedia Clinical Knowledge",
     "learned_timestamp": "2026-10-12T17:53:26.157Z",
     "query_trigger": "I tried that, but I am still feeling restless."
+  },
+  {
+    "id": "learned_my_mother_passed_away_yesterday_i_f",
+    "name": "Learned: Mother Passed Away Yesterday, Protocol",
+    "category": "Cognitive & Neuro-Performance",
+    "triguna_balance": "Vata-Rajas Autonomic Agitation",
+    "core_symptoms": [
+      "my mother passed away yesterday, I feel broken",
+      "mother",
+      "passed",
+      "away",
+      "yesterday,"
+    ],
+    "cognitive_distortions": [
+      "Emotional Reasoning",
+      "Catastrophic Overgeneralization"
+    ],
+    "solutions": {
+      "cbt_reframing": "Acknowledge that feeling my mother passed away yesterday, I feel broken is a valid physiological signal, not an identity. Notice automatic thoughts predicting helplessness, and gently re-anchor in what is factually true right now.\n\n[Wikipedia Context]: Grief is the response to the loss of something deemed important, in particular the death of a person or animal to which a bond or affection was formed. Although conventionally focused on the emotional response to loss, grief also has physical, cognitive, behavioral, social, cultural, spiritual, political and philosophical dimensions. While the terms are often used interchangeably, bereavement refers to the state of loss, while grief is the reaction to that loss.\n[PubMed Literature]: Clinical study on grief bereavement dual-process regulation evidence based therapy: Understanding bereavement: what every oncology practitioner should know.",
+      "somatic_anchor": "Drop your shoulders, unglue your tongue from the roof of your mouth, and ground both feet firmly onto the floor for 30 seconds.",
+      "pranayama": "Practice 4-4-4-4 Sama Vritti Box Breathing or Alternate Nostril Breathing (Nadi Shodhana) for 3 minutes to restore vagal balance.",
+      "micro_habit": "Take one single micro-action within your direct control right now, ignoring long-term overwhelm."
+    },
+    "severity_level": "Mild to Moderate",
+    "requires_immediate_crisis": false,
+    "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3202698/",
+    "source_platform": "NCBI PubMed & Wikipedia Clinical Knowledge",
+    "learned_timestamp": "2026-11-18T18:50:59.900Z",
+    "query_trigger": "my mother passed away yesterday, I feel broken"
+  },
+  {
+    "id": "learned_meri_maa_gujar_gayi_hai_kal_se_ro_r",
+    "name": "Learned: Meri Gujar Gayi Raha Protocol",
+    "category": "Cognitive & Neuro-Performance",
+    "triguna_balance": "Vata-Rajas Autonomic Agitation",
+    "core_symptoms": [
+      "meri maa gujar gayi hai kal se ro raha hu",
+      "meri",
+      "gujar",
+      "gayi",
+      "raha"
+    ],
+    "cognitive_distortions": [
+      "Emotional Reasoning",
+      "Catastrophic Overgeneralization"
+    ],
+    "solutions": {
+      "cbt_reframing": "Acknowledge that feeling meri maa gujar gayi hai kal se ro raha hu is a valid physiological signal, not an identity. Notice automatic thoughts predicting helplessness, and gently re-anchor in what is factually true right now.\n\n[Wikipedia Context]: Cognitive behavioral therapy (CBT) is a form of psychotherapy that combines basic principles from cognitive psychology and behaviorism. It aims to reduce symptoms of various mental health conditions by challenging and adjusting convictions and assumptions, while helping patients learn better-adapted behavior by trying and training new behaviours. While CBT has philosophical precursors in Stoicism, it developed in three waves in the 20th century.\n[PubMed Literature]: Empirical clinical trials and peer-reviewed literature on psychotherapeutic interventions for meri maa gujar gayi hai kal se ro raha hu.",
+      "somatic_anchor": "Drop your shoulders, unglue your tongue from the roof of your mouth, and ground both feet firmly onto the floor for 30 seconds.",
+      "pranayama": "Practice 4-4-4-4 Sama Vritti Box Breathing or Alternate Nostril Breathing (Nadi Shodhana) for 3 minutes to restore vagal balance.",
+      "micro_habit": "Take one single micro-action within your direct control right now, ignoring long-term overwhelm."
+    },
+    "severity_level": "Mild to Moderate",
+    "requires_immediate_crisis": false,
+    "source_url": "https://en.wikipedia.org/wiki/Cognitive_behavioral_therapy",
+    "source_platform": "NCBI PubMed & Wikipedia Clinical Knowledge",
+    "learned_timestamp": "2026-11-18T18:51:19.259Z",
+    "query_trigger": "meri maa gujar gayi hai kal se ro raha hu"
   }
 ]

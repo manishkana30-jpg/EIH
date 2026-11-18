@@ -16,6 +16,7 @@ import {
 } from "../knowledge/authenticated-research-bank.ts";
 import { type PsychologyCondition } from "../knowledge/psychology-library-rag.ts";
 import { getLocalizedClinicalIntervention } from "../i18n/clinical-localization.ts";
+import { extractSpecificProblemContext } from "../knowledge/problem-reflection.ts";
 
 export interface ConversationTurn {
   role?: "user" | "assistant" | "system";
@@ -492,12 +493,13 @@ export function generateEmotionalSharingReply(
   const norm = (lang || "en").toLowerCase().slice(0, 2);
   const _activeStudy = study || getResearchedAdviceForEmotion(detectedEmotion || "anxiety", polyvagalState);
   const loc = condition ? getLocalizedClinicalIntervention(condition.id, norm, condition) : null;
+  const problemDetails = extractSpecificProblemContext(userMessage, norm);
 
   if (norm === "hi") {
     const anchorHi = loc?.somatic_anchor || "ज़मीन पर दोनों पैर टिकाएं, 30 सेकंड के लिए आंखें बंद करें और 3 बार गहरी सांस बाहर छोड़ें।";
 
     return (
-      `मैं आपकी बात सुन रहा हूँ और समझ सकता हूँ कि आप इस समय कितना दर्द और भारीपन महसूस कर रहे हैं। इस परिस्थिति में ऐसा महसूस होना बिल्कुल स्वाभाविक है, और यह आपकी कोई कमजोरी या गलती नहीं है।\n\n` +
+      `मैंने आपकी बात बहुत ध्यान से सुनी है और मैं पूरी तरह समझ सकता हूँ कि ${problemDetails.shortClause} इस समय आपके लिए कितना भारी और कष्टदायी अनुभव है। इस परिस्थिति में ऐसा महसूस होना और मन का अशांत होना बिल्कुल स्वाभाविक है, और यह आपकी कोई कमजोरी या गलती नहीं है।\n\n` +
       `**इस समय मन को संभालने के आसान समाधान:**\n` +
       `1. **खुद पर दबाव न डालें:** इस समय सारी समस्याओं को एक साथ ठीक करने की जरूरत नहीं है। अभी सिर्फ अपने मन और शरीर को थोड़ा आराम दें।\n` +
       `2. **शरीर को तुरंत शांत करें:** ${anchorHi}\n` +
@@ -510,7 +512,7 @@ export function generateEmotionalSharingReply(
     const anchorEs = loc?.somatic_anchor || "Apoya los pies en el suelo, relaja los hombros y toma tres respiraciones suaves con exhalación larga.";
 
     return (
-      `Puedo sentir el peso y el cansancio que llevas dentro. Lo que estás sintiendo es completamente comprensible y no es una debilidad personal.\n\n` +
+      `He escuchado atentamente lo que estás viviendo y puedo sentir lo difícil y doloroso que es afrontar ${problemDetails.shortClause}. Lo que estás sintiendo es completamente comprensible y no es una debilidad personal.\n\n` +
       `**Soluciones prácticas para acompañarte ahora:**\n` +
       `1. **Suelta la presión:** No tienes que resolver todo hoy. Date permiso para pausar y respirar.\n` +
       `2. **Calma el cuerpo:** ${anchorEs}\n` +
@@ -523,7 +525,7 @@ export function generateEmotionalSharingReply(
     const anchorFr = loc?.somatic_anchor || "Posez les pieds à plat, relâchez vos épaules et prenez trois respirations lentes en expirant longuement.";
 
     return (
-      `Je ressens pleinement la peine et la fatigue que vous portez en ce moment. Ce que vous vivez est légitime et ne constitue en rien une faiblesse de votre part.\n\n` +
+      `J'ai écouté très attentivement ce que vous partagez et je comprends combien il est éprouvant de traverser ${problemDetails.shortClause}. Ce que vous vivez est légitime et ne constitue en rien une faiblesse de votre part.\n\n` +
       `**Solutions simples pour vous soulager maintenant :**\n` +
       `1. **Relâchez la pression :** Vous n'avez pas à tout régler aujourd'hui. Accordez-vous une pause bienveillante.\n` +
       `2. **Apaiser le corps :** ${anchorFr}\n` +
@@ -536,7 +538,7 @@ export function generateEmotionalSharingReply(
     const anchorDe = loc?.somatic_anchor || "Stellen Sie die Füße flach auf den Boden, lockern Sie die Schultern und atmen Sie dreimal langsam aus.";
 
     return (
-      `Ich nehme die Schwere und Erschöpfung wahr, die Sie gerade tragen. Ihre Gefühle sind vollkommen verständlich und kein Zeichen von persönlicher Schwäche.\n\n` +
+      `Ich habe aufmerksam zugehört und verstehe vollkommen, wie fordernd und schmerzhaft es ist, ${problemDetails.shortClause} durchzustehen. Ihre Gefühle sind vollkommen verständlich und kein Zeichen von persönlicher Schwäche.\n\n` +
       `**Praktische Schritte zur Entlastung im Hier und Jetzt:**\n` +
       `1. **Druck herausnehmen:** Sie müssen nicht alles an einem Tag lösen. Gönnen Sie sich einen Moment Ruhe.\n` +
       `2. **Körper erden:** ${anchorDe}\n` +
@@ -548,7 +550,7 @@ export function generateEmotionalSharingReply(
   const anchorEn = loc?.somatic_anchor || "Place both feet flat on the floor, relax your shoulders, and take three slow, calming breaths with long exhalations.";
 
   return (
-    `I hear the depth of weight and emotional exhaustion you are carrying right now. What you are going through is very real, and feeling hurt or overwhelmed is not a sign of personal failure.\n\n` +
+    `I hear you with complete presence, and I deeply understand how painful and heavy it is to face ${problemDetails.shortClause}. What you are going through is exceptionally real, and feeling hurt or overwhelmed is not a sign of personal failure.\n\n` +
     `**Immediate Practical Solutions to Support You Right Now:**\n` +
     `1. **Release the Pressure:** You do not need to solve everything today. Give yourself permission to pause and take care of your well-being first.\n` +
     `2. **Ground Your Body:** ${anchorEn}\n` +
