@@ -16,6 +16,7 @@
 export type ProblemCategory =
   | 'grief_bereavement'
   | 'job_loss'
+  | 'housing_crisis'
   | 'breakup_heartbreak'
   | 'financial_debt'
   | 'exam_interview'
@@ -115,6 +116,34 @@ const PROBLEM_DEFINITIONS: Record<Exclude<ProblemCategory, 'general_distress'>, 
       description: "den plötzlichen Schock des Arbeitsplatzverlustes und die existenzielle Unsicherheit",
       shortClause: "den Verlust des Arbeitsplatzes und die berufliche Ungewissheit",
       distressSummary: "Sie sind mit dem Schock einer Kündigung oder dem Verlust Ihres Arbeitsplatzes konfrontiert, was verständlicherweise massive Zukunfts- und Existenzsorgen auslöst."
+    }
+  },
+
+  housing_crisis: {
+    en: {
+      description: "the acute crisis and anxiety of housing instability and being told by your landlord to vacate your home",
+      shortClause: "the threat of eviction and having to leave your house",
+      distressSummary: "You are facing the acute stress and anxiety of housing insecurity and being forced to leave your home, triggering intense survival alarm and upheaval in your daily life."
+    },
+    hi: {
+      description: "मकान मालिक द्वारा घर खाली करने के निर्देश, बेदखली और आशियाने के अचानक आए संकट",
+      shortClause: "मकान मालिक द्वारा घर खाली कराने और बेदखली के संकट को लेकर",
+      distressSummary: "आप मकान मालिक द्वारा घर खाली करने के निर्देश और आशियाने के अचानक आए गंभीर संकट से जूझ रहे हैं, जिसने आपकी बुनियादी सुरक्षा, मानसिक चैन और जीवन की स्थिरता को हिला दिया है।"
+    },
+    es: {
+      description: "la angustia extrema por la inestabilidad habitacional y la orden de desalojar tu vivienda",
+      shortClause: "la amenaza de desalojo y la pérdida de tu hogar",
+      distressSummary: "Estás enfrentando la angustia extrema de tener que abandonar tu hogar por orden del propietario, provocando una alarma de supervivencia y una desestabilización profunda."
+    },
+    fr: {
+      description: "la vive détresse liée à la précarité du logement et à l'obligation de quitter votre domicile",
+      shortClause: "la menace d'expulsion et l'insécurité du logement",
+      distressSummary: "Vous faites face à l'angoisse aiguë de devoir quitter votre logement sur ordre de votre propriétaire, créant une menace directe sur votre sécurité fondamentale."
+    },
+    de: {
+      description: "die akute Existenzkrise durch Wohnungsnot und die Aufforderung des Vermieters, die Wohnung zu räumen",
+      shortClause: "die drohende Kündigung der Wohnung und den Verlust des Zuhauses",
+      distressSummary: "Sie sind mit der akuten Belastung konfrontiert, Ihre Wohnung auf Verlangen des Vermieters räumen zu müssen, was massive existenzielle Ängste und Unsicherheit auslöst."
     }
   },
 
@@ -536,6 +565,16 @@ export function extractSpecificProblemContext(userMessage: string, language?: st
     /(job verloren|entlassen|arbeitslos|kuendigung)/i.test(lower)
   ) {
     matchedCategory = 'job_loss';
+  }
+  // 2b. Housing, Eviction & Homelessness Crisis
+  else if (
+    /(landlord|evict|evicting|evicted|eviction|leave the house|leave my house|vacate the house|vacate|homeless|kicked out|no place to stay|rent dispute|leave this house)/i.test(lower) ||
+    /(मकान मालिक|घर खाली|घर से निकाल|रहने की जगह नहीं|किराया|makan malik|ghar khali|ghar se nikal|ghar chhod)/i.test(lower) ||
+    /(desalojo|desalojar|propietario me echa|sin casa|sin hogar)/i.test(lower) ||
+    /(expulsion du logement|quitter le logement|proprietaire me met dehors|sans abri)/i.test(lower) ||
+    /(vermieter|wohnung raeumen|kuendigung der wohnung|obdachlos)/i.test(lower)
+  ) {
+    matchedCategory = 'housing_crisis';
   }
   // 3. Breakup, Betrayal & Heartbreak
   else if (

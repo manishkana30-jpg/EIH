@@ -74,6 +74,7 @@ const VALENCE_MAP: Record<string, number> = {
   dumped: -0.85, helpless: -0.85, useless: -0.85, yelled: -0.75, tears: -0.75,
   debt: -0.75, debts: -0.8, burden: -0.8, burdened: -0.85, financial: -0.5,
   broke: -0.75, loans: -0.65, bills: -0.55, struggling: -0.75, struggle: -0.7,
+  jealous: -0.7, jealousy: -0.75, envy: -0.65, envious: -0.7, 'left behind': -0.75,
 
   // Positive
   joyful: 0.9, happy: 0.8, ecstatic: 0.95, thrilled: 0.9, delighted: 0.85,
@@ -98,6 +99,10 @@ const VALENCE_MAP: Record<string, number> = {
   'naukri': -0.65, 'berozgar': -0.75, 'chali gayi': -0.7, 'paise nahi': -0.8,
   'barbaad': -0.85, 'dhokha': -0.85, 'dil toot': -0.9, 'neend nahi': -0.75,
   'tanaav': -0.75, 'chinta': -0.75, 'udas': -0.8, 'pareshan': -0.7, 'ghabrahat': -0.8,
+  // Housing / Crisis Negative Affect
+  landlord: -0.65, evict: -0.85, evicting: -0.85, eviction: -0.85, 'leave the house': -0.75,
+  vacate: -0.65, homeless: -0.9, 'kicked out': -0.8, rent: -0.5,
+  'मकान मालिक': -0.65, 'घर खाली': -0.85, 'बेदखल': -0.85,
 
   // Hindi Positive Affect
   'खुश': 0.8, 'प्रसन्न': 0.85, 'आनंद': 0.9, 'शांत': 0.75, 'शांति': 0.8,
@@ -112,6 +117,7 @@ const AROUSAL_MAP: Record<string, number> = {
   shocked: 0.85, alarmed: 0.8, excited: 0.8, intense: 0.75, pounding: 0.8,
   surprised: 0.75, agitated: 0.7, rushing: 0.7, hyper: 0.75, vibrating: 0.7,
   burden: 0.65, burdened: 0.7, debt: 0.7, debts: 0.75,
+  evict: 0.8, evicting: 0.85, eviction: 0.85, 'leave the house': 0.75, 'घर खाली': 0.8,
   'घबराहट': 0.85, 'घबरा': 0.8, 'तनाव': 0.75, 'टेंशन': 0.8, 'चिंता': 0.7,
   'डर': 0.75, 'भय': 0.8, 'गुस्सा': 0.85, 'क्रोध': 0.9, 'बेचैन': 0.75, 'बेचैनी': 0.75,
 
@@ -407,6 +413,16 @@ export class NeuroscienceEmotionClassifier {
       scores.set('sadness', (scores.get('sadness') || 0) + 4);
       scores.set('boredom', (scores.get('boredom') || 0) + 3);
     }
+    if (
+      lower.includes('landlord') || lower.includes('evict') || lower.includes('leave the house') ||
+      lower.includes('leave my house') || lower.includes('vacate') || lower.includes('homeless') ||
+      lower.includes('kicked out') || lower.includes('rent dispute') ||
+      lower.includes('मकान मालिक') || lower.includes('घर खाली') || lower.includes('घर से निकाल')
+    ) {
+      scores.set('anxiety', (scores.get('anxiety') || 0) + 5);
+      scores.set('fear', (scores.get('fear') || 0) + 4);
+      scores.set('sadness', (scores.get('sadness') || 0) + 3);
+    }
 
     // 2b. Voice Acoustic Telemetry Modulations
     if (voiceState) {
@@ -512,8 +528,10 @@ export class NeuroscienceEmotionClassifier {
           bestDim = this.dimensions.find((d) => d.id === 'anxiety') || bestDim;
         } else if (estValence < -0.15) {
           bestDim = this.dimensions.find((d) => d.id === 'sadness') || bestDim;
-        } else {
+        } else if (/(happy|great|calm|peace|relaxed|good|fine|okay|alright|peaceful|serene|प्रसन्न|खुश|शांत|सुकून|बढ़िया)/i.test(lower)) {
           bestDim = this.dimensions.find((d) => d.id === 'calmness') || bestDim;
+        } else {
+          bestDim = this.dimensions.find((d) => d.id === 'confusion') || bestDim;
         }
         scores.set(bestDim.id, 1);
       }

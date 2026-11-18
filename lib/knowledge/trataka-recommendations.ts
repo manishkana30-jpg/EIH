@@ -383,6 +383,21 @@ export function resolveTratakaPrescription(
     return TRATAKA_PRESCRIPTIONS.pratibimb;
   }
 
+  // 1b. Comparison Envy / Svadharma / Centering -> Bindu (Sacred Golden Focal Point)
+  if (
+    q.includes('jealous') ||
+    q.includes('jealousy') ||
+    q.includes('envy') ||
+    q.includes('left behind') ||
+    q.includes('comparing') ||
+    q.includes('comparison') ||
+    q.includes('svadharma') ||
+    q.includes('ईर्ष्या') ||
+    q.includes('जलन')
+  ) {
+    return TRATAKA_PRESCRIPTIONS.bindu;
+  }
+
   // 2. Decision paralysis / Existential / Overthinking / Insomnia -> Shoonya (Void)
   if (
     emo === 'confusion' ||

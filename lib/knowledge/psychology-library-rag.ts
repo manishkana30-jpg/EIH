@@ -229,10 +229,22 @@ export function isGreetingMessage(text: string): boolean {
     'how are you doing',
     'whats up',
     'what s up',
+    'hello there how are you today',
+    'hi there how are you today',
+    'hello how are you today',
+    'hi how are you today',
+    'how are you today',
+    'how are you doing today',
   ]);
   if (exactGreetings.has(clean)) return true;
 
   const words = clean.split(' ');
+  if (['hello', 'hi', 'hey', 'namaste', 'greetings', 'howdy', 'hola', 'bonjour', 'hallo'].includes(words[0])) {
+    const withoutStarter = clean.replace(/^(hello|hi|hey|namaste|greetings|howdy|hola|bonjour|hallo)\s+(there\s+)?/i, '').trim();
+    if (!withoutStarter || /^(how are you|how are you doing|how are you today|how are you doing today|good to see you|what'?s up|whats up|hope you are doing well|kaise ho|aap kaise ho|kya haal hai)$/i.test(withoutStarter)) {
+      return true;
+    }
+  }
   if (words.length <= 4) {
     if (['hello', 'hi', 'hey', 'namaste', 'greetings', 'howdy', 'hola'].includes(words[0])) {
       return true;
