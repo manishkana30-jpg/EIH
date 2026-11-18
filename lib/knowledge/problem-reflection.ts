@@ -546,18 +546,8 @@ export function extractSpecificProblemContext(userMessage: string, language?: st
 
   let matchedCategory: ProblemCategory = 'general_distress';
 
-  // 1. Grief and Bereavement
+  // 1. Job Loss and Career Crisis
   if (
-    /(lost my|passed away|died|death|funeral|mourning|grief|grieving|miscarriage|lost someone|lost my mom|lost my mother|lost my dad|lost my father|lost my pet|dog died|cat died)/i.test(lower) ||
-    /(गुजर ग|देहांत|निधन|शोक|चले गए|चली गई|माँ नहीं रही|पिताजी नहीं रहे|मर ग|gujar ga|guzar ga|dehant|nidhan|shok|mar gaya|mar gayi|nahi rahe|nahi rahi|pass ho ga)/i.test(lower) ||
-    /(falleci|muri|perdida de mi|duelo|luto)/i.test(lower) ||
-    /(deces|mort de|perdu mon|perdu ma|deuil)/i.test(lower) ||
-    /(verstorben|gestorben|tod von|trauer|verlust mein)/i.test(lower)
-  ) {
-    matchedCategory = 'grief_bereavement';
-  }
-  // 2. Job Loss and Career Crisis
-  else if (
     /(lost my job|got fired|laid off|layoff|terminated|fired from|unemployed|unemployment|lost work|downsized)/i.test(lower) ||
     /(नौकरी छूट|नौकरी से निकाल|जॉब छूट|जॉब चली|काम छूट|बेरोजगार|naukri chali|naukri choot|job chali|job choot|layoff|berozgar|fire kar diya|nikal diya)/i.test(lower) ||
     /(perdi mi trabajo|me despidieron|sin empleo|despido)/i.test(lower) ||
@@ -566,7 +556,7 @@ export function extractSpecificProblemContext(userMessage: string, language?: st
   ) {
     matchedCategory = 'job_loss';
   }
-  // 2b. Housing, Eviction & Homelessness Crisis
+  // 1b. Housing, Eviction & Homelessness Crisis
   else if (
     /(landlord|evict|evicting|evicted|eviction|leave the house|leave my house|vacate the house|vacate|homeless|kicked out|no place to stay|rent dispute|leave this house)/i.test(lower) ||
     /(मकान मालिक|घर खाली|घर से निकाल|रहने की जगह नहीं|किराया|makan malik|ghar khali|ghar se nikal|ghar chhod)/i.test(lower) ||
@@ -575,6 +565,16 @@ export function extractSpecificProblemContext(userMessage: string, language?: st
     /(vermieter|wohnung raeumen|kuendigung der wohnung|obdachlos)/i.test(lower)
   ) {
     matchedCategory = 'housing_crisis';
+  }
+  // 2. Grief and Bereavement
+  else if (
+    /(passed away|died|death|funeral|mourning|grief|grieving|miscarriage|lost someone|lost my (?:mom|mother|dad|father|parent|parents|brother|sister|son|daughter|child|baby|grandma|grandpa|grandmother|grandfather|friend|partner|wife|husband|pet|dog|cat)|dog died|cat died)/i.test(lower) ||
+    /(गुजर ग|देहांत|निधन|शोक|चले गए|चली गई|माँ नहीं रही|पिताजी नहीं रहे|मर ग|gujar ga|guzar ga|dehant|nidhan|shok|mar gaya|mar gayi|nahi rahe|nahi rahi|pass ho ga)/i.test(lower) ||
+    /(falleci|muri|perdida de mi|duelo|luto)/i.test(lower) ||
+    /(deces|mort de|perdu mon|perdu ma|deuil)/i.test(lower) ||
+    /(verstorben|gestorben|tod von|trauer|verlust mein)/i.test(lower)
+  ) {
+    matchedCategory = 'grief_bereavement';
   }
   // 3. Breakup, Betrayal & Heartbreak
   else if (

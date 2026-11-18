@@ -609,8 +609,28 @@ const KaraokeMessageComponent: React.FC<KaraokeMessageProps> = ({
                   )}
                 </div>
 
-                {/* Emotion Identification & Assessment */}
-                <div className="space-y-1.5 text-slate-100 text-xs sm:text-sm">
+                {/* Situation & Challenge Recognition + Emotion Assessment */}
+                <div className="space-y-2 text-slate-100 text-xs sm:text-sm">
+                  {stage1.meta.summary && (
+                    <div className="p-2.5 rounded-lg bg-purple-950/40 border border-purple-500/25 space-y-1">
+                      <div className="flex items-center gap-1.5 text-xs font-semibold text-purple-300">
+                        <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                        <span>{isHindi ? "आपकी वर्तमान समस्या व परिस्थिति:" : isSpanish ? "Situación y desafío identificado:" : isFrench ? "Situation et défi identifiés :" : isGerman ? "Erkannte Belastungssituation:" : "Understood Challenge & Situation:"}</span>
+                      </div>
+                      <p className="text-slate-100 text-xs sm:text-sm leading-relaxed">
+                        {renderTokenizedText(
+                          stage1.meta.summary,
+                          1,
+                          isSpeaking,
+                          activeKaraoke,
+                          activeWordRef,
+                          card1Counter,
+                          "text-slate-100 font-medium"
+                        )}
+                      </p>
+                    </div>
+                  )}
+
                   <div className="flex items-start gap-2">
                     <span className="text-purple-400 font-bold">•</span>
                     <div>
@@ -660,22 +680,6 @@ const KaraokeMessageComponent: React.FC<KaraokeMessageProps> = ({
                         )}
                       </span>
                     </div>
-                  )}
-
-                  {stage1.meta.summary && (
-                    <p className="mt-1 text-slate-200 italic bg-purple-950/20 p-2.5 rounded-lg border border-purple-500/20 leading-relaxed text-xs sm:text-sm">
-                      &ldquo;
-                      {renderTokenizedText(
-                        stage1.meta.summary,
-                        1,
-                        isSpeaking,
-                        activeKaraoke,
-                        activeWordRef,
-                        card1Counter,
-                        "text-slate-200 italic"
-                      )}
-                      &rdquo;
-                    </p>
                   )}
                 </div>
 

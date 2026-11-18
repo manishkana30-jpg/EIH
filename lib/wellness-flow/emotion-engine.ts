@@ -220,6 +220,20 @@ const EMOTION_LEXICONS: Record<string, EmotionLexicon> = {
 };
 
 export const DOMAIN_CONTEXT_PHRASES: Record<string, { en: string; hi: string; es: string; fr: string; de: string }> = {
+  housing_crisis: {
+    en: 'the acute crisis of housing instability and being told by your landlord to vacate your home',
+    hi: 'मकान मालिक द्वारा घर खाली कराने और बेदखली के गंभीर संकट को लेकर',
+    es: 'la angustia por la inestabilidad habitacional y la orden de desalojo',
+    fr: 'la précarité du logement et l’obligation de quitter votre domicile',
+    de: 'die akute Wohnungsnot und die Aufforderung, die Wohnung zu räumen',
+  },
+  job_loss: {
+    en: 'the sudden shock and uncertainty of losing your job and livelihood',
+    hi: 'नौकरी छूटने, आजीविका के संकट और भविष्य की अनिश्चितता को लेकर',
+    es: 'el impacto repentino del despido laboral y la incertidumbre económica',
+    fr: 'le choc soudain de la perte de votre emploi et l’incertitude professionnelle',
+    de: 'den plötzlichen Schock des Arbeitsplatzverlustes und existenzielle Sorgen',
+  },
   grief_bereavement: {
     en: 'the profound emptiness and ache of losing someone dear to you',
     hi: 'अपने प्रियजन को खोने के गहरे शोक और खालीपन को लेकर',
@@ -234,12 +248,26 @@ export const DOMAIN_CONTEXT_PHRASES: Record<string, { en: string; hi: string; es
     fr: 'le lourd fardeau des dettes et des difficultés financières',
     de: 'die drückende Last von Schulden und finanziellen Sorgen',
   },
+  exam_interview: {
+    en: 'the intense evaluation pressure and fear of failure in your exam or interview',
+    hi: 'आने वाले इंटरव्यू या परीक्षा को लेकर हो रहे तनाव व असफलता के डर को लेकर',
+    es: 'la intensa presión de evaluación y el miedo al fracaso en tu prueba o entrevista',
+    fr: 'la forte pression d’évaluation et la peur de l’échec face à un examen ou entretien',
+    de: 'den enormen Leistungsdruck und die Versagensangst vor einer Prüfung oder einem Vorstellungsgespräch',
+  },
   interview_exam: {
     en: 'your upcoming interview, evaluation, or performance anticipation',
     hi: 'आने वाले इंटरव्यू या परीक्षा को लेकर हो रहे तनाव को लेकर',
     es: 'la tensión por tu próxima entrevista o evaluación',
     fr: 'le stress lié à votre prochain entretien ou examen',
     de: 'den Druck rund um Ihr bevorstehendes Vorstellungsgespräch oder Ihre Prüfung',
+  },
+  toxic_workplace: {
+    en: 'hostile treatment, workplace bullying, or unfair invalidation by your manager',
+    hi: 'कार्यस्थल पर अपमानजनक व्यवहार, डांट-फटकार और विषाक्त माहौल को लेकर',
+    es: 'el maltrato, hostilidad o descalificación vivida en tu entorno laboral',
+    fr: 'le traitement hostile et le harcèlement toxique sur votre lieu de travail',
+    de: 'feindseliges Verhalten, Mobbing oder Demütigung am Arbeitsplatz',
   },
   work_career: {
     en: 'the intense demands, deadlines, and pressure at work',
@@ -255,12 +283,26 @@ export const DOMAIN_CONTEXT_PHRASES: Record<string, { en: string; hi: string; es
     fr: 'la profonde douleur et le chagrin d’une rupture amoureuse',
     de: 'den tiefen Herzschmerz und die Trauer über das Ende der Beziehung',
   },
+  family_conflict: {
+    en: 'the painful friction, arguments, and emotional strain in your family',
+    hi: 'परिवार में कलह, अपनों से विवाद और घरेलू तनाव के भारीपन को लेकर',
+    es: 'los conflictos familiares, discusiones dolorosas y tensiones domésticas',
+    fr: 'les conflits familiaux douloureux, les disputes et les tensions à la maison',
+    de: 'die schmerzhaften familiären Streitigkeiten und emotionalen Spannungen zu Hause',
+  },
   relationship_family: {
     en: 'the friction, strain, and emotional tension in your relationships',
     hi: 'परिवार और अपनों के साथ चल रहे तनाव व उलझनों को लेकर',
     es: 'la fricción y la tensión emocional en tus relaciones personales',
     fr: 'les tensions et les frictions émotionnelles dans vos relations',
     de: 'die Spannungen und emotionalen Belastungen in Ihren Beziehungen',
+  },
+  shame_imposter: {
+    en: 'painful feelings of self-hate, inadequacy, or feeling like an imposter',
+    hi: 'खुद को कम आंकने, आत्म-ग्लानि और हीनभावना के भारी मानसिक बोझ को लेकर',
+    es: 'los dolorosos sentimientos de insuficiencia, culpa y síndrome del impostor',
+    fr: 'les sentiments dévastateurs de honte, d’illégitimité et de dévalorisation de soi',
+    de: 'die quälenden Gefühle von Scham, Minderwertigkeit und Versagensangst',
   },
   self_worth_imposter: {
     en: 'painful feelings of self-doubt, inadequacy, or feeling like an imposter',
@@ -269,12 +311,26 @@ export const DOMAIN_CONTEXT_PHRASES: Record<string, { en: string; hi: string; es
     fr: 'les doutes douloureux sur vous-même et le sentiment d’illégitimité',
     de: 'die schmerzhaften Gefühle von Selbstzweifeln und das Gefühl, unzureichend zu sein',
   },
+  panic_somatic: {
+    en: 'frightening bodily surges of panic, rapid heart palpitations, and chest tightness',
+    hi: 'पैनिक अटैक के दौरान दिल की तेज धड़कन, घबराहट और शारीरिक बेचैनी को लेकर',
+    es: 'las aterradoras oleadas físicas de pánico, palpitaciones y opresión en el pecho',
+    fr: 'les crises d’angoisse intenses, les palpitations cardiaques et l’oppression thoracique',
+    de: 'die beängstigenden Panikschübe mit Herzrasen und Engegefühl in der Brust',
+  },
   health_somatic: {
     en: 'frightening physical symptoms and health-related fears causing distress',
     hi: 'शारीरिक असहजता और स्वास्थ्य को लेकर मन में उठ रही गंभीर चिंता को लेकर',
     es: 'los síntomas físicos preocupantes y los temores de salud que te angustian',
     fr: 'les symptômes corporels anxiogènes et les inquiétudes de santé',
     de: 'die beängstigenden körperlichen Symptome und gesundheitlichen Sorgen',
+  },
+  insomnia_sleep: {
+    en: 'the exhausting toll of chronic sleeplessness, racing thoughts, and sleep deprivation',
+    hi: 'लगातार नींद न आने, गंभीर अनिद्रा और रात भर अशांत विचारों के कारण होने वाली थकान को लेकर',
+    es: 'el desgaste extremo del insomnio y las noches en vela',
+    fr: 'l’épuisement profond lié aux nuits blanches et à l’insomnie chronique',
+    de: 'die zermürbende Schlaflosigkeit und quälende Gedankenspiralen in der Nacht',
   },
   sleep_exhaustion: {
     en: 'the exhausting toll of sleepless nights and depleted physical vitality',
@@ -283,12 +339,47 @@ export const DOMAIN_CONTEXT_PHRASES: Record<string, { en: string; hi: string; es
     fr: 'l’épuisement dû aux nuits sans sommeil et au manque d’énergie',
     de: 'die zehrenden Folgen schlafloser Nächte und körperlicher Erschöpfung',
   },
+  adhd_paralysis: {
+    en: 'paralyzing task overwhelm, mental chaos, and sensory overload in your mind',
+    hi: 'कार्यों के अत्यधिक बोझ, मानसिक भटकाव और दिमाग में मचे विचारों के बवंडर को लेकर',
+    es: 'el bloqueo mental por sobrecarga de tareas y dispersión cognitiva',
+    fr: 'la paralysie mentale face aux tâches et la surcharge cognitive',
+    de: 'die lähmende Aufgabenüberlastung, Reizüberflutung und das Gedankenchaos',
+  },
+  social_anxiety: {
+    en: 'intense social anxiety, stage fright, and fear of negative evaluation in public',
+    hi: 'लोगों के सामने बोलने, सामाजिक मेलजोल और दूसरों के मूल्यांकन को लेकर होने वाली घबराहट को लेकर',
+    es: 'la intensa ansiedad social, el pánico escénico y el miedo al juicio ajeno',
+    fr: 'l’anxiété sociale aiguë et la peur d’être jugé par autrui',
+    de: 'die akute soziale Angst und die Furcht vor der Bewertung durch andere',
+  },
+  ocd_rumination: {
+    en: 'exhausting loops of intrusive thoughts and relentless mental overthinking',
+    hi: 'दिमाग में बार-बार आने वाले अनचाहे विचारों और ओवरथिंकिंग के मानसिक चक्र को लेकर',
+    es: 'el bucle agotador de pensamientos intrusivos y rumiación mental constante',
+    fr: 'la boucle épuisante des pensées intrusives et des ruminations mentales',
+    de: 'die quälende Gedankenspirale aus aufdringlichen Gedanken und ständigem Grübeln',
+  },
+  burnout_exhaustion: {
+    en: 'severe systemic burnout, nervous system depletion, and physical exhaustion',
+    hi: 'लंबे समय के अत्यधिक दबाव से हुए गंभीर बर्नआउट और ऊर्जा के पूर्ण अभाव को लेकर',
+    es: 'el agotamiento extremo por burnout y la sobrecarga prolongada',
+    fr: 'l’épuisement professionnel sévère et la fatigue chronique du corps et de l’esprit',
+    de: 'das tiefe Burnout und die völlige Erschöpfung des Nervensystems',
+  },
   future_uncertainty: {
     en: 'the heavy uncertainty and anxiety about where life is heading',
     hi: 'भविष्य की गहरी अनिश्चितता और आगे क्या होगा की चिंता को लेकर',
     es: 'la incertidumbre y preocupación sobre el rumbo de tu futuro',
     fr: 'la lourde incertitude et l’angoisse quant à votre avenir',
     de: 'die quälende Ungewissheit und Angst über die Zukunft',
+  },
+  loneliness_isolation: {
+    en: 'the painful ache of loneliness, abandonment, and feeling completely disconnected from others',
+    hi: 'अकेलेपन, अलगाव और किसी के साथ न होने के गहरे भावनात्मक दर्द को लेकर',
+    es: 'el dolor lacerante de la soledad y la sensación de desconexión profunda',
+    fr: 'la vive douleur de la solitude et le sentiment d’isolement complet',
+    de: 'die schmerzhafte Einsamkeit und das Gefühl, von allen isoliert zu sein',
   },
   loneliness: {
     en: 'the painful ache of loneliness and feeling disconnected from others',
@@ -553,6 +644,11 @@ export class DefaultNLPAnalysisProvider implements INLPAnalysisProvider {
     const top = sorted[0];
     const second = sorted[1];
 
+    // Root Theme & Trigger Domain Extraction
+    const domainMatch = extractLifeDomainAndContext(lower, text);
+    const trigger_domain = domainMatch.domain;
+    const specific_context_phrase = domainMatch.contextPhraseEn;
+
     let primary_emotion = 'stress';
     let secondary_emotion: string | undefined;
     let confidence = 0.50;
@@ -568,6 +664,33 @@ export class DefaultNLPAnalysisProvider implements INLPAnalysisProvider {
       if (/^[a-z]{15,}$/i.test(lower) || (/^[a-z0-9\s]{20,}$/i.test(lower) && words.length <= 4)) {
         primary_emotion = 'overthinking';
         confidence = 0.35;
+      } else if (domainMatch.domain !== 'general_distress') {
+        const domainToEmotion: Record<string, string> = {
+          housing_crisis: 'anxiety',
+          financial_debt: 'anxiety',
+          job_loss: 'anxiety',
+          grief_bereavement: 'sadness',
+          breakup_heartbreak: 'sadness',
+          exam_interview: 'anxiety',
+          interview_exam: 'anxiety',
+          toxic_workplace: 'stress',
+          insomnia_sleep: 'stress',
+          sleep_exhaustion: 'stress',
+          panic_somatic: 'fear',
+          health_somatic: 'fear',
+          loneliness_isolation: 'loneliness',
+          loneliness: 'loneliness',
+          family_conflict: 'stress',
+          relationship_family: 'stress',
+          shame_imposter: 'guilt',
+          self_worth_imposter: 'guilt',
+          adhd_paralysis: 'overthinking',
+          social_anxiety: 'anxiety',
+          ocd_rumination: 'overthinking',
+          burnout_exhaustion: 'stress',
+        };
+        primary_emotion = domainToEmotion[domainMatch.domain] || 'stress';
+        confidence = 0.80;
       } else if (lower.includes('work') || lower.includes('boss') || lower.includes('office') || lower.includes('job') || lower.includes('काम') || lower.includes('नौकरी')) {
         primary_emotion = 'stress';
         confidence = 0.65;
@@ -634,12 +757,9 @@ export class DefaultNLPAnalysisProvider implements INLPAnalysisProvider {
     }
 
     // Root Theme & Trigger Domain Extraction
-    const domainMatch = extractLifeDomainAndContext(lower, text);
-    const trigger_domain = domainMatch.domain;
     const root_theme = domainMatch.domain !== 'general_distress'
       ? domainMatch.domain
       : (EMOTION_LEXICONS[primary_emotion]?.themes[0] || 'general_distress');
-    const specific_context_phrase = domainMatch.contextPhraseEn;
 
     // Sentiment
     let sentiment: NLPAnalysisResult['sentiment'] = 'negative';
@@ -937,7 +1057,9 @@ export class EmotionEngine {
       ? extractSpecificProblemContext(profile.specific_context_phrase, norm)
       : null;
     const phrases = DOMAIN_CONTEXT_PHRASES[domainKey] || DOMAIN_CONTEXT_PHRASES['general_distress'];
-    const resolvedContext = localizedProblem ? localizedProblem.shortClause : ((phrases as any)[norm] || phrases.en);
+    const resolvedContext = (localizedProblem && localizedProblem.category !== 'general_distress')
+      ? localizedProblem.shortClause
+      : (((phrases as any)[norm] || phrases.en) || (localizedProblem ? localizedProblem.shortClause : ''));
 
     if (lang === 'hi') {
       const hiEmotionMap: Record<string, string> = {

@@ -429,20 +429,28 @@ export function parseTherapeuticStages(rawText: string, locale?: string): Struct
   let summary = '';
 
   if (diagPart) {
-    const emotionMatch = diagPart.match(/(?:Identified Emotional State|पहचाना गया मनोभाव एवं मुख्य संघर्ष|Estado Emocional|État Émotionnel|Erkannter Zustand)\s*:\s*([^\n•]+)/i);
+    const emotionMatch = diagPart.match(/(?:Identified Emotional State|State & Suffering Severity Level|पहचाना गया मनोभाव एवं मुख्य संघर्ष|पहचाना गया मनोभाव|स्थिति व पीड़ा का स्तर|Estado Emocional|Estado y Nivel de Sufrimiento|État Émotionnel|État et Niveau de Souffrance|Erkannter Zustand|Status und Leidensgrad)\s*(?:\([^)]*\))?\s*:\s*([^\n•|]+)/i);
     if (emotionMatch) emotionName = emotionMatch[1].trim();
 
-    const sevMatch = diagPart.match(/(?:Suffering Severity & Autonomic State|पीड़ा का स्तर एवं तंत्रिका तंत्र स्थिति|Severidad|Sévérité|Belastungsgrad)\s*:\s*([^\n•|]+)/i);
+    const sevMatch = diagPart.match(/(?:Suffering Severity & Autonomic State|पीड़ा का स्तर एवं तंत्रिका तंत्र स्थिति|Severidad|Sévérité|Belastungsgrad|\((?:Moderate|Severe|Elevated|Mild|तीव्र|गंभीर|मध्यम)[^)]*\))\s*:\s*([^\n•|]+)/i);
     if (sevMatch) severity = sevMatch[1].trim();
 
     const autoMatch = diagPart.match(/\|\s*([^\n•]+)/);
     if (autoMatch) autonomicState = autoMatch[1].trim();
 
-    const bodyMatch = diagPart.match(/(?:Interoceptive Bodily Burden|शारीरिक संवेदनाएं व आंतरिक तनाव|Carga Corporal|Charge Corporelle|Körperliche Empfindungen)\s*:\s*([^\n•]+)/i);
+    const bodyMatch = diagPart.match(/(?:Interoceptive Bodily Burden|शारीरिक संवेदनाएं व आंतरिक तनाव|शारीरिक संवेदनाएं|Carga Corporal|Charge Corporelle|Körperliche Empfindungen)\s*:\s*([^\n•]+)/i);
     if (bodyMatch) bodilyBurden = bodyMatch[1].trim();
 
-    const sumMatch = diagPart.match(/(?:Empathic Summary of Your Experience|आपकी स्थिति का संवेदनशील सारांश|Resumen Empático|Résumé Empathique|Einfühlsame Zusammenfassung)\s*:\s*([^\n•]+)/i);
+    const sumMatch = diagPart.match(/(?:Empathic Summary of Your Experience|आपकी स्थिति का संवेदनशील सारांश|संवेदनशील सारांश|Resumen Empático|Résumé Empathique|Einfühlsame Zusammenfassung|Primary Assessment Focus|Focus|मुख्य बिंदु|Enfoque|Fokus)\s*:\s*([^\n•]+)/i);
     if (sumMatch) summary = sumMatch[1].trim();
+  }
+
+  // If summary not found in diagPart, check if rawParts[0] was an opening empathic reflection sentence
+  if (!summary && rawParts.length > 0 && !rawParts[0].startsWith('**')) {
+    const firstPart = rawParts[0].trim();
+    if (firstPart.length > 20 && !firstPart.toLowerCase().startsWith('hello') && !firstPart.toLowerCase().startsWith('hi ')) {
+      summary = firstPart;
+    }
   }
 
   if (!emotionName) {
@@ -450,7 +458,7 @@ export function parseTherapeuticStages(rawText: string, locale?: string): Struct
   }
 
   const confirmationPrompt = isHindi
-    ? "क्या आप इस समय इसी मनोदशा और आंतरिक तनाव का अनुभव कर रहे हैं?"
+    ? "क्या आप इस समय इसी मनोदशा और परिस्थिति का सामना कर रहे हैं?"
     : isSpanish
     ? "¿Es esto exactamente lo que estás experimentando en este momento?"
     : isFrench
@@ -470,8 +478,14 @@ export function parseTherapeuticStages(rawText: string, locale?: string): Struct
     : "📋 1. Sanctuary Emotion Understanding";
 
   const s1SpeechText = isHindi
-    ? `पहचाना गया मनोभाव: ${emotionName}। ${severity ? `पीड़ा व तंत्रिका तंत्र: ${severity}${autonomicState ? ` ${autonomicState}` : ''}। ` : ''}${bodilyBurden ? `शारीरिक संवेदनाएं: ${bodilyBurden}। ` : ''}${summary ? `${summary} ` : ''}${confirmationPrompt}`
-    : `Understood Emotion: ${emotionName}. ${severity ? `Severity and autonomic state: ${severity}${autonomicState ? ` ${autonomicState}` : ''}. ` : ''}${bodilyBurden ? `Bodily sensations: ${bodilyBurden}. ` : ''}${summary ? `${summary} ` : ''}${confirmationPrompt}`;
+    ? `${summary ? `आपकी स्थिति: ${summary}। ` : ''}पहचाना गया मनोभाव: ${emotionName}। ${severity ? `पीड़ा व तंत्रिका तंत्र: ${severity}${autonomicState ? ` ${autonomicState}` : ''}। ` : ''}${bodilyBurden ? `शारीरिक संवेदनाएं: ${bodilyBurden}। ` : ''}${confirmationPrompt}`
+    : isSpanish
+    ? `${summary ? `Situación identificada: ${summary}. ` : ''}Estado emocional: ${emotionName}. ${severity ? `Severidad: ${severity}${autonomicState ? ` ${autonomicState}` : ''}. ` : ''}${confirmationPrompt}`
+    : isFrench
+    ? `${summary ? `Situation identifiée : ${summary}. ` : ''}État émotionnel : ${emotionName}. ${severity ? `Sévérité : ${severity}${autonomicState ? ` ${autonomicState}` : ''}. ` : ''}${confirmationPrompt}`
+    : isGerman
+    ? `${summary ? `Erkannte Belastungssituation: ${summary}. ` : ''}Emotionaler Zustand: ${emotionName}. ${severity ? `Belastungsgrad: ${severity}${autonomicState ? ` ${autonomicState}` : ''}. ` : ''}${confirmationPrompt}`
+    : `${summary ? `Understood Challenge: ${summary}. ` : ''}Understood Emotion: ${emotionName}. ${severity ? `Severity and autonomic state: ${severity}${autonomicState ? ` ${autonomicState}` : ''}. ` : ''}${bodilyBurden ? `Bodily sensations: ${bodilyBurden}. ` : ''}${confirmationPrompt}`;
 
   stages.push({
     stage: 1,
